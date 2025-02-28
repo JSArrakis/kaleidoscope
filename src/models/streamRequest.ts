@@ -9,6 +9,7 @@ export interface IStreamRequest {
   Collections: string[];
   StartTime: number;
   Password: string;
+  EndTime?: number;
 }
 
 export class ContStreamRequest implements IStreamRequest {

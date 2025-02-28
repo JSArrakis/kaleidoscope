@@ -4,11 +4,14 @@ import { IStreamRequest } from '../../src/models/streamRequest';
 import { SelectedMedia } from '../../src/models/selectedMedia';
 import * as streamCon from '../../src/services/streamConstructor';
 import * as tdMovies from '../testData/movies';
+import { MainGenres } from '../../src/models/const/mainGenres';
+import { AgeGroups } from '../../src/models/const/ageGroups';
+import { Eras } from '../../src/models/const/eras';
 
 describe('getInjectedMovies', () => {
   const media = new Media(
     [], // Shows
-    [tdMovies.inception, tdMovies.matrix, tdMovies.interstellar],
+    [tdMovies.inception, tdMovies.therock, tdMovies.interstellar],
     [], // Shorts
     [], // Music
     [], // Promos
@@ -85,10 +88,16 @@ describe('getInjectedMovies', () => {
 
     const expected = [
       new SelectedMedia(tdMovies.inception, '', MediaType.Movie, 0, 9000, [
-        'scifi',
+        MainGenres.Action,
+        MainGenres.SciFi,
+        MainGenres.Adventure,
+        AgeGroups.Mature,
+        Eras.ttens,
       ]),
       new SelectedMedia(tdMovies.interstellar, '', MediaType.Movie, 0, 10800, [
-        'scifi',
+        MainGenres.SciFi,
+        AgeGroups.YoungAdult,
+        Eras.ttens,
       ]),
     ];
 

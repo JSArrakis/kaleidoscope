@@ -208,7 +208,9 @@ describe('selectCommercials', () => {
     const usedCommercials: Commercial[] = [];
     const duration: number = 62;
 
-    const expectedCommercials: Commercial[] = [tdCommercials.ocarinaoftimetrailer1];
+    const expectedCommercials: Commercial[] = [
+      tdCommercials.ocarinaoftimetrailer1,
+    ];
     const expectedRemainingDuration: number = 0;
 
     const [result, remainingDuration] = buffEng.selectCommercials(

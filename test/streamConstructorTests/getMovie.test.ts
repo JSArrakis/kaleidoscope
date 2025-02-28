@@ -1,3 +1,6 @@
+import { AgeGroups } from '../../src/models/const/ageGroups';
+import { Eras } from '../../src/models/const/eras';
+import { MainGenres } from '../../src/models/const/mainGenres';
 import { MediaType } from '../../src/models/enum/mediaTypes';
 import { Movie } from '../../src/models/movie';
 import { SelectedMedia } from '../../src/models/selectedMedia';
@@ -8,7 +11,7 @@ describe('getMovie', () => {
   let movieList: Movie[];
 
   beforeEach(() => {
-    movieList = [tdMovies.inception, tdMovies.matrix];
+    movieList = [tdMovies.inception, tdMovies.therock];
   });
 
   it('should return an error if the loadTitle is empty', () => {
@@ -49,6 +52,12 @@ describe('getMovie', () => {
     expect(selectedMedia[0].Type).toBe(MediaType.Movie);
     expect(selectedMedia[0].Time).toBe(time);
     expect(selectedMedia[0].Duration).toBe(9000);
-    expect(selectedMedia[0].Tags).toEqual(['scifi']);
+    expect(selectedMedia[0].Tags).toEqual([
+      MainGenres.Action,
+      MainGenres.SciFi,
+      MainGenres.Adventure,
+      AgeGroups.Mature,
+      Eras.ttens,
+    ]);
   });
 });

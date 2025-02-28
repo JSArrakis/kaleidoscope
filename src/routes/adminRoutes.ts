@@ -196,4 +196,18 @@ router.get(
   promoCont.getAllPromosHandler,
 );
 
+// Collection Management
+router.post(
+  '/create-collection',
+  verify.createCollectionValidationRules,
+  collectionCont.createCollectionHandler,
+);
+
+// Block Management
+router.post(
+  '/create-block',
+  verify.createBlockValidationRules,
+  blockCont.createBlockHandler,
+);
+
 export default router;

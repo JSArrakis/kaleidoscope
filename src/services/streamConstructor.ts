@@ -12,7 +12,7 @@ import { createBuffer } from './bufferEngine';
 import { MediaBlock } from '../models/mediaBlock';
 import { StreamType } from '../models/enum/streamTypes';
 import { ManageShowProgression } from './progressionManager';
-import { AdhocStreamRequest, IStreamRequest } from '../models/streamRequest';
+import { IStreamRequest } from '../models/streamRequest';
 import { Mosaic } from '../models/mosaic';
 
 export function constructStream(
@@ -27,7 +27,6 @@ export function constructStream(
     : args.StartTime,
 ): [MediaBlock[], string] {
   let error: string = '';
-  console.log('Right Now: ' + rightNow);
   let streamBlocks: MediaBlock[] = [];
 
   // Get the media that is scheduled to be played from the api request (movies that are selected to be played at a specific time)
@@ -150,7 +149,7 @@ export function constructStream(
         args,
         media,
         mosaics,
-        stagedStream[index].Tags,
+        item.Media.Tags,
         lastItem ? [] : stagedStream[index + 1].Tags,
         prevBuffer,
         [],
@@ -178,25 +177,6 @@ export function constructStream(
       streamBlocks.push(mediaBlock);
     }
     // TODO - Collections
-    // Collections are not currently supported in the stream constructor due to old code before it was rewritten in Typescript
-    // Collections are a specific grouping of shows, movies or other specific media items that are played in a specific order
-    // This could be a series of movies that are played in order, a series of shows that are played in order, or a mix of both
-    // We will need to also consider music blocks and other media types that are not currently supported in the stream constructor
-    // The progression engine should keep track of each collections progression for each show in the collection, this functionality
-    // is meant to keep each collection progression siloed from each other and from the main stream progression
-
-    // else if (item.Media instanceof Collection) {
-    //     let collection = item.Media;
-    //     let collectionBlock = createCollectionBlock(
-    //         collection,
-    //         progression,
-    //         options,
-    //         media,
-    //         transaltionTags,
-    //         prevBuffer);
-    //     streamPaths.push(...collectionBlock[0]);
-    //     remainder = collectionBlock[1];
-    // }
   });
   return [streamBlocks, error];
 }
@@ -431,11 +411,12 @@ export function setProceduralTags(
     stagedMedia.InjectedMovies.forEach(inj => tagList.push(...inj.Media.Tags));
     stagedMedia.ScheduledMedia.forEach(sch => tagList.push(...sch.Media.Tags));
     let uniquetags: string[] = [];
-    for (let i = 0; i < tagList.length; i++) {
-      if (uniquetags.indexOf(tagList[i]) === -1) {
-        uniquetags.push(tagList[i]);
+    //Filter out duplicate tags
+    tagList.forEach(tag => {
+      if (!uniquetags.includes(tag)) {
+        uniquetags.push(tag);
       }
-    }
+    });
     options.Tags = uniquetags;
     //TODO: v1.4 Create different combos of tags for multitags to give a more streamlined experience
 
@@ -450,16 +431,13 @@ export function evaluateStreamEndTime(
   let endTime: number = moment().startOf('day').add(1, 'days').unix();
   let error: string = '';
 
-  if (options instanceof AdhocStreamRequest && options.EndTime) {
+  if (options.EndTime) {
     error = compareSelectedEndTime(options.EndTime, scheduledMedia);
     if (error !== '') {
       return [0, error];
     }
     endTime = options.EndTime;
-  } else if (
-    options instanceof AdhocStreamRequest &&
-    scheduledMedia.length > 0
-  ) {
+  } else if (scheduledMedia.length > 0) {
     let lastScheduledMedia = scheduledMedia[scheduledMedia.length - 1];
     endTime = lastScheduledMedia.Time + lastScheduledMedia.Media.DurationLimit;
   }

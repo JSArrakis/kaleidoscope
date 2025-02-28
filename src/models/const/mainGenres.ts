@@ -10,6 +10,10 @@ export const MainGenres = {
   Musical: 'musical',
   Mystery: 'mystery',
   SciFi: 'scifi',
+  SpaceOpera: 'space opera',
+  Sports: 'sports',
+  SuperHero: 'superhero',
   War: 'war',
   Western: 'western',
+  None: 'none',
 };

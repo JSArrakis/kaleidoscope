@@ -67,7 +67,7 @@ describe('evaluateStreamEndTime', () => {
         ['scifi'],
       ),
       new SelectedMedia(
-        tdMovies.matrix,
+        tdMovies.therock,
         '',
         MediaType.Movie,
         1656633600,

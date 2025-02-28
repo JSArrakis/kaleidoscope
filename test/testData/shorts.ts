@@ -105,6 +105,114 @@ export const adam = new Short(
   [MainGenres.SciFi, AgeGroups.YoungAdult, Eras.twothousands],
 );
 
+export const gopherBroke = new Short(
+  'Gopher Broke',
+  'gopherbroke',
+  300,
+  '/path/gopherbroke.mp4',
+  MediaType.Short,
+  [MainGenres.Adventure, AgeGroups.Family, Eras.twothousands],
+);
+
+export const forTheBirds = new Short(
+  'For the Birds',
+  'forthebirds',
+  240,
+  '/path/forthebirds.mp4',
+  MediaType.Short,
+  [MainGenres.Adventure, AgeGroups.Family, Eras.nnineties],
+);
+
+export const boundin = new Short(
+  'Boundin’',
+  'boundin',
+  300,
+  '/path/boundin.mp4',
+  MediaType.Short,
+  [MainGenres.Adventure, AgeGroups.Family, Eras.twothousands],
+);
+
+export const tinToy = new Short(
+  'Tin Toy',
+  'tintoy',
+  300,
+  '/path/tintoy.mp4',
+  MediaType.Short,
+  [MainGenres.Adventure, MainGenres.SciFi, AgeGroups.Kids, Eras.nnineties],
+);
+
+export const theAdventuresOfAndreAndWallyB = new Short(
+  'The Adventures of André and Wally B.',
+  'andreandwallyb',
+  120,
+  '/path/andreandwallyb.mp4',
+  MediaType.Short,
+  [MainGenres.Adventure, MainGenres.SciFi, AgeGroups.Kids, Eras.nnineties],
+);
+
+export const luxoJunior = new Short(
+  'Luxo Jr.',
+  'luxojunior',
+  120,
+  '/path/luxojunior.mp4',
+  MediaType.Short,
+  [MainGenres.Adventure, AgeGroups.Kids, Eras.nnineties],
+);
+
+export const oneManBand = new Short(
+  'One Man Band',
+  'onemanband',
+  300,
+  '/path/onemanband.mp4',
+  MediaType.Short,
+  [MainGenres.Adventure, AgeGroups.Family, Eras.twothousands],
+);
+
+export const lifted = new Short(
+  'Lifted',
+  'lifted',
+  300,
+  '/path/lifted.mp4',
+  MediaType.Short,
+  [MainGenres.SciFi, AgeGroups.Kids, Eras.twothousands],
+);
+
+export const knickknack = new Short(
+  'Knick Knack',
+  'knickknack',
+  240,
+  '/path/knickknack.mp4',
+  MediaType.Short,
+  [MainGenres.Adventure, AgeGroups.Kids, Eras.nnineties],
+);
+
+export const partlyCloudy = new Short(
+  'Partly Cloudy',
+  'partlycloudy',
+  300,
+  '/path/partlycloudy.mp4',
+  MediaType.Short,
+  [MainGenres.Adventure, AgeGroups.Family, Eras.twothousands],
+);
+
+export const presto = new Short(
+  'Presto',
+  'presto',
+  300,
+  '/path/presto.mp4',
+  MediaType.Short,
+  [MainGenres.Adventure, AgeGroups.Kids, Eras.twothousands],
+);
+
+export const gerisGame = new Short(
+  'Geri’s Game',
+  'gerisgame',
+  240,
+  '/path/gerisgame.mp4',
+  MediaType.Short,
+  [MainGenres.Adventure, AgeGroups.Family, Eras.nnineties],
+);
+
 export const shorts = [
   code8,
   lightsout,
@@ -116,4 +224,29 @@ export const shorts = [
   thegate,
   alienharvest,
   adam,
+];
+
+export const bufferShorts = [
+  code8,
+  lightsout,
+  rakka,
+  theblackhole,
+  cargo,
+  dust,
+  portal,
+  thegate,
+  alienharvest,
+  adam,
+  gopherBroke,
+  forTheBirds,
+  boundin,
+  tinToy,
+  theAdventuresOfAndreAndWallyB,
+  luxoJunior,
+  oneManBand,
+  lifted,
+  knickknack,
+  partlyCloudy,
+  presto,
+  gerisGame,
 ];

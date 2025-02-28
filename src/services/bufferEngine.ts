@@ -54,6 +54,11 @@ export function createBuffer(
     promo.Tags.includes(keyNormalizer(args.Env)),
   );
 
+  if (envPromos.length === 0) {
+    // If there are no promos for the environment, get the default promos
+    envPromos = media.DefaultPromos;
+  }
+
   // Get the promos that are less than or equal to the duration of the buffer, the
   // target duration of a promo is 15 seconds normally, however we need to allow for
   // users to upload promos that are longer than 15 seconds
@@ -180,7 +185,7 @@ export function createBuffer(
     let selectedA = selectBufferMediaWithinDuration(
       media,
       mosaics,
-      segmentedPostTags,
+      segmentedPreTags,
       halfA,
       prevBuff,
       selectedHolidayTags,
@@ -202,7 +207,7 @@ export function createBuffer(
       media,
       mosaics,
       segmentedPostTags,
-      halfB,
+      halfB + selectedA.remainingDuration,
       prevBuff,
       selectedHolidayTags,
     );
@@ -397,11 +402,9 @@ export function selectShortOrMusic(
   }
 
   const useShort = Math.random() < 0.5; // 50% chance of selecting a short
-
   if (useShort && availableShorts.length > 0) {
     // Select a random short from the available shorts
     const selectedShort = selectWeightedMedia(availableShorts) as Short;
-
     return selectedShort;
   } else if (availableMusic.length > 0) {
     // Select a random music video from the available music

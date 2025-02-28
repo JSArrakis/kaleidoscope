@@ -18,7 +18,7 @@ describe('getInitialProceduralTimepoint', () => {
         ['scifi'],
       ),
       new SelectedMedia(
-        tdMovies.matrix,
+        tdMovies.therock,
         '',
         MediaType.Movie,
         1656633600,
@@ -67,7 +67,7 @@ describe('getInitialProceduralTimepoint', () => {
         ['scifi'],
       ),
       new SelectedMedia(
-        tdMovies.matrix,
+        tdMovies.therock,
         '',
         MediaType.Movie,
         1656633600,

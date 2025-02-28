@@ -8,11 +8,19 @@ import {
 import { SelectedMedia } from '../../src/models/selectedMedia';
 import * as streamCon from '../../src/services/streamConstructor';
 import * as tdMovies from '../testData/movies';
+import { MainGenres } from '../../src/models/const/mainGenres';
+import { AgeGroups } from '../../src/models/const/ageGroups';
+import { Eras } from '../../src/models/const/eras';
 
 describe('getScheduledMedia', () => {
   const media = new Media(
     [], // Shows
-    [tdMovies.inception, tdMovies.matrix, tdMovies.interstellar],
+    [
+      tdMovies.inception,
+      tdMovies.therock,
+      tdMovies.thematrix,
+      tdMovies.interstellar,
+    ],
     [], // Shorts
     [], // Music
     [], // Promos
@@ -41,7 +49,13 @@ describe('getScheduledMedia', () => {
         MediaType.Movie,
         1656547200,
         9000,
-        ['scifi'],
+        [
+          MainGenres.Action,
+          MainGenres.SciFi,
+          MainGenres.Adventure,
+          AgeGroups.Mature,
+          Eras.ttens,
+        ],
       ),
       new SelectedMedia(
         tdMovies.interstellar,
@@ -49,7 +63,7 @@ describe('getScheduledMedia', () => {
         MediaType.Movie,
         1656633600,
         10800,
-        ['scifi'],
+        [MainGenres.SciFi, AgeGroups.YoungAdult, Eras.ttens],
       ),
     ];
 
@@ -78,7 +92,13 @@ describe('getScheduledMedia', () => {
         MediaType.Movie,
         1656547200,
         9000,
-        ['scifi'],
+        [
+          MainGenres.Action,
+          MainGenres.SciFi,
+          MainGenres.Adventure,
+          AgeGroups.Mature,
+          Eras.ttens,
+        ],
       ),
     ];
 
@@ -142,7 +162,13 @@ describe('getScheduledMedia', () => {
         MediaType.Movie,
         1656547200,
         9000,
-        ['scifi'],
+        [
+          MainGenres.Action,
+          MainGenres.SciFi,
+          MainGenres.Adventure,
+          AgeGroups.Mature,
+          Eras.ttens,
+        ],
       ),
       new SelectedMedia(
         tdMovies.interstellar,
@@ -150,7 +176,7 @@ describe('getScheduledMedia', () => {
         MediaType.Movie,
         1656633600,
         10800,
-        ['scifi'],
+        [MainGenres.SciFi, AgeGroups.YoungAdult, Eras.ttens],
       ),
     ];
 
@@ -191,15 +217,26 @@ describe('getScheduledMedia', () => {
         MediaType.Movie,
         1656547200,
         9000,
-        ['scifi'],
+        [
+          MainGenres.Action,
+          MainGenres.SciFi,
+          MainGenres.Adventure,
+          AgeGroups.Mature,
+          Eras.ttens,
+        ],
       ),
       new SelectedMedia(
-        tdMovies.matrix,
+        tdMovies.thematrix,
         '',
         MediaType.Movie,
         1656633600,
         9000,
-        ['action'],
+        [
+          MainGenres.Action,
+          MainGenres.SciFi,
+          AgeGroups.YoungAdult,
+          Eras.nnineties,
+        ],
       ),
     ];
 
@@ -210,7 +247,13 @@ describe('getScheduledMedia', () => {
         MediaType.Movie,
         1656547200,
         9000,
-        ['scifi'],
+        [
+          MainGenres.Action,
+          MainGenres.SciFi,
+          MainGenres.Adventure,
+          AgeGroups.Mature,
+          Eras.ttens,
+        ],
       ),
       new SelectedMedia(
         tdMovies.interstellar,
@@ -218,7 +261,7 @@ describe('getScheduledMedia', () => {
         MediaType.Movie,
         1656633600,
         10800,
-        ['scifi'],
+        [MainGenres.SciFi, AgeGroups.YoungAdult, Eras.ttens],
       ),
     ];
 

@@ -10,6 +10,9 @@ import { MediaType } from '../../src/models/enum/mediaTypes';
 import * as tdProgression from '../testData/progression';
 import * as tdMovies from '../testData/movies';
 import * as tdShows from '../testData/shows';
+import { MainGenres } from '../../src/models/const/mainGenres';
+import { AgeGroups } from '../../src/models/const/ageGroups';
+import { Eras } from '../../src/models/const/eras';
 
 describe('getProceduralBlock', () => {
   beforeEach(() => {
@@ -32,7 +35,7 @@ describe('getProceduralBlock', () => {
       [tdShows.reboot, tdShows.farscape, tdShows.startrek],
       [
         tdMovies.inception,
-        tdMovies.matrix,
+        tdMovies.therock,
         tdMovies.interstellar,
         tdMovies.dune,
       ],
@@ -79,7 +82,7 @@ describe('getProceduralBlock', () => {
       [tdShows.reboot, tdShows.farscape, tdShows.startrek],
       [
         tdMovies.inception,
-        tdMovies.matrix,
+        tdMovies.therock,
         tdMovies.interstellar,
         tdMovies.dune,
       ],
@@ -126,7 +129,7 @@ describe('getProceduralBlock', () => {
       [tdShows.reboot, tdShows.farscape, tdShows.startrek],
       [
         tdMovies.inception,
-        tdMovies.matrix,
+        tdMovies.therock,
         tdMovies.interstellar,
         tdMovies.dune,
       ],
@@ -181,7 +184,7 @@ describe('getProceduralBlock', () => {
       [tdShows.reboot, tdShows.farscape, tdShows.startrek],
       [
         tdMovies.inception,
-        tdMovies.matrix,
+        tdMovies.therock,
         tdMovies.interstellar,
         tdMovies.dune,
       ],
@@ -236,7 +239,7 @@ describe('getProceduralBlock', () => {
       [tdShows.reboot, tdShows.farscape, tdShows.startrek],
       [
         tdMovies.inception,
-        tdMovies.matrix,
+        tdMovies.therock,
         tdMovies.interstellar,
         tdMovies.dune,
       ],
@@ -299,7 +302,7 @@ describe('getProceduralBlock', () => {
       [tdShows.reboot, tdShows.farscape, tdShows.startrek],
       [
         tdMovies.inception,
-        tdMovies.matrix,
+        tdMovies.therock,
         tdMovies.interstellar,
         tdMovies.dune,
       ],
@@ -346,7 +349,7 @@ describe('getProceduralBlock', () => {
       [tdShows.reboot, tdShows.farscape, tdShows.startrek],
       [
         tdMovies.inception,
-        tdMovies.matrix,
+        tdMovies.therock,
         tdMovies.interstellar,
         tdMovies.dune,
       ],
@@ -373,9 +376,14 @@ describe('getProceduralBlock', () => {
     );
 
     let expected: SelectedMedia[] = [
-      new SelectedMedia(tdMovies.matrix, '', MediaType.Movie, latestTimePoint, 9000, [
-        'action',
-      ]),
+      new SelectedMedia(
+        tdMovies.therock,
+        '',
+        MediaType.Movie,
+        latestTimePoint,
+        9000,
+        [MainGenres.Action, AgeGroups.Mature, Eras.nnineties],
+      ),
     ];
 
     expect(proceduralBlock).toEqual(expected);
@@ -388,7 +396,7 @@ describe('getProceduralBlock', () => {
       [tdShows.reboot, tdShows.farscape, tdShows.startrek],
       [
         tdMovies.inception,
-        tdMovies.matrix,
+        tdMovies.therock,
         tdMovies.interstellar,
         tdMovies.dune,
       ],
@@ -421,7 +429,12 @@ describe('getProceduralBlock', () => {
         MediaType.Movie,
         latestTimePoint,
         10800,
-        ['scifi'],
+        [
+          MainGenres.SpaceOpera,
+          MainGenres.SciFi,
+          AgeGroups.YoungAdult,
+          Eras.ttwenties,
+        ],
       ),
     ];
 
@@ -435,7 +448,7 @@ describe('getProceduralBlock', () => {
       [tdShows.reboot, tdShows.farscape, tdShows.startrek],
       [
         tdMovies.inception,
-        tdMovies.matrix,
+        tdMovies.therock,
         tdMovies.interstellar,
         tdMovies.dune,
       ],
@@ -468,7 +481,7 @@ describe('getProceduralBlock', () => {
         MediaType.Movie,
         latestTimePoint,
         10800,
-        ['scifi'],
+        [MainGenres.SciFi, AgeGroups.YoungAdult, Eras.ttens],
       ),
     ];
 
@@ -482,7 +495,7 @@ describe('getProceduralBlock', () => {
       [tdShows.reboot, tdShows.farscape, tdShows.startrek],
       [
         tdMovies.inception,
-        tdMovies.matrix,
+        tdMovies.therock,
         tdMovies.interstellar,
         tdMovies.dune,
       ],
@@ -510,12 +523,12 @@ describe('getProceduralBlock', () => {
 
     let expected: SelectedMedia[] = [
       new SelectedMedia(
-        tdMovies.matrix,
+        tdMovies.therock,
         '',
         MediaType.Movie,
         latestTimePoint,
         9000,
-        ['action'],
+        [MainGenres.Action, AgeGroups.Mature, Eras.nnineties],
       ),
       new SelectedMedia(
         tdShows.reboot.Episodes[1],
@@ -537,7 +550,7 @@ describe('getProceduralBlock', () => {
       [tdShows.reboot, tdShows.farscape, tdShows.startrek],
       [
         tdMovies.inception,
-        tdMovies.matrix,
+        tdMovies.therock,
         tdMovies.interstellar,
         tdMovies.dune,
       ],
@@ -551,7 +564,7 @@ describe('getProceduralBlock', () => {
     );
     let prevMovies: Movie[] = [
       tdMovies.inception,
-      tdMovies.matrix,
+      tdMovies.therock,
       tdMovies.interstellar,
       tdMovies.dune,
     ];
@@ -597,7 +610,7 @@ describe('getProceduralBlock', () => {
       [tdShows.reboot, tdShows.farscape, tdShows.startrek],
       [
         tdMovies.inception,
-        tdMovies.matrix,
+        tdMovies.therock,
         tdMovies.interstellar,
         tdMovies.dune,
       ],
@@ -625,12 +638,12 @@ describe('getProceduralBlock', () => {
 
     let expected: SelectedMedia[] = [
       new SelectedMedia(
-        tdMovies.matrix,
+        tdMovies.therock,
         '',
         MediaType.Movie,
         latestTimePoint,
         9000,
-        ['action'],
+        [MainGenres.Action, AgeGroups.Mature, Eras.nnineties],
       ),
       new SelectedMedia(
         tdMovies.inception,
@@ -638,7 +651,13 @@ describe('getProceduralBlock', () => {
         MediaType.Movie,
         latestTimePoint + 9000,
         9000,
-        ['scifi'],
+        [
+          MainGenres.Action,
+          MainGenres.SciFi,
+          MainGenres.Adventure,
+          AgeGroups.Mature,
+          Eras.ttens,
+        ],
       ),
     ];
 
@@ -652,7 +671,7 @@ describe('getProceduralBlock', () => {
       [tdShows.reboot, tdShows.farscape, tdShows.startrek],
       [
         tdMovies.inception,
-        tdMovies.matrix,
+        tdMovies.therock,
         tdMovies.interstellar,
         tdMovies.dune,
       ],
@@ -680,12 +699,12 @@ describe('getProceduralBlock', () => {
 
     let expected: SelectedMedia[] = [
       new SelectedMedia(
-        tdMovies.matrix,
+        tdMovies.therock,
         '',
         MediaType.Movie,
         latestTimePoint,
         9000,
-        ['action'],
+        [MainGenres.Action, AgeGroups.Mature, Eras.nnineties],
       ),
       new SelectedMedia(
         tdMovies.inception,
@@ -693,7 +712,13 @@ describe('getProceduralBlock', () => {
         MediaType.Movie,
         latestTimePoint + 9000,
         9000,
-        ['scifi'],
+        [
+          MainGenres.Action,
+          MainGenres.SciFi,
+          MainGenres.Adventure,
+          AgeGroups.Mature,
+          Eras.ttens,
+        ],
       ),
       new SelectedMedia(
         tdShows.startrek.Episodes[0],
@@ -722,7 +747,11 @@ describe('getProceduralBlock', () => {
       [],
       [
         new SelectedMedia(tdMovies.inception, '', MediaType.Movie, 0, 9000, [
-          'scifi',
+          MainGenres.Action,
+          MainGenres.SciFi,
+          MainGenres.Adventure,
+          AgeGroups.Mature,
+          Eras.ttens,
         ]),
         new SelectedMedia(
           tdMovies.interstellar,
@@ -730,7 +759,7 @@ describe('getProceduralBlock', () => {
           MediaType.Movie,
           0,
           10800,
-          ['scifi'],
+          [MainGenres.SciFi, AgeGroups.YoungAdult, Eras.ttens],
         ),
       ],
       0,
@@ -739,7 +768,7 @@ describe('getProceduralBlock', () => {
       [tdShows.reboot, tdShows.farscape, tdShows.startrek],
       [
         tdMovies.inception,
-        tdMovies.matrix,
+        tdMovies.therock,
         tdMovies.interstellar,
         tdMovies.dune,
       ],
@@ -772,15 +801,21 @@ describe('getProceduralBlock', () => {
         MediaType.Movie,
         latestTimePoint,
         9000,
-        ['scifi'],
+        [
+          MainGenres.Action,
+          MainGenres.SciFi,
+          MainGenres.Adventure,
+          AgeGroups.Mature,
+          Eras.ttens,
+        ],
       ),
       new SelectedMedia(
-        tdMovies.matrix,
+        tdMovies.therock,
         '',
         MediaType.Movie,
         latestTimePoint + 9000,
         9000,
-        ['action'],
+        [MainGenres.Action, AgeGroups.Mature, Eras.nnineties],
       ),
       new SelectedMedia(
         tdShows.startrek.Episodes[0],
