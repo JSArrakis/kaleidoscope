@@ -16,7 +16,7 @@ describe('setProceduralTags', () => {
       Movies: ['inception::1656547200', 'interstellar::1656633600'],
       Tags: [],
       MultiTags: [],
-      Collections: [],
+      Blocks: [],
       StartTime: 1656547200,
       Password: 'securepassword',
     };

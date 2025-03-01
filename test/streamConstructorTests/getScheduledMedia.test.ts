@@ -27,7 +27,7 @@ describe('getScheduledMedia', () => {
     [], // Default Promos
     [], // Commercials
     [], // Default Commercials
-    [], // Collections
+    [], // Blocks
   );
 
   it('should schedule movies based on the provided timestamps', () => {
@@ -37,7 +37,7 @@ describe('getScheduledMedia', () => {
       Movies: ['inception::1656547200', 'interstellar::1656633600'], // Timestamps represent example Unix times
       Tags: [],
       MultiTags: [],
-      Collections: [],
+      Blocks: [],
       StartTime: 1656547200,
       Password: 'securepassword',
     };
@@ -80,7 +80,7 @@ describe('getScheduledMedia', () => {
       Movies: ['inception::1656547200', 'thematrix'],
       Tags: [],
       MultiTags: [],
-      Collections: [],
+      Blocks: [],
       StartTime: 1656547200,
       Password: 'securepassword',
     };
@@ -115,7 +115,7 @@ describe('getScheduledMedia', () => {
       Movies: ['unknownmovie::1656547200'],
       Tags: [],
       MultiTags: [],
-      Collections: [],
+      Blocks: [],
       StartTime: 1656547200,
       Password: 'securepassword',
     };
@@ -133,7 +133,7 @@ describe('getScheduledMedia', () => {
       Movies: [],
       Tags: [],
       MultiTags: [],
-      Collections: [],
+      Blocks: [],
       StartTime: 1656547200,
       Password: 'securepassword',
     };
@@ -150,7 +150,7 @@ describe('getScheduledMedia', () => {
       Movies: ['interstellar::1656633600', 'inception::1656547200'],
       Tags: [],
       MultiTags: [],
-      Collections: [],
+      Blocks: [],
       StartTime: 1656547200,
       Password: 'securepassword',
     };
@@ -194,7 +194,7 @@ describe('getScheduledMedia', () => {
       ['inception::1656547200', 'thematrix::1656633600'],
       ['tag1', 'tag2'],
       [['multiTag1'], ['multiTag2']],
-      ['Collection1'],
+      ['Blocks1'],
       1656547200,
     );
 
@@ -205,7 +205,7 @@ describe('getScheduledMedia', () => {
       ['interstellar::1656633600', 'inception::1656547200'],
       ['tag1', 'tag2'],
       [['multiTag1'], ['multiTag2']],
-      ['Collection1'],
+      ['Blocks1'],
       1656547200,
       1656647200,
     );

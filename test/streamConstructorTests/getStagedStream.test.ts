@@ -732,7 +732,7 @@ describe('getStagedStream', () => {
       Movies: [],
       Tags: [MainGenres.Adventure],
       MultiTags: [],
-      Collections: [],
+      Blocks: [],
       StartTime: 0,
       Password: 'securePassword',
     };

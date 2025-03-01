@@ -17,7 +17,7 @@ describe('evaluateStreamEndTime', () => {
       ['interstellar::1656633600', 'inception::1656547200'],
       ['tag1', 'tag2'],
       [['multiTag1'], ['multiTag2']],
-      ['Collection1'],
+      ['Blocks1'],
       0,
       1656647200,
     );
@@ -54,7 +54,7 @@ describe('evaluateStreamEndTime', () => {
       ['inception::1656547200', 'thematrix::1656633600'],
       ['tag1', 'tag2'],
       [['multiTag1'], ['multiTag2']],
-      ['Collection1'],
+      ['Blocks1'],
       0,
     );
     const selected = [
@@ -90,7 +90,7 @@ describe('evaluateStreamEndTime', () => {
       [],
       ['tag1', 'tag2'],
       [['multiTag1'], ['multiTag2']],
-      ['Collection1'],
+      ['Blocks1'],
       0,
     );
     const selected: SelectedMedia[] = [];
@@ -109,7 +109,7 @@ describe('evaluateStreamEndTime', () => {
       ['inception::1656547200', 'thematrix::1656633600'],
       ['tag1', 'tag2'],
       [['multiTag1'], ['multiTag2']],
-      ['Collection1'],
+      ['Blocks1'],
       0,
     );
 

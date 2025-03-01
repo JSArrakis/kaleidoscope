@@ -1,71 +1,98 @@
-import { Bumper } from './bumper';
-import { Promo } from './promo';
-import { Episode } from './show';
+import mongoose, { Model } from 'mongoose';
+
+export interface ICollection {
+  ID: string;
+  Title: string;
+  Description: string;
+  Items: ICollectionItem[];
+}
+
+export const CollectionSchema = new mongoose.Schema({
+  ID: String,
+  Title: String,
+  Description: String,
+  Items: [
+    {
+      MediaItemId: String,
+      MediaItemTitle: String,
+      Sequence: Number,
+    },
+  ],
+});
 
 export class Collection {
+  ID: string;
   Title: string;
-  LoadTitle: string;
-  Type: string;
-  Duration: number;
-  DurationLimit: number;
-  Tags: string[];
-  StartBumper: Bumper;
-  EndBumper: Bumper;
-  Promos: Promo[];
-  Shows: CollectionShow[];
-  Path: string;
+  Description: string;
+  Items: CollectionItem[];
 
   constructor(
+    id: string,
     title: string,
-    loadTitle: string,
-    type: string,
-    duration: number,
-    durationLimit: number,
-    tags: string[],
-    startBumper: Bumper,
-    endBumper: Bumper,
-    promos: Promo[],
-    shows: CollectionShow[],
-    path: string,
+    description: string,
+    items: CollectionItem[],
   ) {
+    this.ID = id;
     this.Title = title;
-    this.LoadTitle = loadTitle;
-    this.Type = type;
-    this.Duration = duration;
-    this.DurationLimit = durationLimit;
-    this.Tags = tags;
-    this.StartBumper = startBumper;
-    this.EndBumper = endBumper;
-    this.Promos = promos;
-    this.Shows = shows;
-    this.Path = path;
+    this.Description = description;
+    this.Items = items;
+  }
+
+  static fromMongoObject(mongoObject: any): Collection {
+    return new Collection(
+      mongoObject.id,
+      mongoObject.title,
+      mongoObject.description,
+      mongoObject.items,
+    );
+  }
+
+  static toMongoObject(collection: Collection): any {
+    return {
+      id: collection.ID,
+      title: collection.Title,
+      description: collection.Description,
+      items: collection.Items,
+    };
+  }
+
+  static fromRequestObject(requestObject: any): Collection {
+    return new Collection(
+      requestObject.id,
+      requestObject.title,
+      requestObject.description,
+      requestObject.items,
+    );
   }
 }
 
-export class CollectionShow {
-  LoadTitle: string;
+export interface ICollectionItem {
+  MediaItemId: string;
+  MediaItemTitle: string;
   Sequence: number;
-  Subsequence: number;
-  DurationLimit: number;
-  BumperStart?: Bumper;
-  BumperEnd?: Bumper;
-  Episode?: Episode;
+}
 
-  constructor(
-    loadTitle: string,
-    sequence: number,
-    subsequence: number,
-    durationLimit: number,
-    bumperStart?: Bumper,
-    bumperEnd?: Bumper,
-    episode?: Episode,
-  ) {
-    this.LoadTitle = loadTitle;
+export class CollectionItem {
+  MediaItemId: string;
+  MediaItemTitle: string;
+  Sequence: number;
+
+  constructor(mediaItemId: string, mediaItemTitle: string, sequence: number) {
+    this.MediaItemId = mediaItemId;
+    this.MediaItemTitle = mediaItemTitle;
     this.Sequence = sequence;
-    this.Subsequence = subsequence;
-    this.DurationLimit = durationLimit;
-    this.BumperStart = bumperStart;
-    this.BumperEnd = bumperEnd;
-    this.Episode = episode;
+  }
+
+  static fromRequestObject(requestObject: any): CollectionItem {
+    return new CollectionItem(
+      requestObject.mediaItemId,
+      requestObject.mediaItemTitle,
+      requestObject.sequence,
+    );
   }
 }
+
+export const CollectionModel: Model<ICollection> = mongoose.model<ICollection>(
+  'Collection',
+  CollectionSchema,
+);

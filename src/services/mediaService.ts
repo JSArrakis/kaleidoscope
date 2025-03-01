@@ -45,7 +45,7 @@ export async function loadMedia(config: Config): Promise<void> {
     DefaultPromos: await dataLoader.loadDefaultPromos(),
     Commercials: await dataLoader.loadCommercials(),
     DefaultCommercials: await dataLoader.loadDefaultCommercials(),
-    Collections: [],
+    Blocks: [],
   };
 
   await loadDefaultEnvConfig(config.DefaultPromo);

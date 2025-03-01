@@ -28,7 +28,7 @@ describe('constructStream', () => {
       Movies: ['agoofymovie::1733671800', 'therescuersdownunder::1733677200'], // Timestamps represent example Unix times
       Tags: [MainGenres.Adventure],
       MultiTags: [],
-      Collections: [],
+      Blocks: [],
       StartTime: 0,
       Password: 'securepassword',
       EndTime: 1733682600,
@@ -42,7 +42,7 @@ describe('constructStream', () => {
       DefaultPromos: tdPromos.defaultPromos,
       Commercials: tdCommercials.bufferCommercials,
       DefaultCommercials: tdCommercials.defaultCommercials,
-      Collections: [],
+      Blocks: [],
     };
     const mosaics: Mosaic[] = [];
     const rightNow = 1733671545;
@@ -135,7 +135,7 @@ describe('constructStream', () => {
       Movies: ['agoofymovie::1733671800', 'therock::1733677200'], // Timestamps represent example Unix times
       Tags: [MainGenres.Adventure],
       MultiTags: [],
-      Collections: [],
+      Blocks: [],
       StartTime: 0,
       Password: 'securepassword',
       EndTime: 1733686200,
@@ -149,7 +149,7 @@ describe('constructStream', () => {
       DefaultPromos: tdPromos.defaultPromos,
       Commercials: tdCommercials.bufferCommercials,
       DefaultCommercials: tdCommercials.defaultCommercials,
-      Collections: [],
+      Blocks: [],
     };
     const mosaics: Mosaic[] = [];
     const rightNow = 1733671545;

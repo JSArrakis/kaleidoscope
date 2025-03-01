@@ -1,7 +1,7 @@
 import { Config } from '../models/config';
 import { Media } from '../models/media';
 import { Movie } from '../models/movie';
-import { Collection } from '../models/collection';
+import { Block } from '../models/block';
 import moment from 'moment';
 import { MediaType } from '../models/enum/mediaTypes';
 import { SelectedMedia } from '../models/selectedMedia';
@@ -39,7 +39,7 @@ export function constructStream(
     return [[], error];
   }
 
-  // Get the media that is specifically requested from the incoming http request and the end time of the stream to create a collection
+  // Get the media that is specifically requested from the incoming http request and the end time of the stream to create a block
   // of media that is ordered by scheduled time and 'injected' media that is requested by the user
   // The staged media object is used to determine the order of the stream. The scheduled media will always play at the time it is scheduled
   // The injected media will fill the gaps between the scheduled media where the duration and time available allows
@@ -176,20 +176,20 @@ export function constructStream(
       // as this array will be used as the upcoming stream variable used by the background service with shift() to add the next media item to the stream
       streamBlocks.push(mediaBlock);
     }
-    // TODO - Collections
+    // TODO - blocks
   });
   return [streamBlocks, error];
 }
 
-// function createCollectionBlock(
-//     collection: Collection,
+// function createblockBlock(
+//     block: block,
 //     progression: MediaProgression[],
 //     options: any,
 //     media: Media,
 //     transaltionTags: TranslationTag[],
 //     prevBuffer: Media): [string[], number] {
 //     /*
-//     -- This logic is to determine if a show should be populated in the stream for a collection. If the show
+//     -- This logic is to determine if a show should be populated in the stream for a block. If the show
 //     runs longer than the alloted time block for that show, skip the show following it.
 //     Time remaining will be filled with buffer media
 //     */
@@ -207,17 +207,17 @@ export function constructStream(
 //     */
 //     let remainder = 0;
 //     let stream: string[] = [];
-//     collection.Shows.forEach((show, index) => {
-//         let lastShowEpisode = collection.Shows[index - 1].Episode;
+//     block.Shows.forEach((show, index) => {
+//         let lastShowEpisode = block.Shows[index - 1].Episode;
 //         if (lastShowEpisode) {
 //             if (lastShowEpisode.Duration > lastShowEpisode.DurationLimit) {
-//                 ReduceProgression(collection.Title, show.LoadTitle, progression)
+//                 ReduceProgression(block.Title, show.LoadTitle, progression)
 //             } else {
 //                 let episode = show.Episode;
 //                 if (episode) {
 //                     stream.push(episode.Path)
 //                     if (episode.Duration > episode.DurationLimit) {
-//                         let nextShowEpisode = collection.Shows[index + 1].Episode;
+//                         let nextShowEpisode = block.Shows[index + 1].Episode;
 //                         if (nextShowEpisode) {
 //                             let overDurationLength = (nextShowEpisode.DurationLimit + episode.DurationLimit) - episode.Duration + remainder;
 //                             let overBuffer = createBuffer(
@@ -225,8 +225,8 @@ export function constructStream(
 //                                 overDurationLength,
 //                                 options,
 //                                 media,
-//                                 [collection.LoadTitle],
-//                                 [collection.LoadTitle],
+//                                 [block.LoadTitle],
+//                                 [block.LoadTitle],
 //                                 transaltionTags,
 //                                 prevBuffer)
 //                             stream.push(...overBuffer[0].map(obj => obj.Path));
@@ -238,8 +238,8 @@ export function constructStream(
 //                             episode.DurationLimit - episode.Duration,
 //                             options,
 //                             media,
-//                             [collection.LoadTitle],
-//                             [collection.LoadTitle],
+//                             [block.LoadTitle],
+//                             [block.LoadTitle],
 //                             transaltionTags,
 //                             prevBuffer)
 //                         stream.push(...underBuffer[0].map(obj => obj.Path));
@@ -288,7 +288,7 @@ export function getInitialProceduralTimepoint(
   //If the first time point is in the past, an error is returned
   if (firstTimePoint - rightNow < 0) {
     error =
-      'Time of first scheduled movie, or collection needs to be in the future.';
+      'Time of first scheduled movie, or block needs to be in the future.';
     return [0, error];
   }
 
@@ -467,7 +467,7 @@ export function getScheduledMedia(
   args: IStreamRequest,
 ): [SelectedMedia[], string] {
   let selectedMedia: SelectedMedia[] = [];
-  // Parses the incoming http request for scheduled movies and collections
+  // Parses the incoming http request for scheduled movies and blocks
   // The format of the string is "MovieTitle::Time" where time is the unix timestamp of when the movie is scheduled to be played
   let error: string = '';
   if (args.Movies) {
@@ -491,21 +491,21 @@ export function getScheduledMedia(
       });
   }
 
-  // TODO - handle collections
-  // Blocks should be in the format "CollectionTitle::EpisodeNumber"
-  // TODO - For continuous streams, we need to make sure that we have a way to specify the interval of days or weeks that a collection
-  // should be played. This will allow us to schedule collections to be played on specific days of the week or at specific intervals.
+  // TODO - handle blocks
+  // Blocks should be in the format "blockTitle::EpisodeNumber"
+  // TODO - For continuous streams, we need to make sure that we have a way to specify the interval of days or weeks that a block
+  // should be played. This will allow us to schedule blocks to be played on specific days of the week or at specific intervals.
   // This allows for things like the "Toonami Midnight Run" where a specific show is played at a specific time on a specific day of the week
-  // or Nickelodeons 90s Saturday Morning blocks. This will also allow us to schedule collections to be played on specific holidays or events
-  // if (args.Collections) {
-  //     args.Collections
-  //         // Gets only the collections that have the time schedule delimiter "::"
-  //         // Sometimes a collection can just be added that doesnt need to be scheduled. Collections can also be marathons of movies or shows
+  // or Nickelodeons 90s Saturday Morning blocks. This will also allow us to schedule blocks to be played on specific holidays or events
+  // if (args.blocks) {
+  //     args.blocks
+  //         // Gets only the blocks that have the time schedule delimiter "::"
+  //         // Sometimes a block can just be added that doesnt need to be scheduled. blocks can also be marathons of movies or shows
   //         // that are played in order and do not need to be scheduled at a specific time
   //         .filter((str: string) => str.includes('::'))
   //         .forEach((str: string) => {
-  //             let parsedCollection = str.split("::");
-  //             selectedMedia.push(getCollection(parsedCollection[0], media, parseInt(parsedCollection[1]), args));
+  //             let parsedblock = str.split("::");
+  //             selectedMedia.push(getblock(parsedblock[0], media, parseInt(parsedblock[1]), args));
   //         });
   // }
   // Sorts the the selected media based on the unix timestamp of when the media is scheduled to be played
@@ -540,7 +540,7 @@ export function getMovie(
   time: number,
 ): [SelectedMedia, string] {
   let selectedMedia: SelectedMedia = new SelectedMedia(
-    new Movie('', '', '', '', [], '', 0, 0, '', 0),
+    new Movie('', '', '', '', [], '', 0, 0, []),
     '',
     MediaType.Movie,
     0,
@@ -576,65 +576,65 @@ export function getMovie(
   return [selectedMedia, ''];
 }
 
-export function getCollection(
+export function getBlock(
   loadTitle: string,
   media: Media,
   time: number,
   args: IStreamRequest,
 ): SelectedMedia {
-  // Check if the collection title is empty or undefined as these cannot be searched against the collection list
+  // Check if the block title is empty or undefined as these cannot be searched against the block list
   if (loadTitle === '' || loadTitle === undefined) {
-    throw loadTitle + 'Empty collection titles are not a valid input';
+    throw loadTitle + 'Empty block titles are not a valid input';
   }
 
-  // Check if the collection title is in the collection list
-  let selectedCollection: Collection | undefined = media.Collections.find(
-    collection => collection.LoadTitle === loadTitle,
+  // Check if the block title is in the block list
+  let selectedBlock: Block | undefined = media.Blocks.find(
+    block => block.LoadTitle === loadTitle,
   );
-  if (selectedCollection === undefined) {
+  if (selectedBlock === undefined) {
     throw (
       loadTitle +
-      ' is not a valid load title for a collection, re-check your spelling or make sure the title youre attempting to load exists.'
+      ' is not a valid load title for a block, re-check your spelling or make sure the title youre attempting to load exists.'
     );
   }
 
-  // If a collection has shows assigned to it, assign the episodes to the collection shows based on the progression of the shows
-  assignCollEpisodes(args, selectedCollection, media.Shows);
+  // If a block has shows assigned to it, assign the episodes to the block shows based on the progression of the shows
+  assignBlockEpisodes(args, selectedBlock, media.Shows);
 
   return new SelectedMedia(
-    selectedCollection,
+    selectedBlock,
     '',
-    MediaType.Collection,
+    MediaType.Block,
     time,
-    selectedCollection.DurationLimit,
-    selectedCollection.Tags,
+    selectedBlock.DurationLimit,
+    selectedBlock.Tags,
   );
 }
 
-export function assignCollEpisodes(
+export function assignBlockEpisodes(
   args: IStreamRequest,
-  collection: Collection,
+  block: Block,
   shows: Show[],
 ): void {
-  // Assigns the episodes to the collection shows based on the progression of the shows
-  // TODO - If the same show appears multiple times in a collection, we will need to figure out how to represent that in the collection
+  // Assigns the episodes to the block shows based on the progression of the shows
+  // TODO - If the same show appears multiple times in a block, we will need to figure out how to represent that in the block
   // so it can be ran through this loop, or we will have to how the loop works to account for that
-  // possibly just have the shows in the collection show array to have the possibility of multiple entries with their individual sequence numbers
-  collection.Shows.forEach(collShow => {
-    // Find the show that matches the load title of the collection show
+  // possibly just have the shows in the block show array to have the possibility of multiple entries with their individual sequence numbers
+  block.Shows.forEach(blockShow => {
+    // Find the show that matches the load title of the block show
     let selectedShow = shows.filter(
-      item => item.LoadTitle === collShow.LoadTitle,
+      item => item.LoadTitle === blockShow.LoadTitle,
     )[0];
     // Get the episode number that the show should be on based on the progression of the show
     let episodeNum = ManageShowProgression(
       selectedShow,
       1,
       args,
-      StreamType.Collection,
-      collection.Title,
+      StreamType.Block,
+      block.Title,
     )[0];
     // Get the episode that matches the episode number from the progression
-    collShow.Episode = selectedShow.Episodes.filter(
+    blockShow.Episode = selectedShow.Episodes.filter(
       ep => ep.EpisodeNumber === episodeNum,
     )[0];
   });

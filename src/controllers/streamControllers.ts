@@ -421,8 +421,8 @@ function mapRequestToAdhocStreamRequest(req: Request): AdhocStreamRequest {
     adhocRequest.MultiTags = req.body.multiTags;
   }
 
-  if (req.body.collections) {
-    adhocRequest.Collections = req.body.collections;
+  if (req.body.blocks) {
+    adhocRequest.Blocks = req.body.blocks;
   }
 
   if (req.body.startTime) {

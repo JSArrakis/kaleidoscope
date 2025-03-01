@@ -6,7 +6,7 @@ export interface IStreamRequest {
   Movies: string[];
   Tags: string[];
   MultiTags: string[][];
-  Collections: string[];
+  Blocks: string[];
   StartTime: number;
   Password: string;
   EndTime?: number;
@@ -18,7 +18,7 @@ export class ContStreamRequest implements IStreamRequest {
   Movies: string[];
   Tags: string[];
   MultiTags: string[][];
-  Collections: string[];
+  Blocks: string[];
   StartTime: number;
   Password: string;
 
@@ -29,7 +29,7 @@ export class ContStreamRequest implements IStreamRequest {
     movies: string[] = [],
     tags: string[] = [],
     multiTags: string[][] = [],
-    collections: string[] = [],
+    blocks: string[] = [],
     startTime: number = 0,
   ) {
     this.Title = title;
@@ -37,7 +37,7 @@ export class ContStreamRequest implements IStreamRequest {
     this.Movies = movies;
     this.Tags = tags;
     this.MultiTags = multiTags;
-    this.Collections = collections;
+    this.Blocks = blocks;
     this.StartTime = startTime;
     this.Password = password;
   }
@@ -49,7 +49,7 @@ export class ContStreamRequest implements IStreamRequest {
       requestObject.movies || [],
       requestObject.tags || [],
       requestObject.multiTags || [],
-      requestObject.collections || [],
+      requestObject.blocks || [],
       requestObject.startTime || 0,
       requestObject.password,
     );
@@ -62,7 +62,7 @@ export class AdhocStreamRequest implements IStreamRequest {
   Movies: string[];
   Tags: string[];
   MultiTags: string[][];
-  Collections: string[];
+  Blocks: string[];
   StartTime: number;
   EndTime?: number;
   Password: string;
@@ -83,7 +83,7 @@ export class AdhocStreamRequest implements IStreamRequest {
     this.Movies = movies;
     this.Tags = tags;
     this.MultiTags = multiTags;
-    this.Collections = collections;
+    this.Blocks = collections;
     this.StartTime = startTime;
     this.EndTime = endtime;
     this.Password = password;

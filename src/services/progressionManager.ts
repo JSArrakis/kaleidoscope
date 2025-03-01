@@ -35,7 +35,7 @@ export function ManageShowProgression(
       collection,
       keyNormalizer(collection),
       args.Env,
-      StreamType.Collection,
+      StreamType.Block,
     );
   } else {
     progressionContext = GetProgressionContext(

@@ -24,7 +24,7 @@ describe('createBuffer', () => {
       Movies: [],
       Tags: [],
       MultiTags: [],
-      Collections: [],
+      Blocks: [],
       StartTime: 0,
       Password: '',
     };
@@ -37,7 +37,7 @@ describe('createBuffer', () => {
       DefaultPromos: [],
       Commercials: [],
       DefaultCommercials: [],
-      Collections: [],
+      Blocks: [],
     };
     const mosaics: Mosaic[] = [];
     const halfATags: string[] = [];
@@ -51,7 +51,7 @@ describe('createBuffer', () => {
       DefaultPromos: [],
       Commercials: [],
       DefaultCommercials: [],
-      Collections: [],
+      Blocks: [],
     };
     const holidays: string[] = [];
 
@@ -66,7 +66,7 @@ describe('createBuffer', () => {
       DefaultPromos: [],
       Commercials: [],
       DefaultCommercials: [],
-      Collections: [],
+      Blocks: [],
     };
 
     const result = createBuffer(
@@ -94,7 +94,7 @@ describe('createBuffer', () => {
       Movies: [],
       Tags: [],
       MultiTags: [],
-      Collections: [],
+      Blocks: [],
       StartTime: 0,
       Password: '',
     };
@@ -107,7 +107,7 @@ describe('createBuffer', () => {
       DefaultPromos: tdPromos.defaultPromos,
       Commercials: tdCommercials.commercials,
       DefaultCommercials: tdCommercials.defaultCommercials,
-      Collections: [],
+      Blocks: [],
     };
     const mosaics: Mosaic[] = tdMosaics.mosaics;
     const halfATags: string[] = [MainGenres.Action, AgeGroups.Kids];
@@ -121,7 +121,7 @@ describe('createBuffer', () => {
       DefaultPromos: [],
       Commercials: [],
       DefaultCommercials: [],
-      Collections: [],
+      Blocks: [],
     };
     const holidays: string[] = [];
 
@@ -138,7 +138,7 @@ describe('createBuffer', () => {
       DefaultPromos: [],
       Commercials: [],
       DefaultCommercials: [],
-      Collections: [],
+      Blocks: [],
     };
 
     const result = createBuffer(
@@ -166,7 +166,7 @@ describe('createBuffer', () => {
       Movies: [],
       Tags: [],
       MultiTags: [],
-      Collections: [],
+      Blocks: [],
       StartTime: 0,
       Password: '',
     };
@@ -179,7 +179,7 @@ describe('createBuffer', () => {
       DefaultPromos: tdPromos.defaultPromos,
       Commercials: [],
       DefaultCommercials: tdCommercials.defaultCommercials,
-      Collections: [],
+      Blocks: [],
     };
     const mosaics: Mosaic[] = tdMosaics.mosaics;
     const halfATags: string[] = [MainGenres.Action, AgeGroups.Kids];
@@ -193,7 +193,7 @@ describe('createBuffer', () => {
       DefaultPromos: [],
       Commercials: [],
       DefaultCommercials: [],
-      Collections: [],
+      Blocks: [],
     };
     const holidays: string[] = [];
 
@@ -212,7 +212,7 @@ describe('createBuffer', () => {
       DefaultPromos: [],
       Commercials: [tdCommercials.default9, tdCommercials.default9],
       DefaultCommercials: [],
-      Collections: [],
+      Blocks: [],
     };
 
     const result = createBuffer(
@@ -240,7 +240,7 @@ describe('createBuffer', () => {
       Movies: [],
       Tags: [],
       MultiTags: [],
-      Collections: [],
+      Blocks: [],
       StartTime: 0,
       Password: '',
     };
@@ -253,7 +253,7 @@ describe('createBuffer', () => {
       DefaultPromos: tdPromos.defaultPromos,
       Commercials: tdCommercials.bufferCommercials,
       DefaultCommercials: tdCommercials.defaultCommercials,
-      Collections: [],
+      Blocks: [],
     };
     const mosaics: Mosaic[] = tdMosaics.mosaics;
     const halfATags: string[] = [MainGenres.Action, AgeGroups.Kids];
@@ -267,7 +267,7 @@ describe('createBuffer', () => {
       DefaultPromos: [],
       Commercials: [],
       DefaultCommercials: [],
-      Collections: [],
+      Blocks: [],
     };
     const holidays: string[] = [];
 
@@ -301,7 +301,7 @@ describe('createBuffer', () => {
         tdCommercials.nerfblastershowdown,
       ],
       DefaultCommercials: [],
-      Collections: [],
+      Blocks: [],
     };
 
     const result = createBuffer(
@@ -329,7 +329,7 @@ describe('createBuffer', () => {
       Movies: [],
       Tags: [],
       MultiTags: [],
-      Collections: [],
+      Blocks: [],
       StartTime: 0,
       Password: '',
     };
@@ -342,7 +342,7 @@ describe('createBuffer', () => {
       DefaultPromos: tdPromos.defaultPromos,
       Commercials: tdCommercials.bufferCommercials,
       DefaultCommercials: tdCommercials.defaultCommercials,
-      Collections: [],
+      Blocks: [],
     };
     const mosaics: Mosaic[] = tdMosaics.mosaics;
     const halfATags: string[] = [MainGenres.Adventure, AgeGroups.Kids];
@@ -356,7 +356,7 @@ describe('createBuffer', () => {
       DefaultPromos: [],
       Commercials: [],
       DefaultCommercials: [],
-      Collections: [],
+      Blocks: [],
     };
     const holidays: string[] = [];
 
@@ -392,7 +392,7 @@ describe('createBuffer', () => {
         tdCommercials.legoduplospaceset,
       ],
       DefaultCommercials: [],
-      Collections: [],
+      Blocks: [],
     };
 
     const result = createBuffer(
@@ -420,7 +420,7 @@ describe('createBuffer', () => {
       Movies: [],
       Tags: [],
       MultiTags: [],
-      Collections: [],
+      Blocks: [],
       StartTime: 0,
       Password: '',
     };
@@ -433,7 +433,7 @@ describe('createBuffer', () => {
       DefaultPromos: tdPromos.defaultPromos,
       Commercials: tdCommercials.bufferCommercials,
       DefaultCommercials: tdCommercials.defaultCommercials,
-      Collections: [],
+      Blocks: [],
     };
     const mosaics: Mosaic[] = tdMosaics.mosaics;
     const halfATags: string[] = [];
@@ -447,7 +447,7 @@ describe('createBuffer', () => {
       DefaultPromos: [],
       Commercials: [],
       DefaultCommercials: [],
-      Collections: [],
+      Blocks: [],
     };
     const holidays: string[] = [];
 
@@ -483,7 +483,7 @@ describe('createBuffer', () => {
         tdCommercials.legoduplospaceset,
       ],
       DefaultCommercials: [],
-      Collections: [],
+      Blocks: [],
     };
 
     const result = createBuffer(
@@ -511,7 +511,7 @@ describe('createBuffer', () => {
       Movies: [],
       Tags: [],
       MultiTags: [],
-      Collections: [],
+      Blocks: [],
       StartTime: 0,
       Password: '',
     };
@@ -524,7 +524,7 @@ describe('createBuffer', () => {
       DefaultPromos: tdPromos.defaultPromos,
       Commercials: tdCommercials.bufferCommercials,
       DefaultCommercials: tdCommercials.defaultCommercials,
-      Collections: [],
+      Blocks: [],
     };
     const mosaics: Mosaic[] = tdMosaics.mosaics;
     const halfATags: string[] = [MainGenres.Adventure, AgeGroups.Kids];
@@ -538,7 +538,7 @@ describe('createBuffer', () => {
       DefaultPromos: [],
       Commercials: [],
       DefaultCommercials: [],
-      Collections: [],
+      Blocks: [],
     };
     const holidays: string[] = [];
 
@@ -574,7 +574,7 @@ describe('createBuffer', () => {
         tdCommercials.legoduplospaceset,
       ],
       DefaultCommercials: [],
-      Collections: [],
+      Blocks: [],
     };
 
     const result = createBuffer(

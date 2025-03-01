@@ -115,8 +115,7 @@ async function cycleCheck() {
       tomorrowsContinuousStreamArgs.Movies = continuousStreamArgs.Movies;
       tomorrowsContinuousStreamArgs.Tags = continuousStreamArgs.Tags;
       tomorrowsContinuousStreamArgs.MultiTags = continuousStreamArgs.MultiTags;
-      tomorrowsContinuousStreamArgs.Collections =
-        continuousStreamArgs.Collections;
+      tomorrowsContinuousStreamArgs.Blocks = continuousStreamArgs.Blocks;
       tomorrowsContinuousStreamArgs.StartTime = tomorrow;
       // Constructs the stream for the next day and adds it to the upcoming stream
       const stream: [MediaBlock[], string] = constructStream(

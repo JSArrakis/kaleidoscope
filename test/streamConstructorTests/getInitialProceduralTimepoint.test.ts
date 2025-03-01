@@ -85,7 +85,7 @@ describe('getInitialProceduralTimepoint', () => {
 
     expect(result).toBe(0);
     expect(error).toBe(
-      'Time of first scheduled movie, or collection needs to be in the future.',
+      'Time of first scheduled movie, or block needs to be in the future.',
     );
   });
 });

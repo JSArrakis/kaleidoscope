@@ -1,4 +1,4 @@
-import mongoose, { Model } from 'mongoose';
+import mongoose, { Model, Schema } from 'mongoose';
 import { BaseMedia } from './mediaInterface';
 
 export interface IMovie extends BaseMedia {
@@ -10,9 +10,33 @@ export interface IMovie extends BaseMedia {
   Path: string;
   Duration: number;
   DurationLimit: number;
-  Collection: string[];
-  CollectionSequence: number;
+  Collections: ICollectionReference[];
 }
+
+export interface ICollectionReference {
+  ID: string;
+  Title: string;
+  Sequence: number;
+}
+
+export class CollectionReference {
+  ID: string;
+  Title: string;
+  Sequence: number;
+
+  constructor(id: string, title: string, sequence: number) {
+    this.ID = id;
+    this.Title = title;
+    this.Sequence = sequence;
+  }
+}
+
+// Define the CollectionReference schema
+const CollectionReferenceSchema = new Schema({
+  ID: String,
+  Title: String,
+  Sequence: Number,
+});
 
 export const MovieSchema = new mongoose.Schema({
   Title: String,
@@ -23,8 +47,7 @@ export const MovieSchema = new mongoose.Schema({
   Path: String,
   Duration: Number,
   DurationLimit: Number,
-  Collection: [String],
-  CollectionSequence: Number,
+  Collections: [CollectionReferenceSchema], // Reference the CollectionReference schema here
 });
 
 export class Movie {
@@ -36,8 +59,7 @@ export class Movie {
   Path: string;
   Duration: number;
   DurationLimit: number;
-  Collection: string;
-  CollectionSequence: number;
+  Collections: CollectionReference[];
 
   constructor(
     title: string,
@@ -48,8 +70,7 @@ export class Movie {
     path: string,
     duration: number,
     durationLimit: number,
-    collection: string,
-    collectionSequence: number,
+    collections: CollectionReference[],
   ) {
     this.Title = title;
     this.LoadTitle = loadTitle;
@@ -59,8 +80,7 @@ export class Movie {
     this.Path = path;
     this.Duration = duration;
     this.DurationLimit = durationLimit;
-    this.Collection = collection;
-    this.CollectionSequence = collectionSequence;
+    this.Collections = collections;
   }
 
   static fromMongoObject(mongoObject: any): Movie {
@@ -73,8 +93,7 @@ export class Movie {
       mongoObject.path,
       mongoObject.duration,
       mongoObject.durationLimit,
-      mongoObject.collection,
-      mongoObject.collectionSequence,
+      mongoObject.collections,
     );
   }
 
@@ -88,8 +107,7 @@ export class Movie {
       path: movie.Path,
       duration: movie.Duration,
       durationLimit: movie.DurationLimit,
-      collection: movie.Collection,
-      collectionSequence: movie.CollectionSequence,
+      collections: movie.Collections,
     };
   }
 
@@ -103,8 +121,7 @@ export class Movie {
       requestObject.path,
       requestObject.duration,
       requestObject.durationLimit,
-      requestObject.collection,
-      requestObject.collectionSequence,
+      requestObject.collections,
     );
   }
 }

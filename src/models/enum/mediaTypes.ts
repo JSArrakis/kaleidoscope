@@ -5,6 +5,6 @@ export enum MediaType {
   Music,
   Promo,
   Commercial,
-  Collection,
+  Block,
   Episode,
 }

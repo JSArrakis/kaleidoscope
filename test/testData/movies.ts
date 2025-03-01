@@ -18,8 +18,7 @@ export const inception = new Movie(
   '/path/inception.mp4',
   8880,
   9000,
-  '',
-  0,
+  [],
 );
 export const therock = new Movie(
   'The Rock',
@@ -30,8 +29,7 @@ export const therock = new Movie(
   '/path/therock.mp4',
   8160,
   9000,
-  '',
-  1,
+  [],
 );
 
 export const thematrix = new Movie(
@@ -43,8 +41,7 @@ export const thematrix = new Movie(
   '/path/therock.mp4',
   8160,
   9000,
-  '',
-  1,
+  [],
 );
 
 export const interstellar = new Movie(
@@ -56,8 +53,7 @@ export const interstellar = new Movie(
   '/path/interstellar.mp4',
   10140,
   10800,
-  '',
-  0,
+  [],
 );
 export const dune = new Movie(
   'Dune',
@@ -73,8 +69,7 @@ export const dune = new Movie(
   '/path/dune.mp4',
   9120,
   10800,
-  '',
-  1,
+  [],
 );
 export const terminator2 = new Movie(
   'Terminator 2: Judgement Day',
@@ -91,8 +86,7 @@ export const terminator2 = new Movie(
   '/path/terminator2.mp4',
   9300,
   10800,
-  '',
-  0,
+  [],
 );
 
 export const therescuersdownunder = new Movie(
@@ -104,8 +98,7 @@ export const therescuersdownunder = new Movie(
   '/path/therescuersdownunder.mp4',
   4620,
   5400,
-  '',
-  1,
+  [],
 );
 
 export const agoofymovie = new Movie(
@@ -117,8 +110,7 @@ export const agoofymovie = new Movie(
   '/path/agoofymovie.mp4',
   4680,
   5400,
-  '',
-  0,
+  [],
 );
 
 export const movies = [

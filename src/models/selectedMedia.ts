@@ -1,10 +1,10 @@
-import { Collection } from './collection';
+import { Block } from './block';
 import { MediaType } from './enum/mediaTypes';
 import { Movie } from './movie';
 import { Episode, Show } from './show';
 
 export class SelectedMedia {
-  Media: Movie | Collection | Episode;
+  Media: Movie | Block | Episode;
   ShowTitle: string;
   Type: MediaType;
   Time: number;
@@ -12,7 +12,7 @@ export class SelectedMedia {
   Tags: string[];
 
   constructor(
-    media: Movie | Collection | Episode,
+    media: Movie | Block | Episode,
     showTitle: string,
     type: MediaType,
     time: number,

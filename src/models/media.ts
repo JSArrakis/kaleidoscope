@@ -4,7 +4,7 @@ import { Short } from './short';
 import { Music } from './music';
 import { Promo } from './promo';
 import { Commercial } from './commercial';
-import { Collection } from './collection';
+import { Block } from './block';
 
 export class Media {
   Shows: Show[];
@@ -15,7 +15,7 @@ export class Media {
   DefaultPromos: Promo[];
   Commercials: Commercial[];
   DefaultCommercials: Commercial[];
-  Collections: Collection[];
+  Blocks: Block[];
 
   constructor(
     shows: Show[],
@@ -26,7 +26,7 @@ export class Media {
     defaultPromos: Promo[],
     commercials: Commercial[],
     defaultCommercials: Commercial[],
-    collections: Collection[],
+    blocks: Block[],
   ) {
     this.Shows = shows;
     this.Movies = movies;
@@ -36,6 +36,6 @@ export class Media {
     this.DefaultPromos = defaultPromos;
     this.Commercials = commercials;
     this.DefaultCommercials = defaultCommercials;
-    this.Collections = collections;
+    this.Blocks = blocks;
   }
 }

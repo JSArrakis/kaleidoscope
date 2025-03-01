@@ -18,7 +18,7 @@ describe('getInjectedMovies', () => {
     [], // Default Promos
     [], // Commercials
     [], // Default Commercials
-    [], // Collections
+    [], // Blocks
   );
 
   it('should return an empty array when no movies are provided', () => {
@@ -28,7 +28,7 @@ describe('getInjectedMovies', () => {
       Movies: [],
       Tags: [],
       MultiTags: [],
-      Collections: [],
+      Blocks: [],
       StartTime: 1656547200,
       Password: 'securepassword',
     };
@@ -45,7 +45,7 @@ describe('getInjectedMovies', () => {
       Movies: ['unknownmovie'],
       Tags: [],
       MultiTags: [],
-      Collections: [],
+      Blocks: [],
       StartTime: 1656547200,
       Password: 'securepassword',
     };
@@ -63,7 +63,7 @@ describe('getInjectedMovies', () => {
       Movies: ['inception::1656547200'],
       Tags: [],
       MultiTags: [],
-      Collections: [],
+      Blocks: [],
       StartTime: 1656547200,
       Password: 'securepassword',
     };
@@ -81,7 +81,7 @@ describe('getInjectedMovies', () => {
       Movies: ['inception', 'interstellar'],
       Tags: [],
       MultiTags: [],
-      Collections: [],
+      Blocks: [],
       StartTime: 1656547200,
       Password: 'securepassword',
     };

@@ -1,4 +1,4 @@
-import { Collection } from './collection';
+import { Block } from './block';
 import { Commercial } from './commercial';
 import { Movie } from './movie';
 import { Music } from './music';
@@ -8,14 +8,14 @@ import { Episode } from './show';
 
 export class MediaBlock {
   Buffer: (Promo | Music | Commercial | Short)[];
-  MainBlock?: Episode | Movie | Collection;
+  MainBlock?: Episode | Movie | Block;
   InitialBuffer: (Promo | Music | Commercial | Short)[];
   StartTime?: number;
 
   constructor(
     buffer: (Promo | Music | Commercial | Short)[],
     initialBuffer: (Promo | Music | Commercial | Short)[],
-    mainBlock?: Episode | Movie | Collection,
+    mainBlock?: Episode | Movie | Block,
     startTime?: number,
   ) {
     this.Buffer = buffer;
