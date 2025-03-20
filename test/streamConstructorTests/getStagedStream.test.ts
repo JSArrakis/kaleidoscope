@@ -25,8 +25,8 @@ describe('getStagedStream', () => {
   const config = new Config('', 1800, '', '');
   const args = new ContStreamRequest(
     'securePassword',
-    tdProgression.continuousProgression.Title,
-    tdProgression.continuousProgression.Environment,
+    tdProgression.continuousProgression.title,
+    tdProgression.continuousProgression.environment,
     [],
     ['scifi', 'action'],
   );
@@ -727,8 +727,8 @@ describe('getStagedStream', () => {
       [],
     );
     let contextArgs: ContStreamRequest = {
-      Title: tdProgression.continuousProgression.Title,
-      Env: tdProgression.continuousProgression.Environment,
+      Title: tdProgression.continuousProgression.title,
+      Env: tdProgression.continuousProgression.environment,
       Movies: [],
       Tags: [MainGenres.Adventure],
       MultiTags: [],

@@ -15,8 +15,8 @@ describe('selectShowByDuration', () => {
 
   const args = new ContStreamRequest(
     'securePassword',
-    tdProgression.continuousProgression.Title,
-    tdProgression.continuousProgression.Environment,
+    tdProgression.continuousProgression.title,
+    tdProgression.continuousProgression.environment,
   );
 
   it('should return a show that is under the duration limit (result scenario 1)', () => {
@@ -166,8 +166,8 @@ describe('selectShowByDuration', () => {
     let shows: Show[] = [tdShows.farscape, tdShows.tenchi, tdShows.reboot];
     const randomSpy = jest.spyOn(Math, 'random').mockReturnValue(0.99);
     proMan.IncrementWatchRecord(
-      tdProgression.continuousProgression.LoadTitle,
-      tdProgression.tenchiWatchRecord.LoadTitle,
+      tdProgression.continuousProgression.loadTitle,
+      tdProgression.tenchiWatchRecord.mediaItemId,
       3,
       tdShows.tenchi,
     );
@@ -202,8 +202,8 @@ describe('selectShowByDuration', () => {
     let shows: Show[] = [tdShows.farscape, tdShows.batman];
     const randomSpy = jest.spyOn(Math, 'random').mockReturnValue(0.01);
     proMan.IncrementWatchRecord(
-      tdProgression.continuousProgression.LoadTitle,
-      tdProgression.batmanWatchRecord.LoadTitle,
+      tdProgression.continuousProgression.loadTitle,
+      tdProgression.batmanWatchRecord.mediaItemId,
       4,
       tdShows.batman,
     );

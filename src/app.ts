@@ -14,7 +14,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 // Define the path to the config file
-const configFilePath = path.join(__dirname, 'config.json');
+const configFilePath = path.join(__dirname, '../config.json');
 
 // Read and parse the config file
 const rawConfigData = fs.readFileSync(configFilePath, 'utf-8');

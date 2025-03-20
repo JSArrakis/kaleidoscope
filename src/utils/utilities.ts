@@ -26,12 +26,12 @@ export function ManageProgression(
   for (let i = 0; i < numOfEpsRequested; i++) {
     // Get the contexual progression
     let progContext: MediaProgression = progression.filter(
-      prog => prog.Title === title,
+      prog => prog.title === title,
     )[0];
     // Get the episode number for the show that is being selected to be played
-    let episode = progContext.Shows.filter(
-      item => item.LoadTitle === show.LoadTitle,
-    )[0].Episode;
+    let episode = progContext.shows.filter(
+      item => item.mediaItemId === show.mediaItemId,
+    )[0].episode;
     // Add the episode number to the array of episodes to be played. Subsequent episodes might not necessarily be just the next number. If the first episode in the array is the
     // last episode of available episodes, the next episode will be the first episode of the show
     episodeNumbers.push(episode);
@@ -48,10 +48,10 @@ export function ReduceProgression(
   progression: MediaProgression[],
 ) {
   progression
-    .filter(pitem => pitem.Title === title)[0]
-    .Shows.filter(fshow => fshow.LoadTitle === showLoadTitle)
+    .filter(pitem => pitem.title === title)[0]
+    .shows.filter(fshow => fshow.mediaItemId === showLoadTitle)
     .forEach(sitem => {
-      sitem.Episode = sitem.Episode - 1;
+      sitem.episode = sitem.episode - 1;
     });
 }
 
@@ -61,16 +61,16 @@ export function incrementProgression(
   show: Show,
 ) {
   progression
-    .filter(pitem => pitem.Title === title)[0]
-    .Shows// Find matching show title in the progression object
-    .filter(fshow => fshow.LoadTitle === show.LoadTitle)
+    .filter(pitem => pitem.title === title)[0]
+    .shows // Find matching show title in the progression object
+    .filter(fshow => fshow.mediaItemId === show.mediaItemId)
     // Increment the episode number for each show that shares the load title (there should only be one)
     .forEach(sitem => {
       //Increment the episode number for the show
-      sitem.Episode++;
+      sitem.episode++;
       // If after incrementing the epsiode number, the episode number is greater than the total number of episodes, reset the episode number to 1 to restart the series
-      if (sitem.Episode > show.EpisodeCount) {
-        sitem.Episode = 1;
+      if (sitem.episode > show.episodeCount) {
+        sitem.episode = 1;
       }
     });
 }
@@ -83,13 +83,13 @@ export function addProgression(
 ) {
   // Show progression is the object that will be added to the MediaProgression object it contains the show title and the episode number to be played next
   // The the first episode is always 1
-  let showProg = new ShowProgression(show.LoadTitle, 1);
+  let showProg = new ShowProgression(show.mediaItemId, 1);
   // MediaProgression is an object that contains the progression of shows based on context. Each collection, or the main stream for an environment will have a MediaProgression object
   let progItem = new MediaProgression(title, type, [showProg]);
 
   // Check if the title is already in the progression array
   let progressionItem: MediaProgression[] = progression.filter(
-    prog => prog.Title === title,
+    prog => prog.title === title,
   );
 
   // If the MediaProgression (collection, or main stream) is not in the progression array, add it to the array
@@ -101,12 +101,12 @@ export function addProgression(
   // The reason we do this instead of adding the show to the just created MediaProgression object is because there is a chance the show did not exist in the collection
   // or main stream when the MediaProgression object originally was created.
   let selectedShowProgression: ShowProgression[] = progression
-    .filter(prog => prog.Title === title)[0]
-    .Shows.filter(selShow => selShow.LoadTitle == show.LoadTitle);
+    .filter(prog => prog.title === title)[0]
+    .shows.filter(selShow => selShow.mediaItemId == show.mediaItemId);
 
   // If the show isnt present, add it to the MediaProgression object
   if (selectedShowProgression.length === 0) {
-    progression.filter(pitem => pitem.Title === title)[0].Shows.push(showProg);
+    progression.filter(pitem => pitem.title === title)[0].shows.push(showProg);
   }
 }
 

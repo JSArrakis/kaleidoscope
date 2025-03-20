@@ -4,6 +4,7 @@ import { MovieModel, Movie } from '../models/movie';
 import { LoadTitleError } from '../models/loadTitleError';
 import { createMediaValidation } from '../middleware/validationMiddleware';
 import { getMediaDuration } from '../utils/utilities';
+import { parsed } from 'yargs';
 
 // ===========================================
 //               MOVIE HANDLERS
@@ -13,6 +14,7 @@ export async function createMovieHandler(
   req: Request,
   res: Response,
 ): Promise<void> {
+  console.log('NEW CREATE MOVIE REQUEST');
   // Check for validation errors
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -20,18 +22,20 @@ export async function createMovieHandler(
     return;
   }
 
-  let loadTitle = req.body.title.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+  let mediaItemId = req.body.path.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
 
   // Retrieve movie from MongoDB using show load title if it exists
-  const movie = await MovieModel.findOne({ LoadTitle: loadTitle });
+  const movie = await MovieModel.findOne({ mediaItemId: mediaItemId });
 
   // If it exists, return error
   if (movie) {
-    res.status(400).json({ message: 'Movie already exists' });
+    res.status(400).json({
+      message: `The Media Item ID you selected for '${req.body.title}' already exists.`,
+    });
     return;
   }
   // If it doesn't exist, perform transformations
-  let createdMovie = await transformMovieFromRequest(req.body, loadTitle);
+  let createdMovie = await transformMovieFromRequest(req.body, mediaItemId);
 
   // Insert movie into MongoDB
   await MovieModel.create(createdMovie);
@@ -70,47 +74,48 @@ export async function bulkCreateMovieHandler(
       responseErrors.push(new LoadTitleError(movieEntry.title, err));
       continue;
     }
-    let loadTitle = movieEntry.title.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+    let mediaItemId = movieEntry.path
+      .replace(/[^a-zA-Z0-9]/g, '')
+      .toLowerCase();
     try {
-      const movie = await MovieModel.findOne({ LoadTitle: loadTitle });
+      const movie = await MovieModel.findOne({ mediaItemId: mediaItemId });
       if (movie) {
         // If it exists, return error
         responseErrors.push(
           new LoadTitleError(
-            loadTitle,
+            mediaItemId,
             `Movie ${movieEntry.title} already exists`,
           ),
         );
         continue;
       }
 
-      let createdMovie = await transformMovieFromRequest(movieEntry, loadTitle);
+      let createdMovie = await transformMovieFromRequest(
+        movieEntry,
+        mediaItemId,
+      );
 
       await MovieModel.create(createdMovie);
-      createdMovies.push(createdMovie.LoadTitle);
+      createdMovies.push(createdMovie.mediaItemId);
     } catch (err) {
-      responseErrors.push(new LoadTitleError(loadTitle, err as string));
+      responseErrors.push(new LoadTitleError(mediaItemId, err as string));
     }
   }
 
   if (responseErrors.length === req.body.length) {
-    res
-      .status(400)
-      .json({
-        message: 'Movies Not Created',
-        createdMovies: [],
-        errors: responseErrors,
-      });
+    res.status(400).json({
+      message: 'Movies Not Created',
+      createdMovies: [],
+      errors: responseErrors,
+    });
     return;
   }
 
-  res
-    .status(200)
-    .json({
-      message: 'Movies Created',
-      createdMovies: createdMovies,
-      errors: responseErrors,
-    });
+  res.status(200).json({
+    message: 'Movies Created',
+    createdMovies: createdMovies,
+    errors: responseErrors,
+  });
   return;
 }
 
@@ -126,7 +131,9 @@ export async function deleteMovieHandler(
   }
 
   // Retrieve movie from MongoDB using movie load title if it exists
-  const movie = await MovieModel.findOne({ LoadTitle: req.query.loadTitle });
+  const movie = await MovieModel.findOne({
+    mediaItemId: req.query.mediaItemId,
+  });
 
   // If it doesn't exist, return error
   if (!movie) {
@@ -151,9 +158,9 @@ export async function updateMovieHandler(
     res.status(400).json({ errors: errors.array() });
     return;
   }
-  let loadTitle = req.body.title.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+  let mediaItemId = req.body.path.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
   // Retrieve movie from MongoDB using movie load title if it exists
-  const movie = await MovieModel.findOne({ LoadTitle: loadTitle });
+  const movie = await MovieModel.findOne({ mediaItemId: mediaItemId });
 
   // If it doesn't exist, return error
   if (!movie) {
@@ -183,7 +190,9 @@ export async function getMovieHandler(
   }
 
   // Retrieve movie from MongoDB using movie load title if it exists using request params
-  const movie = await MovieModel.findOne({ LoadTitle: req.query.loadTitle });
+  const movie = await MovieModel.findOne({
+    mediaItemId: req.query.mediaItemId,
+  });
 
   // If it doesn't exist, return error
   if (!movie) {
@@ -212,29 +221,31 @@ export async function getAllMoviesHandler(
 async function updateMovieFromRequest(update: any, movie: any): Promise<Movie> {
   let parsedMovie: Movie = Movie.fromRequestObject(update);
 
-  movie.Tags = parsedMovie.Tags;
+  movie.Tags = parsedMovie.tags;
 
   return movie;
 }
 
 async function transformMovieFromRequest(
   movie: any,
-  loadTitle: string,
+  mediaItemId: string,
 ): Promise<Movie> {
   let parsedMovie: Movie = Movie.fromRequestObject(movie);
 
-  parsedMovie.LoadTitle = loadTitle;
+  parsedMovie.mediaItemId = mediaItemId;
 
-  parsedMovie.Alias = parsedMovie.LoadTitle;
-  if (parsedMovie.Duration > 0) {
+  parsedMovie.alias =
+    parsedMovie.alias ?? parsedMovie.title.replace(/[^a-zA-Z0-9]/g, '');
+
+  if (parsedMovie.duration > 0) {
     return parsedMovie;
   }
-  console.log(`Getting duration for ${parsedMovie.Path}`);
-  let durationInSeconds = await getMediaDuration(parsedMovie.Path);
-  parsedMovie.Duration = durationInSeconds; // Update duration value
-  parsedMovie.DurationLimit =
-    Math.floor(parsedMovie.Duration / 1800) * 1800 +
-    (parsedMovie.Duration % 1800 > 0 ? 1800 : 0);
+  console.log(`Getting duration for ${parsedMovie.path}`);
+  let durationInSeconds = await getMediaDuration(parsedMovie.path);
+  parsedMovie.duration = durationInSeconds;
+  parsedMovie.durationLimit =
+    Math.floor(parsedMovie.duration / 1800) * 1800 +
+    (parsedMovie.duration % 1800 > 0 ? 1800 : 0);
 
   return parsedMovie;
 }

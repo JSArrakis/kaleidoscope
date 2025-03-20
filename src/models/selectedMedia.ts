@@ -4,12 +4,12 @@ import { Movie } from './movie';
 import { Episode, Show } from './show';
 
 export class SelectedMedia {
-  Media: Movie | Block | Episode;
-  ShowTitle: string;
-  Type: MediaType;
-  Time: number;
-  Duration: number;
-  Tags: string[];
+  media: Movie | Block | Episode;
+  showTitle: string;
+  type: MediaType;
+  time: number;
+  duration: number;
+  tags: string[];
 
   constructor(
     media: Movie | Block | Episode,
@@ -19,11 +19,11 @@ export class SelectedMedia {
     duration: number,
     tags: string[],
   ) {
-    this.Media = media;
-    this.ShowTitle = showTitle;
-    this.Type = type;
-    this.Time = time;
-    this.Duration = duration;
-    this.Tags = tags;
+    this.media = media;
+    this.showTitle = showTitle;
+    this.type = type;
+    this.time = time;
+    this.duration = duration;
+    this.tags = tags;
   }
 }

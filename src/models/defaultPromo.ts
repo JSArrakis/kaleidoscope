@@ -2,51 +2,51 @@ import mongoose, { Model } from 'mongoose';
 import { MediaType } from './enum/mediaTypes';
 
 export interface IDefaultPromo {
-  Title: string;
-  LoadTitle: string;
-  Duration: number;
-  Path: string;
-  Type: number;
-  Tags: string[];
+  title: string;
+  mediaItemId: string;
+  duration: number;
+  path: string;
+  type: number;
+  tags: string[];
 }
 
 export const DefaultPromoSchema = new mongoose.Schema({
-  Title: String,
-  LoadTitle: String,
-  Duration: Number,
-  Path: String,
-  Type: Number,
-  Tags: [String],
+  title: String,
+  mediaItemId: String,
+  duration: Number,
+  path: String,
+  type: Number,
+  tags: [String],
 });
 
 export class DefaultPromo {
-  Title: string;
-  LoadTitle: string;
-  Duration: number;
-  Path: string;
-  Type: number;
-  Tags: string[];
+  title: string;
+  mediaItemId: string;
+  duration: number;
+  path: string;
+  type: number;
+  tags: string[];
 
   constructor(
     title: string,
-    loadtitle: string,
+    mediaItemId: string,
     duration: number,
     path: string,
     type: number,
     tags: string[],
   ) {
-    this.Title = title;
-    this.LoadTitle = loadtitle;
-    this.Duration = duration;
-    this.Path = path;
-    this.Type = type;
-    this.Tags = tags;
+    this.title = title;
+    this.mediaItemId = mediaItemId;
+    this.duration = duration;
+    this.path = path;
+    this.type = type;
+    this.tags = tags;
   }
 
   static fromMongoObject(mongoObject: any): DefaultPromo {
     return new DefaultPromo(
       mongoObject.title,
-      mongoObject.loadTitle,
+      mongoObject.mediaItemId,
       mongoObject.duration,
       mongoObject.path,
       mongoObject.type,
@@ -56,19 +56,19 @@ export class DefaultPromo {
 
   static toMongoObject(movie: DefaultPromo): any {
     return {
-      title: movie.Title,
-      loadTitle: movie.LoadTitle,
-      duration: movie.Duration,
-      path: movie.Path,
-      type: movie.Type,
-      tags: movie.Tags,
+      title: movie.title,
+      loadTitle: movie.mediaItemId,
+      duration: movie.duration,
+      path: movie.path,
+      type: movie.type,
+      tags: movie.tags,
     };
   }
 
   static fromRequestObject(requestObject: any): DefaultPromo {
     return new DefaultPromo(
       requestObject.title,
-      requestObject.loadTitle,
+      requestObject.mediaItemId,
       requestObject.duration,
       requestObject.path,
       MediaType.Promo,

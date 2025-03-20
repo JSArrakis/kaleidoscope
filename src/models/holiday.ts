@@ -1,24 +1,24 @@
 import mongoose, { Model } from 'mongoose';
 
 export interface IHoliday {
-  Name: string;
-  SeasonStartDate: Date;
-  SeasonEndDate: Date;
-  HolidayDate: Date;
+  name: string;
+  seasonStartDate: Date;
+  seasonEndDate: Date;
+  holidayDate: Date;
 }
 
 export const HolidaySchema = new mongoose.Schema({
-  Name: String,
-  SeasonStartDate: Date,
-  SeasonEndDate: Date,
-  HolidayDate: Date,
+  name: String,
+  seasonStartDate: Date,
+  seasonEndDate: Date,
+  holidayDate: Date,
 });
 
 export class Holiday {
-  Name: string;
-  SeasonStartDate: Date;
-  SeasonEndDate: Date;
-  HolidayDate: Date;
+  name: string;
+  seasonStartDate: Date;
+  seasonEndDate: Date;
+  holidayDate: Date;
 
   constructor(
     name: string,
@@ -26,10 +26,10 @@ export class Holiday {
     seasonEndDate: Date,
     holidayDate: Date,
   ) {
-    this.Name = name;
-    this.SeasonStartDate = seasonStartDate;
-    this.SeasonEndDate = seasonEndDate;
-    this.HolidayDate = holidayDate;
+    this.name = name;
+    this.seasonStartDate = seasonStartDate;
+    this.seasonEndDate = seasonEndDate;
+    this.holidayDate = holidayDate;
   }
 
   static fromMongoObject(mongoObject: any): Holiday {
@@ -43,10 +43,10 @@ export class Holiday {
 
   static toMongoObject(holiday: Holiday): any {
     return {
-      name: holiday.Name,
-      seasonStartDate: holiday.SeasonStartDate,
-      seasonEndDate: holiday.SeasonEndDate,
-      holidayDate: holiday.HolidayDate,
+      name: holiday.name,
+      seasonStartDate: holiday.seasonStartDate,
+      seasonEndDate: holiday.seasonEndDate,
+      holidayDate: holiday.holidayDate,
     };
   }
 

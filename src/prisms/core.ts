@@ -11,7 +11,7 @@ export function getMediaByAgeAndEra(
   eras.forEach(era => {
     selectedMedia.push(
       ...media.filter(m => {
-        return m.Tags.includes(era) && m.Tags.includes(age);
+        return m.tags.includes(era) && m.tags.includes(age);
       }),
     );
   });
@@ -20,11 +20,11 @@ export function getMediaByAgeAndEra(
 }
 
 export function getMediaByAge(media: BaseMedia[], age: string): BaseMedia[] {
-  return media.filter(m => m.Tags.includes(age));
+  return media.filter(m => m.tags.includes(age));
 }
 
 export function sumMediaDuration(media: BaseMedia[]): number {
-  return media.reduce((acc, val) => acc + val.Duration, 0);
+  return media.reduce((acc, val) => acc + val.duration, 0);
 }
 
 export function createTagGroups(tags: string[]): string[][] {
@@ -47,7 +47,7 @@ export function getInEraMedia(
   eraTags.forEach(era => {
     // Get all media that contains all of the tags and the era tag
     let inEraMedia = media.filter(m => {
-      return tags.every(tag => m.Tags.includes(tag)) && m.Tags.includes(era);
+      return tags.every(tag => m.tags.includes(tag)) && m.tags.includes(era);
     });
     inEra.push(...inEraMedia);
   });
@@ -62,8 +62,8 @@ export function getOutOfEraMedia(
   // Get all media that contains all of the tags and does not contain any of the era tags
   return media.filter(m => {
     return (
-      tags.every(tag => m.Tags.includes(tag)) &&
-      !eraTags.some(tag => m.Tags.includes(tag))
+      tags.every(tag => m.tags.includes(tag)) &&
+      !eraTags.some(tag => m.tags.includes(tag))
     );
   });
 }
@@ -120,7 +120,7 @@ export function getMediaByTags(
   tags: string[],
 ): BaseMedia[] {
   return media.filter(m => {
-    return tags.every(tag => m.Tags.includes(tag));
+    return tags.every(tag => m.tags.includes(tag));
   });
 }
 
@@ -308,12 +308,12 @@ export function splitMediaByHoliday(
 
   // Get all media that contains any of the holiday tags from selectedHolidays
   inHoliday.push(
-    ...media.filter(m => selectedHolidays.some(tag => m.Tags.includes(tag))),
+    ...media.filter(m => selectedHolidays.some(tag => m.tags.includes(tag))),
   );
 
   // Get all media that does not contain any of the holiday tags from Holidays
   notHoliday.push(
-    ...media.filter(m => !holidays.some(tag => m.Tags.includes(tag))),
+    ...media.filter(m => !holidays.some(tag => m.tags.includes(tag))),
   );
 
   return { holidayMedia: inHoliday, nonHolidayMedia: notHoliday };

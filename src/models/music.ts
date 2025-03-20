@@ -3,51 +3,51 @@ import { MediaType } from './enum/mediaTypes';
 import { BaseMedia } from './mediaInterface';
 
 export interface IMusic extends BaseMedia {
-  Title: string;
-  LoadTitle: string;
-  Duration: number;
-  Path: string;
+  title: string;
+  mediaItemId: string;
+  duration: number;
+  path: string;
   Type: number;
-  Tags: string[];
+  tags: string[];
 }
 
 export const MusicSchema = new mongoose.Schema({
-  Title: String,
-  LoadTitle: String,
-  Duration: Number,
-  Path: String,
-  Type: Number,
-  Tags: [String],
+  title: String,
+  mediaItemId: String,
+  duration: Number,
+  path: String,
+  type: Number,
+  tags: [String],
 });
 
 export class Music {
-  Title: string;
-  LoadTitle: string;
-  Duration: number;
-  Path: string;
-  Type: number;
-  Tags: string[];
+  title: string;
+  mediaItemId: string;
+  duration: number;
+  path: string;
+  type: number;
+  tags: string[];
 
   constructor(
     title: string,
-    loadtitle: string,
+    mediaItemId: string,
     duration: number,
     path: string,
     type: number,
     tags: string[],
   ) {
-    this.Title = title;
-    this.LoadTitle = loadtitle;
-    this.Duration = duration;
-    this.Path = path;
-    this.Type = type;
-    this.Tags = tags;
+    this.title = title;
+    this.mediaItemId = mediaItemId;
+    this.duration = duration;
+    this.path = path;
+    this.type = type;
+    this.tags = tags;
   }
 
   static fromMongoObject(mongoObject: any): Music {
     return new Music(
       mongoObject.title,
-      mongoObject.loadTitle,
+      mongoObject.mediaItemId,
       mongoObject.duration,
       mongoObject.path,
       mongoObject.type,
@@ -57,19 +57,19 @@ export class Music {
 
   static toMongoObject(movie: Music): any {
     return {
-      title: movie.Title,
-      loadTitle: movie.LoadTitle,
-      duration: movie.Duration,
-      path: movie.Path,
-      type: movie.Type,
-      tags: movie.Tags,
+      title: movie.title,
+      loadTitle: movie.mediaItemId,
+      duration: movie.duration,
+      path: movie.path,
+      type: movie.type,
+      tags: movie.tags,
     };
   }
 
   static fromRequestObject(requestObject: any): Music {
     return new Music(
       requestObject.title,
-      requestObject.loadTitle,
+      requestObject.mediaItemId,
       requestObject.duration,
       requestObject.path,
       MediaType.Music,

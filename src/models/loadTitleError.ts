@@ -1,9 +1,9 @@
 export class LoadTitleError {
-  LoadTitle: string;
-  Error: string;
+  mediaItemId: string;
+  error: string;
 
-  constructor(loadTitle: string, error: string) {
-    this.LoadTitle = loadTitle;
-    this.Error = error;
+  constructor(mediaItemId: string, error: string) {
+    this.mediaItemId = mediaItemId;
+    this.error = error;
   }
 }

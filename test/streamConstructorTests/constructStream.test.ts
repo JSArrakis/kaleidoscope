@@ -17,10 +17,10 @@ describe('constructStream', () => {
   it('should construct a stream based on the provided timestamps (Scenario 1)', () => {
     const randomSpy = jest.spyOn(Math, 'random').mockReturnValue(0.4);
     const config: Config = {
-      DataFolder: '/some/path',
-      Interval: 1800,
-      DefaultCommercialFolder: 'some/path',
-      DefaultPromo: 'some/path',
+      dataFolder: '/some/path',
+      interval: 1800,
+      defaultCommercialFolder: 'some/path',
+      defaultPromo: 'some/path',
     };
     const args: AdhocStreamRequest = {
       Title: 'Env 1',
@@ -34,15 +34,15 @@ describe('constructStream', () => {
       EndTime: 1733682600,
     };
     const media: Media = {
-      Shows: [tdShows.talespin],
-      Movies: tdMovies.movies,
-      Shorts: tdShorts.bufferShorts,
-      Music: tdMusic.music,
-      Promos: tdPromos.promos,
-      DefaultPromos: tdPromos.defaultPromos,
-      Commercials: tdCommercials.bufferCommercials,
-      DefaultCommercials: tdCommercials.defaultCommercials,
-      Blocks: [],
+      shows: [tdShows.talespin],
+      movies: tdMovies.movies,
+      shorts: tdShorts.bufferShorts,
+      music: tdMusic.music,
+      promos: tdPromos.promos,
+      defaultPromos: tdPromos.defaultPromos,
+      commercials: tdCommercials.bufferCommercials,
+      defaultCommercials: tdCommercials.defaultCommercials,
+      blocks: [],
     };
     const mosaics: Mosaic[] = [];
     const rightNow = 1733671545;
@@ -124,10 +124,10 @@ describe('constructStream', () => {
   it('should construct a stream based on the provided timestamps (Scenario 1)', () => {
     const randomSpy = jest.spyOn(Math, 'random').mockReturnValue(0.4);
     const config: Config = {
-      DataFolder: '/some/path',
-      Interval: 1800,
-      DefaultCommercialFolder: 'some/path',
-      DefaultPromo: 'some/path',
+      dataFolder: '/some/path',
+      interval: 1800,
+      defaultCommercialFolder: 'some/path',
+      defaultPromo: 'some/path',
     };
     const args: AdhocStreamRequest = {
       Title: 'Env 1',
@@ -141,15 +141,15 @@ describe('constructStream', () => {
       EndTime: 1733686200,
     };
     const media: Media = {
-      Shows: [tdShows.talespin],
-      Movies: tdMovies.movies,
-      Shorts: tdShorts.bufferShorts,
-      Music: tdMusic.music,
-      Promos: tdPromos.promos,
-      DefaultPromos: tdPromos.defaultPromos,
-      Commercials: tdCommercials.bufferCommercials,
-      DefaultCommercials: tdCommercials.defaultCommercials,
-      Blocks: [],
+      shows: [tdShows.talespin],
+      movies: tdMovies.movies,
+      shorts: tdShorts.bufferShorts,
+      music: tdMusic.music,
+      promos: tdPromos.promos,
+      defaultPromos: tdPromos.defaultPromos,
+      commercials: tdCommercials.bufferCommercials,
+      defaultCommercials: tdCommercials.defaultCommercials,
+      blocks: [],
     };
     const mosaics: Mosaic[] = [];
     const rightNow = 1733671545;

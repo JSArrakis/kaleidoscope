@@ -5,6 +5,8 @@ import * as commCont from '../controllers/commercialControllers';
 import * as shortCont from '../controllers/shortControllers';
 import * as musicCont from '../controllers/musicControllers';
 import * as promoCont from '../controllers/promoControllers';
+import * as collectionCont from '../controllers/collectionControllers';
+// import * as blockCont from '../controllers/blockControllers';
 import * as verify from '../middleware/validationMiddleware';
 
 const router = Router();
@@ -203,11 +205,35 @@ router.post(
   collectionCont.createCollectionHandler,
 );
 
-// Block Management
-router.post(
-  '/create-block',
-  verify.createBlockValidationRules,
-  blockCont.createBlockHandler,
+router.delete(
+  '/delete-collection',
+  verify.deleteCollectionValidationRules,
+  collectionCont.deleteCollectionHandler,
 );
+
+router.put(
+  '/update-collection',
+  verify.updateCollectionValidationRules,
+  collectionCont.updateCollectionHandler,
+);
+
+router.get(
+  '/get-collection',
+  verify.getCollectionValidationRules,
+  collectionCont.getCollectionHandler,
+);
+
+router.get(
+  '/get-all-collections',
+  verify.getCollectionValidationRules,
+  collectionCont.getAllCollectionsHandler,
+);
+
+// Block Management
+// router.post(
+//   '/create-block',
+//   verify.createBlockValidationRules,
+//   blockCont.createBlockHandler,
+// );
 
 export default router;

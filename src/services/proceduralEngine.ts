@@ -27,14 +27,14 @@ export function getProceduralBlock(
 
   while (currDur < duration) {
     let durRemainder = duration - currDur;
-    let injDurMovies = stagedMedia.InjectedMovies.filter(
+    let injDurMovies = stagedMedia.injectedMovies.filter(
       inj =>
-        inj.Duration <= durRemainder &&
-        !isMoviePreviouslySelected(inj.Media as Movie, prevMovies),
+        inj.duration <= durRemainder &&
+        !isMoviePreviouslySelected(inj.media as Movie, prevMovies),
     );
-    let procDurMovies = media.Movies.filter(
+    let procDurMovies = media.movies.filter(
       mov =>
-        mov.Duration <= durRemainder &&
+        mov.duration <= durRemainder &&
         !isMoviePreviouslySelected(mov, prevMovies),
     );
     if (injDurMovies.length > 0) {
@@ -51,20 +51,20 @@ export function getProceduralBlock(
       let injMovie =
         injDurMovies[Math.floor(Math.random() * injDurMovies.length)];
       let indexInInjectedMovies: number =
-        stagedMedia.InjectedMovies.indexOf(injMovie);
+        stagedMedia.injectedMovies.indexOf(injMovie);
 
-      injMovie.Time = currentTimePoint;
-      stagedMedia.InjectedMovies.splice(indexInInjectedMovies, 1);
+      injMovie.time = currentTimePoint;
+      stagedMedia.injectedMovies.splice(indexInInjectedMovies, 1);
       selectedMedia.push(injMovie);
-      prevMovies.push(injMovie.Media as Movie);
-      currentTimePoint = currentTimePoint + injMovie.Duration;
-      currDur = currDur + injMovie.Duration;
+      prevMovies.push(injMovie.media as Movie);
+      currentTimePoint = currentTimePoint + injMovie.duration;
+      currDur = currDur + injMovie.duration;
     } else {
       if (durRemainder >= 5400) {
         //Movie or Show
         let selectedMovie = selectMovieUnderDuration(
           args,
-          media.Movies,
+          media.movies,
           prevMovies,
           durRemainder,
         );
@@ -78,18 +78,18 @@ export function getProceduralBlock(
             '',
             MediaType.Movie,
             currentTimePoint,
-            selectedMovie.DurationLimit,
-            selectedMovie.Tags,
+            selectedMovie.durationLimit,
+            selectedMovie.tags,
           );
           selectedMedia.push(selectedMediaItem);
           prevMovies.push(selectedMovie);
 
-          currDur = currDur + selectedMovie.DurationLimit;
-          currentTimePoint = currentTimePoint + selectedMovie.DurationLimit;
+          currDur = currDur + selectedMovie.durationLimit;
+          currentTimePoint = currentTimePoint + selectedMovie.durationLimit;
         } else {
           let result = getEpisodesUnderDuration(
             args,
-            media.Shows,
+            media.shows,
             durRemainder,
             streamType,
           );
@@ -100,19 +100,19 @@ export function getProceduralBlock(
                 result[1],
                 MediaType.Episode,
                 currentTimePoint,
-                episode.DurationLimit,
-                episode.Tags,
+                episode.durationLimit,
+                episode.tags,
               ),
             );
-            currDur = currDur + episode.DurationLimit;
-            currentTimePoint = currentTimePoint + episode.DurationLimit;
+            currDur = currDur + episode.durationLimit;
+            currentTimePoint = currentTimePoint + episode.durationLimit;
           });
         }
       } else {
         //Show
         let result = getEpisodesUnderDuration(
           args,
-          media.Shows,
+          media.shows,
           durRemainder,
           streamType,
         );
@@ -123,12 +123,12 @@ export function getProceduralBlock(
               result[1],
               MediaType.Episode,
               currentTimePoint,
-              episode.DurationLimit,
-              episode.Tags,
+              episode.durationLimit,
+              episode.tags,
             ),
           );
-          currDur = currDur + episode.DurationLimit;
-          currentTimePoint = currentTimePoint + episode.DurationLimit;
+          currDur = currDur + episode.durationLimit;
+          currentTimePoint = currentTimePoint + episode.durationLimit;
         });
       }
     }
@@ -144,12 +144,12 @@ export function selectMovieUnderDuration(
 ): Movie {
   let filteredMovies: Movie[] = movies.filter(
     movie =>
-      movie.Tags.some(tag => options.Tags.includes(tag)) &&
-      movie.DurationLimit <= duration,
+      movie.tags.some(tag => options.Tags.includes(tag)) &&
+      movie.durationLimit <= duration,
   );
 
   let notRepeatMovies: Movie[] = filteredMovies.filter(
-    item => !prevMovies.some(obj => obj.LoadTitle === item.LoadTitle),
+    item => !prevMovies.some(obj => obj.mediaItemId === item.mediaItemId),
   );
 
   let selectedMovie =
@@ -169,8 +169,8 @@ export function getEpisodesUnderDuration(
   let episodes: Episode[] = [];
   let filteredShows: Show[] = shows.filter(
     show =>
-      show.Tags.some(tag => args.Tags.includes(tag)) &&
-      show.DurationLimit <= duration,
+      show.tags.some(tag => args.Tags.includes(tag)) &&
+      show.durationLimit <= duration,
   );
 
   // Sometimes a show will have a duration that is longer than the duration limit. Since we use the duration limit as the number to compare against the
@@ -203,21 +203,21 @@ export function getEpisodesUnderDuration(
 
   episodeIndicies.forEach(idx => {
     if (selectedShow !== undefined) {
-      let episode = selectedShow.Episodes[idx - 1];
+      let episode = selectedShow.episodes[idx - 1];
       //add selectedShow tags to episode tags that dont already exist
-      episode.Tags = [...new Set([...selectedShow.Tags, ...episode.Tags])];
+      episode.tags = [...new Set([...selectedShow.tags, ...episode.tags])];
       episodes.push(episode);
     }
   });
 
-  return [episodes, selectedShow.Title];
+  return [episodes, selectedShow.title];
 }
 
 export function isMoviePreviouslySelected(
   movie: Movie,
   prevMovies: Movie[],
 ): boolean {
-  return prevMovies.some(prevMovie => prevMovie.Title === movie.Title);
+  return prevMovies.some(prevMovie => prevMovie.title === movie.title);
 }
 
 export function selectShowByDuration(
@@ -239,10 +239,10 @@ export function selectShowByDuration(
   if (duration < 3600) {
     // Find all shows that have a next episode duration limit of 1800 using the watchRecords
     let minWatchRecords: WatchRecord[] = watchRecords.filter(
-      wr => wr.NextEpisodeDurLimit === 1800,
+      wr => wr.nextEpisodeDurLimit === 1800,
     );
     minWatchRecords.forEach(wr => {
-      let show = shows.find(s => s.LoadTitle === wr.LoadTitle);
+      let show = shows.find(s => s.mediaItemId === wr.mediaItemId);
       if (show !== undefined) {
         selectedShows.push(show);
       }
@@ -251,21 +251,21 @@ export function selectShowByDuration(
   } else {
     // Find all watch records that have a next episode duration limit of 1800
     let minWatchRecords: WatchRecord[] = watchRecords.filter(
-      wr => wr.NextEpisodeDurLimit === 1800,
+      wr => wr.nextEpisodeDurLimit === 1800,
     );
     // Refine minWatchRecords to only include shows where the next two episodes have a duration limit of 1800
     minWatchRecords = minWatchRecords.filter(wr => {
-      let show = shows.find(s => s.LoadTitle === wr.LoadTitle);
+      let show = shows.find(s => s.mediaItemId === wr.mediaItemId);
       if (show !== undefined) {
-        let episodeNumber: number = wr.Episode + 2;
-        if (episodeNumber > show.EpisodeCount) {
-          episodeNumber = episodeNumber - show.EpisodeCount;
+        let episodeNumber: number = wr.episode + 2;
+        if (episodeNumber > show.episodeCount) {
+          episodeNumber = episodeNumber - show.episodeCount;
         }
-        let nextNextEpisode = show.Episodes.find(
-          ep => ep.EpisodeNumber === episodeNumber,
+        let nextNextEpisode = show.episodes.find(
+          ep => ep.episodeNumber === episodeNumber,
         );
         if (nextNextEpisode !== undefined) {
-          return nextNextEpisode.DurationLimit === 1800;
+          return nextNextEpisode.durationLimit === 1800;
         }
       }
       return false;
@@ -273,7 +273,7 @@ export function selectShowByDuration(
 
     // Find all watch record that have a next episode duration limit under the duration that are not in the minWatchRecords
     let allWatchRecords: WatchRecord[] = watchRecords.filter(
-      wr => wr.NextEpisodeDurLimit <= duration && wr.NextEpisodeDurLimit > 1800,
+      wr => wr.nextEpisodeDurLimit <= duration && wr.nextEpisodeDurLimit > 1800,
     );
     let selectedWatchRecords: WatchRecord[] = [];
     if (allWatchRecords.length > 0 && minWatchRecords.length > 0) {
@@ -296,7 +296,7 @@ export function selectShowByDuration(
     }
 
     selectedWatchRecords.forEach(wr => {
-      let show = shows.find(s => s.LoadTitle === wr.LoadTitle);
+      let show = shows.find(s => s.mediaItemId === wr.mediaItemId);
       if (show !== undefined) {
         selectedShows.push(show);
       }

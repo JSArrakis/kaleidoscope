@@ -21,10 +21,10 @@ export function getMediaByMosaicTags(
     m => m,
   );
 
-  const hasAgeGroupTags = tags.AgeGroupTags.length > 0;
-  const hasSpecialtyTags = tags.SpecialtyTags.length > 0;
-  const hasGenreTags = tags.GenreTags.length > 0;
-  const hasEraTags = tags.EraTags.length > 0;
+  const hasAgeGroupTags = tags.ageGroupTags.length > 0;
+  const hasSpecialtyTags = tags.specialtyTags.length > 0;
+  const hasGenreTags = tags.genreTags.length > 0;
+  const hasEraTags = tags.eraTags.length > 0;
   const hasHolidayTags = requestedHolidayTags.length > 0;
   let holidayMedia: BaseMedia[] = [];
   let nonHolidayMedia: BaseMedia[] = [];
@@ -36,7 +36,7 @@ export function getMediaByMosaicTags(
   ));
 
   if (hasAgeGroupTags) {
-    let ageGroups = core.getAgeGroupAdjacencyTags(tags.AgeGroupTags);
+    let ageGroups = core.getAgeGroupAdjacencyTags(tags.ageGroupTags);
     if (hasHolidayTags) {
       ageGroups.forEach(age => {
         sumDuration = core.sumMediaDuration(selectedMedia);
@@ -145,7 +145,7 @@ export function getMediaByMosaicTagsAndAgeGroup(
     selectedMedia.push(...mediaByTags);
     contextAlreadySelectedMedia.push(...mediaByTags);
   } else if (hasEraTags) {
-    const mediaByEra = core.getMediaByAgeAndEra(media, tags.EraTags, age);
+    const mediaByEra = core.getMediaByAgeAndEra(media, tags.eraTags, age);
     selectedMedia.push(...mediaByEra);
     contextAlreadySelectedMedia.push(...mediaByEra);
   } else {
@@ -181,15 +181,15 @@ export function getMediaBySpecialtyOrMosaicHeriarchy(
   // Read more about mosaics here.
   // Link to mosaics docs ../docs/mosaics.md
   if (
-    segmentedTags.SpecialtyTags.length > 0 &&
-    segmentedTags.GenreTags.length > 0
+    segmentedTags.specialtyTags.length > 0 &&
+    segmentedTags.genreTags.length > 0
   ) {
     const tagGroupMedia = getMediaByMosaicCombination(
       contextAlreadySelectedMedia,
       media,
-      segmentedTags.SpecialtyTags,
-      segmentedTags.GenreTags,
-      segmentedTags.EraTags,
+      segmentedTags.specialtyTags,
+      segmentedTags.genreTags,
+      segmentedTags.eraTags,
       mosaics,
       age,
       duration,
@@ -198,15 +198,15 @@ export function getMediaBySpecialtyOrMosaicHeriarchy(
     contextAlreadySelectedMedia.push(...tagGroupMedia);
   }
 
-  if (segmentedTags.GenreTags.length > 0) {
+  if (segmentedTags.genreTags.length > 0) {
     sumDuration = core.sumMediaDuration(selectedMedia);
     if (sumDuration < duration) {
       const tagGroupMedia = getMediaByMosaicCombination(
         contextAlreadySelectedMedia,
         media,
-        segmentedTags.SpecialtyTags,
-        segmentedTags.GenreTags,
-        segmentedTags.EraTags,
+        segmentedTags.specialtyTags,
+        segmentedTags.genreTags,
+        segmentedTags.eraTags,
         mosaics,
         age,
         duration,
@@ -216,14 +216,14 @@ export function getMediaBySpecialtyOrMosaicHeriarchy(
     }
   }
 
-  if (segmentedTags.SpecialtyTags.length > 0) {
+  if (segmentedTags.specialtyTags.length > 0) {
     if (sumDuration < duration) {
       sumDuration = core.sumMediaDuration(selectedMedia);
       const tagGroupMedia = core.getMediaByTagGroupHeirarchy(
         contextAlreadySelectedMedia,
         media,
-        segmentedTags.SpecialtyTags,
-        segmentedTags.EraTags,
+        segmentedTags.specialtyTags,
+        segmentedTags.eraTags,
         age,
         duration,
       );
@@ -333,7 +333,7 @@ export function getMosaicMedia(
 
   let mosaic = getMosaic(genreTags, mosaics);
   if (mosaic) {
-    const tags = [...mosaic.MusicGenres, ...mosaic.MusicSubGenres];
+    const tags = [...mosaic.musicGenres, ...mosaic.musicSubGenres];
     tags.forEach(tag => {
       let contextTags = [tag, age];
       const { allTagMediaInEra, allTagMediaOutOfEra } = core.getAllTagMedia(
@@ -363,5 +363,5 @@ export function getMosaic(
   mosaics: Mosaic[],
 ): Mosaic | undefined {
   let key = createMosaicKey(genres);
-  return mosaics.find(m => m.Key === key);
+  return mosaics.find(m => m.key === key);
 }

@@ -1,24 +1,27 @@
-import { MainGenres } from "../../src/models/const/mainGenres";
-import { MusicGenres, MusicSubGenres } from "../../src/models/const/musicGenres";
-import { Mosaic } from "../../src/models/mosaic";
+import { MainGenres } from '../../src/models/const/mainGenres';
+import {
+  MusicGenres,
+  MusicSubGenres,
+} from '../../src/models/const/musicGenres';
+import { Mosaic } from '../../src/models/mosaic';
 
 export const actionMosaic: Mosaic = {
-  Key: MainGenres.Action,
-  Genres: [MainGenres.Action],
-  MusicGenres: [
+  key: MainGenres.Action,
+  genres: [MainGenres.Action],
+  musicGenres: [
     MusicGenres.Rock,
     MusicGenres.Metal,
     MusicGenres.Punk,
     MusicGenres.HipHop,
   ],
-  MusicSubGenres: [],
+  musicSubGenres: [],
 };
 
 export const horrorMosaic: Mosaic = {
-  Key: MainGenres.Horror,
-  Genres: [MainGenres.Horror],
-  MusicGenres: [MusicGenres.Metal],
-  MusicSubGenres: [
+  key: MainGenres.Horror,
+  genres: [MainGenres.Horror],
+  musicGenres: [MusicGenres.Metal],
+  musicSubGenres: [
     MusicSubGenres.DarkWave,
     MusicSubGenres.IndustrialRock,
     MusicSubGenres.Synthwave,
@@ -27,10 +30,10 @@ export const horrorMosaic: Mosaic = {
 };
 
 export const scifiMosaic: Mosaic = {
-  Key: MainGenres.SciFi,
-  Genres: [MainGenres.SciFi],
-  MusicGenres: [],
-  MusicSubGenres: [
+  key: MainGenres.SciFi,
+  genres: [MainGenres.SciFi],
+  musicGenres: [],
+  musicSubGenres: [
     MusicSubGenres.ElectronicMinimalist,
     MusicSubGenres.ElectronicAmbient,
     MusicSubGenres.NeoClassical,
@@ -38,10 +41,10 @@ export const scifiMosaic: Mosaic = {
 };
 
 export const actionHorrorMosaic: Mosaic = {
-  Key: `${MainGenres.Action}-${MainGenres.Horror}`,
-  Genres: [MainGenres.Action, MainGenres.Horror],
-  MusicGenres: [MusicGenres.Metal],
-  MusicSubGenres: [
+  key: `${MainGenres.Action}-${MainGenres.Horror}`,
+  genres: [MainGenres.Action, MainGenres.Horror],
+  musicGenres: [MusicGenres.Metal],
+  musicSubGenres: [
     MusicSubGenres.IndustrialRock,
     MusicSubGenres.Synthwave,
     MusicSubGenres.PostRock,
@@ -49,10 +52,10 @@ export const actionHorrorMosaic: Mosaic = {
 };
 
 export const actionSciFiMosaic: Mosaic = {
-  Key: `${MainGenres.Action}-${MainGenres.SciFi}`,
-  Genres: [MainGenres.Action, MainGenres.SciFi],
-  MusicGenres: [],
-  MusicSubGenres: [
+  key: `${MainGenres.Action}-${MainGenres.SciFi}`,
+  genres: [MainGenres.Action, MainGenres.SciFi],
+  musicGenres: [],
+  musicSubGenres: [
     MusicSubGenres.Synthwave,
     MusicSubGenres.IndustrialRock,
     MusicSubGenres.NeoClassical,
@@ -61,10 +64,10 @@ export const actionSciFiMosaic: Mosaic = {
 };
 
 export const horrorSciFiMosaic: Mosaic = {
-  Key: `${MainGenres.Horror}-${MainGenres.SciFi}`,
-  Genres: [MainGenres.Horror, MainGenres.SciFi],
-  MusicGenres: [],
-  MusicSubGenres: [
+  key: `${MainGenres.Horror}-${MainGenres.SciFi}`,
+  genres: [MainGenres.Horror, MainGenres.SciFi],
+  musicGenres: [],
+  musicSubGenres: [
     MusicSubGenres.IndustrialRock,
     MusicSubGenres.DarkWave,
     MusicSubGenres.Synthwave,
@@ -73,10 +76,10 @@ export const horrorSciFiMosaic: Mosaic = {
 };
 
 export const actionHorrorSciFiMosaic: Mosaic = {
-  Key: `${MainGenres.Action}-${MainGenres.Horror}-${MainGenres.SciFi}`,
-  Genres: [MainGenres.Action, MainGenres.Horror, MainGenres.SciFi],
-  MusicGenres: [MusicGenres.Metal],
-  MusicSubGenres: [
+  key: `${MainGenres.Action}-${MainGenres.Horror}-${MainGenres.SciFi}`,
+  genres: [MainGenres.Action, MainGenres.Horror, MainGenres.SciFi],
+  musicGenres: [MusicGenres.Metal],
+  musicSubGenres: [
     MusicSubGenres.IndustrialRock,
     MusicSubGenres.DarkAmbient,
     MusicSubGenres.Synthwave,

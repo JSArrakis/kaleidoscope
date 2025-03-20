@@ -78,10 +78,10 @@ export function getMediaByAgeGroupHierarchy(
     m => m,
   );
 
-  const hasAgeGroupTags = tags.AgeGroupTags.length > 0;
-  const hasSpecialtyTags = tags.SpecialtyTags.length > 0;
-  const hasGenreTags = tags.GenreTags.length > 0;
-  const hasEraTags = tags.EraTags.length > 0;
+  const hasAgeGroupTags = tags.ageGroupTags.length > 0;
+  const hasSpecialtyTags = tags.specialtyTags.length > 0;
+  const hasGenreTags = tags.genreTags.length > 0;
+  const hasEraTags = tags.eraTags.length > 0;
   const hasHolidayTags = requestedHolidayTags.length > 0;
   let holidayMedia: BaseMedia[] = [];
   let nonHolidayMedia: BaseMedia[] = [];
@@ -93,7 +93,7 @@ export function getMediaByAgeGroupHierarchy(
   ));
 
   if (hasAgeGroupTags) {
-    let ageGroups = core.getAgeGroupAdjacencyTags(tags.AgeGroupTags);
+    let ageGroups = core.getAgeGroupAdjacencyTags(tags.ageGroupTags);
     if (hasHolidayTags) {
       ageGroups.forEach(age => {
         sumDuration = core.sumMediaDuration(selectedMedia);
@@ -191,7 +191,7 @@ export function getMediaByTagsAndAgeGroup(
     selectedMedia.push(...mediaByTags);
     contextAlreadySelectedMedia.push(...mediaByTags);
   } else if (hasEraTags) {
-    const mediaByEra = core.getMediaByAgeAndEra(media, tags.EraTags, age);
+    const mediaByEra = core.getMediaByAgeAndEra(media, tags.eraTags, age);
     selectedMedia.push(...mediaByEra);
     contextAlreadySelectedMedia.push(...mediaByEra);
   } else {
@@ -220,12 +220,12 @@ export function getMediaByTagHeriarchy(
   // tag is anything a user enters as a tag that is not one of the genre tags, and
   // usually things like star wars, jurassic park, etc are pretty insular in their themeing?
   // Does this even matter for the buffer media?
-  if (segmentedTags.SpecialtyTags.length > 0) {
+  if (segmentedTags.specialtyTags.length > 0) {
     const tagGroupMedia = core.getMediaByTagGroupHeirarchy(
       contextAlreadySelectedMedia,
       media,
-      segmentedTags.SpecialtyTags,
-      segmentedTags.EraTags,
+      segmentedTags.specialtyTags,
+      segmentedTags.eraTags,
       age,
       duration,
     );
@@ -234,14 +234,14 @@ export function getMediaByTagHeriarchy(
   }
 
   // 2. If there is not enough media to fill the duration: Genre Tag Chain
-  if (segmentedTags.GenreTags.length > 0) {
+  if (segmentedTags.genreTags.length > 0) {
     sumDuration = core.sumMediaDuration(selectedMedia);
     if (sumDuration < duration) {
       const tagGroupMedia = core.getMediaByTagGroupHeirarchy(
         contextAlreadySelectedMedia,
         media,
-        segmentedTags.GenreTags,
-        segmentedTags.EraTags,
+        segmentedTags.genreTags,
+        segmentedTags.eraTags,
         age,
         duration,
       );

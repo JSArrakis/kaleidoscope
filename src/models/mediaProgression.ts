@@ -1,21 +1,21 @@
 export class MediaProgression {
-  Title: string;
-  Type: string;
-  Shows: ShowProgression[];
+  title: string;
+  type: string;
+  shows: ShowProgression[];
 
   constructor(title: string, type: string, shows: ShowProgression[]) {
-    this.Title = title;
-    this.Type = type;
-    this.Shows = shows;
+    this.title = title;
+    this.type = type;
+    this.shows = shows;
   }
 }
 
 export class ShowProgression {
-  LoadTitle: string;
-  Episode: number;
+  mediaItemId: string;
+  episode: number;
 
   constructor(loadTitle: string, episode: number) {
-    this.LoadTitle = loadTitle;
-    this.Episode = episode;
+    this.mediaItemId = loadTitle;
+    this.episode = episode;
   }
 }

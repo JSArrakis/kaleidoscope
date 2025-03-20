@@ -49,7 +49,7 @@ export function constructStream(
   // and should be subject to the rules of the genre walk to give a better experience to the viewer, scheduling these movies beyond the initial stream day to allow for a smoother "walk"
   // We might even want to consider removing the ability to inject media for a continuous stream and rely on the future API endpoints to inject movies manually
   // Or we could remove Staged Media for a continuous stream entirely and only use tags for the base stream generation
-  let [injectedMovies, injectError] = getInjectedMovies(args, media.Movies);
+  let [injectedMovies, injectError] = getInjectedMovies(args, media.movies);
   if (injectError !== '') {
     error = injectError;
     return [[], error];
@@ -100,12 +100,12 @@ export function constructStream(
   // This initial buffer is created to ensure that the first media item is played at the correct time
   // TODO - change initial buffer into an object instead of an array
   let initialBuffer = createBuffer(
-    stagedStream[0].Time - rightNow,
+    stagedStream[0].time - rightNow,
     args,
     media,
     mosaics,
     [],
-    stagedStream[0].Tags,
+    stagedStream[0].tags,
     prevBuffer,
     [],
   );
@@ -126,18 +126,18 @@ export function constructStream(
     // Boolean to determine if the current media item is the last item in the time frame for this stream (determined by the user or the end of the day)
     let lastItem = index === stagedStream.length - 1 ? true : false;
 
-    if (item.Type == MediaType.Episode || item.Type == MediaType.Movie) {
+    if (item.type == MediaType.Episode || item.type == MediaType.Movie) {
       let mediaBlock = new MediaBlock([], [], undefined, undefined);
       // Add main media item to the media block
-      let mediaItem = item.Media;
-      mediaBlock.MainBlock = mediaItem;
+      let mediaItem = item.media;
+      mediaBlock.mainBlock = mediaItem;
       // Adds the assigned start time for the main media item to the media block
-      mediaBlock.StartTime = item.Time;
+      mediaBlock.startTime = item.time;
 
       // Get the duration of the buffer media that will be played after the main media item
       // TODO - this does not take into account OverDuration media items
       // We will need a way to calculate the duration of the buffer using the length of the media item and when the next media item is scheduled to play or the end of the stream
-      let bufferDuration = mediaItem.DurationLimit - mediaItem.Duration;
+      let bufferDuration = mediaItem.durationLimit - mediaItem.duration;
 
       // Creates the buffer media for this current block
       // The buffer is selected based on the tags of the current media item and the next media item in the stream
@@ -149,8 +149,8 @@ export function constructStream(
         args,
         media,
         mosaics,
-        item.Media.Tags,
-        lastItem ? [] : stagedStream[index + 1].Tags,
+        item.media.tags,
+        lastItem ? [] : stagedStream[index + 1].tags,
         prevBuffer,
         [],
       );
@@ -158,18 +158,18 @@ export function constructStream(
       // The sum of all selected media items in the buffer is added to the total duration of the Media Block
       let totalDuration: number = 0;
       for (const obj of buffer.buffer) {
-        totalDuration += obj.Duration;
+        totalDuration += obj.duration;
       }
       // Replaces the stored previous buffer with the buffer that was just created to prevent these media items from being played during the next buffer
       prevBuffer = buffer.newPrevBuffer;
 
       // Adds the buffer media to the media block
-      mediaBlock.Buffer.push(...buffer.buffer);
+      mediaBlock.buffer.push(...buffer.buffer);
       // resets the remainder varliable to the new remainder from the buffer if any to be used in the next iteration of this loop
       remainder = buffer.remainingDuration;
       // If this is the first media item in the stream and there is an initial buffer, add the initial buffer to the media block
       if (index === 0 && hasInitialBuffer) {
-        mediaBlock.InitialBuffer.push(...initialBuffer.buffer);
+        mediaBlock.initialBuffer.push(...initialBuffer.buffer);
         hasInitialBuffer = false;
       }
       // Adds the media block to the stream blocks array, order matters here as this is the order the media will be played in
@@ -259,17 +259,17 @@ export function getInitialProceduralTimepoint(
   let error = '';
 
   //The EndTime must be set in the future AND after the last scheduled media time + its duration
-  if (stagedMedia.EndTime - rightNow < 0) {
+  if (stagedMedia.endTime - rightNow < 0) {
     error = 'End time needs to be in the future.';
     return [0, error];
   }
 
-  if (stagedMedia.ScheduledMedia.length > 0) {
+  if (stagedMedia.scheduledMedia.length > 0) {
     let lastScheduledMedia =
-      stagedMedia.ScheduledMedia[stagedMedia.ScheduledMedia.length - 1];
+      stagedMedia.scheduledMedia[stagedMedia.scheduledMedia.length - 1];
     if (
-      stagedMedia.EndTime -
-        (lastScheduledMedia.Time + lastScheduledMedia.Duration) <
+      stagedMedia.endTime -
+        (lastScheduledMedia.time + lastScheduledMedia.duration) <
       0
     ) {
       error = 'End time needs to be after the last scheduled media item.';
@@ -278,11 +278,11 @@ export function getInitialProceduralTimepoint(
   }
 
   //Sets the first time point to the end time of the stream if there are no scheduled media items
-  let firstTimePoint: number = stagedMedia.EndTime;
+  let firstTimePoint: number = stagedMedia.endTime;
 
   //If there are scheduled media items, the first time point is set to the time of the first scheduled media item
-  if (stagedMedia.ScheduledMedia.length > 0) {
-    firstTimePoint = stagedMedia.ScheduledMedia[0].Time;
+  if (stagedMedia.scheduledMedia.length > 0) {
+    firstTimePoint = stagedMedia.scheduledMedia[0].time;
   }
 
   //If the first time point is in the past, an error is returned
@@ -334,11 +334,11 @@ export function getStagedStream(
   let firstDuration = firstTimePoint - rightNow;
 
   let [preMediaDuration, initialProceduralBlockDuration] =
-    setInitialBlockDuration(config.Interval, firstDuration);
+    setInitialBlockDuration(config.interval, firstDuration);
   let selectedMedia: SelectedMedia[] = [];
   let prevMovies: Movie[] = [];
-  stagedMedia.ScheduledMedia.forEach(item =>
-    prevMovies.push(item.Media as Movie),
+  stagedMedia.scheduledMedia.forEach(item =>
+    prevMovies.push(item.media as Movie),
   );
 
   if (initialProceduralBlockDuration > 0) {
@@ -354,13 +354,13 @@ export function getStagedStream(
     selectedMedia.push(...firstProceduralBlock);
   }
 
-  stagedMedia.ScheduledMedia.forEach((item, index) => {
+  stagedMedia.scheduledMedia.forEach((item, index) => {
     selectedMedia.push(item);
-    if (index < stagedMedia.ScheduledMedia.length - 1) {
+    if (index < stagedMedia.scheduledMedia.length - 1) {
       let procDuration =
-        stagedMedia.ScheduledMedia[index + 1].Time -
-        stagedMedia.ScheduledMedia[index].Time -
-        stagedMedia.ScheduledMedia[index].Duration;
+        stagedMedia.scheduledMedia[index + 1].time -
+        stagedMedia.scheduledMedia[index].time -
+        stagedMedia.scheduledMedia[index].duration;
       if (procDuration > 0) {
         let intermediateProcBlock = getProceduralBlock(
           args,
@@ -368,8 +368,8 @@ export function getStagedStream(
           media,
           prevMovies,
           procDuration,
-          stagedMedia.ScheduledMedia[index].Time +
-            stagedMedia.ScheduledMedia[index].Duration,
+          stagedMedia.scheduledMedia[index].time +
+            stagedMedia.scheduledMedia[index].duration,
           streamType,
         );
         selectedMedia.push(...intermediateProcBlock);
@@ -377,12 +377,12 @@ export function getStagedStream(
     }
   });
 
-  if (stagedMedia.ScheduledMedia.length > 0) {
+  if (stagedMedia.scheduledMedia.length > 0) {
     let lastScheduledMedia =
-      stagedMedia.ScheduledMedia[stagedMedia.ScheduledMedia.length - 1];
-    let scheduledEndTime = stagedMedia.EndTime;
+      stagedMedia.scheduledMedia[stagedMedia.scheduledMedia.length - 1];
+    let scheduledEndTime = stagedMedia.endTime;
     let endProcDuration =
-      scheduledEndTime - lastScheduledMedia.Time - lastScheduledMedia.Duration;
+      scheduledEndTime - lastScheduledMedia.time - lastScheduledMedia.duration;
     if (endProcDuration > 0) {
       let endProcBlock = getProceduralBlock(
         args,
@@ -390,9 +390,9 @@ export function getStagedStream(
         media,
         prevMovies,
         endProcDuration,
-        stagedMedia.ScheduledMedia[stagedMedia.ScheduledMedia.length - 1].Time +
-          stagedMedia.ScheduledMedia[stagedMedia.ScheduledMedia.length - 1]
-            .Duration,
+        stagedMedia.scheduledMedia[stagedMedia.scheduledMedia.length - 1].time +
+          stagedMedia.scheduledMedia[stagedMedia.scheduledMedia.length - 1]
+            .duration,
         streamType,
       );
       selectedMedia.push(...endProcBlock);
@@ -408,8 +408,8 @@ export function setProceduralTags(
 ): void {
   if (options.MultiTags.length === 0 && options.Tags.length === 0) {
     let tagList: string[] = [];
-    stagedMedia.InjectedMovies.forEach(inj => tagList.push(...inj.Media.Tags));
-    stagedMedia.ScheduledMedia.forEach(sch => tagList.push(...sch.Media.Tags));
+    stagedMedia.injectedMovies.forEach(inj => tagList.push(...inj.media.tags));
+    stagedMedia.scheduledMedia.forEach(sch => tagList.push(...sch.media.tags));
     let uniquetags: string[] = [];
     //Filter out duplicate tags
     tagList.forEach(tag => {
@@ -439,7 +439,7 @@ export function evaluateStreamEndTime(
     endTime = options.EndTime;
   } else if (scheduledMedia.length > 0) {
     let lastScheduledMedia = scheduledMedia[scheduledMedia.length - 1];
-    endTime = lastScheduledMedia.Time + lastScheduledMedia.Media.DurationLimit;
+    endTime = lastScheduledMedia.time + lastScheduledMedia.media.durationLimit;
   }
 
   return [endTime, error];
@@ -451,10 +451,10 @@ export function compareSelectedEndTime(
 ): string {
   let error: string = '';
   scheduledMedia.forEach(item => {
-    if (item.Time + item.Media.DurationLimit > endTime) {
+    if (item.time + item.media.durationLimit > endTime) {
       error =
         'Scheduled time for ' +
-        item.Media.LoadTitle +
+        item.media.mediaItemId +
         ' exceeds selected endTime';
       return error;
     }
@@ -479,7 +479,7 @@ export function getScheduledMedia(
         let parsedMovie = str.split('::');
         let [movie, movieError] = getMovie(
           parsedMovie[0],
-          media.Movies,
+          media.movies,
           parseInt(parsedMovie[1]),
         );
         if (movieError !== '') {
@@ -509,7 +509,7 @@ export function getScheduledMedia(
   //         });
   // }
   // Sorts the the selected media based on the unix timestamp of when the media is scheduled to be played
-  let sorted = selectedMedia.sort((a, b) => a.Time - b.Time);
+  let sorted = selectedMedia.sort((a, b) => a.time - b.time);
   return [sorted, error];
 }
 
@@ -556,7 +556,7 @@ export function getMovie(
   // The format of the load title is the title of the movie with spaces, special characters, and capitalization removed
   // The movie object consists of the title of the movie, the duration of the movie, the tags associated with the movie, and the load title
   let selectedMovie: Movie | undefined = movieList.find(
-    movie => movie.LoadTitle === loadTitle,
+    movie => movie.mediaItemId === loadTitle,
   );
 
   // TODO - We should perhaps instead send back some kind of error message through the response object of the http request
@@ -569,8 +569,8 @@ export function getMovie(
     '',
     MediaType.Movie,
     time,
-    selectedMovie.DurationLimit,
-    selectedMovie.Tags,
+    selectedMovie.durationLimit,
+    selectedMovie.tags,
   );
   // Created a selected media object that holds the selected movie, the time it is scheduled to be played, the duration of the movie, the tags associated with the movie, and the type of media
   return [selectedMedia, ''];
@@ -588,8 +588,8 @@ export function getBlock(
   }
 
   // Check if the block title is in the block list
-  let selectedBlock: Block | undefined = media.Blocks.find(
-    block => block.LoadTitle === loadTitle,
+  let selectedBlock: Block | undefined = media.blocks.find(
+    block => block.mediaItemId === loadTitle,
   );
   if (selectedBlock === undefined) {
     throw (
@@ -599,15 +599,15 @@ export function getBlock(
   }
 
   // If a block has shows assigned to it, assign the episodes to the block shows based on the progression of the shows
-  assignBlockEpisodes(args, selectedBlock, media.Shows);
+  assignBlockEpisodes(args, selectedBlock, media.shows);
 
   return new SelectedMedia(
     selectedBlock,
     '',
     MediaType.Block,
     time,
-    selectedBlock.DurationLimit,
-    selectedBlock.Tags,
+    selectedBlock.durationLimit,
+    selectedBlock.tags,
   );
 }
 
@@ -620,10 +620,10 @@ export function assignBlockEpisodes(
   // TODO - If the same show appears multiple times in a block, we will need to figure out how to represent that in the block
   // so it can be ran through this loop, or we will have to how the loop works to account for that
   // possibly just have the shows in the block show array to have the possibility of multiple entries with their individual sequence numbers
-  block.Shows.forEach(blockShow => {
+  block.shows.forEach(blockShow => {
     // Find the show that matches the load title of the block show
     let selectedShow = shows.filter(
-      item => item.LoadTitle === blockShow.LoadTitle,
+      item => item.mediaItemId === blockShow.mediaItemId,
     )[0];
     // Get the episode number that the show should be on based on the progression of the show
     let episodeNum = ManageShowProgression(
@@ -631,11 +631,11 @@ export function assignBlockEpisodes(
       1,
       args,
       StreamType.Block,
-      block.Title,
+      block.block,
     )[0];
     // Get the episode that matches the episode number from the progression
-    blockShow.Episode = selectedShow.Episodes.filter(
-      ep => ep.EpisodeNumber === episodeNum,
+    blockShow.episode = selectedShow.episodes.filter(
+      ep => ep.episodeNumber === episodeNum,
     )[0];
   });
 }

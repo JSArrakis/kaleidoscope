@@ -15,10 +15,10 @@ export async function createDefaultPromo(config: Config): Promise<void> {
   const resolvedPromoPath = path.resolve(
     __dirname,
     '../../',
-    config.DefaultPromo,
+    config.defaultPromo,
   );
   const defaultPromo = await DefaultPromoModel.findOne({
-    LoadTitle: 'default',
+    mediaItemId: 'default',
   });
   if (defaultPromo) {
     console.log('Default Promo already exists');
@@ -44,10 +44,10 @@ export async function createDefaultCommercials(config: Config): Promise<void> {
   const resolvedCommercialFolder = path.resolve(
     __dirname,
     '../../',
-    config.DefaultCommercialFolder,
+    config.defaultCommercialFolder,
   );
   const defaultCommercials = await DefaultCommercialModel.find({
-    Tags: 'default',
+    tags: 'default',
   });
   let commercialList: DefaultCommercial[] = [];
   for (let i = 0; i < defaultCommercials.length; i++) {
@@ -101,12 +101,12 @@ export async function createDefaultCommercials(config: Config): Promise<void> {
     if (checkBufferViability(commercialList)) {
       for (let commercial of commercialList) {
         const newCommercial = new DefaultCommercialModel({
-          Title: commercial.Title,
-          LoadTitle: commercial.LoadTitle,
-          Duration: commercial.Duration,
-          Path: commercial.Path,
-          Type: commercial.Type,
-          Tags: commercial.Tags,
+          Title: commercial.title,
+          LoadTitle: commercial.mediaItemId,
+          Duration: commercial.duration,
+          Path: commercial.path,
+          Type: commercial.type,
+          Tags: commercial.tags,
         });
         await newCommercial.save();
       }

@@ -1,7 +1,7 @@
 export interface BaseMedia {
-  Title: string;
-  LoadTitle: string;
-  Duration: number;
-  Path: string;
-  Tags: string[];
+  title: string;
+  mediaItemId: string;
+  duration: number;
+  path: string;
+  tags: string[];
 }

@@ -18,10 +18,10 @@ export async function createShowHandler(
     return;
   }
 
-  let loadTitle = req.body.title.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+  let mediaItemId = req.body.path.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
 
   // Retrieve show from MongoDB using show load title if it exists
-  const show = await ShowModel.findOne({ LoadTitle: loadTitle });
+  const show = await ShowModel.findOne({ mediaItemId: mediaItemId });
 
   // If it exists, return error
   if (show) {
@@ -29,7 +29,7 @@ export async function createShowHandler(
     return;
   }
   // If it doesn't exist, perform transformations
-  let createdShow = await transformShowFromRequest(req.body, loadTitle);
+  let createdShow = await transformShowFromRequest(req.body, mediaItemId);
 
   // Insert show into MongoDB
   await ShowModel.create(createdShow);
@@ -51,7 +51,7 @@ export async function deleteShowHandler(
   }
 
   // Retrieve show from MongoDB using show load title if it exists
-  const show = await ShowModel.findOne({ LoadTitle: req.query.loadTitle });
+  const show = await ShowModel.findOne({ mediaItemId: req.query.mediaItemId });
 
   // If it doesn't exist, return error
   if (!show) {
@@ -77,10 +77,10 @@ export async function updateShowHandler(
     return;
   }
 
-  let loadTitle = req.body.title.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+  let mediaItemId = req.body.path.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
 
   // Retrieve show from MongoDB using show load title if it exists
-  const show = await ShowModel.findOne({ LoadTitle: loadTitle });
+  const show = await ShowModel.findOne({ mediaItemId: mediaItemId });
 
   // If it doesn't exist, return error
   if (!show) {
@@ -89,7 +89,7 @@ export async function updateShowHandler(
   }
 
   // If it exists, perform transformations
-  let updatedShow = await transformShowFromRequest(req.body, loadTitle);
+  let updatedShow = await transformShowFromRequest(req.body, mediaItemId);
 
   // Update show in MongoDB
   await ShowModel.updateOne({ _id: show._id }, updatedShow);
@@ -110,7 +110,7 @@ export async function getShowHandler(
   }
 
   // Retrieve show from MongoDB using show load title if it exists using request params
-  const show = await ShowModel.findOne({ LoadTitle: req.query.loadTitle });
+  const show = await ShowModel.findOne({ mediaItemId: req.query.mediaItemId });
 
   // If it doesn't exist, return error
   if (!show) {
@@ -134,16 +134,16 @@ export async function getAllShowsDataHandler(
   }
   let showsData = shows.map((show: any) => {
     return {
-      title: show.Title,
-      loadTitle: show.LoadTitle,
-      alias: show.Alias,
-      imdb: show.IMDB,
-      durationLimit: show.DurationLimit,
-      overDuration: show.OverDuration,
-      firstEpisodeOverDuration: show.FirstEpisodeOverDuration,
-      tags: show.Tags,
-      secondaryTags: show.SecondaryTags,
-      episodeCount: show.EpisodeCount,
+      title: show.title,
+      mediaItemId: show.mediaItemId,
+      alias: show.alias,
+      imdb: show.imdb,
+      durationLimit: show.durationLimit,
+      overDuration: show.overDuration,
+      firstEpisodeOverDuration: show.firstEpisodeOverDuration,
+      tags: show.tags,
+      secondaryTags: show.secondaryTags,
+      episodeCount: show.episodeCount,
     };
   });
 
@@ -153,35 +153,35 @@ export async function getAllShowsDataHandler(
 
 export async function transformShowFromRequest(
   show: any,
-  loadTitle: string,
+  mediaItemId: string,
 ): Promise<Show> {
   let parsedShow: Show = Show.fromRequestObject(show);
 
-  parsedShow.LoadTitle = loadTitle;
+  parsedShow.mediaItemId = mediaItemId;
 
-  parsedShow.Alias = parsedShow.LoadTitle;
+  parsedShow.alias = parsedShow.mediaItemId;
 
-  for (const episode of parsedShow.Episodes) {
-    if (episode.Duration > 0) continue; // Skip if duration is already set
-    console.log(`Getting duration for ${episode.Path}`);
-    let durationInSeconds = await getMediaDuration(episode.Path);
-    episode.Duration = durationInSeconds; // Update duration value
-    episode.DurationLimit =
-      Math.floor(episode.Duration / 1800) * 1800 +
-      (episode.Duration % 1800 > 0 ? 1800 : 0);
+  for (const episode of parsedShow.episodes) {
+    if (episode.duration > 0) continue; // Skip if duration is already set
+    console.log(`Getting duration for ${episode.path}`);
+    let durationInSeconds = await getMediaDuration(episode.path);
+    episode.duration = durationInSeconds; // Update duration value
+    episode.durationLimit =
+      Math.floor(episode.duration / 1800) * 1800 +
+      (episode.duration % 1800 > 0 ? 1800 : 0);
     // set episode load title using show load title and episode number
   }
 
   //create an accounting of how many different duration limits there are and create a map of it
   let durationLimitsMap = new Map();
-  parsedShow.Episodes.forEach(episode => {
-    if (durationLimitsMap.has(episode.DurationLimit)) {
+  parsedShow.episodes.forEach(episode => {
+    if (durationLimitsMap.has(episode.durationLimit)) {
       durationLimitsMap.set(
-        episode.DurationLimit,
-        durationLimitsMap.get(episode.DurationLimit) + 1,
+        episode.durationLimit,
+        durationLimitsMap.get(episode.durationLimit) + 1,
       );
     } else {
-      durationLimitsMap.set(episode.DurationLimit, 1);
+      durationLimitsMap.set(episode.durationLimit, 1);
     }
   });
 
@@ -194,21 +194,21 @@ export async function transformShowFromRequest(
       maxDurationLimit = key;
     }
   });
-  parsedShow.DurationLimit = maxDurationLimit;
+  parsedShow.durationLimit = maxDurationLimit;
 
   //if there are episodes with durations over the duration limit, set the show to over duration
-  parsedShow.OverDuration = parsedShow.Episodes.some(
-    episode => episode.Duration > parsedShow.DurationLimit,
+  parsedShow.overDuration = parsedShow.episodes.some(
+    episode => episode.duration > parsedShow.durationLimit,
   );
 
   //assume the episodes of the show are in order and set the episode number to the index of the episode in the array + 1
-  parsedShow.Episodes.forEach((episode, index) => {
-    episode.EpisodeNumber = index + 1;
-    episode.LoadTitle = `${parsedShow.LoadTitle}-${episode.EpisodeNumber}`;
+  parsedShow.episodes.forEach((episode, index) => {
+    episode.episodeNumber = index + 1;
+    episode.mediaItemId = `${parsedShow.mediaItemId}-${episode.episodeNumber}`;
   });
 
   //set the episode count to the length of the episodes array
-  parsedShow.EpisodeCount = parsedShow.Episodes.length;
+  parsedShow.episodeCount = parsedShow.episodes.length;
 
   return parsedShow;
 }

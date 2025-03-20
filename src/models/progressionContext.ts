@@ -2,11 +2,11 @@ import mongoose, { Document, Model } from 'mongoose';
 import { StreamType } from './enum/streamTypes';
 
 export class ProgressionContext {
-  Title: string;
-  LoadTitle: string;
-  Environment: string;
-  Type: StreamType;
-  WatchRecords: WatchRecord[];
+  title: string;
+  loadTitle: string;
+  environment: string;
+  type: StreamType;
+  watchRecords: WatchRecord[];
 
   constructor(
     title: string,
@@ -15,11 +15,11 @@ export class ProgressionContext {
     type: StreamType,
     progressions: WatchRecord[],
   ) {
-    this.Title = title;
-    this.LoadTitle = loadTitle;
-    this.Environment = environment;
-    this.Type = type;
-    this.WatchRecords = progressions;
+    this.title = title;
+    this.loadTitle = loadTitle;
+    this.environment = environment;
+    this.type = type;
+    this.watchRecords = progressions;
   }
 
   static fromMongoObject(mongoObject: any): ProgressionContext {
@@ -36,11 +36,11 @@ export class ProgressionContext {
 
   static toMongoObject(mediaProgression: ProgressionContext): any {
     return {
-      title: mediaProgression.Title,
-      loadTitle: mediaProgression.LoadTitle,
-      environment: mediaProgression.Environment,
-      type: mediaProgression.Type,
-      episodes: mediaProgression.WatchRecords.map((progression: WatchRecord) =>
+      title: mediaProgression.title,
+      loadTitle: mediaProgression.loadTitle,
+      environment: mediaProgression.environment,
+      type: mediaProgression.type,
+      episodes: mediaProgression.watchRecords.map((progression: WatchRecord) =>
         WatchRecord.toMongoObject(progression),
       ),
     };
@@ -48,11 +48,11 @@ export class ProgressionContext {
 }
 
 export class WatchRecord {
-  Title: string;
-  LoadTitle: string;
-  Episode: number;
-  LastPlayed: number;
-  NextEpisodeDurLimit: number;
+  title: string;
+  mediaItemId: string;
+  episode: number;
+  lastPlayed: number;
+  nextEpisodeDurLimit: number;
 
   constructor(
     title: string,
@@ -61,11 +61,11 @@ export class WatchRecord {
     lastPlayed: number,
     nextEpisodeDurLimit: number,
   ) {
-    this.Title = title;
-    this.LoadTitle = loadTitle;
-    this.Episode = episode;
-    this.LastPlayed = lastPlayed;
-    this.NextEpisodeDurLimit = nextEpisodeDurLimit;
+    this.title = title;
+    this.mediaItemId = loadTitle;
+    this.episode = episode;
+    this.lastPlayed = lastPlayed;
+    this.nextEpisodeDurLimit = nextEpisodeDurLimit;
   }
 
   static fromMongoObject(mongoObject: any): WatchRecord {
@@ -80,44 +80,44 @@ export class WatchRecord {
 
   static toMongoObject(progression: WatchRecord): any {
     return {
-      title: progression.Title,
-      loadTitle: progression.LoadTitle,
-      episode: progression.Episode,
-      lastPlayed: progression.LastPlayed,
-      nextEpisodeDurLimit: progression.NextEpisodeDurLimit,
+      title: progression.title,
+      loadTitle: progression.mediaItemId,
+      episode: progression.episode,
+      lastPlayed: progression.lastPlayed,
+      nextEpisodeDurLimit: progression.nextEpisodeDurLimit,
     };
   }
 }
 
 export interface IWatchRecord {
-  Title: string;
-  LoadTitle: string;
-  Episode: number;
-  LastPlayed: number;
+  title: string;
+  mediaItemId: string;
+  episode: number;
+  lastPlayed: number;
 }
 
 export interface IProgressionContext extends Document {
-  Title: string;
-  LoadTitle: string;
-  Type: string;
-  Progressions: WatchRecord[];
+  title: string;
+  mediaItemId: string;
+  type: string;
+  progressions: WatchRecord[];
 }
 
 export const WatchRecordSchema = new mongoose.Schema({
-  Title: String,
-  LoadTitle: String,
-  Episode: Number,
-  LastPlayed: Number,
+  title: String,
+  mediaItemId: String,
+  episode: Number,
+  lastPlayed: Number,
 });
 
 export const ProgressionContextSchema = new mongoose.Schema({
-  Title: String,
-  LoadTitle: {
+  title: String,
+  mediaItemId: {
     type: String,
     index: true,
   },
-  Type: String,
-  Progressions: [WatchRecordSchema],
+  type: String,
+  progressions: [WatchRecordSchema],
 });
 
 export const ProgressionContextModel: Model<IProgressionContext> =

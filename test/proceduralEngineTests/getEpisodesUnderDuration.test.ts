@@ -15,8 +15,8 @@ describe('getEpisodesUnderDuration', () => {
 
   const args = new ContStreamRequest(
     'securePassword',
-    tdProgression.continuousProgression.Title,
-    tdProgression.continuousProgression.Environment,
+    tdProgression.continuousProgression.title,
+    tdProgression.continuousProgression.environment,
     [],
     ['scifi', 'action'],
   );
@@ -32,8 +32,8 @@ describe('getEpisodesUnderDuration', () => {
       StreamType.Cont,
     );
 
-    expect(episodes).toEqual([tdShows.reboot.Episodes[1]]);
-    expect(showTitle).toEqual(tdShows.reboot.Title);
+    expect(episodes).toEqual([tdShows.reboot.episodes[1]]);
+    expect(showTitle).toEqual(tdShows.reboot.title);
     randomSpy.mockRestore();
   });
 
@@ -48,8 +48,11 @@ describe('getEpisodesUnderDuration', () => {
       StreamType.Cont,
     );
 
-    expect(episodes).toEqual([tdShows.reboot.Episodes[1], tdShows.reboot.Episodes[2]]);
-    expect(showTitle).toEqual(tdShows.reboot.Title);
+    expect(episodes).toEqual([
+      tdShows.reboot.episodes[1],
+      tdShows.reboot.episodes[2],
+    ]);
+    expect(showTitle).toEqual(tdShows.reboot.title);
     randomSpy.mockRestore();
   });
 
@@ -64,8 +67,11 @@ describe('getEpisodesUnderDuration', () => {
       StreamType.Cont,
     );
 
-    expect(episodes).toEqual([tdShows.batman.Episodes[0], tdShows.batman.Episodes[1]]);
-    expect(showTitle).toEqual(tdShows.batman.Title);
+    expect(episodes).toEqual([
+      tdShows.batman.episodes[0],
+      tdShows.batman.episodes[1],
+    ]);
+    expect(showTitle).toEqual(tdShows.batman.title);
     randomSpy.mockRestore();
   });
 
@@ -73,8 +79,8 @@ describe('getEpisodesUnderDuration', () => {
     let shows: Show[] = [tdShows.batman, tdShows.farscape, tdShows.startrek];
     const randomSpy = jest.spyOn(Math, 'random').mockReturnValue(0.01);
     proMan.IncrementWatchRecord(
-      tdProgression.continuousProgression.LoadTitle,
-      tdProgression.batmanWatchRecord.LoadTitle,
+      tdProgression.continuousProgression.loadTitle,
+      tdProgression.batmanWatchRecord.mediaItemId,
       4,
       tdShows.batman,
     );
@@ -86,8 +92,11 @@ describe('getEpisodesUnderDuration', () => {
       StreamType.Cont,
     );
 
-    expect(episodes).toEqual([tdShows.batman.Episodes[4], tdShows.batman.Episodes[0]]);
-    expect(showTitle).toEqual(tdShows.batman.Title);
+    expect(episodes).toEqual([
+      tdShows.batman.episodes[4],
+      tdShows.batman.episodes[0],
+    ]);
+    expect(showTitle).toEqual(tdShows.batman.title);
     randomSpy.mockRestore();
   });
 
@@ -102,8 +111,8 @@ describe('getEpisodesUnderDuration', () => {
       StreamType.Cont,
     );
 
-    expect(episodes).toEqual([tdShows.farscape.Episodes[0]]);
-    expect(showTitle).toEqual(tdShows.farscape.Title);
+    expect(episodes).toEqual([tdShows.farscape.episodes[0]]);
+    expect(showTitle).toEqual(tdShows.farscape.title);
     randomSpy.mockRestore();
   });
 
@@ -118,8 +127,8 @@ describe('getEpisodesUnderDuration', () => {
       StreamType.Cont,
     );
 
-    expect(episodes).toEqual([tdShows.startrek.Episodes[0]]);
-    expect(showTitle).toEqual(tdShows.startrek.Title);
+    expect(episodes).toEqual([tdShows.startrek.episodes[0]]);
+    expect(showTitle).toEqual(tdShows.startrek.title);
     randomSpy.mockRestore();
   });
 });

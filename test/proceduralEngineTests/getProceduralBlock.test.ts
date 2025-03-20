@@ -23,8 +23,8 @@ describe('getProceduralBlock', () => {
 
   const args = new ContStreamRequest(
     'securePassword',
-    tdProgression.continuousProgression.Title,
-    tdProgression.continuousProgression.Environment,
+    tdProgression.continuousProgression.title,
+    tdProgression.continuousProgression.environment,
     [],
     ['scifi', 'action'],
   );
@@ -63,8 +63,8 @@ describe('getProceduralBlock', () => {
 
     let expected: SelectedMedia[] = [
       new SelectedMedia(
-        tdShows.reboot.Episodes[1],
-        tdShows.reboot.Title,
+        tdShows.reboot.episodes[1],
+        tdShows.reboot.title,
         MediaType.Episode,
         latestTimePoint,
         1800,
@@ -110,8 +110,8 @@ describe('getProceduralBlock', () => {
 
     let expected: SelectedMedia[] = [
       new SelectedMedia(
-        tdShows.farscape.Episodes[0],
-        tdShows.farscape.Title,
+        tdShows.farscape.episodes[0],
+        tdShows.farscape.title,
         MediaType.Episode,
         latestTimePoint,
         3600,
@@ -157,16 +157,16 @@ describe('getProceduralBlock', () => {
 
     let expected: SelectedMedia[] = [
       new SelectedMedia(
-        tdShows.reboot.Episodes[1],
-        tdShows.reboot.Title,
+        tdShows.reboot.episodes[1],
+        tdShows.reboot.title,
         MediaType.Episode,
         latestTimePoint,
         1800,
         ['scifi', 'adventure'],
       ),
       new SelectedMedia(
-        tdShows.reboot.Episodes[2],
-        tdShows.reboot.Title,
+        tdShows.reboot.episodes[2],
+        tdShows.reboot.title,
         MediaType.Episode,
         latestTimePoint + 1800,
         1800,
@@ -212,16 +212,16 @@ describe('getProceduralBlock', () => {
 
     let expected: SelectedMedia[] = [
       new SelectedMedia(
-        tdShows.farscape.Episodes[0],
-        tdShows.farscape.Title,
+        tdShows.farscape.episodes[0],
+        tdShows.farscape.title,
         MediaType.Episode,
         latestTimePoint,
         3600,
         ['scifi', 'adventure'],
       ),
       new SelectedMedia(
-        tdShows.reboot.Episodes[1],
-        tdShows.reboot.Title,
+        tdShows.reboot.episodes[1],
+        tdShows.reboot.title,
         MediaType.Episode,
         latestTimePoint + 3600,
         1800,
@@ -267,24 +267,24 @@ describe('getProceduralBlock', () => {
 
     let expected: SelectedMedia[] = [
       new SelectedMedia(
-        tdShows.reboot.Episodes[1],
-        tdShows.reboot.Title,
+        tdShows.reboot.episodes[1],
+        tdShows.reboot.title,
         MediaType.Episode,
         latestTimePoint,
         1800,
         ['scifi', 'adventure'],
       ),
       new SelectedMedia(
-        tdShows.reboot.Episodes[2],
-        tdShows.reboot.Title,
+        tdShows.reboot.episodes[2],
+        tdShows.reboot.title,
         MediaType.Episode,
         latestTimePoint + 1800,
         1800,
         ['scifi', 'adventure'],
       ),
       new SelectedMedia(
-        tdShows.reboot.Episodes[3],
-        tdShows.reboot.Title,
+        tdShows.reboot.episodes[3],
+        tdShows.reboot.title,
         MediaType.Episode,
         latestTimePoint + 3600,
         1800,
@@ -330,8 +330,8 @@ describe('getProceduralBlock', () => {
 
     let expected: SelectedMedia[] = [
       new SelectedMedia(
-        tdShows.startrek.Episodes[0],
-        tdShows.startrek.Title,
+        tdShows.startrek.episodes[0],
+        tdShows.startrek.title,
         MediaType.Episode,
         latestTimePoint,
         7200,
@@ -531,8 +531,8 @@ describe('getProceduralBlock', () => {
         [MainGenres.Action, AgeGroups.Mature, Eras.nnineties],
       ),
       new SelectedMedia(
-        tdShows.reboot.Episodes[1],
-        tdShows.reboot.Title,
+        tdShows.reboot.episodes[1],
+        tdShows.reboot.title,
         MediaType.Episode,
         latestTimePoint + 9000,
         1800,
@@ -583,16 +583,16 @@ describe('getProceduralBlock', () => {
 
     let expected: SelectedMedia[] = [
       new SelectedMedia(
-        tdShows.startrek.Episodes[0],
-        tdShows.startrek.Title,
+        tdShows.startrek.episodes[0],
+        tdShows.startrek.title,
         MediaType.Episode,
         latestTimePoint,
         7200,
         ['scifi', 'adventure'],
       ),
       new SelectedMedia(
-        tdShows.startrek.Episodes[1],
-        tdShows.startrek.Title,
+        tdShows.startrek.episodes[1],
+        tdShows.startrek.title,
         MediaType.Episode,
         latestTimePoint + 7200,
         3600,
@@ -721,16 +721,16 @@ describe('getProceduralBlock', () => {
         ],
       ),
       new SelectedMedia(
-        tdShows.startrek.Episodes[0],
-        tdShows.startrek.Title,
+        tdShows.startrek.episodes[0],
+        tdShows.startrek.title,
         MediaType.Episode,
         latestTimePoint + 18000,
         7200,
         ['scifi', 'adventure'],
       ),
       new SelectedMedia(
-        tdShows.reboot.Episodes[1],
-        tdShows.reboot.Title,
+        tdShows.reboot.episodes[1],
+        tdShows.reboot.title,
         MediaType.Episode,
         latestTimePoint + 25200,
         1800,
@@ -818,16 +818,16 @@ describe('getProceduralBlock', () => {
         [MainGenres.Action, AgeGroups.Mature, Eras.nnineties],
       ),
       new SelectedMedia(
-        tdShows.startrek.Episodes[0],
-        tdShows.startrek.Title,
+        tdShows.startrek.episodes[0],
+        tdShows.startrek.title,
         MediaType.Episode,
         latestTimePoint + 18000,
         7200,
         ['scifi', 'adventure'],
       ),
       new SelectedMedia(
-        tdShows.reboot.Episodes[1],
-        tdShows.reboot.Title,
+        tdShows.reboot.episodes[1],
+        tdShows.reboot.title,
         MediaType.Episode,
         latestTimePoint + 25200,
         1800,

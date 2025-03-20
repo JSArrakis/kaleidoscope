@@ -1,54 +1,54 @@
 import mongoose, { Model } from 'mongoose';
 
 export interface IEnvConfiguration {
-  Title: string;
-  LoadTitle: string;
-  Favorites: string[];
-  BlackList: string[];
-  DefaultTags: string[];
-  DefaultPromo: string;
+  title: string;
+  mediaItemId: string;
+  favorites: string[];
+  blackList: string[];
+  defaultTags: string[];
+  defaultPromo: string;
 }
 
 export const EnvConfigurationSchema = new mongoose.Schema({
-  Title: String,
-  LoadTitle: {
+  title: String,
+  mediaItemId: {
     type: String,
     index: true,
   },
-  Favorites: [String],
-  BlackList: [String],
-  DefaultTags: [String],
-  DefaultPromo: String,
+  favorites: [String],
+  blackList: [String],
+  defaultTags: [String],
+  defaultPromo: String,
 });
 
 export class EnvConfiguration {
-  Title: string;
-  LoadTitle: string;
-  Favorites: string[];
-  BlackList: string[];
-  DefaultTags: string[];
-  DefaultPromo: string;
+  title: string;
+  mediaItemId: string;
+  favorites: string[];
+  blackList: string[];
+  defaultTags: string[];
+  defaultPromo: string;
 
   constructor(
     title: string,
-    loadTitle: string,
+    mediaItemId: string,
     favorites: string[],
     blackList: string[],
     defaultTags: string[],
     defaultPromo: string,
   ) {
-    this.Title = title;
-    this.LoadTitle = loadTitle;
-    this.Favorites = favorites;
-    this.BlackList = blackList;
-    this.DefaultTags = defaultTags;
-    this.DefaultPromo = defaultPromo;
+    this.title = title;
+    this.mediaItemId = mediaItemId;
+    this.favorites = favorites;
+    this.blackList = blackList;
+    this.defaultTags = defaultTags;
+    this.defaultPromo = defaultPromo;
   }
 
   static fromMongoObject(mongoObject: any): EnvConfiguration {
     return new EnvConfiguration(
       mongoObject.title,
-      mongoObject.loadTitle,
+      mongoObject.mediaItemId,
       mongoObject.favorites,
       mongoObject.blackList,
       mongoObject.defaultTags,
@@ -58,19 +58,19 @@ export class EnvConfiguration {
 
   static toMongoObject(envConfig: EnvConfiguration): any {
     return {
-      title: envConfig.Title,
-      loadTitle: envConfig.LoadTitle,
-      favorites: envConfig.Favorites,
-      blackList: envConfig.BlackList,
-      defaultTags: envConfig.DefaultTags,
-      defaultPromo: envConfig.DefaultPromo,
+      title: envConfig.title,
+      mediaItemId: envConfig.mediaItemId,
+      favorites: envConfig.favorites,
+      blackList: envConfig.blackList,
+      defaultTags: envConfig.defaultTags,
+      defaultPromo: envConfig.defaultPromo,
     };
   }
 
   static fromRequestObject(requestObject: any): EnvConfiguration {
     return new EnvConfiguration(
       requestObject.title,
-      requestObject.loadTitle,
+      requestObject.mediaItemId,
       requestObject.favorites,
       requestObject.blackList,
       requestObject.defaultTags,

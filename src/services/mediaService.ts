@@ -32,23 +32,24 @@ export function getArgs(): IStreamRequest {
 }
 
 export async function loadMedia(config: Config): Promise<void> {
-  await createDefaultCommercials(config);
-  await createDefaultPromo(config);
+  // TODO - Uncomment when ready to create default media
+  // await createDefaultCommercials(config);
+  // await createDefaultPromo(config);
 
   console.log('Loading media entries from DB...');
   media = {
-    Shows: await dataLoader.loadShows(),
-    Movies: await dataLoader.loadMovies(),
-    Shorts: await dataLoader.loadShorts(),
-    Music: await dataLoader.loadMusic(),
-    Promos: await dataLoader.loadPromos(),
-    DefaultPromos: await dataLoader.loadDefaultPromos(),
-    Commercials: await dataLoader.loadCommercials(),
-    DefaultCommercials: await dataLoader.loadDefaultCommercials(),
-    Blocks: [],
+    shows: await dataLoader.loadShows(),
+    movies: await dataLoader.loadMovies(),
+    shorts: await dataLoader.loadShorts(),
+    music: await dataLoader.loadMusic(),
+    promos: await dataLoader.loadPromos(),
+    defaultPromos: await dataLoader.loadDefaultPromos(),
+    commercials: await dataLoader.loadCommercials(),
+    defaultCommercials: await dataLoader.loadDefaultCommercials(),
+    blocks: [],
   };
 
-  await loadDefaultEnvConfig(config.DefaultPromo);
+  await loadDefaultEnvConfig(config.defaultPromo);
 
   mosaics = await dataLoader.loadMosaics();
 }

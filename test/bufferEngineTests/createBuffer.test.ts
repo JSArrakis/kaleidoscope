@@ -29,44 +29,44 @@ describe('createBuffer', () => {
       Password: '',
     };
     const media: Media = {
-      Shows: [],
-      Movies: [],
-      Shorts: [],
-      Music: [],
-      Promos: [],
-      DefaultPromos: [],
-      Commercials: [],
-      DefaultCommercials: [],
-      Blocks: [],
+      shows: [],
+      movies: [],
+      shorts: [],
+      music: [],
+      promos: [],
+      defaultPromos: [],
+      commercials: [],
+      defaultCommercials: [],
+      blocks: [],
     };
     const mosaics: Mosaic[] = [];
     const halfATags: string[] = [];
     const halfBTags: string[] = [];
     const prevBuff: Media = {
-      Shows: [],
-      Movies: [],
-      Shorts: [],
-      Music: [],
-      Promos: [],
-      DefaultPromos: [],
-      Commercials: [],
-      DefaultCommercials: [],
-      Blocks: [],
+      shows: [],
+      movies: [],
+      shorts: [],
+      music: [],
+      promos: [],
+      defaultPromos: [],
+      commercials: [],
+      defaultCommercials: [],
+      blocks: [],
     };
     const holidays: string[] = [];
 
     const expectedBuffer: (Promo | Music | Short | Commercial)[] = [];
     const expectedRemainingDuration: number = 0;
     const expectedNewPrevBuff: Media = {
-      Shows: [],
-      Movies: [],
-      Shorts: [],
-      Music: [],
-      Promos: [],
-      DefaultPromos: [],
-      Commercials: [],
-      DefaultCommercials: [],
-      Blocks: [],
+      shows: [],
+      movies: [],
+      shorts: [],
+      music: [],
+      promos: [],
+      defaultPromos: [],
+      commercials: [],
+      defaultCommercials: [],
+      blocks: [],
     };
 
     const result = createBuffer(
@@ -99,29 +99,29 @@ describe('createBuffer', () => {
       Password: '',
     };
     const media: Media = {
-      Shows: [],
-      Movies: [],
-      Shorts: tdShorts.shorts,
-      Music: tdMusic.music,
-      Promos: tdPromos.promos,
-      DefaultPromos: tdPromos.defaultPromos,
-      Commercials: tdCommercials.commercials,
-      DefaultCommercials: tdCommercials.defaultCommercials,
-      Blocks: [],
+      shows: [],
+      movies: [],
+      shorts: tdShorts.shorts,
+      music: tdMusic.music,
+      promos: tdPromos.promos,
+      defaultPromos: tdPromos.defaultPromos,
+      commercials: tdCommercials.commercials,
+      defaultCommercials: tdCommercials.defaultCommercials,
+      blocks: [],
     };
     const mosaics: Mosaic[] = tdMosaics.mosaics;
     const halfATags: string[] = [MainGenres.Action, AgeGroups.Kids];
     const halfBTags: string[] = [MainGenres.Action, AgeGroups.Kids];
     const prevBuff: Media = {
-      Shows: [],
-      Movies: [],
-      Shorts: [],
-      Music: [],
-      Promos: [],
-      DefaultPromos: [],
-      Commercials: [],
-      DefaultCommercials: [],
-      Blocks: [],
+      shows: [],
+      movies: [],
+      shorts: [],
+      music: [],
+      promos: [],
+      defaultPromos: [],
+      commercials: [],
+      defaultCommercials: [],
+      blocks: [],
     };
     const holidays: string[] = [];
 
@@ -130,15 +130,15 @@ describe('createBuffer', () => {
     ];
     const expectedRemainingDuration: number = -15;
     const expectedNewPrevBuff: Media = {
-      Shows: [],
-      Movies: [],
-      Shorts: [],
-      Music: [],
-      Promos: [],
-      DefaultPromos: [],
-      Commercials: [],
-      DefaultCommercials: [],
-      Blocks: [],
+      shows: [],
+      movies: [],
+      shorts: [],
+      music: [],
+      promos: [],
+      defaultPromos: [],
+      commercials: [],
+      defaultCommercials: [],
+      blocks: [],
     };
 
     const result = createBuffer(
@@ -171,29 +171,29 @@ describe('createBuffer', () => {
       Password: '',
     };
     const media: Media = {
-      Shows: [],
-      Movies: [],
-      Shorts: [],
-      Music: [],
-      Promos: [],
-      DefaultPromos: tdPromos.defaultPromos,
-      Commercials: [],
-      DefaultCommercials: tdCommercials.defaultCommercials,
-      Blocks: [],
+      shows: [],
+      movies: [],
+      shorts: [],
+      music: [],
+      promos: [],
+      defaultPromos: tdPromos.defaultPromos,
+      commercials: [],
+      defaultCommercials: tdCommercials.defaultCommercials,
+      blocks: [],
     };
     const mosaics: Mosaic[] = tdMosaics.mosaics;
     const halfATags: string[] = [MainGenres.Action, AgeGroups.Kids];
     const halfBTags: string[] = [MainGenres.Action, AgeGroups.Kids];
     const prevBuff: Media = {
-      Shows: [],
-      Movies: [],
-      Shorts: [],
-      Music: [],
-      Promos: [],
-      DefaultPromos: [],
-      Commercials: [],
-      DefaultCommercials: [],
-      Blocks: [],
+      shows: [],
+      movies: [],
+      shorts: [],
+      music: [],
+      promos: [],
+      defaultPromos: [],
+      commercials: [],
+      defaultCommercials: [],
+      blocks: [],
     };
     const holidays: string[] = [];
 
@@ -204,15 +204,15 @@ describe('createBuffer', () => {
     ];
     const expectedRemainingDuration: number = 0;
     const expectedNewPrevBuff: Media = {
-      Shows: [],
-      Movies: [],
-      Shorts: [],
-      Music: [],
-      Promos: [],
-      DefaultPromos: [],
-      Commercials: [tdCommercials.default9, tdCommercials.default9],
-      DefaultCommercials: [],
-      Blocks: [],
+      shows: [],
+      movies: [],
+      shorts: [],
+      music: [],
+      promos: [],
+      defaultPromos: [],
+      commercials: [tdCommercials.default9, tdCommercials.default9],
+      defaultCommercials: [],
+      blocks: [],
     };
 
     const result = createBuffer(
@@ -245,29 +245,29 @@ describe('createBuffer', () => {
       Password: '',
     };
     const media: Media = {
-      Shows: [],
-      Movies: [],
-      Shorts: tdShorts.shorts,
-      Music: tdMusic.music,
-      Promos: tdPromos.promos,
-      DefaultPromos: tdPromos.defaultPromos,
-      Commercials: tdCommercials.bufferCommercials,
-      DefaultCommercials: tdCommercials.defaultCommercials,
-      Blocks: [],
+      shows: [],
+      movies: [],
+      shorts: tdShorts.shorts,
+      music: tdMusic.music,
+      promos: tdPromos.promos,
+      defaultPromos: tdPromos.defaultPromos,
+      commercials: tdCommercials.bufferCommercials,
+      defaultCommercials: tdCommercials.defaultCommercials,
+      blocks: [],
     };
     const mosaics: Mosaic[] = tdMosaics.mosaics;
     const halfATags: string[] = [MainGenres.Action, AgeGroups.Kids];
     const halfBTags: string[] = [MainGenres.Action, AgeGroups.Kids];
     const prevBuff: Media = {
-      Shows: [],
-      Movies: [],
-      Shorts: [],
-      Music: [],
-      Promos: [],
-      DefaultPromos: [],
-      Commercials: [],
-      DefaultCommercials: [],
-      Blocks: [],
+      shows: [],
+      movies: [],
+      shorts: [],
+      music: [],
+      promos: [],
+      defaultPromos: [],
+      commercials: [],
+      defaultCommercials: [],
+      blocks: [],
     };
     const holidays: string[] = [];
 
@@ -284,13 +284,13 @@ describe('createBuffer', () => {
     ];
     const expectedRemainingDuration: number = 0;
     const expectedNewPrevBuff: Media = {
-      Shows: [],
-      Movies: [],
-      Shorts: [],
-      Music: [],
-      Promos: [],
-      DefaultPromos: [],
-      Commercials: [
+      shows: [],
+      movies: [],
+      shorts: [],
+      music: [],
+      promos: [],
+      defaultPromos: [],
+      commercials: [
         tdCommercials.transformers80s1,
         tdCommercials.alienstoys1,
         tdCommercials.jurassicpark3toys,
@@ -300,8 +300,8 @@ describe('createBuffer', () => {
         tdCommercials.tonkarealsoundsfiretruck,
         tdCommercials.nerfblastershowdown,
       ],
-      DefaultCommercials: [],
-      Blocks: [],
+      defaultCommercials: [],
+      blocks: [],
     };
 
     const result = createBuffer(
@@ -334,29 +334,29 @@ describe('createBuffer', () => {
       Password: '',
     };
     const media: Media = {
-      Shows: [],
-      Movies: [],
-      Shorts: tdShorts.bufferShorts,
-      Music: tdMusic.music,
-      Promos: tdPromos.promos,
-      DefaultPromos: tdPromos.defaultPromos,
-      Commercials: tdCommercials.bufferCommercials,
-      DefaultCommercials: tdCommercials.defaultCommercials,
-      Blocks: [],
+      shows: [],
+      movies: [],
+      shorts: tdShorts.bufferShorts,
+      music: tdMusic.music,
+      promos: tdPromos.promos,
+      defaultPromos: tdPromos.defaultPromos,
+      commercials: tdCommercials.bufferCommercials,
+      defaultCommercials: tdCommercials.defaultCommercials,
+      blocks: [],
     };
     const mosaics: Mosaic[] = tdMosaics.mosaics;
     const halfATags: string[] = [MainGenres.Adventure, AgeGroups.Kids];
     const halfBTags: string[] = [MainGenres.Adventure, AgeGroups.Kids];
     const prevBuff: Media = {
-      Shows: [],
-      Movies: [],
-      Shorts: [],
-      Music: [],
-      Promos: [],
-      DefaultPromos: [],
-      Commercials: [],
-      DefaultCommercials: [],
-      Blocks: [],
+      shows: [],
+      movies: [],
+      shorts: [],
+      music: [],
+      promos: [],
+      defaultPromos: [],
+      commercials: [],
+      defaultCommercials: [],
+      blocks: [],
     };
     const holidays: string[] = [];
 
@@ -375,13 +375,13 @@ describe('createBuffer', () => {
     ];
     const expectedRemainingDuration: number = 2;
     const expectedNewPrevBuff: Media = {
-      Shows: [],
-      Movies: [],
-      Shorts: [tdShorts.presto, tdShorts.gopherBroke],
-      Music: [],
-      Promos: [],
-      DefaultPromos: [],
-      Commercials: [
+      shows: [],
+      movies: [],
+      shorts: [tdShorts.presto, tdShorts.gopherBroke],
+      music: [],
+      promos: [],
+      defaultPromos: [],
+      commercials: [
         tdCommercials.fisherpriceimaginext,
         tdCommercials.rugratsmoviepromotion,
         tdCommercials.thomasadventureset,
@@ -391,8 +391,8 @@ describe('createBuffer', () => {
         tdCommercials.happymealinspectorgadget,
         tdCommercials.legoduplospaceset,
       ],
-      DefaultCommercials: [],
-      Blocks: [],
+      defaultCommercials: [],
+      blocks: [],
     };
 
     const result = createBuffer(
@@ -425,29 +425,29 @@ describe('createBuffer', () => {
       Password: '',
     };
     const media: Media = {
-      Shows: [],
-      Movies: [],
-      Shorts: tdShorts.bufferShorts,
-      Music: tdMusic.music,
-      Promos: tdPromos.promos,
-      DefaultPromos: tdPromos.defaultPromos,
-      Commercials: tdCommercials.bufferCommercials,
-      DefaultCommercials: tdCommercials.defaultCommercials,
-      Blocks: [],
+      shows: [],
+      movies: [],
+      shorts: tdShorts.bufferShorts,
+      music: tdMusic.music,
+      promos: tdPromos.promos,
+      defaultPromos: tdPromos.defaultPromos,
+      commercials: tdCommercials.bufferCommercials,
+      defaultCommercials: tdCommercials.defaultCommercials,
+      blocks: [],
     };
     const mosaics: Mosaic[] = tdMosaics.mosaics;
     const halfATags: string[] = [];
     const halfBTags: string[] = [MainGenres.Adventure, AgeGroups.Kids];
     const prevBuff: Media = {
-      Shows: [],
-      Movies: [],
-      Shorts: [],
-      Music: [],
-      Promos: [],
-      DefaultPromos: [],
-      Commercials: [],
-      DefaultCommercials: [],
-      Blocks: [],
+      shows: [],
+      movies: [],
+      shorts: [],
+      music: [],
+      promos: [],
+      defaultPromos: [],
+      commercials: [],
+      defaultCommercials: [],
+      blocks: [],
     };
     const holidays: string[] = [];
 
@@ -466,13 +466,13 @@ describe('createBuffer', () => {
     ];
     const expectedRemainingDuration: number = 2;
     const expectedNewPrevBuff: Media = {
-      Shows: [],
-      Movies: [],
-      Shorts: [tdShorts.presto, tdShorts.gopherBroke],
-      Music: [],
-      Promos: [],
-      DefaultPromos: [],
-      Commercials: [
+      shows: [],
+      movies: [],
+      shorts: [tdShorts.presto, tdShorts.gopherBroke],
+      music: [],
+      promos: [],
+      defaultPromos: [],
+      commercials: [
         tdCommercials.fisherpriceimaginext,
         tdCommercials.rugratsmoviepromotion,
         tdCommercials.thomasadventureset,
@@ -482,8 +482,8 @@ describe('createBuffer', () => {
         tdCommercials.happymealinspectorgadget,
         tdCommercials.legoduplospaceset,
       ],
-      DefaultCommercials: [],
-      Blocks: [],
+      defaultCommercials: [],
+      blocks: [],
     };
 
     const result = createBuffer(
@@ -516,29 +516,29 @@ describe('createBuffer', () => {
       Password: '',
     };
     const media: Media = {
-      Shows: [],
-      Movies: [],
-      Shorts: tdShorts.bufferShorts,
-      Music: tdMusic.music,
-      Promos: tdPromos.promos,
-      DefaultPromos: tdPromos.defaultPromos,
-      Commercials: tdCommercials.bufferCommercials,
-      DefaultCommercials: tdCommercials.defaultCommercials,
-      Blocks: [],
+      shows: [],
+      movies: [],
+      shorts: tdShorts.bufferShorts,
+      music: tdMusic.music,
+      promos: tdPromos.promos,
+      defaultPromos: tdPromos.defaultPromos,
+      commercials: tdCommercials.bufferCommercials,
+      defaultCommercials: tdCommercials.defaultCommercials,
+      blocks: [],
     };
     const mosaics: Mosaic[] = tdMosaics.mosaics;
     const halfATags: string[] = [MainGenres.Adventure, AgeGroups.Kids];
     const halfBTags: string[] = [];
     const prevBuff: Media = {
-      Shows: [],
-      Movies: [],
-      Shorts: [],
-      Music: [],
-      Promos: [],
-      DefaultPromos: [],
-      Commercials: [],
-      DefaultCommercials: [],
-      Blocks: [],
+      shows: [],
+      movies: [],
+      shorts: [],
+      music: [],
+      promos: [],
+      defaultPromos: [],
+      commercials: [],
+      defaultCommercials: [],
+      blocks: [],
     };
     const holidays: string[] = [];
 
@@ -557,13 +557,13 @@ describe('createBuffer', () => {
     ];
     const expectedRemainingDuration: number = 2;
     const expectedNewPrevBuff: Media = {
-      Shows: [],
-      Movies: [],
-      Shorts: [tdShorts.presto, tdShorts.gopherBroke],
-      Music: [],
-      Promos: [],
-      DefaultPromos: [],
-      Commercials: [
+      shows: [],
+      movies: [],
+      shorts: [tdShorts.presto, tdShorts.gopherBroke],
+      music: [],
+      promos: [],
+      defaultPromos: [],
+      commercials: [
         tdCommercials.fisherpriceimaginext,
         tdCommercials.rugratsmoviepromotion,
         tdCommercials.thomasadventureset,
@@ -573,8 +573,8 @@ describe('createBuffer', () => {
         tdCommercials.happymealinspectorgadget,
         tdCommercials.legoduplospaceset,
       ],
-      DefaultCommercials: [],
-      Blocks: [],
+      defaultCommercials: [],
+      blocks: [],
     };
 
     const result = createBuffer(

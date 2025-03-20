@@ -33,7 +33,7 @@ describe('getInjectedMovies', () => {
       Password: 'securepassword',
     };
 
-    const result = streamCon.getInjectedMovies(args, media.Movies);
+    const result = streamCon.getInjectedMovies(args, media.movies);
 
     expect(result[0]).toEqual([]);
   });
@@ -50,7 +50,7 @@ describe('getInjectedMovies', () => {
       Password: 'securepassword',
     };
 
-    const result = streamCon.getInjectedMovies(args, media.Movies);
+    const result = streamCon.getInjectedMovies(args, media.movies);
 
     expect(result[0]).toEqual([]);
     expect(result[1]).toBe('unknownmovie load title, not found.');
@@ -68,7 +68,7 @@ describe('getInjectedMovies', () => {
       Password: 'securepassword',
     };
 
-    const result = streamCon.getInjectedMovies(args, media.Movies);
+    const result = streamCon.getInjectedMovies(args, media.movies);
 
     expect(result[0]).toEqual([]);
     expect(result[1]).toBe('');
@@ -101,7 +101,7 @@ describe('getInjectedMovies', () => {
       ]),
     ];
 
-    const result = streamCon.getInjectedMovies(args, media.Movies);
+    const result = streamCon.getInjectedMovies(args, media.movies);
 
     expect(result[0]).toEqual(expected);
     expect(result[1]).toBe('');

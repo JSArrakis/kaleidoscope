@@ -4,18 +4,18 @@ import { MainGenres } from '../../../src/models/const/mainGenres';
 import { BaseMedia } from '../../../src/models/mediaInterface';
 import { SegmentedTags } from '../../../src/models/segmentedTags';
 import * as spectrum from '../../../src/prisms/spectrum';
-import * as tdCommercials from '../../testData/commercials'
+import * as tdCommercials from '../../testData/commercials';
 
 describe('getMediaByTagHeriarchy', () => {
   it('should return the media that have the tags (scenario 1)', () => {
     const alreadySelectedMedia: BaseMedia[] = [];
     const media: BaseMedia[] = [];
     const segmentedTags: SegmentedTags = {
-      EraTags: [],
-      GenreTags: [],
-      SpecialtyTags: [],
-      AgeGroupTags: [],
-      HolidayTags: [],
+      eraTags: [],
+      genreTags: [],
+      specialtyTags: [],
+      ageGroupTags: [],
+      holidayTags: [],
     };
     const age: string = AgeGroups.Kids;
     const duration: number = 0;
@@ -49,11 +49,11 @@ describe('getMediaByTagHeriarchy', () => {
       tdCommercials.jurassicpark3toys,
     ];
     const segmentedTags: SegmentedTags = {
-      EraTags: [Eras.nnineties],
-      GenreTags: [],
-      SpecialtyTags: ['jurassicpark'],
-      AgeGroupTags: [AgeGroups.Kids],
-      HolidayTags: [],
+      eraTags: [Eras.nnineties],
+      genreTags: [],
+      specialtyTags: ['jurassicpark'],
+      ageGroupTags: [AgeGroups.Kids],
+      holidayTags: [],
     };
     const age: string = AgeGroups.Kids;
     const duration: number = 0;
@@ -91,11 +91,11 @@ describe('getMediaByTagHeriarchy', () => {
       tdCommercials.jurassicpark3toys,
     ];
     const segmentedTags: SegmentedTags = {
-      EraTags: [Eras.nnineties],
-      GenreTags: [MainGenres.Action, MainGenres.SciFi, MainGenres.Horror],
-      SpecialtyTags: [],
-      AgeGroupTags: [AgeGroups.Kids],
-      HolidayTags: [],
+      eraTags: [Eras.nnineties],
+      genreTags: [MainGenres.Action, MainGenres.SciFi, MainGenres.Horror],
+      specialtyTags: [],
+      ageGroupTags: [AgeGroups.Kids],
+      holidayTags: [],
     };
     const age: string = AgeGroups.Kids;
     const duration: number = 500;
@@ -140,11 +140,11 @@ describe('getMediaByTagHeriarchy', () => {
       tdCommercials.jurassicpark3toys,
     ];
     const segmentedTags: SegmentedTags = {
-      EraTags: [Eras.nnineties],
-      GenreTags: [MainGenres.Action, MainGenres.SciFi, MainGenres.Horror],
-      SpecialtyTags: ['jurassicpark', 'transformers'],
-      AgeGroupTags: [AgeGroups.Kids],
-      HolidayTags: [],
+      eraTags: [Eras.nnineties],
+      genreTags: [MainGenres.Action, MainGenres.SciFi, MainGenres.Horror],
+      specialtyTags: ['jurassicpark', 'transformers'],
+      ageGroupTags: [AgeGroups.Kids],
+      holidayTags: [],
     };
     const age: string = AgeGroups.Kids;
     const duration: number = 70;

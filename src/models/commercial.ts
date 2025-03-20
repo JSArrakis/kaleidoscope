@@ -3,73 +3,73 @@ import { MediaType } from './enum/mediaTypes';
 import { BaseMedia } from './mediaInterface';
 
 export interface ICommercial extends BaseMedia {
-  Title: string;
-  LoadTitle: string;
-  Duration: number;
-  Path: string;
+  title: string;
+  mediaItemId: string;
+  duration: number;
+  path: string;
   Type: Number;
-  Tags: string[];
+  tags: string[];
 }
 
 export const CommercialSchema = new mongoose.Schema({
-  Title: String,
-  LoadTitle: String,
-  Duration: Number,
-  Path: String,
-  Type: Number,
-  Tags: [String],
+  title: String,
+  mediaItemId: String,
+  duration: Number,
+  path: String,
+  type: Number,
+  tags: [String],
 });
 
 export class Commercial {
-  Title: string;
-  LoadTitle: string;
-  Duration: number;
-  Path: string;
-  Type: number;
-  Tags: string[];
+  title: string;
+  mediaItemId: string;
+  duration: number;
+  path: string;
+  type: number;
+  tags: string[];
 
   constructor(
     title: string,
-    loadtitle: string,
+    mediaItemId: string,
     duration: number,
     path: string,
     type: number,
     tags: string[],
   ) {
-    this.Title = title;
-    this.LoadTitle = loadtitle;
-    this.Duration = duration;
-    this.Path = path;
-    this.Type = type;
-    this.Tags = tags;
+    this.title = title;
+    this.mediaItemId = mediaItemId;
+    this.duration = duration;
+    this.path = path;
+    this.type = type;
+    this.tags = tags;
   }
 
   static fromMongoObject(mongoObject: any): Commercial {
     return new Commercial(
-      mongoObject.Title,
-      mongoObject.LoadTitle,
-      mongoObject.Duration,
-      mongoObject.Path,
+      mongoObject.title,
+      mongoObject.mediaItemId,
+      mongoObject.duration,
+      mongoObject.path,
       MediaType.Commercial,
-      mongoObject.Tags,
+      mongoObject.tags,
     );
   }
 
   static toMongoObject(commercial: Commercial): any {
     return {
-      title: commercial.Title,
-      loadTitle: commercial.LoadTitle,
-      duration: commercial.Duration,
-      path: commercial.Path,
-      type: commercial.Type,
-      tags: commercial.Tags,
+      title: commercial.title,
+      loadTitle: commercial.mediaItemId,
+      duration: commercial.duration,
+      path: commercial.path,
+      type: commercial.type,
+      tags: commercial.tags,
     };
   }
 
   static fromRequestObject(requestObject: any): Commercial {
     return new Commercial(
       requestObject.title,
-      requestObject.loadTitle,
+      requestObject.mediaItemId,
       requestObject.duration,
       requestObject.path,
       MediaType.Commercial,

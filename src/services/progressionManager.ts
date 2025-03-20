@@ -67,7 +67,7 @@ export function GetProgressionContext(
 ): ProgressionContext {
   // Find the media progression in the list
   let progressionContext = progressionContextList.find(
-    prog => prog.LoadTitle === progressionContextLoadTitle,
+    prog => prog.loadTitle === progressionContextLoadTitle,
   );
   // If the media progression is not found, create a new one
   if (!progressionContext) {
@@ -89,24 +89,24 @@ export function GetWatchRecord(
   show: Show,
 ): WatchRecord {
   // Find the progression in the media progression
-  let watchRecord = progressionContext.WatchRecords.find(
-    wr => wr.LoadTitle === keyNormalizer(show.Title),
+  let watchRecord = progressionContext.watchRecords.find(
+    wr => wr.mediaItemId === keyNormalizer(show.title),
   );
   // If the progression is not found, create a new one in the media progression list
   if (!watchRecord) {
     watchRecord = new WatchRecord(
-      show.Title,
-      keyNormalizer(show.Title),
+      show.title,
+      keyNormalizer(show.title),
       0,
       0,
       GetEpisodeDurLimit(show, 1),
     );
     // Find the media progression index
     let progressionContextIdx = progressionContextList.findIndex(
-      prog => prog.LoadTitle === progressionContext.LoadTitle,
+      prog => prog.loadTitle === progressionContext.loadTitle,
     );
     // Add the progression to the media progression list
-    progressionContextList[progressionContextIdx].WatchRecords.push(
+    progressionContextList[progressionContextIdx].watchRecords.push(
       watchRecord,
     );
   }
@@ -124,19 +124,19 @@ export function GetEpisodeNumbers(
   let episodeNumbers: number[] = [];
   // If the show has not been played, start from the first episode
   let episodeNumber = 0;
-  if (watchRecord.Episode === 0) {
+  if (watchRecord.episode === 0) {
     //Loop for number of episodes requested
     for (let i = 1; i <= numberOfEpisodes; i++) {
       // If the episode number selected exceeds the number of episodes, iterate through the episodes from the beginning again
-      if (i > show.EpisodeCount) {
+      if (i > show.episodeCount) {
         episodeNumber++;
-        if (episodeNumber > show.EpisodeCount) {
+        if (episodeNumber > show.episodeCount) {
           episodeNumber = 1;
         }
         episodeNumbers.push(episodeNumber);
         IncrementWatchRecord(
           progressionContextLoadTitle,
-          watchRecord.LoadTitle,
+          watchRecord.mediaItemId,
           episodeNumber,
           show,
         );
@@ -144,7 +144,7 @@ export function GetEpisodeNumbers(
         episodeNumbers.push(i);
         IncrementWatchRecord(
           progressionContextLoadTitle,
-          watchRecord.LoadTitle,
+          watchRecord.mediaItemId,
           i,
           show,
         );
@@ -153,18 +153,18 @@ export function GetEpisodeNumbers(
   } else {
     // If the show has been played, start from the next episode
     //Loop for number of episodes requested
-    episodeNumber = watchRecord.Episode;
+    episodeNumber = watchRecord.episode;
     for (let i = 1; i <= numberOfEpisodes; i++) {
       episodeNumber++;
       // If the episode number selected exceeds the number of episodes, iterate through the episodes from the beginning again
-      if (episodeNumber > show.EpisodeCount) {
-        if (episodeNumber > show.EpisodeCount) {
+      if (episodeNumber > show.episodeCount) {
+        if (episodeNumber > show.episodeCount) {
           episodeNumber = 1;
         }
         episodeNumbers.push(episodeNumber);
         IncrementWatchRecord(
           progressionContextLoadTitle,
-          watchRecord.LoadTitle,
+          watchRecord.mediaItemId,
           episodeNumber,
           show,
         );
@@ -172,7 +172,7 @@ export function GetEpisodeNumbers(
         episodeNumbers.push(episodeNumber);
         IncrementWatchRecord(
           progressionContextLoadTitle,
-          watchRecord.LoadTitle,
+          watchRecord.mediaItemId,
           episodeNumber,
           show,
         );
@@ -192,24 +192,24 @@ export function IncrementWatchRecord(
   //Sets local progression to the next episode
   // Find the media progression index
   let progressionContextIdx = progressionContextList.findIndex(
-    prog => prog.LoadTitle === progressionContextLoadTitle,
+    prog => prog.loadTitle === progressionContextLoadTitle,
   );
   // Find the progression index
   let watchRecordIdx = progressionContextList[
     progressionContextIdx
-  ].WatchRecords.findIndex(wr => wr.LoadTitle === loadTitle);
+  ].watchRecords.findIndex(wr => wr.mediaItemId === loadTitle);
   // Increment the episode number
-  progressionContextList[progressionContextIdx].WatchRecords[
+  progressionContextList[progressionContextIdx].watchRecords[
     watchRecordIdx
-  ].Episode = episode;
+  ].episode = episode;
   let nextEpisode = episode + 1;
-  if (nextEpisode + 1 > show.EpisodeCount) {
+  if (nextEpisode + 1 > show.episodeCount) {
     nextEpisode = 1;
   }
   // Set the next episode duration limit
-  progressionContextList[progressionContextIdx].WatchRecords[
+  progressionContextList[progressionContextIdx].watchRecords[
     watchRecordIdx
-  ].NextEpisodeDurLimit = GetEpisodeDurLimit(show, nextEpisode);
+  ].nextEpisodeDurLimit = GetEpisodeDurLimit(show, nextEpisode);
 }
 
 export function AddAnthologyProgression(
@@ -247,10 +247,10 @@ export function GetShowListWatchRecords(
 
 export function GetEpisodeDurLimit(show: Show, episodeNumber: number): number {
   let durationLimit = 0;
-  if (show.Episodes) {
-    let episode = show.Episodes.find(ep => ep.EpisodeNumber === episodeNumber);
+  if (show.episodes) {
+    let episode = show.episodes.find(ep => ep.episodeNumber === episodeNumber);
     if (episode) {
-      durationLimit = episode.DurationLimit;
+      durationLimit = episode.durationLimit;
     }
   }
   return durationLimit;

@@ -1,46 +1,46 @@
 import mongoose, { Model } from 'mongoose';
 
 export interface ICollection {
-  ID: string;
-  Title: string;
-  Description: string;
-  Items: ICollectionItem[];
+  mediaItemId: string;
+  title: string;
+  description: string;
+  items: ICollectionItem[];
 }
 
 export const CollectionSchema = new mongoose.Schema({
-  ID: String,
-  Title: String,
-  Description: String,
-  Items: [
+  mediaItemId: String,
+  title: String,
+  description: String,
+  items: [
     {
-      MediaItemId: String,
-      MediaItemTitle: String,
-      Sequence: Number,
+      mediaItemId: String,
+      mediaItemTitle: String,
+      sequence: Number,
     },
   ],
 });
 
 export class Collection {
-  ID: string;
-  Title: string;
-  Description: string;
-  Items: CollectionItem[];
+  mediaItemId: string;
+  title: string;
+  description: string;
+  items: CollectionItem[];
 
   constructor(
-    id: string,
+    mediaItemId: string,
     title: string,
     description: string,
     items: CollectionItem[],
   ) {
-    this.ID = id;
-    this.Title = title;
-    this.Description = description;
-    this.Items = items;
+    this.mediaItemId = mediaItemId;
+    this.title = title;
+    this.description = description;
+    this.items = items;
   }
 
   static fromMongoObject(mongoObject: any): Collection {
     return new Collection(
-      mongoObject.id,
+      mongoObject.mediaItemId,
       mongoObject.title,
       mongoObject.description,
       mongoObject.items,
@@ -49,16 +49,16 @@ export class Collection {
 
   static toMongoObject(collection: Collection): any {
     return {
-      id: collection.ID,
-      title: collection.Title,
-      description: collection.Description,
-      items: collection.Items,
+      id: collection.mediaItemId,
+      title: collection.title,
+      description: collection.description,
+      items: collection.items,
     };
   }
 
   static fromRequestObject(requestObject: any): Collection {
     return new Collection(
-      requestObject.id,
+      requestObject.mediaItemId,
       requestObject.title,
       requestObject.description,
       requestObject.items,
@@ -67,20 +67,20 @@ export class Collection {
 }
 
 export interface ICollectionItem {
-  MediaItemId: string;
-  MediaItemTitle: string;
-  Sequence: number;
+  mediaItemId: string;
+  mediaItemTitle: string;
+  sequence: number;
 }
 
 export class CollectionItem {
-  MediaItemId: string;
-  MediaItemTitle: string;
-  Sequence: number;
+  mediaItemId: string;
+  mediaItemTitle: string;
+  sequence: number;
 
   constructor(mediaItemId: string, mediaItemTitle: string, sequence: number) {
-    this.MediaItemId = mediaItemId;
-    this.MediaItemTitle = mediaItemTitle;
-    this.Sequence = sequence;
+    this.mediaItemId = mediaItemId;
+    this.mediaItemTitle = mediaItemTitle;
+    this.sequence = sequence;
   }
 
   static fromRequestObject(requestObject: any): CollectionItem {

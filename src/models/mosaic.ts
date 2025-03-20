@@ -1,24 +1,24 @@
 import mongoose, { Model } from 'mongoose';
 
 export interface IMosaic {
-  Key: string;
-  Genres: string[];
-  MusicGenres: string[];
-  MusicSubGenres: string[];
+  key: string;
+  genres: string[];
+  musicGenres: string[];
+  musicSubGenres: string[];
 }
 
 export const MosaicSchema = new mongoose.Schema({
-  Key: String,
-  Genres: [String],
-  MusicGenres: [String],
-  MusicSubGenres: [String],
+  key: String,
+  genres: [String],
+  musicGenres: [String],
+  musicSubGenres: [String],
 });
 
 export class Mosaic {
-  Key: string;
-  Genres: string[];
-  MusicGenres: string[];
-  MusicSubGenres: string[];
+  key: string;
+  genres: string[];
+  musicGenres: string[];
+  musicSubGenres: string[];
 
   constructor(
     key: string,
@@ -26,10 +26,10 @@ export class Mosaic {
     musicGenres: string[],
     musicSubGenres: string[],
   ) {
-    this.Key = key;
-    this.Genres = genres;
-    this.MusicGenres = musicGenres;
-    this.MusicSubGenres = musicSubGenres;
+    this.key = key;
+    this.genres = genres;
+    this.musicGenres = musicGenres;
+    this.musicSubGenres = musicSubGenres;
   }
 
   static fromMongoObject(mongoObject: any): Mosaic {
@@ -43,10 +43,10 @@ export class Mosaic {
 
   static toMongoObject(mosaic: Mosaic): any {
     return {
-      key: mosaic.Key,
-      genre: mosaic.Genres,
-      musicGenres: mosaic.MusicGenres,
-      musicSubGenres: mosaic.MusicSubGenres,
+      key: mosaic.key,
+      genre: mosaic.genres,
+      musicGenres: mosaic.musicGenres,
+      musicSubGenres: mosaic.musicSubGenres,
     };
   }
 

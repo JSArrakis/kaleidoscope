@@ -20,10 +20,10 @@ export async function createCommercialHandler(
     return;
   }
 
-  let loadTitle = req.body.title.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+  let mediaItemId = req.body.path.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
 
   // Retrieve commercial from MongoDB using commercial load title if it exists
-  const commercial = await CommercialModel.findOne({ LoadTitle: loadTitle });
+  const commercial = await CommercialModel.findOne({ mediaItemId: mediaItemId });
 
   // If it exists, return error
   if (commercial) {
@@ -33,7 +33,7 @@ export async function createCommercialHandler(
   // If it doesn't exist, perform transformations
   let transformedComm = await transformCommercialFromRequest(
     req.body,
-    loadTitle,
+    mediaItemId,
   );
 
   // Insert commercial into MongoDB
@@ -70,22 +70,22 @@ export async function bulkCreateCommercialHandler(
   for (const commercialEntry of req.body) {
     let err = createMediaValidation(commercialEntry);
     if (err !== '') {
-      responseErrors.push(new LoadTitleError(commercialEntry.loadTitle, err));
+      responseErrors.push(new LoadTitleError(commercialEntry.mediaItemId, err));
       continue;
     }
     try {
-      let loadTitle = commercialEntry.title
+      let mediaItemId = commercialEntry.path
         .replace(/[^a-zA-Z0-9]/g, '')
         .toLowerCase();
       const commercial = await CommercialModel.findOne({
-        LoadTitle: loadTitle,
+        mediaItemId: mediaItemId,
       });
       if (commercial) {
         // If it exists, return error
         responseErrors.push(
           new LoadTitleError(
             commercialEntry.title,
-            `Commercial ${commercialEntry.loadTitle} already exists`,
+            `Commercial ${commercialEntry.mediaItemId} already exists`,
           ),
         );
         continue;
@@ -93,14 +93,14 @@ export async function bulkCreateCommercialHandler(
 
       let transformedComm = await transformCommercialFromRequest(
         commercialEntry,
-        loadTitle,
+        mediaItemId,
       );
 
       await CommercialModel.create(transformedComm);
-      createdCommercials.push(transformedComm.LoadTitle);
+      createdCommercials.push(transformedComm.mediaItemId);
     } catch (err) {
       responseErrors.push(
-        new LoadTitleError(commercialEntry.loadTitle, err as string),
+        new LoadTitleError(commercialEntry.mediaItemId, err as string),
       );
     }
   }
@@ -135,7 +135,7 @@ export async function deleteCommercialHandler(
 
   // Retrieve commercial from MongoDB using commercial load title if it exists
   const commercial = await CommercialModel.findOne({
-    LoadTitle: req.query.loadTitle,
+    mediaItemId: req.query.mediaItemId,
   });
 
   // If it doesn't exist, return error
@@ -163,7 +163,7 @@ export async function updateCommercialHandler(
   }
 
   // Retrieve commercial from MongoDB using commercial load title if it exists
-  const commercial = await CommercialModel.findOne({ Path: req.body.path });
+  const commercial = await CommercialModel.findOne({ path: req.body.path });
 
   // If it doesn't exist, return error
   if (!commercial) {
@@ -174,7 +174,7 @@ export async function updateCommercialHandler(
   // If it exists, perform transformations
   let updatedCommercial = await transformCommercialFromRequest(
     req.body,
-    commercial.LoadTitle,
+    commercial.mediaItemId,
   );
 
   // Update commercial in MongoDB
@@ -197,7 +197,7 @@ export async function getCommercialHandler(
 
   // Retrieve commercial from MongoDB using commercial load title if it exists using request params
   const commercial = await CommercialModel.findOne({
-    LoadTitle: req.query.loadTitle,
+    mediaItemId: req.query.mediaItemId,
   });
 
   // If it doesn't exist, return error
@@ -244,18 +244,18 @@ export async function getAllDefaultCommercialsHandler(
 
 export async function transformCommercialFromRequest(
   commercial: any,
-  loadTitle: string,
+  mediaItemId: string,
 ): Promise<Commercial> {
   let parsedCommercial: Commercial = Commercial.fromRequestObject(commercial);
 
-  parsedCommercial.LoadTitle = loadTitle;
+  parsedCommercial.mediaItemId = mediaItemId;
 
-  if (parsedCommercial.Duration > 0) {
+  if (parsedCommercial.duration > 0) {
     return parsedCommercial;
   }
-  console.log(`Getting duration for ${parsedCommercial.Path}`);
-  let durationInSeconds = await getMediaDuration(parsedCommercial.Path);
-  parsedCommercial.Duration = durationInSeconds; // Update duration value
+  console.log(`Getting duration for ${parsedCommercial.path}`);
+  let durationInSeconds = await getMediaDuration(parsedCommercial.path);
+  parsedCommercial.duration = durationInSeconds; // Update duration value
 
   return parsedCommercial;
 }

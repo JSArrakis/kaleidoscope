@@ -11,11 +11,11 @@ describe('getMediaByAgeGroupHierarchy', () => {
     const alreadySelectedMedia: BaseMedia[] = [];
     const media: BaseMedia[] = [];
     const segmentedTags: SegmentedTags = {
-      EraTags: [],
-      GenreTags: [],
-      SpecialtyTags: [],
-      AgeGroupTags: [],
-      HolidayTags: [],
+      eraTags: [],
+      genreTags: [],
+      specialtyTags: [],
+      ageGroupTags: [],
+      holidayTags: [],
     };
     const requestedHolidayTags: string[] = [];
     const duration: number = 0;
@@ -53,11 +53,11 @@ describe('getMediaByAgeGroupHierarchy', () => {
       tdCommercials.ocarinaoftimetrailer1,
     ];
     const segmentedTags: SegmentedTags = {
-      EraTags: [Eras.nnineties],
-      GenreTags: [],
-      SpecialtyTags: ['jurassicpark'],
-      AgeGroupTags: [AgeGroups.Kids],
-      HolidayTags: [],
+      eraTags: [Eras.nnineties],
+      genreTags: [],
+      specialtyTags: ['jurassicpark'],
+      ageGroupTags: [AgeGroups.Kids],
+      holidayTags: [],
     };
     const requestedHolidayTags: string[] = [];
     const duration: number = 0;
@@ -99,11 +99,11 @@ describe('getMediaByAgeGroupHierarchy', () => {
       tdCommercials.ocarinaoftimetrailer1,
     ];
     const segmentedTags: SegmentedTags = {
-      EraTags: [Eras.nnineties],
-      GenreTags: [],
-      SpecialtyTags: ['jurassicpark'],
-      AgeGroupTags: [AgeGroups.Kids],
-      HolidayTags: [],
+      eraTags: [Eras.nnineties],
+      genreTags: [],
+      specialtyTags: ['jurassicpark'],
+      ageGroupTags: [AgeGroups.Kids],
+      holidayTags: [],
     };
     const requestedHolidayTags: string[] = [];
     const duration: number = 60;
@@ -146,11 +146,11 @@ describe('getMediaByAgeGroupHierarchy', () => {
       tdCommercials.ocarinaoftimetrailer1,
     ];
     const segmentedTags: SegmentedTags = {
-      EraTags: [Eras.nnineties],
-      GenreTags: [MainGenres.Action, MainGenres.SciFi, MainGenres.Horror],
-      SpecialtyTags: [],
-      AgeGroupTags: [AgeGroups.Kids],
-      HolidayTags: [],
+      eraTags: [Eras.nnineties],
+      genreTags: [MainGenres.Action, MainGenres.SciFi, MainGenres.Horror],
+      specialtyTags: [],
+      ageGroupTags: [AgeGroups.Kids],
+      holidayTags: [],
     };
     const requestedHolidayTags: string[] = [];
     const duration: number = 120;
@@ -198,11 +198,11 @@ describe('getMediaByAgeGroupHierarchy', () => {
       tdCommercials.ocarinaoftimetrailer1,
     ];
     const segmentedTags: SegmentedTags = {
-      EraTags: [Eras.nnineties],
-      GenreTags: [MainGenres.Action, MainGenres.SciFi, MainGenres.Horror],
-      SpecialtyTags: [],
-      AgeGroupTags: [AgeGroups.Kids],
-      HolidayTags: [],
+      eraTags: [Eras.nnineties],
+      genreTags: [MainGenres.Action, MainGenres.SciFi, MainGenres.Horror],
+      specialtyTags: [],
+      ageGroupTags: [AgeGroups.Kids],
+      holidayTags: [],
     };
     const requestedHolidayTags: string[] = [];
     const duration: number = 500;
@@ -251,11 +251,11 @@ describe('getMediaByAgeGroupHierarchy', () => {
       tdCommercials.ocarinaoftimetrailer1,
     ];
     const segmentedTags: SegmentedTags = {
-      EraTags: [Eras.nnineties],
-      GenreTags: [MainGenres.Action, MainGenres.SciFi, MainGenres.Horror],
-      SpecialtyTags: [],
-      AgeGroupTags: [AgeGroups.Family],
-      HolidayTags: [],
+      eraTags: [Eras.nnineties],
+      genreTags: [MainGenres.Action, MainGenres.SciFi, MainGenres.Horror],
+      specialtyTags: [],
+      ageGroupTags: [AgeGroups.Family],
+      holidayTags: [],
     };
     const requestedHolidayTags: string[] = [];
     const duration: number = 500;
@@ -305,11 +305,11 @@ describe('getMediaByAgeGroupHierarchy', () => {
       tdCommercials.ocarinaoftimetrailer1,
     ];
     const segmentedTags: SegmentedTags = {
-      EraTags: [Eras.nnineties],
-      GenreTags: [MainGenres.Action, MainGenres.SciFi, MainGenres.Horror],
-      SpecialtyTags: [],
-      AgeGroupTags: [AgeGroups.YoungAdult],
-      HolidayTags: [],
+      eraTags: [Eras.nnineties],
+      genreTags: [MainGenres.Action, MainGenres.SciFi, MainGenres.Horror],
+      specialtyTags: [],
+      ageGroupTags: [AgeGroups.YoungAdult],
+      holidayTags: [],
     };
     const requestedHolidayTags: string[] = [];
     const duration: number = 500;

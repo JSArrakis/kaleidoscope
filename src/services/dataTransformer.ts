@@ -16,31 +16,31 @@ export async function transformShowFromRequest(
 ): Promise<Show> {
   let parsedShow: Show = Show.fromRequestObject(show);
 
-  parsedShow.LoadTitle = loadTitle;
+  parsedShow.mediaItemId = loadTitle;
 
-  parsedShow.Alias = parsedShow.LoadTitle;
+  parsedShow.alias = parsedShow.mediaItemId;
 
-  for (const episode of parsedShow.Episodes) {
-    if (episode.Duration > 0) continue; // Skip if duration is already set
-    console.log(`Getting duration for ${episode.Path}`);
-    let durationInSeconds = await getMediaDuration(episode.Path);
-    episode.Duration = durationInSeconds; // Update duration value
-    episode.DurationLimit =
-      Math.floor(episode.Duration / 1800) * 1800 +
-      (episode.Duration % 1800 > 0 ? 1800 : 0);
+  for (const episode of parsedShow.episodes) {
+    if (episode.duration > 0) continue; // Skip if duration is already set
+    console.log(`Getting duration for ${episode.path}`);
+    let durationInSeconds = await getMediaDuration(episode.path);
+    episode.duration = durationInSeconds; // Update duration value
+    episode.durationLimit =
+      Math.floor(episode.duration / 1800) * 1800 +
+      (episode.duration % 1800 > 0 ? 1800 : 0);
     // set episode load title using show load title and episode number
   }
 
   //create an accounting of how many different duration limits there are and create a map of it
   let durationLimitsMap = new Map();
-  parsedShow.Episodes.forEach(episode => {
-    if (durationLimitsMap.has(episode.DurationLimit)) {
+  parsedShow.episodes.forEach(episode => {
+    if (durationLimitsMap.has(episode.durationLimit)) {
       durationLimitsMap.set(
-        episode.DurationLimit,
-        durationLimitsMap.get(episode.DurationLimit) + 1,
+        episode.durationLimit,
+        durationLimitsMap.get(episode.durationLimit) + 1,
       );
     } else {
-      durationLimitsMap.set(episode.DurationLimit, 1);
+      durationLimitsMap.set(episode.durationLimit, 1);
     }
   });
 
@@ -53,21 +53,21 @@ export async function transformShowFromRequest(
       maxDurationLimit = key;
     }
   });
-  parsedShow.DurationLimit = maxDurationLimit;
+  parsedShow.durationLimit = maxDurationLimit;
 
   //if there are episodes with durations over the duration limit, set the show to over duration
-  parsedShow.OverDuration = parsedShow.Episodes.some(
-    episode => episode.Duration > parsedShow.DurationLimit,
+  parsedShow.overDuration = parsedShow.episodes.some(
+    episode => episode.duration > parsedShow.durationLimit,
   );
 
   //assume the episodes of the show are in order and set the episode number to the index of the episode in the array + 1
-  parsedShow.Episodes.forEach((episode, index) => {
-    episode.EpisodeNumber = index + 1;
-    episode.LoadTitle = `${parsedShow.LoadTitle}-${episode.EpisodeNumber}`;
+  parsedShow.episodes.forEach((episode, index) => {
+    episode.episodeNumber = index + 1;
+    episode.episodeId = `${parsedShow.mediaItemId}-${episode.episodeNumber}`;
   });
 
   //set the episode count to the length of the episodes array
-  parsedShow.EpisodeCount = parsedShow.Episodes.length;
+  parsedShow.episodeCount = parsedShow.episodes.length;
 
   return parsedShow;
 }
@@ -78,18 +78,18 @@ export async function transformMovieFromRequest(
 ): Promise<Movie> {
   let parsedMovie: Movie = Movie.fromRequestObject(movie);
 
-  parsedMovie.LoadTitle = loadTitle;
+  parsedMovie.mediaItemId = loadTitle;
 
-  parsedMovie.Alias = parsedMovie.LoadTitle;
-  if (parsedMovie.Duration > 0) {
+  parsedMovie.alias = parsedMovie.mediaItemId;
+  if (parsedMovie.duration > 0) {
     return parsedMovie;
   }
-  console.log(`Getting duration for ${parsedMovie.Path}`);
-  let durationInSeconds = await getMediaDuration(parsedMovie.Path);
-  parsedMovie.Duration = durationInSeconds; // Update duration value
-  parsedMovie.DurationLimit =
-    Math.floor(parsedMovie.Duration / 1800) * 1800 +
-    (parsedMovie.Duration % 1800 > 0 ? 1800 : 0);
+  console.log(`Getting duration for ${parsedMovie.path}`);
+  let durationInSeconds = await getMediaDuration(parsedMovie.path);
+  parsedMovie.duration = durationInSeconds; // Update duration value
+  parsedMovie.durationLimit =
+    Math.floor(parsedMovie.duration / 1800) * 1800 +
+    (parsedMovie.duration % 1800 > 0 ? 1800 : 0);
 
   return parsedMovie;
 }
@@ -100,7 +100,7 @@ export async function updateMovieFromRequest(
 ): Promise<Movie> {
   let parsedMovie: Movie = Movie.fromRequestObject(update);
 
-  movie.Tags = parsedMovie.Tags;
+  movie.Tags = parsedMovie.tags;
 
   return movie;
 }
@@ -110,12 +110,12 @@ export async function transformCommercialFromRequest(
 ): Promise<Commercial> {
   let parsedCommercial: Commercial = Commercial.fromRequestObject(buffer);
 
-  if (parsedCommercial.Duration > 0) {
+  if (parsedCommercial.duration > 0) {
     return parsedCommercial;
   }
-  console.log(`Getting duration for ${parsedCommercial.Path}`);
-  let durationInSeconds = await getMediaDuration(parsedCommercial.Path);
-  parsedCommercial.Duration = durationInSeconds; // Update duration value
+  console.log(`Getting duration for ${parsedCommercial.path}`);
+  let durationInSeconds = await getMediaDuration(parsedCommercial.path);
+  parsedCommercial.duration = durationInSeconds; // Update duration value
 
   return parsedCommercial;
 }
@@ -123,12 +123,12 @@ export async function transformCommercialFromRequest(
 export async function transformMusicFromRequest(buffer: any): Promise<Music> {
   let parsedMusic: Music = Music.fromRequestObject(buffer);
 
-  if (parsedMusic.Duration > 0) {
+  if (parsedMusic.duration > 0) {
     return parsedMusic;
   }
-  console.log(`Getting duration for ${parsedMusic.Path}`);
-  let durationInSeconds = await getMediaDuration(parsedMusic.Path);
-  parsedMusic.Duration = durationInSeconds; // Update duration value
+  console.log(`Getting duration for ${parsedMusic.path}`);
+  let durationInSeconds = await getMediaDuration(parsedMusic.path);
+  parsedMusic.duration = durationInSeconds; // Update duration value
 
   return parsedMusic;
 }
@@ -136,12 +136,12 @@ export async function transformMusicFromRequest(buffer: any): Promise<Music> {
 export async function transformPromoFromRequest(buffer: any): Promise<Promo> {
   let parsedPromo: Promo = Promo.fromRequestObject(buffer);
 
-  if (parsedPromo.Duration > 0) {
+  if (parsedPromo.duration > 0) {
     return parsedPromo;
   }
-  console.log(`Getting duration for ${parsedPromo.Path}`);
-  let durationInSeconds = await getMediaDuration(parsedPromo.Path);
-  parsedPromo.Duration = durationInSeconds; // Update duration value
+  console.log(`Getting duration for ${parsedPromo.path}`);
+  let durationInSeconds = await getMediaDuration(parsedPromo.path);
+  parsedPromo.duration = durationInSeconds; // Update duration value
 
   return parsedPromo;
 }
@@ -149,12 +149,12 @@ export async function transformPromoFromRequest(buffer: any): Promise<Promo> {
 export async function transformShortFromRequest(buffer: any): Promise<Short> {
   let parsedShort: Short = Short.fromRequestObject(buffer);
 
-  if (parsedShort.Duration > 0) {
+  if (parsedShort.duration > 0) {
     return parsedShort;
   }
-  console.log(`Getting duration for ${parsedShort.Path}`);
-  let durationInSeconds = await getMediaDuration(parsedShort.Path);
-  parsedShort.Duration = durationInSeconds; // Update duration value
+  console.log(`Getting duration for ${parsedShort.path}`);
+  let durationInSeconds = await getMediaDuration(parsedShort.path);
+  parsedShort.duration = durationInSeconds; // Update duration value
 
   return parsedShort;
 }
@@ -178,21 +178,21 @@ export function segmentTags(tags: string[]): SegmentedTags {
 
   tags.forEach(tag => {
     if (Object.values(Eras).includes(tag)) {
-      segmentedTags.EraTags.push(tag);
+      segmentedTags.eraTags.push(tag);
     } else if (Object.values(MainGenres).includes(tag)) {
-      segmentedTags.GenreTags.push(tag);
+      segmentedTags.genreTags.push(tag);
     } else if (Object.values(AgeGroups).includes(tag)) {
-      segmentedTags.AgeGroupTags.push(tag);
+      segmentedTags.ageGroupTags.push(tag);
     } else {
-      segmentedTags.SpecialtyTags.push(tag);
+      segmentedTags.specialtyTags.push(tag);
     }
   });
 
-  segmentedTags.EraTags = [...new Set(segmentedTags.EraTags)];
-  segmentedTags.GenreTags = [...new Set(segmentedTags.GenreTags)];
-  segmentedTags.SpecialtyTags = [...new Set(segmentedTags.SpecialtyTags)];
-  segmentedTags.AgeGroupTags = [...new Set(segmentedTags.AgeGroupTags)];
-  segmentedTags.HolidayTags = [...new Set(segmentedTags.HolidayTags)];
+  segmentedTags.eraTags = [...new Set(segmentedTags.eraTags)];
+  segmentedTags.genreTags = [...new Set(segmentedTags.genreTags)];
+  segmentedTags.specialtyTags = [...new Set(segmentedTags.specialtyTags)];
+  segmentedTags.ageGroupTags = [...new Set(segmentedTags.ageGroupTags)];
+  segmentedTags.holidayTags = [...new Set(segmentedTags.holidayTags)];
 
   return segmentedTags;
 }

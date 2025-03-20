@@ -37,9 +37,9 @@ describe('Progression Manager Tests', () => {
 
     it('should return an existing progression context if one exists', () => {
       let mediaProgression = proMan.GetProgressionContext(
-        tdProgression.continuousProgression.Title,
-        tdProgression.continuousProgression.LoadTitle,
-        tdProgression.continuousProgression.Environment,
+        tdProgression.continuousProgression.title,
+        tdProgression.continuousProgression.loadTitle,
+        tdProgression.continuousProgression.environment,
         StreamType.Cont,
       );
 
@@ -76,8 +76,8 @@ describe('Progression Manager Tests', () => {
   describe('GetShowListWatchRecords', () => {
     const args = new ContStreamRequest(
       'securePassword',
-      tdProgression.continuousProgression.Title,
-      tdProgression.continuousProgression.Environment,
+      tdProgression.continuousProgression.title,
+      tdProgression.continuousProgression.environment,
     );
 
     beforeEach(() => {
@@ -157,8 +157,8 @@ describe('Progression Manager Tests', () => {
         tdShows.dragonballz,
       );
       let expectedWatchRecord = new WatchRecord(
-        tdShows.dragonballz.Title,
-        tdShows.dragonballz.LoadTitle,
+        tdShows.dragonballz.title,
+        tdShows.dragonballz.mediaItemId,
         0,
         0,
         1800,
@@ -185,20 +185,20 @@ describe('Progression Manager Tests', () => {
     });
     it('should increment the watch record episode by 1', () => {
       proMan.IncrementWatchRecord(
-        tdProgression.continuousProgression.LoadTitle,
-        tdProgression.sailorWatchRecord.LoadTitle,
+        tdProgression.continuousProgression.loadTitle,
+        tdProgression.sailorWatchRecord.mediaItemId,
         1,
         tdShows.sailor,
       );
       let contProg = proMan.GetProgressionContext(
-        tdProgression.continuousProgression.Title,
-        tdProgression.continuousProgression.LoadTitle,
-        tdProgression.continuousProgression.Environment,
+        tdProgression.continuousProgression.title,
+        tdProgression.continuousProgression.loadTitle,
+        tdProgression.continuousProgression.environment,
         StreamType.Cont,
       );
       let watchRecord = proMan.GetWatchRecord(contProg, tdShows.sailor);
 
-      expect(watchRecord.Episode).toEqual(1);
+      expect(watchRecord.episode).toEqual(1);
     });
   });
 
@@ -211,14 +211,14 @@ describe('Progression Manager Tests', () => {
 
     it('should return the first episode for a show that has not been watched before with one episode requested', () => {
       let contProg = proMan.GetProgressionContext(
-        tdProgression.continuousProgression.Title,
-        tdProgression.continuousProgression.LoadTitle,
-        tdProgression.continuousProgression.Environment,
+        tdProgression.continuousProgression.title,
+        tdProgression.continuousProgression.loadTitle,
+        tdProgression.continuousProgression.environment,
         StreamType.Cont,
       );
       let watchRecord = proMan.GetWatchRecord(contProg, tdShows.sailor);
       let episodes = proMan.GetEpisodeNumbers(
-        contProg.LoadTitle,
+        contProg.loadTitle,
         tdShows.sailor,
         watchRecord,
         1,
@@ -228,14 +228,14 @@ describe('Progression Manager Tests', () => {
 
     it('should return the correct number of episodes for a show that has not been watched (scenario 1)', () => {
       let contProg = proMan.GetProgressionContext(
-        tdProgression.continuousProgression.Title,
-        tdProgression.continuousProgression.LoadTitle,
-        tdProgression.continuousProgression.Environment,
+        tdProgression.continuousProgression.title,
+        tdProgression.continuousProgression.loadTitle,
+        tdProgression.continuousProgression.environment,
         StreamType.Cont,
       );
       let watchRecord = proMan.GetWatchRecord(contProg, tdShows.sailor);
       let episodes = proMan.GetEpisodeNumbers(
-        contProg.LoadTitle,
+        contProg.loadTitle,
         tdShows.sailor,
         watchRecord,
         3,
@@ -246,14 +246,14 @@ describe('Progression Manager Tests', () => {
 
     it('should return the correct number of episodes for a show that has not been watched (scenario 2)', () => {
       let contProg = proMan.GetProgressionContext(
-        tdProgression.continuousProgression.Title,
-        tdProgression.continuousProgression.LoadTitle,
-        tdProgression.continuousProgression.Environment,
+        tdProgression.continuousProgression.title,
+        tdProgression.continuousProgression.loadTitle,
+        tdProgression.continuousProgression.environment,
         StreamType.Cont,
       );
       let watchRecord = proMan.GetWatchRecord(contProg, tdShows.sailor);
       let episodes = proMan.GetEpisodeNumbers(
-        contProg.LoadTitle,
+        contProg.loadTitle,
         tdShows.sailor,
         watchRecord,
         6,
@@ -264,14 +264,14 @@ describe('Progression Manager Tests', () => {
 
     it('should return the correct number of episodes for a show that has not been watched (scenario 3)', () => {
       let contProg = proMan.GetProgressionContext(
-        tdProgression.continuousProgression.Title,
-        tdProgression.continuousProgression.LoadTitle,
-        tdProgression.continuousProgression.Environment,
+        tdProgression.continuousProgression.title,
+        tdProgression.continuousProgression.loadTitle,
+        tdProgression.continuousProgression.environment,
         StreamType.Cont,
       );
       let watchRecord = proMan.GetWatchRecord(contProg, tdShows.sailor);
       let episodes = proMan.GetEpisodeNumbers(
-        contProg.LoadTitle,
+        contProg.loadTitle,
         tdShows.sailor,
         watchRecord,
         12,
@@ -282,14 +282,14 @@ describe('Progression Manager Tests', () => {
 
     it('should return one episode for a show that has been watched before with one episode requested', () => {
       let contProg = proMan.GetProgressionContext(
-        tdProgression.continuousProgression.Title,
-        tdProgression.continuousProgression.LoadTitle,
-        tdProgression.continuousProgression.Environment,
+        tdProgression.continuousProgression.title,
+        tdProgression.continuousProgression.loadTitle,
+        tdProgression.continuousProgression.environment,
         StreamType.Cont,
       );
       let watchRecord = proMan.GetWatchRecord(contProg, tdShows.reboot);
       let episodes = proMan.GetEpisodeNumbers(
-        contProg.LoadTitle,
+        contProg.loadTitle,
         tdShows.reboot,
         watchRecord,
         1,
@@ -300,14 +300,14 @@ describe('Progression Manager Tests', () => {
 
     it('should return the correct number of episodes for a show that has been watched (scenario 1)', () => {
       let contProg = proMan.GetProgressionContext(
-        tdProgression.continuousProgression.Title,
-        tdProgression.continuousProgression.LoadTitle,
-        tdProgression.continuousProgression.Environment,
+        tdProgression.continuousProgression.title,
+        tdProgression.continuousProgression.loadTitle,
+        tdProgression.continuousProgression.environment,
         StreamType.Cont,
       );
       let watchRecord = proMan.GetWatchRecord(contProg, tdShows.reboot);
       let episodes = proMan.GetEpisodeNumbers(
-        contProg.LoadTitle,
+        contProg.loadTitle,
         tdShows.reboot,
         watchRecord,
         2,
@@ -318,14 +318,14 @@ describe('Progression Manager Tests', () => {
 
     it('should return the correct number of episodes for a show that has been watched (scenario 2)', () => {
       let contProg = proMan.GetProgressionContext(
-        tdProgression.continuousProgression.Title,
-        tdProgression.continuousProgression.LoadTitle,
-        tdProgression.continuousProgression.Environment,
+        tdProgression.continuousProgression.title,
+        tdProgression.continuousProgression.loadTitle,
+        tdProgression.continuousProgression.environment,
         StreamType.Cont,
       );
       let watchRecord = proMan.GetWatchRecord(contProg, tdShows.reboot);
       let episodes = proMan.GetEpisodeNumbers(
-        contProg.LoadTitle,
+        contProg.loadTitle,
         tdShows.reboot,
         watchRecord,
         12,
@@ -336,14 +336,14 @@ describe('Progression Manager Tests', () => {
 
     it('should return the correct number of episodes for a show that has been watched completely (scenario 1)', () => {
       let contProg = proMan.GetProgressionContext(
-        tdProgression.continuousProgression.Title,
-        tdProgression.continuousProgression.LoadTitle,
-        tdProgression.continuousProgression.Environment,
+        tdProgression.continuousProgression.title,
+        tdProgression.continuousProgression.loadTitle,
+        tdProgression.continuousProgression.environment,
         StreamType.Cont,
       );
       let watchRecord = proMan.GetWatchRecord(contProg, tdShows.batman);
       let episodes = proMan.GetEpisodeNumbers(
-        contProg.LoadTitle,
+        contProg.loadTitle,
         tdShows.batman,
         watchRecord,
         1,
@@ -354,14 +354,14 @@ describe('Progression Manager Tests', () => {
 
     it('should return the correct number of episodes for a show that has been watched completely (scenario 2)', () => {
       let contProg = proMan.GetProgressionContext(
-        tdProgression.continuousProgression.Title,
-        tdProgression.continuousProgression.LoadTitle,
-        tdProgression.continuousProgression.Environment,
+        tdProgression.continuousProgression.title,
+        tdProgression.continuousProgression.loadTitle,
+        tdProgression.continuousProgression.environment,
         StreamType.Cont,
       );
       let watchRecord = proMan.GetWatchRecord(contProg, tdShows.batman);
       let episodes = proMan.GetEpisodeNumbers(
-        contProg.LoadTitle,
+        contProg.loadTitle,
         tdShows.batman,
         watchRecord,
         3,
@@ -372,14 +372,14 @@ describe('Progression Manager Tests', () => {
 
     it('should return the correct number of episodes for a show that has been watched completely (scenario 3)', () => {
       let contProg = proMan.GetProgressionContext(
-        tdProgression.continuousProgression.Title,
-        tdProgression.continuousProgression.LoadTitle,
-        tdProgression.continuousProgression.Environment,
+        tdProgression.continuousProgression.title,
+        tdProgression.continuousProgression.loadTitle,
+        tdProgression.continuousProgression.environment,
         StreamType.Cont,
       );
       let watchRecord = proMan.GetWatchRecord(contProg, tdShows.batman);
       let episodes = proMan.GetEpisodeNumbers(
-        contProg.LoadTitle,
+        contProg.loadTitle,
         tdShows.batman,
         watchRecord,
         12,
@@ -392,8 +392,8 @@ describe('Progression Manager Tests', () => {
   describe('ManageShowProgression', () => {
     const contStreamRequest = new ContStreamRequest(
       'securePassword',
-      tdProgression.continuousProgression.Title,
-      tdProgression.continuousProgression.Environment,
+      tdProgression.continuousProgression.title,
+      tdProgression.continuousProgression.environment,
     );
 
     beforeEach(() => {
@@ -410,15 +410,15 @@ describe('Progression Manager Tests', () => {
         StreamType.Cont,
       );
       let contProg = proMan.GetProgressionContext(
-        tdProgression.continuousProgression.Title,
-        tdProgression.continuousProgression.LoadTitle,
-        tdProgression.continuousProgression.Environment,
-        tdProgression.continuousProgression.Type,
+        tdProgression.continuousProgression.title,
+        tdProgression.continuousProgression.loadTitle,
+        tdProgression.continuousProgression.environment,
+        tdProgression.continuousProgression.type,
       );
       let watchRecord = proMan.GetWatchRecord(contProg, tdShows.sailor);
       let expectedWatchRecord = new WatchRecord(
-        tdShows.sailor.Title,
-        tdShows.sailor.LoadTitle,
+        tdShows.sailor.title,
+        tdShows.sailor.mediaItemId,
         1,
         0,
         1800,
@@ -436,15 +436,15 @@ describe('Progression Manager Tests', () => {
         StreamType.Cont,
       );
       let contProg = proMan.GetProgressionContext(
-        tdProgression.continuousProgression.Title,
-        tdProgression.continuousProgression.LoadTitle,
-        tdProgression.continuousProgression.Environment,
-        tdProgression.continuousProgression.Type,
+        tdProgression.continuousProgression.title,
+        tdProgression.continuousProgression.loadTitle,
+        tdProgression.continuousProgression.environment,
+        tdProgression.continuousProgression.type,
       );
       let watchRecord = proMan.GetWatchRecord(contProg, tdShows.sailor);
       let expectedWatchRecord = new WatchRecord(
-        tdShows.sailor.Title,
-        tdShows.sailor.LoadTitle,
+        tdShows.sailor.title,
+        tdShows.sailor.mediaItemId,
         2,
         0,
         1800,
@@ -462,15 +462,15 @@ describe('Progression Manager Tests', () => {
         StreamType.Cont,
       );
       let contProg = proMan.GetProgressionContext(
-        tdProgression.continuousProgression.Title,
-        tdProgression.continuousProgression.LoadTitle,
-        tdProgression.continuousProgression.Environment,
-        tdProgression.continuousProgression.Type,
+        tdProgression.continuousProgression.title,
+        tdProgression.continuousProgression.loadTitle,
+        tdProgression.continuousProgression.environment,
+        tdProgression.continuousProgression.type,
       );
       let watchRecord = proMan.GetWatchRecord(contProg, tdShows.reboot);
       let expectedWatchRecord = new WatchRecord(
-        tdShows.reboot.Title,
-        tdShows.reboot.LoadTitle,
+        tdShows.reboot.title,
+        tdShows.reboot.mediaItemId,
         2,
         0,
         1800,
@@ -488,15 +488,15 @@ describe('Progression Manager Tests', () => {
         StreamType.Cont,
       );
       let contProg = proMan.GetProgressionContext(
-        tdProgression.continuousProgression.Title,
-        tdProgression.continuousProgression.LoadTitle,
-        tdProgression.continuousProgression.Environment,
-        tdProgression.continuousProgression.Type,
+        tdProgression.continuousProgression.title,
+        tdProgression.continuousProgression.loadTitle,
+        tdProgression.continuousProgression.environment,
+        tdProgression.continuousProgression.type,
       );
       let watchRecord = proMan.GetWatchRecord(contProg, tdShows.reboot);
       let expectedWatchRecord = new WatchRecord(
-        tdShows.reboot.Title,
-        tdShows.reboot.LoadTitle,
+        tdShows.reboot.title,
+        tdShows.reboot.mediaItemId,
         3,
         0,
         1800,
@@ -514,15 +514,15 @@ describe('Progression Manager Tests', () => {
         StreamType.Cont,
       );
       let contProg = proMan.GetProgressionContext(
-        tdProgression.continuousProgression.Title,
-        tdProgression.continuousProgression.LoadTitle,
-        tdProgression.continuousProgression.Environment,
-        tdProgression.continuousProgression.Type,
+        tdProgression.continuousProgression.title,
+        tdProgression.continuousProgression.loadTitle,
+        tdProgression.continuousProgression.environment,
+        tdProgression.continuousProgression.type,
       );
       let watchRecord = proMan.GetWatchRecord(contProg, tdShows.batman);
       let expectedWatchRecord = new WatchRecord(
-        tdShows.batman.Title,
-        tdShows.batman.LoadTitle,
+        tdShows.batman.title,
+        tdShows.batman.mediaItemId,
         1,
         0,
         1800,
@@ -540,15 +540,15 @@ describe('Progression Manager Tests', () => {
         StreamType.Cont,
       );
       let contProg = proMan.GetProgressionContext(
-        tdProgression.continuousProgression.Title,
-        tdProgression.continuousProgression.LoadTitle,
-        tdProgression.continuousProgression.Environment,
-        tdProgression.continuousProgression.Type,
+        tdProgression.continuousProgression.title,
+        tdProgression.continuousProgression.loadTitle,
+        tdProgression.continuousProgression.environment,
+        tdProgression.continuousProgression.type,
       );
       let watchRecord = proMan.GetWatchRecord(contProg, tdShows.batman);
       let expectedWatchRecord = new WatchRecord(
-        tdShows.batman.Title,
-        tdShows.batman.LoadTitle,
+        tdShows.batman.title,
+        tdShows.batman.mediaItemId,
         2,
         0,
         1800,

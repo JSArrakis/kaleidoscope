@@ -5,7 +5,6 @@ import { LoadTitleError } from '../models/loadTitleError';
 import { createMediaValidation } from '../middleware/validationMiddleware';
 import { getMediaDuration } from '../utils/utilities';
 
-
 // ===========================================
 //               PROMO HANDLERS
 // ===========================================
@@ -21,10 +20,10 @@ export async function createPromoHandler(
     return;
   }
 
-  let loadTitle = req.body.title.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+  let mediaItemId = req.body.path.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
 
   // Retrieve promo from MongoDB using promo load title if it exists
-  const promo = await PromoModel.findOne({ LoadTitle: loadTitle });
+  const promo = await PromoModel.findOne({ mediaItemId: mediaItemId });
 
   // If it exists, return error
   if (promo) {
@@ -32,7 +31,7 @@ export async function createPromoHandler(
     return;
   }
   // If it doesn't exist, perform transformations
-  let transformedComm = await transformPromoFromRequest(req.body, loadTitle);
+  let transformedComm = await transformPromoFromRequest(req.body, mediaItemId);
 
   // Insert promo into MongoDB
   await PromoModel.create(transformedComm);
@@ -68,20 +67,20 @@ export async function bulkCreatePromoHandler(
   for (const promoEntry of req.body) {
     let err = createMediaValidation(promoEntry);
     if (err !== '') {
-      responseErrors.push(new LoadTitleError(promoEntry.loadTitle, err));
+      responseErrors.push(new LoadTitleError(promoEntry.mediaItemId, err));
       continue;
     }
     try {
-      let loadTitle = promoEntry.title
+      let mediaItemId = promoEntry.path
         .replace(/[^a-zA-Z0-9]/g, '')
         .toLowerCase();
-      const promo = await PromoModel.findOne({ LoadTitle: loadTitle });
+      const promo = await PromoModel.findOne({ mediaItemId: mediaItemId });
       if (promo) {
         // If it exists, return error
         responseErrors.push(
           new LoadTitleError(
             promoEntry.title,
-            `Promo ${promoEntry.loadTitle} already exists`,
+            `Promo ${promoEntry.mediaItemId} already exists`,
           ),
         );
         continue;
@@ -89,36 +88,32 @@ export async function bulkCreatePromoHandler(
 
       let transformedComm = await transformPromoFromRequest(
         promoEntry,
-        loadTitle,
+        mediaItemId,
       );
 
       await PromoModel.create(transformedComm);
-      createdPromos.push(transformedComm.LoadTitle);
+      createdPromos.push(transformedComm.mediaItemId);
     } catch (err) {
       responseErrors.push(
-        new LoadTitleError(promoEntry.loadTitle, err as string),
+        new LoadTitleError(promoEntry.mediaItemId, err as string),
       );
     }
   }
 
   if (responseErrors.length === req.body.length) {
-    res
-      .status(400)
-      .json({
-        message: 'Promos Not Created',
-        createdPromos: [],
-        errors: responseErrors,
-      });
+    res.status(400).json({
+      message: 'Promos Not Created',
+      createdPromos: [],
+      errors: responseErrors,
+    });
     return;
   }
 
-  res
-    .status(200)
-    .json({
-      message: 'Promos Created',
-      createdPromos: createdPromos,
-      errors: responseErrors,
-    });
+  res.status(200).json({
+    message: 'Promos Created',
+    createdPromos: createdPromos,
+    errors: responseErrors,
+  });
   return;
 }
 
@@ -134,7 +129,9 @@ export async function deletePromoHandler(
   }
 
   // Retrieve promo from MongoDB using promo load title if it exists
-  const promo = await PromoModel.findOne({ LoadTitle: req.query.loadTitle });
+  const promo = await PromoModel.findOne({
+    mediaItemId: req.query.mediaItemId,
+  });
 
   // If it doesn't exist, return error
   if (!promo) {
@@ -161,7 +158,7 @@ export async function updatePromoHandler(
   }
 
   // Retrieve promo from MongoDB using promo load title if it exists
-  const promo = await PromoModel.findOne({ Path: req.body.path });
+  const promo = await PromoModel.findOne({ path: req.body.path });
 
   // If it doesn't exist, return error
   if (!promo) {
@@ -170,7 +167,10 @@ export async function updatePromoHandler(
   }
 
   // If it exists, perform transformations
-  let updatedPromo = await transformPromoFromRequest(req.body, promo.LoadTitle);
+  let updatedPromo = await transformPromoFromRequest(
+    req.body,
+    promo.mediaItemId,
+  );
 
   // Update promo in MongoDB
   await PromoModel.updateOne({ _id: promo._id }, updatedPromo);
@@ -191,7 +191,9 @@ export async function getPromoHandler(
   }
 
   // Retrieve promo from MongoDB using promo load title if it exists using request params
-  const promo = await PromoModel.findOne({ LoadTitle: req.query.loadTitle });
+  const promo = await PromoModel.findOne({
+    mediaItemId: req.query.mediaItemId,
+  });
 
   // If it doesn't exist, return error
   if (!promo) {
@@ -237,18 +239,18 @@ export async function getAllDefaultPromosHandler(
 
 export async function transformPromoFromRequest(
   promo: any,
-  loadTitle: string,
+  mediaItemId: string,
 ): Promise<Promo> {
   let parsedPromo: Promo = Promo.fromRequestObject(promo);
 
-  parsedPromo.LoadTitle = loadTitle;
+  parsedPromo.mediaItemId = mediaItemId;
 
-  if (parsedPromo.Duration > 0) {
+  if (parsedPromo.duration > 0) {
     return parsedPromo;
   }
-  console.log(`Getting duration for ${parsedPromo.Path}`);
-  let durationInSeconds = await getMediaDuration(parsedPromo.Path);
-  parsedPromo.Duration = durationInSeconds; // Update duration value
+  console.log(`Getting duration for ${parsedPromo.path}`);
+  let durationInSeconds = await getMediaDuration(parsedPromo.path);
+  parsedPromo.duration = durationInSeconds; // Update duration value
 
   return parsedPromo;
 }

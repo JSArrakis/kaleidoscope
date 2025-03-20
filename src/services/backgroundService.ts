@@ -46,7 +46,7 @@ async function cycleCheck() {
 
   // Logging statement to show when the next item in the on deck stream is scheduled to start
   if (onDeck.length >= 2) {
-    console.log('Target Unix Timestamp: ' + onDeck[1].StartTime);
+    console.log('Target Unix Timestamp: ' + onDeck[1].startTime);
   } else {
     console.log(
       'There arent enough items in the on deck stream to check for a new item',
@@ -54,22 +54,22 @@ async function cycleCheck() {
   }
 
   // Logging statement to display that the next item from the ondeck stream should be starting now
-  if (onDeck.length >= 1 && currentUnixTimestamp === onDeck[0].StartTime) {
-    console.log(onDeck[0].MainBlock?.Title + ' is starting now');
+  if (onDeck.length >= 1 && currentUnixTimestamp === onDeck[0].startTime) {
+    console.log(onDeck[0].mainBlock?.title + ' is starting now');
   }
 
   // This is the mechanism that will remove the first item from the on deck stream and add the next item from the upcoming stream
   // This operation will only initiate if the stream is continuous and there are at least 2 items in the on deck stream
   if (streamMan.isContinuousStream() && onDeck.length >= 2) {
     // If there is a second item in the on deck stream and the current time is greater than or equal to the start time of the second item
-    if (onDeck[1].StartTime && currentUnixTimestamp >= onDeck[1].StartTime) {
+    if (onDeck[1].startTime && currentUnixTimestamp >= onDeck[1].startTime) {
       // Remove the first item from the on deck stream
       let removed = streamMan.removeFromOnDeckStream();
       // Logs the item that was removed from the on deck stream
       if (removed != null || removed != undefined) {
         console.log(
           'Removing ' +
-            removed.MainBlock?.Title +
+            removed.mainBlock?.title +
             ' and post buffer from On Deck Stream',
         );
       }
@@ -78,7 +78,7 @@ async function cycleCheck() {
 
       // Logs the item that will be added to the on deck stream
       if (added != null || added != undefined) {
-        console.log('Adding ' + added.MainBlock?.Title + ' to On Deck Stream');
+        console.log('Adding ' + added.mainBlock?.title + ' to On Deck Stream');
       }
       // If the item is not null or undefined, add it to the on deck stream and the VLC playlist
       if (added != null || added != undefined) {
@@ -161,31 +161,31 @@ async function addMediaBlock(item: MediaBlock | undefined): Promise<void> {
     try {
       //If item has a initial Buffer (buffer that plays before the media), add it to the playlist
       // initial buffers are only when launching the stream to make sure the first media item starts at the next 30 minute interval
-      if (item.InitialBuffer.length > 0) {
+      if (item.initialBuffer.length > 0) {
         console.log(
           'Adding ' +
-            item.InitialBuffer.length +
+            item.initialBuffer.length +
             ' initial buffer items to playlist',
         );
       }
-      if (item.InitialBuffer != null || item.InitialBuffer != undefined) {
-        item.InitialBuffer.forEach(async element => {
-          await vlc.addToPlaylist(element.Path);
+      if (item.initialBuffer != null || item.initialBuffer != undefined) {
+        item.initialBuffer.forEach(async element => {
+          await vlc.addToPlaylist(element.path);
         });
       }
 
       // Adds the main media item to the vlc playlist
-      if (item.MainBlock?.Path != null || item.MainBlock?.Path != undefined) {
-        console.log('Adding ' + item.MainBlock.Title + ' to playlist');
-        await vlc.addToPlaylist(item.MainBlock.Path);
+      if (item.mainBlock?.path != null || item.mainBlock?.path != undefined) {
+        console.log('Adding ' + item.mainBlock.title + ' to playlist');
+        await vlc.addToPlaylist(item.mainBlock.path);
       }
 
       //If item has a post Buffer (buffer that plays after the media), add it to the playlist
       console.log(
-        'Adding ' + item.Buffer.length + ' post buffer items to playlist',
+        'Adding ' + item.buffer.length + ' post buffer items to playlist',
       );
-      item.Buffer.forEach(async element => {
-        await vlc.addToPlaylist(element.Path);
+      item.buffer.forEach(async element => {
+        await vlc.addToPlaylist(element.path);
       });
     } catch (error) {
       console.error('An error occurred when adding to Playlist:', error);

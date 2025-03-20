@@ -20,10 +20,10 @@ export async function createShortHandler(
     return;
   }
 
-  let loadTitle = req.body.title.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+  let mediaItemId = req.body.path.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
 
   // Retrieve short from MongoDB using short load title if it exists
-  const short = await ShortModel.findOne({ LoadTitle: loadTitle });
+  const short = await ShortModel.findOne({ mediaItemId: mediaItemId });
 
   // If it exists, return error
   if (short) {
@@ -31,7 +31,7 @@ export async function createShortHandler(
     return;
   }
   // If it doesn't exist, perform transformations
-  let transformedComm = await transformShortFromRequest(req.body, loadTitle);
+  let transformedComm = await transformShortFromRequest(req.body, mediaItemId);
 
   // Insert short into MongoDB
   await ShortModel.create(transformedComm);
@@ -67,20 +67,20 @@ export async function bulkCreateShortHandler(
   for (const shortEntry of req.body) {
     let err = createMediaValidation(shortEntry);
     if (err !== '') {
-      responseErrors.push(new LoadTitleError(shortEntry.loadTitle, err));
+      responseErrors.push(new LoadTitleError(shortEntry.mediaItemId, err));
       continue;
     }
     try {
-      let loadTitle = shortEntry.title
+      let mediaItemId = shortEntry.path
         .replace(/[^a-zA-Z0-9]/g, '')
         .toLowerCase();
-      const short = await ShortModel.findOne({ LoadTitle: loadTitle });
+      const short = await ShortModel.findOne({ mediaItemId: mediaItemId });
       if (short) {
         // If it exists, return error
         responseErrors.push(
           new LoadTitleError(
             shortEntry.title,
-            `Short ${shortEntry.loadTitle} already exists`,
+            `Short ${shortEntry.mediaItemId} already exists`,
           ),
         );
         continue;
@@ -88,14 +88,14 @@ export async function bulkCreateShortHandler(
 
       let transformedComm = await transformShortFromRequest(
         shortEntry,
-        loadTitle,
+        mediaItemId,
       );
 
       await ShortModel.create(transformedComm);
-      createdShorts.push(transformedComm.LoadTitle);
+      createdShorts.push(transformedComm.mediaItemId);
     } catch (err) {
       responseErrors.push(
-        new LoadTitleError(shortEntry.loadTitle, err as string),
+        new LoadTitleError(shortEntry.mediaItemId, err as string),
       );
     }
   }
@@ -129,7 +129,9 @@ export async function deleteShortHandler(
   }
 
   // Retrieve short from MongoDB using short load title if it exists
-  const short = await ShortModel.findOne({ LoadTitle: req.query.loadTitle });
+  const short = await ShortModel.findOne({
+    mediaItemId: req.query.mediaItemId,
+  });
 
   // If it doesn't exist, return error
   if (!short) {
@@ -156,7 +158,7 @@ export async function updateShortHandler(
   }
 
   // Retrieve short from MongoDB using short load title if it exists
-  const short = await ShortModel.findOne({ Path: req.body.path });
+  const short = await ShortModel.findOne({ path: req.body.path });
 
   // If it doesn't exist, return error
   if (!short) {
@@ -165,7 +167,10 @@ export async function updateShortHandler(
   }
 
   // If it exists, perform transformations
-  let updatedShort = await transformShortFromRequest(req.body, short.LoadTitle);
+  let updatedShort = await transformShortFromRequest(
+    req.body,
+    short.mediaItemId,
+  );
 
   // Update short in MongoDB
   await ShortModel.updateOne({ _id: short._id }, updatedShort);
@@ -186,7 +191,9 @@ export async function getShortHandler(
   }
 
   // Retrieve short from MongoDB using short load title if it exists using request params
-  const short = await ShortModel.findOne({ LoadTitle: req.query.loadTitle });
+  const short = await ShortModel.findOne({
+    mediaItemId: req.query.mediaItemId,
+  });
 
   // If it doesn't exist, return error
   if (!short) {
@@ -214,18 +221,18 @@ export async function getAllShortsHandler(
 
 export async function transformShortFromRequest(
   short: any,
-  loadTitle: string,
+  mediaItemId: string,
 ): Promise<Short> {
   let parsedShort: Short = Short.fromRequestObject(short);
 
-  parsedShort.LoadTitle = loadTitle;
+  parsedShort.mediaItemId = mediaItemId;
 
-  if (parsedShort.Duration > 0) {
+  if (parsedShort.duration > 0) {
     return parsedShort;
   }
-  console.log(`Getting duration for ${parsedShort.Path}`);
-  let durationInSeconds = await getMediaDuration(parsedShort.Path);
-  parsedShort.Duration = durationInSeconds; // Update duration value
+  console.log(`Getting duration for ${parsedShort.path}`);
+  let durationInSeconds = await getMediaDuration(parsedShort.path);
+  parsedShort.duration = durationInSeconds; // Update duration value
 
   return parsedShort;
 }

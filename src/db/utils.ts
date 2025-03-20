@@ -5,7 +5,7 @@ export function checkBufferViability(commercialList: Commercial[]): boolean {
   let durationLimitsList = [15, 16, 17, 18, 19, 20, 30];
 
   durationLimitsList.forEach(durationLimit => {
-    let commercial = commercialList.find(c => c.Duration === durationLimit);
+    let commercial = commercialList.find(c => c.duration === durationLimit);
     if (commercial) {
       isViable = true;
     } else {

@@ -20,10 +20,10 @@ export async function createMusicHandler(
     return;
   }
 
-  let loadTitle = req.body.title.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+  let mediaItemId = req.body.path.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
 
   // Retrieve music from MongoDB using music load title if it exists
-  const music = await MusicModel.findOne({ LoadTitle: loadTitle });
+  const music = await MusicModel.findOne({ mediaItemId: mediaItemId });
 
   // If it exists, return error
   if (music) {
@@ -31,7 +31,7 @@ export async function createMusicHandler(
     return;
   }
   // If it doesn't exist, perform transformations
-  let transformedComm = await transformMusicFromRequest(req.body, loadTitle);
+  let transformedComm = await transformMusicFromRequest(req.body, mediaItemId);
 
   // Insert music into MongoDB
   await MusicModel.create(transformedComm);
@@ -67,20 +67,20 @@ export async function bulkCreateMusicHandler(
   for (const musicEntry of req.body) {
     let err = createMediaValidation(musicEntry);
     if (err !== '') {
-      responseErrors.push(new LoadTitleError(musicEntry.loadTitle, err));
+      responseErrors.push(new LoadTitleError(musicEntry.mediaItemId, err));
       continue;
     }
     try {
-      let loadTitle = musicEntry.title
+      let mediaItemId = musicEntry.path
         .replace(/[^a-zA-Z0-9]/g, '')
         .toLowerCase();
-      const music = await MusicModel.findOne({ LoadTitle: loadTitle });
+      const music = await MusicModel.findOne({ mediaItemId: mediaItemId });
       if (music) {
         // If it exists, return error
         responseErrors.push(
           new LoadTitleError(
             musicEntry.title,
-            `Music ${musicEntry.loadTitle} already exists`,
+            `Music ${musicEntry.mediaItemId} already exists`,
           ),
         );
         continue;
@@ -88,36 +88,32 @@ export async function bulkCreateMusicHandler(
 
       let transformedComm = await transformMusicFromRequest(
         musicEntry,
-        loadTitle,
+        mediaItemId,
       );
 
       await MusicModel.create(transformedComm);
-      createdMusic.push(transformedComm.LoadTitle);
+      createdMusic.push(transformedComm.mediaItemId);
     } catch (err) {
       responseErrors.push(
-        new LoadTitleError(musicEntry.loadTitle, err as string),
+        new LoadTitleError(musicEntry.mediaItemId, err as string),
       );
     }
   }
 
   if (responseErrors.length === req.body.length) {
-    res
-      .status(400)
-      .json({
-        message: 'Music Not Created',
-        createdMusic: [],
-        errors: responseErrors,
-      });
+    res.status(400).json({
+      message: 'Music Not Created',
+      createdMusic: [],
+      errors: responseErrors,
+    });
     return;
   }
 
-  res
-    .status(200)
-    .json({
-      message: 'Music Created',
-      createdMusic: createdMusic,
-      errors: responseErrors,
-    });
+  res.status(200).json({
+    message: 'Music Created',
+    createdMusic: createdMusic,
+    errors: responseErrors,
+  });
   return;
 }
 
@@ -133,7 +129,9 @@ export async function deleteMusicHandler(
   }
 
   // Retrieve music from MongoDB using music load title if it exists
-  const music = await MusicModel.findOne({ LoadTitle: req.query.loadTitle });
+  const music = await MusicModel.findOne({
+    mediaItemId: req.query.mediaItemId,
+  });
 
   // If it doesn't exist, return error
   if (!music) {
@@ -160,7 +158,7 @@ export async function updateMusicHandler(
   }
 
   // Retrieve music from MongoDB using music load title if it exists
-  const music = await MusicModel.findOne({ Path: req.body.path });
+  const music = await MusicModel.findOne({ path: req.body.path });
 
   // If it doesn't exist, return error
   if (!music) {
@@ -169,7 +167,10 @@ export async function updateMusicHandler(
   }
 
   // If it exists, perform transformations
-  let updatedMusic = await transformMusicFromRequest(req.body, music.LoadTitle);
+  let updatedMusic = await transformMusicFromRequest(
+    req.body,
+    music.mediaItemId,
+  );
 
   // Update music in MongoDB
   await MusicModel.updateOne({ _id: music._id }, updatedMusic);
@@ -190,7 +191,9 @@ export async function getMusicHandler(
   }
 
   // Retrieve music from MongoDB using music load title if it exists using request params
-  const music = await MusicModel.findOne({ LoadTitle: req.query.loadTitle });
+  const music = await MusicModel.findOne({
+    mediaItemId: req.query.mediaItemId,
+  });
 
   // If it doesn't exist, return error
   if (!music) {
@@ -218,18 +221,18 @@ export async function getAllMusicHandler(
 
 export async function transformMusicFromRequest(
   music: any,
-  loadTitle: string,
+  mediaItemId: string,
 ): Promise<Music> {
   let parsedMusic: Music = Music.fromRequestObject(music);
 
-  parsedMusic.LoadTitle = loadTitle;
+  parsedMusic.mediaItemId = mediaItemId;
 
-  if (parsedMusic.Duration > 0) {
+  if (parsedMusic.duration > 0) {
     return parsedMusic;
   }
-  console.log(`Getting duration for ${parsedMusic.Path}`);
-  let durationInSeconds = await getMediaDuration(parsedMusic.Path);
-  parsedMusic.Duration = durationInSeconds; // Update duration value
+  console.log(`Getting duration for ${parsedMusic.path}`);
+  let durationInSeconds = await getMediaDuration(parsedMusic.path);
+  parsedMusic.duration = durationInSeconds; // Update duration value
 
   return parsedMusic;
 }

@@ -1,8 +1,8 @@
 export class Config {
-  DataFolder: string;
-  Interval: number;
-  DefaultCommercialFolder: string;
-  DefaultPromo: string;
+  dataFolder: string;
+  interval: number;
+  defaultCommercialFolder: string;
+  defaultPromo: string;
 
   constructor(
     dataFolder: string,
@@ -10,10 +10,10 @@ export class Config {
     defaultCommercialFolder: string,
     defaultPromo: string,
   ) {
-    this.DataFolder = dataFolder;
-    this.Interval = interval;
-    this.DefaultCommercialFolder = defaultCommercialFolder;
-    this.DefaultPromo = defaultPromo;
+    this.dataFolder = dataFolder;
+    this.interval = interval;
+    this.defaultCommercialFolder = defaultCommercialFolder;
+    this.defaultPromo = defaultPromo;
   }
 
   static fromJsonObject(object: any): Config {

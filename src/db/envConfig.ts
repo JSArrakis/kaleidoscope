@@ -7,7 +7,7 @@ export async function getDefaultEnvConfig(
   defaultPromo: string,
 ): Promise<EnvConfiguration> {
   const defaultEnvConfig = await EnvConfigurationModel.findOne({
-    LoadTitle: 'default',
+    mediaItemId: 'default',
   });
   if (defaultEnvConfig) {
     console.log('Default Env Configuration already exists');
@@ -31,7 +31,7 @@ export async function getEnvConfig(
   loadTitle: string,
 ): Promise<[EnvConfiguration, string]> {
   const envConfig = await EnvConfigurationModel.findOne({
-    LoadTitle: loadTitle,
+    mediaItemId: loadTitle,
   });
   if (!envConfig) {
     console.log('Env Configuration does not exist');
