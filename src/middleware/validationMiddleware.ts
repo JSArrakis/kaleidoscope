@@ -308,3 +308,13 @@ export const updateCollectionValidationRules = [
 export const deleteCollectionValidationRules = [];
 
 export const getCollectionValidationRules = [];
+
+// ===========================================
+//          TAG VALIDATION
+// ===========================================
+
+export const createTagValidationRules = [body('name').isString().notEmpty()];
+
+export const deleteTagValidationRules = [];
+
+export const getTagsValidationRules = [];

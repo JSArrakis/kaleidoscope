@@ -6,6 +6,7 @@ import * as shortCont from '../controllers/shortControllers';
 import * as musicCont from '../controllers/musicControllers';
 import * as promoCont from '../controllers/promoControllers';
 import * as collectionCont from '../controllers/collectionControllers';
+import * as tagCont from '../controllers/tagControllers';
 // import * as blockCont from '../controllers/blockControllers';
 import * as verify from '../middleware/validationMiddleware';
 
@@ -196,6 +197,115 @@ router.get(
   '/get-all-promos',
   verify.getBufferValidationRules,
   promoCont.getAllPromosHandler,
+);
+
+// Tag Management
+router.post(
+  '/create-aesthetic-tag',
+  verify.createTagValidationRules,
+  tagCont.createAestheticTagHandler,
+);
+
+router.delete(
+  '/delete-aesthetic-tag',
+  verify.deleteTagValidationRules,
+  tagCont.deleteAestheticTagHandler,
+);
+
+router.get(
+  '/get-all-aesthetic-tags',
+  verify.getTagsValidationRules,
+  tagCont.getAllAestheticTagsHandler,
+);
+
+router.post(
+  '/create-age-group-tag',
+  verify.createTagValidationRules,
+  tagCont.createAgeGroupTagHandler,
+);
+
+router.delete(
+  '/delete-age-group-tag',
+  verify.deleteTagValidationRules,
+  tagCont.deleteAgeGroupTagHandler,
+);
+
+router.get(
+  '/get-all-age-group-tags',
+  verify.getTagsValidationRules,
+  tagCont.getAllAgeGroupTagsHandler,
+);
+
+router.post(
+  '/create-era-tag',
+  verify.createTagValidationRules,
+  tagCont.createEraTagHandler,
+);
+
+router.delete(
+  '/delete-era-tag',
+  verify.deleteTagValidationRules,
+  tagCont.deleteEraTagHandler,
+);
+
+router.get(
+  '/get-all-era-tags',
+  verify.getTagsValidationRules,
+  tagCont.getAllEraTagsHandler,
+);
+
+router.post(
+  '/create-holiday-tag',
+  verify.createTagValidationRules,
+  tagCont.createHolidayTagHandler,
+);
+
+router.delete(
+  '/delete-holiday-tag',
+  verify.deleteTagValidationRules,
+  tagCont.deleteHolidayTagHandler,
+);
+
+router.get(
+  '/get-all-holiday-tags',
+  verify.getTagsValidationRules,
+  tagCont.getAllHolidayTagsHandler,
+);
+
+router.post(
+  '/create-genre-tag',
+  verify.createTagValidationRules,
+  tagCont.createGenreTagHandler,
+);
+
+router.delete(
+  '/delete-genre-tag',
+  verify.deleteTagValidationRules,
+  tagCont.deleteGenreTagHandler,
+);
+
+router.get(
+  '/get-all-genre-tags',
+  verify.getTagsValidationRules,
+  tagCont.getAllGenreTagsHandler,
+);
+
+router.post(
+  '/create-specialty-tag',
+  verify.createTagValidationRules,
+  tagCont.createSpecialtyTagHandler,
+);
+
+router.delete(
+  '/delete-specialty-tag',
+  verify.deleteTagValidationRules,
+  tagCont.deleteSpecialtyTagHandler,
+);
+
+router.get(
+  '/get-all-specialty-tags',
+  verify.getTagsValidationRules,
+  tagCont.getAllSpecialtyTagsHandler,
 );
 
 // Collection Management
