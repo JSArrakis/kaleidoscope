@@ -1,10 +1,10 @@
 import { Request, Response } from 'express';
 import { validationResult } from 'express-validator';
-import { MovieModel, Movie } from '../models/movie';
+import { MovieModel, Movie, CollectionReference } from '../models/movie';
 import { LoadTitleError } from '../models/loadTitleError';
 import { createMediaValidation } from '../middleware/validationMiddleware';
 import { getMediaDuration } from '../utils/utilities';
-import { parsed } from 'yargs';
+import { Collection, CollectionModel } from '../models/collection';
 
 // ===========================================
 //               MOVIE HANDLERS
@@ -15,7 +15,6 @@ export async function createMovieHandler(
   res: Response,
 ): Promise<void> {
   console.log('NEW CREATE MOVIE REQUEST');
-  // Check for validation errors
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     res.status(400).json({ errors: errors.array() });
@@ -24,20 +23,16 @@ export async function createMovieHandler(
 
   let mediaItemId = req.body.path.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
 
-  // Retrieve movie from MongoDB using show load title if it exists
   const movie = await MovieModel.findOne({ mediaItemId: mediaItemId });
 
-  // If it exists, return error
   if (movie) {
     res.status(400).json({
       message: `The Media Item ID you selected for '${req.body.title}' already exists.`,
     });
     return;
   }
-  // If it doesn't exist, perform transformations
   let createdMovie = await transformMovieFromRequest(req.body, mediaItemId);
 
-  // Insert movie into MongoDB
   await MovieModel.create(createdMovie);
 
   res.status(200).json({ message: 'Movie Created' });
@@ -48,18 +43,16 @@ export async function bulkCreateMovieHandler(
   req: Request,
   res: Response,
 ): Promise<void> {
-  // Check for validation errors
+
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     res.status(400).json({ errors: errors.array() });
     return;
   }
-  // Validate request body is an array
   if (!Array.isArray(req.body)) {
     res.status(400).json({ message: 'Request body must be an array' });
     return;
   }
-  // Validate request body is an array of objects
   if (!req.body.every((item: any) => typeof item === 'object')) {
     res
       .status(400)
@@ -80,7 +73,6 @@ export async function bulkCreateMovieHandler(
     try {
       const movie = await MovieModel.findOne({ mediaItemId: mediaItemId });
       if (movie) {
-        // If it exists, return error
         responseErrors.push(
           new LoadTitleError(
             mediaItemId,
@@ -123,25 +115,59 @@ export async function deleteMovieHandler(
   req: Request,
   res: Response,
 ): Promise<void> {
-  // Check for validation errors
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     res.status(400).json({ errors: errors.array() });
     return;
   }
 
-  // Retrieve movie from MongoDB using movie load title if it exists
   const movie = await MovieModel.findOne({
     mediaItemId: req.query.mediaItemId,
   });
 
-  // If it doesn't exist, return error
   if (!movie) {
     res.status(400).json({ message: 'Movie does not exist' });
     return;
   }
 
-  // If it exists, delete it
+  const items = Array.isArray(movie.collections) ? movie.collections : [];
+
+  if (items.length > 0) {
+    const mappedItems: CollectionReference[] = items.map((item: any) =>
+      CollectionReference.fromRequestObject(item),
+    );
+
+    const collections: Collection[] = await CollectionModel.find({
+      mediaItemId: { $in: mappedItems.map((item: any) => item.mediaItemId) },
+    });
+    if (collections.length !== mappedItems.length) {
+      const missingCollections = mappedItems.filter((item: any) => {
+        return !collections.some(
+          (movie: any) => movie.mediaItemId === item.mediaItemId,
+        );
+      });
+      res
+        .status(400)
+        .json({ message: 'Collections not found', missingCollections });
+      return;
+    }
+
+    // Update each movie to include the collection
+    for (const collection of collections) {
+      let newCollectionItems = [...collection.items];
+
+      newCollectionItems = newCollectionItems.filter(
+        collectionItem => collectionItem.mediaItemId !== req.query.mediaItemId,
+      );
+      await CollectionModel.updateOne(
+        { mediaItemId: collection.mediaItemId },
+        {
+          items: newCollectionItems,
+        },
+      );
+    }
+  }
+
   await MovieModel.deleteOne({ _id: movie._id });
 
   res.status(200).json({ message: 'Movie Deleted' });
@@ -152,29 +178,78 @@ export async function updateMovieHandler(
   req: Request,
   res: Response,
 ): Promise<void> {
-  // Check for validation errors
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     res.status(400).json({ errors: errors.array() });
     return;
   }
-  let mediaItemId = req.body.path.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
-  // Retrieve movie from MongoDB using movie load title if it exists
-  const movie = await MovieModel.findOne({ mediaItemId: mediaItemId });
 
-  // If it doesn't exist, return error
+  const movie = await MovieModel.findOne({
+    mediaItemId: req.body.mediaItemId,
+  });
   if (!movie) {
-    res.status(404).json({ message: 'Movie does not exist' });
+    res.status(400).json({ message: 'Movie does not exist' });
     return;
   }
+  const items = Array.isArray(movie.collections) ? movie.collections : [];
 
-  // If it exists, perform transformations
-  let updatedMovie = await updateMovieFromRequest(req.body, movie);
+  if (items.length > 0) {
+    const mappedItems: CollectionReference[] = items.map((item: any) =>
+      CollectionReference.fromRequestObject(item),
+    );
 
-  // Update show in MongoDB
-  await MovieModel.updateOne({ _id: movie._id }, updatedMovie);
+    const collections = await CollectionModel.find({
+      mediaItemId: { $in: mappedItems.map((item: any) => item.mediaItemId) },
+    });
 
-  res.status(200).json({ message: 'Movie Updated', movie: updatedMovie });
+    if (collections.length !== mappedItems.length) {
+      const missingCollections = mappedItems.filter((item: any) => {
+        return !collections.some(
+          (movie: any) => movie.mediaItemId === item.mediaItemId,
+        );
+      });
+      res
+        .status(400)
+        .json({ message: 'Collections not found', missingCollections });
+      return;
+    }
+
+    for (const collection of collections) {
+      let newCollectionItems = [...collection.items];
+
+      const collectionItem = newCollectionItems.find(
+        item => item.mediaItemId === req.body.mediaItemId,
+      );
+      if (!collectionItem) {
+        res.status(400).json({ message: 'Collection Item not found' });
+        return;
+      }
+
+      newCollectionItems = newCollectionItems.filter(
+        collectionItem => collectionItem.mediaItemId !== req.body.mediaItemId,
+      );
+
+      newCollectionItems.push({
+        mediaItemId: req.body.mediaItemId,
+        mediaItemTitle: req.body.title,
+        sequence: collectionItem.sequence,
+      });
+
+      await CollectionModel.updateOne(
+        { mediaItemId: collection.mediaItemId },
+        {
+          items: newCollectionItems,
+        },
+      );
+    }
+  }
+
+  await MovieModel.updateOne(
+    { _id: movie._id },
+    Movie.fromRequestObject(req.body),
+  );
+
+  res.status(200).json({ message: 'Movie Updated' });
   return;
 }
 
@@ -182,19 +257,16 @@ export async function getMovieHandler(
   req: Request,
   res: Response,
 ): Promise<void> {
-  // Check for validation errors
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     res.status(400).json({ errors: errors.array() });
     return;
   }
 
-  // Retrieve movie from MongoDB using movie load title if it exists using request params
   const movie = await MovieModel.findOne({
     mediaItemId: req.query.mediaItemId,
   });
 
-  // If it doesn't exist, return error
   if (!movie) {
     res.status(404).json({ message: 'Movie does not exist' });
     return;
@@ -218,14 +290,6 @@ export async function getAllMoviesHandler(
   return;
 }
 
-async function updateMovieFromRequest(update: any, movie: any): Promise<Movie> {
-  let parsedMovie: Movie = Movie.fromRequestObject(update);
-
-  movie.Tags = parsedMovie.tags;
-
-  return movie;
-}
-
 async function transformMovieFromRequest(
   movie: any,
   mediaItemId: string,
@@ -240,7 +304,6 @@ async function transformMovieFromRequest(
   if (parsedMovie.duration > 0) {
     return parsedMovie;
   }
-  console.log(`Getting duration for ${parsedMovie.path}`);
   let durationInSeconds = await getMediaDuration(parsedMovie.path);
   parsedMovie.duration = durationInSeconds;
   parsedMovie.durationLimit =

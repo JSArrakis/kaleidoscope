@@ -56,6 +56,7 @@ export const updateMovieValidationRules = [
     }),
 
   body('path').isString().notEmpty(),
+  body('mediaItemId').isString().notEmpty(),
 ];
 
 export const deleteMovieValidationRules = [];
@@ -247,19 +248,19 @@ export const createCollectionValidationRules = [
           throw new Error('items must be an array of objects');
         }
 
-        if (!item.MediaItemId || typeof item.MediaItemId !== 'string') {
+        if (!item.mediaItemId || typeof item.mediaItemId !== 'string') {
           throw new Error(
             'items must have a "MediaItemId" field that is a string',
           );
         }
 
-        if (!item.MediaItemTitle || typeof item.MediaItemTitle !== 'string') {
+        if (!item.mediaItemTitle || typeof item.mediaItemTitle !== 'string') {
           throw new Error(
             'items must have a "MediaItemTitle" field that is a string',
           );
         }
 
-        if (!item.Sequence || typeof item.Sequence !== 'number') {
+        if (!item.sequence || typeof item.sequence !== 'number') {
           throw new Error(
             'items must have a "Sequence" field that is a number',
           );
@@ -283,19 +284,19 @@ export const updateCollectionValidationRules = [
           throw new Error('items must be an array of objects');
         }
 
-        if (!item.MediaItemId || typeof item.MediaItemId !== 'string') {
+        if (!item.mediaItemId || typeof item.mediaItemId !== 'string') {
           throw new Error(
             'items must have a "MediaItemId" field that is a string',
           );
         }
 
-        if (!item.MediaItemTitle || typeof item.MediaItemTitle !== 'string') {
+        if (!item.mediaItemTitle || typeof item.mediaItemTitle !== 'string') {
           throw new Error(
             'items must have a "MediaItemTitle" field that is a string',
           );
         }
 
-        if (!item.Sequence || typeof item.Sequence !== 'number') {
+        if (!item.sequence || typeof item.sequence !== 'number') {
           throw new Error(
             'items must have a "Sequence" field that is a number',
           );

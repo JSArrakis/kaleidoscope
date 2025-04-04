@@ -14,26 +14,34 @@ export interface IMovie extends BaseMedia {
 }
 
 export interface ICollectionReference {
-  curationRefId: string;
+  mediaItemId: string;
   title: string;
   sequence: number;
 }
 
 export class CollectionReference {
-  curationRefId: string;
+  mediaItemId: string;
   title: string;
   sequence: number;
 
   constructor(id: string, title: string, sequence: number) {
-    this.curationRefId = id;
+    this.mediaItemId = id;
     this.title = title;
     this.sequence = sequence;
+  }
+
+  static fromRequestObject(requestObject: any): CollectionReference {
+    return new CollectionReference(
+      requestObject.mediaItemId,
+      requestObject.title,
+      requestObject.sequence,
+    );
   }
 }
 
 // Define the CollectionReference schema
 const CollectionReferenceSchema = new Schema({
-  curationRefId: String,
+  mediaItemId: String,
   title: String,
   sequence: Number,
 });

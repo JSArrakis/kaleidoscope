@@ -15,136 +15,252 @@ export async function createCollectionHandler(
   req: Request,
   res: Response,
 ): Promise<void> {
-  // Check for validation errors
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    res.status(400).json({ errors: errors.array() });
-    return;
-  }
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      res.status(400).json({ errors: errors.array() });
+      return;
+    }
 
-  if (!req.body.title) {
-    res.status(400).json({ message: 'Title is required' });
-    return;
-  }
+    if (!req.body.title) {
+      res.status(400).json({ message: 'Title is required' });
+      return;
+    }
 
-  if (!req.body.mediaItemId) {
-    // create id from title
-    req.body.mediaItemId = req.body.title
-      .replace(/[^a-zA-Z0-9]/g, '')
-      .toLowerCase();
-  }
+    if (!req.body.mediaItemId) {
+      req.body.mediaItemId = req.body.title
+        .replace(/[^a-zA-Z0-9]/g, '')
+        .toLowerCase();
+    }
 
-  const collection = await CollectionModel.findOne({
-    mediaItemId: req.body.mediaItemId,
-  });
-
-  if (collection) {
-    res.status(400).json({ message: 'Collection already exists' });
-    return;
-  }
-
-  const items = req.body.items.map((item: any) => {
-    return CollectionItem.fromRequestObject(item);
-  });
-
-  const movies = await MovieModel.find({
-    mediaItemId: { $in: items.map((item: any) => item.mediaItemId) },
-  });
-
-  if (movies.length !== items.length) {
-    const missingMovies = items.filter((item: any) => {
-      return !movies.some(
-        (movie: any) => movie.mediaItemId === item.mediaItemId,
-      );
+    const existingCollection = await CollectionModel.findOne({
+      mediaItemId: req.body.mediaItemId,
     });
-    res.status(400).json({ message: 'Movies not found', missingMovies });
-    return;
-  }
 
-  await CollectionModel.create(Collection.fromRequestObject(req.body));
+    if (existingCollection) {
+      res.status(400).json({ message: 'Collection already exists' });
+      return;
+    }
 
-  items.forEach(async (item: any) => {
-    await MovieModel.updateOne(
-      { loadTitle: item.mediaItemId },
-      {
-        $push: {
-          collections: {
-            mediaItemId: item.mediaItemId,
-            title: item.mediaItemTitle,
-            sequence: item.sequence,
+    const items = Array.isArray(req.body.items) ? req.body.items : [];
+
+    if (items.length > 0) {
+      const mappedItems: CollectionItem[] = items.map((item: any) =>
+        CollectionItem.fromRequestObject(item),
+      );
+
+      const movies = await MovieModel.find({
+        mediaItemId: { $in: mappedItems.map((item: any) => item.mediaItemId) },
+      });
+
+      if (movies.length !== mappedItems.length) {
+        const missingMovies = mappedItems.filter((item: any) => {
+          return !movies.some(
+            (movie: any) => movie.mediaItemId === item.mediaItemId,
+          );
+        });
+        res.status(400).json({ message: 'Movies not found', missingMovies });
+        return;
+      }
+
+      for (const item of mappedItems) {
+        const movie = await MovieModel.findOne({
+          mediaItemId: item.mediaItemId,
+        });
+
+        if (!movie) {
+          res.status(400).json({ message: 'Movie not found' });
+          return;
+        }
+        let newCollections = [...movie.collections];
+
+        newCollections = newCollections.filter(
+          collection => collection.mediaItemId !== req.body.mediaItemId,
+        );
+        newCollections.push({
+          mediaItemId: req.body.mediaItemId,
+          title: req.body.title,
+          sequence: item.sequence,
+        });
+
+        await MovieModel.updateOne(
+          { mediaItemId: item.mediaItemId },
+          {
+            collections: newCollections,
           },
-        },
-      },
-    );
-  });
+        );
+      }
+    }
 
-  res.status(200).json({ message: 'Collection Created' });
-  return;
+    await CollectionModel.create([Collection.fromRequestObject(req.body)]);
+
+    res.status(200).json({ message: 'Collection Created' });
+  } catch (error) {
+    console.error('Operation failed:', error);
+    res.status(500).json({ message: 'Failed to create collection', error });
+  }
 }
 
 export async function deleteCollectionHandler(
   req: Request,
   res: Response,
 ): Promise<void> {
-  // Check for validation errors
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    res.status(400).json({ errors: errors.array() });
-    return;
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      res.status(400).json({ errors: errors.array() });
+      return;
+    }
+
+    if (!req.query.mediaItemId) {
+      res.status(400).json({ message: 'ID is required' });
+      return;
+    }
+
+    const collection = await CollectionModel.findOne({
+      mediaItemId: req.query.mediaItemId,
+    });
+
+    if (!collection) {
+      res.status(400).json({ message: 'Collection does not exist' });
+      return;
+    }
+
+    const mappedItems: CollectionItem[] = collection.items.map((item: any) =>
+      CollectionItem.fromRequestObject(item),
+    );
+
+    const movies = await MovieModel.find({
+      mediaItemId: { $in: mappedItems.map((item: any) => item.mediaItemId) },
+    });
+
+    if (movies.length !== mappedItems.length) {
+      const missingMovies = mappedItems.filter((item: any) => {
+        return !movies.some(
+          (movie: any) => movie.mediaItemId === item.mediaItemId,
+        );
+      });
+      res.status(400).json({ message: 'Movies not found', missingMovies });
+      return;
+    }
+
+    for (const item of mappedItems) {
+      const movie = await MovieModel.findOne({
+        mediaItemId: item.mediaItemId,
+      });
+
+      if (!movie) {
+        res.status(400).json({ message: 'Movie not found' });
+        return;
+      }
+      let newCollections = [...movie.collections];
+
+      newCollections = newCollections.filter(
+        collection => collection.mediaItemId !== req.query.mediaItemId,
+      );
+
+      await MovieModel.updateOne(
+        { mediaItemId: item.mediaItemId },
+        {
+          collections: newCollections,
+        },
+      );
+    }
+
+    await CollectionModel.deleteOne({ _id: collection._id });
+
+    res.status(200).json({ message: 'Collection Deleted' });
+  } catch (error) {
+    console.error('Operation failed:', error);
+    res.status(500).json({ message: 'Failed to delete collection', error });
   }
-
-  if (!req.query.mediaItemId) {
-    res.status(400).json({ message: 'ID is required' });
-    return;
-  }
-
-  const collection = await CollectionModel.findOne({
-    mediaItemId: req.query.mediaItemId,
-  });
-
-  if (!collection) {
-    res.status(400).json({ message: 'Collection does not exist' });
-    return;
-  }
-
-  await CollectionModel.deleteOne({ _id: collection._id });
-
-  res.status(200).json({ message: 'Collection Deleted' });
-  return;
 }
 
 export async function updateCollectionHandler(
   req: Request,
   res: Response,
 ): Promise<void> {
-  // Check for validation errors
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    res.status(400).json({ errors: errors.array() });
-    return;
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      res.status(400).json({ errors: errors.array() });
+      return;
+    }
+
+    if (!req.body.mediaItemId) {
+      res.status(400).json({ message: 'ID is required' });
+      return;
+    }
+
+    const collection = await CollectionModel.findOne({
+      mediaItemId: req.body.mediaItemId,
+    });
+
+    if (!collection) {
+      res.status(400).json({ message: 'Collection does not exist' });
+      return;
+    }
+
+    const items = Array.isArray(req.body.items) ? req.body.items : [];
+
+    if (items.length > 0) {
+      const mappedItems: CollectionItem[] = items.map((item: any) =>
+        CollectionItem.fromRequestObject(item),
+      );
+
+      const movies = await MovieModel.find({
+        mediaItemId: { $in: mappedItems.map((item: any) => item.mediaItemId) },
+      });
+
+      if (movies.length !== mappedItems.length) {
+        const missingMovies = mappedItems.filter((item: any) => {
+          return !movies.some(
+            (movie: any) => movie.mediaItemId === item.mediaItemId,
+          );
+        });
+        res.status(400).json({ message: 'Movies not found', missingMovies });
+        return;
+      }
+
+      for (const item of mappedItems) {
+        const movie = await MovieModel.findOne({
+          mediaItemId: item.mediaItemId,
+        });
+
+        if (!movie) {
+          res.status(400).json({ message: 'Movie not found' });
+          return;
+        }
+        let newCollections = [...movie.collections];
+
+        newCollections = newCollections.filter(
+          collection => collection.mediaItemId !== req.body.mediaItemId,
+        );
+        newCollections.push({
+          mediaItemId: req.body.mediaItemId,
+          title: req.body.title,
+          sequence: item.sequence,
+        });
+
+        await MovieModel.updateOne(
+          { mediaItemId: item.mediaItemId },
+          {
+            collections: newCollections,
+          },
+        );
+      }
+    }
+
+    await CollectionModel.updateOne(
+      { _id: collection._id },
+      Collection.fromRequestObject(req.body),
+    );
+
+    res.status(200).json({ message: 'Collection Updated' });
+  } catch (error) {
+    console.error('Operation failed:', error);
+    res.status(500).json({ message: 'Failed to update collection', error });
   }
-
-  if (!req.body.mediaItemId) {
-    res.status(400).json({ message: 'ID is required' });
-    return;
-  }
-
-  const collection = await CollectionModel.findOne({
-    mediaItemId: req.body.mediaItemId,
-  });
-
-  if (!collection) {
-    res.status(400).json({ message: 'Collection does not exist' });
-    return;
-  }
-
-  await CollectionModel.updateOne(
-    { _id: collection._id },
-    Collection.fromRequestObject(req.body),
-  );
-
-  res.status(200).json({ message: 'Collection Updated' });
-  return;
 }
 
 export async function getCollectionHandler(
