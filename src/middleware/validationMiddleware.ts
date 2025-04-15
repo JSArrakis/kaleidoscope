@@ -70,9 +70,7 @@ export const getMovieValidationRules = [];
 export const createShowValidationRules = [
   body('title').isString().notEmpty(),
 
-  body('mediaItemId').isString(),
-
-  body('imdb').isString(),
+  body('mediaItemId').isString().notEmpty(),
 
   body('tags')
     .isArray()
@@ -98,13 +96,22 @@ export const createShowValidationRules = [
     }),
 
   // Each episode must have the following fields
-  body('episodes.*.season').isNumeric().notEmpty(),
 
-  body('episodes.*.episode').isNumeric().notEmpty(),
+  body('episodes.*.mediaItemId').isString().notEmpty(),
 
   body('episodes.*.path').isString().notEmpty(),
 
-  body('episodes.*.title').isString(),
+  body('episodes.*.episodeNumber').isNumeric().notEmpty(),
+
+  body('episodes.*.episodeNumber').custom((value: number, { req }) => {
+    const episodeNumbers = req.body.episodes.map(
+      (episode: any) => episode.episodeNumber,
+    );
+    if (episodeNumbers.indexOf(value) !== episodeNumbers.lastIndexOf(value)) {
+      throw new Error('Episode number must be unique in the episodes array');
+    }
+    return true;
+  }),
 
   body('episodes.*.tags')
     .isArray()
@@ -121,10 +128,8 @@ export const createShowValidationRules = [
 export const updateShowValidationRules = [
   body('title').isString().notEmpty(),
 
-  body('mediaItemId').isString(),
+  body('mediaItemId').isString().notEmpty(),
 
-  body('imdb').isString(),
-  //body.tags must be an array of strings but can be empty
   body('tags')
     .isArray()
     .custom((value: string[]) => {
@@ -149,13 +154,22 @@ export const updateShowValidationRules = [
     }),
 
   // Each episode must have the following fields
-  body('episodes.*.season').isNumeric().notEmpty(),
 
-  body('episodes.*.episode').isNumeric().notEmpty(),
+  body('episodes.*.mediaItemId').isString().notEmpty(),
 
   body('episodes.*.path').isString().notEmpty(),
 
-  body('episodes.*.title').isString(),
+  body('episodes.*.episodeNumber').isNumeric().notEmpty(),
+
+  body('episodes.*.episodeNumber').custom((value: number, { req }) => {
+    const episodeNumbers = req.body.episodes.map(
+      (episode: any) => episode.episodeNumber,
+    );
+    if (episodeNumbers.indexOf(value) !== episodeNumbers.lastIndexOf(value)) {
+      throw new Error('Episode number must be unique in the episodes array');
+    }
+    return true;
+  }),
 
   body('episodes.*.tags')
     .isArray()

@@ -38,6 +38,11 @@ router.get(
   verify.getShowValidationRules,
   showCont.getAllShowsDataHandler,
 );
+router.get(
+  '/get-all-shows',
+  verify.getShowValidationRules,
+  showCont.getAllShowsHandler,
+);
 
 // Movie Management
 router.post(

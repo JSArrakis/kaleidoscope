@@ -43,7 +43,6 @@ export async function bulkCreateMovieHandler(
   req: Request,
   res: Response,
 ): Promise<void> {
-
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     res.status(400).json({ errors: errors.array() });
@@ -282,10 +281,6 @@ export async function getAllMoviesHandler(
 ): Promise<void> {
   const movies = await MovieModel.find();
 
-  if (!movies || movies.length === 0) {
-    res.status(404).json({ message: 'No Movies Found' });
-    return;
-  }
   res.status(200).json(movies);
   return;
 }

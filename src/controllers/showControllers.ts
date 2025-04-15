@@ -11,25 +11,28 @@ export async function createShowHandler(
   req: Request,
   res: Response,
 ): Promise<void> {
+  console.log('Incoming request to create show', req.body);
   // Check for validation errors
   const errors = validationResult(req);
+
+  console.log('Show Creation Errors', errors.array());
   if (!errors.isEmpty()) {
     res.status(400).json({ errors: errors.array() });
     return;
   }
 
-  let mediaItemId = req.body.path.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
-
   // Retrieve show from MongoDB using show load title if it exists
-  const show = await ShowModel.findOne({ mediaItemId: mediaItemId });
+  const show = await ShowModel.findOne({ mediaItemId: req.body.mediaItemId });
 
   // If it exists, return error
   if (show) {
-    res.status(400).json({ message: 'Show already exists' });
+    res.status(400).json({
+      message: `Show with mediaItemId : ${req.body.mediaItemId} already exists`,
+    });
     return;
   }
   // If it doesn't exist, perform transformations
-  let createdShow = await transformShowFromRequest(req.body, mediaItemId);
+  let createdShow = await transformShowFromRequest(req.body);
 
   // Insert show into MongoDB
   await ShowModel.create(createdShow);
@@ -77,10 +80,8 @@ export async function updateShowHandler(
     return;
   }
 
-  let mediaItemId = req.body.path.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
-
   // Retrieve show from MongoDB using show load title if it exists
-  const show = await ShowModel.findOne({ mediaItemId: mediaItemId });
+  const show = await ShowModel.findOne({ mediaItemId: req.body.mediaItemId });
 
   // If it doesn't exist, return error
   if (!show) {
@@ -89,7 +90,7 @@ export async function updateShowHandler(
   }
 
   // If it exists, perform transformations
-  let updatedShow = await transformShowFromRequest(req.body, mediaItemId);
+  let updatedShow = await transformShowFromRequest(req.body);
 
   // Update show in MongoDB
   await ShowModel.updateOne({ _id: show._id }, updatedShow);
@@ -122,6 +123,16 @@ export async function getShowHandler(
   return;
 }
 
+export async function getAllShowsHandler(
+  req: Request,
+  res: Response,
+): Promise<void> {
+  const shows = await ShowModel.find();
+
+  res.status(200).json(shows);
+  return;
+}
+
 export async function getAllShowsDataHandler(
   req: Request,
   res: Response,
@@ -151,17 +162,8 @@ export async function getAllShowsDataHandler(
   return;
 }
 
-export async function transformShowFromRequest(
-  show: any,
-  mediaItemId: string,
-): Promise<Show> {
-  let parsedShow: Show = Show.fromRequestObject(show);
-
-  parsedShow.mediaItemId = mediaItemId;
-
-  parsedShow.alias = parsedShow.mediaItemId;
-
-  for (const episode of parsedShow.episodes) {
+export async function transformShowFromRequest(show: Show): Promise<Show> {
+  for (const episode of show.episodes) {
     if (episode.duration > 0) continue; // Skip if duration is already set
     console.log(`Getting duration for ${episode.path}`);
     let durationInSeconds = await getMediaDuration(episode.path);
@@ -174,7 +176,7 @@ export async function transformShowFromRequest(
 
   //create an accounting of how many different duration limits there are and create a map of it
   let durationLimitsMap = new Map();
-  parsedShow.episodes.forEach(episode => {
+  show.episodes.forEach(episode => {
     if (durationLimitsMap.has(episode.durationLimit)) {
       durationLimitsMap.set(
         episode.durationLimit,
@@ -194,21 +196,39 @@ export async function transformShowFromRequest(
       maxDurationLimit = key;
     }
   });
-  parsedShow.durationLimit = maxDurationLimit;
+  show.durationLimit = maxDurationLimit;
 
   //if there are episodes with durations over the duration limit, set the show to over duration
-  parsedShow.overDuration = parsedShow.episodes.some(
-    episode => episode.duration > parsedShow.durationLimit,
+  show.overDuration = show.episodes.some(
+    episode => episode.duration > show.durationLimit,
   );
 
-  //assume the episodes of the show are in order and set the episode number to the index of the episode in the array + 1
-  parsedShow.episodes.forEach((episode, index) => {
-    episode.episodeNumber = index + 1;
-    episode.mediaItemId = `${parsedShow.mediaItemId}-${episode.episodeNumber}`;
+  //set the episode count to the length of the episodes array
+  show.episodeCount = show.episodes.length;
+
+  //specific epdiode tags that are not presenting in the show tags are added as secondary tags
+  show.secondaryTags = show.episodes.reduce((acc: string[], episode) => {
+    episode.tags.forEach((tag: string) => {
+      if (!show.tags.includes(tag)) {
+        acc.push(tag);
+      }
+    });
+    return acc;
+  }, []);
+
+  //create a list of episodes that is sorted by episode.episode disregarding the fields episodeNumber and season
+  const sortedEpisodes = show.episodes.sort((a, b) => {
+    if (a.episode < b.episode) return -1;
+    if (a.episode > b.episode) return 1;
+    return 0;
   });
 
-  //set the episode count to the length of the episodes array
-  parsedShow.episodeCount = parsedShow.episodes.length;
-
-  return parsedShow;
+  // If the first episode is over the duration limit, set the show to first episode over duration
+  if (sortedEpisodes.length > 0) {
+    show.firstEpisodeOverDuration =
+      sortedEpisodes[0].duration > show.durationLimit;
+  } else {
+    show.firstEpisodeOverDuration = false;
+  }
+  return show;
 }
