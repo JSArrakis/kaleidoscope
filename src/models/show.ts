@@ -2,8 +2,8 @@ import mongoose, { Document, Model } from 'mongoose';
 import { BaseMedia } from './mediaInterface';
 
 export interface IEpisode {
-  season: number;
-  episode: number;
+  season: string;
+  episode: string;
   episodeNumber: number;
   path: string;
   title: string;
@@ -28,8 +28,8 @@ export interface IShow extends Document, BaseMedia {
 }
 
 export const EpisodeSchema = new mongoose.Schema({
-  season: Number,
-  episode: Number,
+  season: String,
+  episode: String,
   episodeNumber: Number,
   path: String,
   title: String,
@@ -95,8 +95,8 @@ export class ShowData {
 }
 
 export class Episode {
-  public season: number;
-  public episode: number;
+  public season: string;
+  public episode: string;
   public episodeNumber: number;
   public path: string;
   public title: string;
@@ -106,8 +106,8 @@ export class Episode {
   public tags: string[];
 
   constructor(
-    season: number,
-    episode: number,
+    season: string,
+    episode: string,
     episodeNumber: number,
     path: string,
     title: string,
