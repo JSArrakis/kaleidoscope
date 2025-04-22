@@ -20,14 +20,16 @@ export async function createShortHandler(
     return;
   }
 
-  let mediaItemId = req.body.path.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+  let mediaItemId = req.body.mediaItemId;
 
   // Retrieve short from MongoDB using short load title if it exists
   const short = await ShortModel.findOne({ mediaItemId: mediaItemId });
 
   // If it exists, return error
   if (short) {
-    res.status(400).json({ message: 'Short already exists' });
+    res.status(400).json({
+      message: `Short with mediaItemId ${mediaItemId} already exists`,
+    });
     return;
   }
   // If it doesn't exist, perform transformations
@@ -128,14 +130,18 @@ export async function deleteShortHandler(
     return;
   }
 
+  let mediaItemId = req.query.mediaItemId;
+
   // Retrieve short from MongoDB using short load title if it exists
   const short = await ShortModel.findOne({
-    mediaItemId: req.query.mediaItemId,
+    mediaItemId: mediaItemId,
   });
 
   // If it doesn't exist, return error
   if (!short) {
-    res.status(400).json({ message: 'Short does not exist' });
+    res.status(400).json({
+      message: `Short with mediaItemId ${mediaItemId} does not exist`,
+    });
     return;
   }
 
@@ -211,10 +217,6 @@ export async function getAllShortsHandler(
 ): Promise<void> {
   const shorts = await ShortModel.find({});
 
-  if (!shorts || shorts.length === 0) {
-    res.status(404).json({ message: 'No Shorts Found' });
-    return;
-  }
   res.status(200).json(shorts);
   return;
 }
