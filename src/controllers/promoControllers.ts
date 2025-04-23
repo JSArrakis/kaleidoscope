@@ -20,7 +20,7 @@ export async function createPromoHandler(
     return;
   }
 
-  let mediaItemId = req.body.path.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+  let mediaItemId = req.body.mediaItemId;
 
   // Retrieve promo from MongoDB using promo load title if it exists
   const promo = await PromoModel.findOne({ mediaItemId: mediaItemId });
@@ -158,7 +158,7 @@ export async function updatePromoHandler(
   }
 
   // Retrieve promo from MongoDB using promo load title if it exists
-  const promo = await PromoModel.findOne({ path: req.body.path });
+  const promo = await PromoModel.findOne({ mediaItemId: req.body.mediaItemId });
 
   // If it doesn't exist, return error
   if (!promo) {
@@ -209,12 +209,8 @@ export async function getAllPromosHandler(
   req: Request,
   res: Response,
 ): Promise<void> {
-  const promos = await PromoModel.find({});
+  const promos = await PromoModel.find();
 
-  if (!promos || promos.length === 0) {
-    res.status(404).json({ message: 'No Promos Found' });
-    return;
-  }
   res.status(200).json(promos);
   return;
 }

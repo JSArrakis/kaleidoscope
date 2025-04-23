@@ -215,7 +215,7 @@ export async function getAllShortsHandler(
   req: Request,
   res: Response,
 ): Promise<void> {
-  const shorts = await ShortModel.find({});
+  const shorts = await ShortModel.find();
 
   res.status(200).json(shorts);
   return;

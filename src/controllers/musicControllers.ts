@@ -20,7 +20,7 @@ export async function createMusicHandler(
     return;
   }
 
-  let mediaItemId = req.body.path.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+  let mediaItemId = req.body.mediaItemId;
 
   // Retrieve music from MongoDB using music load title if it exists
   const music = await MusicModel.findOne({ mediaItemId: mediaItemId });
@@ -158,7 +158,7 @@ export async function updateMusicHandler(
   }
 
   // Retrieve music from MongoDB using music load title if it exists
-  const music = await MusicModel.findOne({ path: req.body.path });
+  const music = await MusicModel.findOne({ mediaItemId: req.body.mediaItemId });
 
   // If it doesn't exist, return error
   if (!music) {
@@ -209,12 +209,8 @@ export async function getAllMusicHandler(
   req: Request,
   res: Response,
 ): Promise<void> {
-  const music = await MusicModel.find({});
+  const music = await MusicModel.find();
 
-  if (!music || music.length === 0) {
-    res.status(404).json({ message: 'No Music Found' });
-    return;
-  }
   res.status(200).json(music);
   return;
 }

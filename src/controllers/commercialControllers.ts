@@ -20,7 +20,7 @@ export async function createCommercialHandler(
     return;
   }
 
-  let mediaItemId = req.body.path.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+  let mediaItemId = req.body.mediaItemId;
 
   // Retrieve commercial from MongoDB using commercial load title if it exists
   const commercial = await CommercialModel.findOne({ mediaItemId: mediaItemId });
@@ -163,7 +163,7 @@ export async function updateCommercialHandler(
   }
 
   // Retrieve commercial from MongoDB using commercial load title if it exists
-  const commercial = await CommercialModel.findOne({ path: req.body.path });
+  const commercial = await CommercialModel.findOne({ mediaItemId: req.body.mediaItemId });
 
   // If it doesn't exist, return error
   if (!commercial) {
@@ -214,12 +214,8 @@ export async function getAllCommercialsHandler(
   req: Request,
   res: Response,
 ): Promise<void> {
-  const commercials = await CommercialModel.find({});
+  const commercials = await CommercialModel.find();
 
-  if (!commercials || commercials.length === 0) {
-    res.status(404).json({ message: 'No Commercials Found' });
-    return;
-  }
   res.status(200).json(commercials);
   return;
 }
