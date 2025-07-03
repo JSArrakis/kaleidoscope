@@ -47,18 +47,6 @@ export const GenreTagModel: Model<ITag> = mongoose.model<ITag>(
   'genreTags',
 );
 
-export const AgeGroupTagModel: Model<ITag> = mongoose.model<ITag>(
-  'AgeGroupTag',
-  TagSchema,
-  'ageGroupTags',
-);
-
-export const HolidayTagModel: Model<ITag> = mongoose.model<ITag>(
-  'HolidayTag',
-  TagSchema,
-  'holidayTags',
-);
-
 export const EraTagModel: Model<ITag> = mongoose.model<ITag>(
   'EraTag',
   TagSchema,
@@ -69,4 +57,10 @@ export const SpecialtyTagModel: Model<ITag> = mongoose.model<ITag>(
   'SpecialtyTag',
   TagSchema,
   'specialtyTags',
+);
+
+export const MusicGenreModel: Model<ITag> = mongoose.model<ITag>(
+  'MusicGenre',
+  TagSchema,
+  'musicGenres',
 );

@@ -70,7 +70,7 @@ export async function loadDefaultCommercials(): Promise<Commercial[]> {
 }
 
 export async function loadMusic(): Promise<Music[]> {
-  const music = await MusicModel.find();
+  const music = (await MusicModel.find()) as Music[];
   if (!music || music.length === 0) {
     console.log('No Music Found');
     return [];
@@ -80,7 +80,7 @@ export async function loadMusic(): Promise<Music[]> {
 }
 
 export async function loadShorts(): Promise<Short[]> {
-  const shorts = await ShortModel.find();
+  const shorts = (await ShortModel.find()) as Short[];
   if (!shorts || shorts.length === 0) {
     console.log('No Shorts Found');
     return [];

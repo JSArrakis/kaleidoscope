@@ -151,3 +151,10 @@ export function createMosaicKey(genres: string[]): string {
     .sort()
     .join('-');
 }
+
+export function parseMonthDayToCurrentYear(monthDay: string): Date {
+  const currentYear = new Date().getFullYear();
+  // Handle formats like "--12-25" or "12-25"
+  const cleanMonthDay = monthDay.startsWith('--') ? monthDay.slice(2) : monthDay;
+  return new Date(`${currentYear}-${cleanMonthDay}`);
+}

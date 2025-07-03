@@ -11,11 +11,8 @@ export async function createShowHandler(
   req: Request,
   res: Response,
 ): Promise<void> {
-  console.log('Incoming request to create show', req.body);
   // Check for validation errors
   const errors = validationResult(req);
-
-  console.log('Show Creation Errors', errors.array());
   if (!errors.isEmpty()) {
     res.status(400).json({ errors: errors.array() });
     return;

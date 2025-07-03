@@ -2,12 +2,12 @@ import { Request, Response } from 'express';
 import { validationResult } from 'express-validator';
 import {
   AestheticTagModel,
-  AgeGroupTagModel,
   EraTagModel,
   GenreTagModel,
-  HolidayTagModel,
   SpecialtyTagModel,
 } from '../models/tag';
+import { AgeGroupModel } from '../models/ageGroup';
+import { HolidayModel } from '../models/holiday';
 
 // Aesthetic Tag Management
 
@@ -72,7 +72,7 @@ export async function getAllAestheticTagsHandler(
 
 // Age Group Tag Management
 
-export async function createAgeGroupTagHandler(
+export async function createAgeGroupHandler(
   req: Request,
   res: Response,
 ): Promise<void> {
@@ -82,20 +82,49 @@ export async function createAgeGroupTagHandler(
     return;
   }
 
-  const tag = await AgeGroupTagModel.findOne({ tagId: req.body.tagId });
+  const tag = await AgeGroupModel.findOne({ tagId: req.body.tagId });
 
   if (tag) {
     res.status(400).json({ message: 'Tag already exists' });
     return;
   }
 
-  await AgeGroupTagModel.create({ tagId: req.body.tagId, name: req.body.name });
+  await AgeGroupModel.create(req.body);
 
   res.status(200).json({ message: 'Tag Created' });
   return;
 }
 
-export async function deleteAgeGroupTagHandler(
+export async function updateAgeGroupHandler(
+  req: Request,
+  res: Response,
+): Promise<void> {2
+  // Check for validation errors
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    res.status(400).json({ errors: errors.array() });
+    return;
+  }
+
+  // Retrieve promo from MongoDB using promo load title if it exists
+  const ageGroup = await AgeGroupModel.findOne({
+    tagId: req.body.tagId,
+  });
+
+  // If it doesn't exist, return error
+  if (!ageGroup) {
+    res.status(400).json({ message: 'Promo does not exist' });
+    return;
+  }
+
+  // Update promo in MongoDB
+  await AgeGroupModel.updateOne({ _id: ageGroup._id }, req.body);
+
+  res.status(200).json({ message: 'Promo Updated' });
+  return;
+}
+
+export async function deleteAgeGroupHandler(
   req: Request,
   res: Response,
 ): Promise<void> {
@@ -105,24 +134,24 @@ export async function deleteAgeGroupTagHandler(
     return;
   }
 
-  const tag = await AgeGroupTagModel.findOne({ tagId: req.query.tagId });
+  const tag = await AgeGroupModel.findOne({ tagId: req.query.tagId });
 
   if (!tag) {
     res.status(400).json({ message: 'Tag does not exist' });
     return;
   }
 
-  await AgeGroupTagModel.deleteOne({ tagId: req.query.tagId });
+  await AgeGroupModel.deleteOne({ tagId: req.query.tagId });
 
   res.status(200).json({ message: 'Tag Deleted' });
   return;
 }
 
-export async function getAllAgeGroupTagsHandler(
+export async function getAllAgeGroupsHandler(
   req: Request,
   res: Response,
 ): Promise<void> {
-  const tags = await AgeGroupTagModel.find({});
+  const tags = await AgeGroupModel.find();
 
   res.status(200).json(tags);
   return;
@@ -198,14 +227,14 @@ export async function createHolidayTagHandler(
     return;
   }
 
-  const tag = await HolidayTagModel.findOne({ tagId: req.body.tagId });
+  const tag = await HolidayModel.findOne({ tagId: req.body.tagId });
 
   if (tag) {
     res.status(400).json({ message: 'Tag already exists' });
     return;
   }
 
-  await HolidayTagModel.create({ tagId: req.body.tagId, name: req.body.name });
+  await HolidayModel.create(req.body);
 
   res.status(200).json({ message: 'Tag Created' });
   return;
@@ -221,14 +250,14 @@ export async function deleteHolidayTagHandler(
     return;
   }
 
-  const tag = await HolidayTagModel.findOne({ tagId: req.query.tagId });
+  const tag = await HolidayModel.findOne({ tagId: req.query.tagId });
 
   if (!tag) {
     res.status(400).json({ message: 'Tag does not exist' });
     return;
   }
 
-  await HolidayTagModel.deleteOne({ tagId: req.query.tagId });
+  await HolidayModel.deleteOne({ tagId: req.query.tagId });
 
   res.status(200).json({ message: 'Tag Deleted' });
   return;
@@ -238,7 +267,7 @@ export async function getAllHolidayTagsHandler(
   req: Request,
   res: Response,
 ): Promise<void> {
-  const tags = await HolidayTagModel.find({});
+  const tags = await HolidayModel.find();
 
   res.status(200).json(tags);
   return;
@@ -321,7 +350,10 @@ export async function createSpecialtyTagHandler(
     return;
   }
 
-  await SpecialtyTagModel.create({ tagId: req.body.tagId, name: req.body.name });
+  await SpecialtyTagModel.create({
+    tagId: req.body.tagId,
+    name: req.body.name,
+  });
 
   res.status(200).json({ message: 'Tag Created' });
   return;

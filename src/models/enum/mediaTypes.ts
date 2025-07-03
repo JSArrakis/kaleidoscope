@@ -7,4 +7,5 @@ export enum MediaType {
   Commercial,
   Block,
   Episode,
+  Bumper,
 }

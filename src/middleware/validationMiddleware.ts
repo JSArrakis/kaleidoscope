@@ -210,7 +210,7 @@ export function createMediaValidation(media: any): string {
 }
 
 export const createBufferValidationRules = [
-  body('title').isString().notEmpty(),
+  body('mediaItemId').isString().notEmpty(),
   body('tags')
     .isArray({ min: 1 })
     .custom((value: string[]) => {
@@ -328,8 +328,89 @@ export const getCollectionValidationRules = [];
 //          TAG VALIDATION
 // ===========================================
 
-export const createTagValidationRules = [body('name').isString().notEmpty()];
+export const createTagValidationRules = [
+  body('name').isString().notEmpty(),
+  body('tagId').isString().notEmpty(),
+];
+
+export const updateTagValidationRules = [
+  body('name').isString().notEmpty(),
+  body('tagId').isString().notEmpty(),
+];
 
 export const deleteTagValidationRules = [];
 
 export const getTagsValidationRules = [];
+
+
+export const createAgeGroupValidationRules = [
+  body('name').isString().notEmpty(),
+  body('tagId').isString().notEmpty(),
+  body('sequence').isNumeric().notEmpty(),
+];
+
+export const updateAgeGroupValidationRules = [
+  body('name').isString().notEmpty(),
+  body('tagId').isString().notEmpty(),
+  body('sequence').isNumeric().notEmpty(),
+];
+
+export const deleteAgeGroupValidationRules = [];
+export const getAgeGroupsValidationRules = [];
+
+export const createMusicGenreValidationRules = [
+  body('title').isString().notEmpty(),
+  body('tagId').isString().notEmpty(),
+  // for each sub-genre, check if it is an object and has a title and tagId
+
+  body('subGenres')
+    .isArray()
+    .custom((value: any[]) => {
+      for (const item of value) {
+        if (typeof item !== 'object') {
+          throw new Error('subGenres must be an array of objects');
+        }
+        if (!item.title || typeof item.title !== 'string') {
+          throw new Error(
+            'subGenres must have a "title" field that is a string',
+          );
+        }
+        if (!item.tagId || typeof item.tagId !== 'string') {
+          throw new Error(
+            'subGenres must have a "tagId" field that is a string',
+          );
+        }
+      }
+      return true;
+    }),
+];
+
+export const updateMusicGenreValidationRules = [
+  body('title').isString().notEmpty(),
+  body('tagId').isString().notEmpty(),
+  // for each sub-genre, check if it is an object and has a title and tagId
+
+  body('subGenres')
+    .isArray()
+    .custom((value: any[]) => {
+      for (const item of value) {
+        if (typeof item !== 'object') {
+          throw new Error('subGenres must be an array of objects');
+        }
+        if (!item.title || typeof item.title !== 'string') {
+          throw new Error(
+            'subGenres must have a "title" field that is a string',
+          );
+        }
+        if (!item.tagId || typeof item.tagId !== 'string') {
+          throw new Error(
+            'subGenres must have a "tagId" field that is a string',
+          );
+        }
+      }
+      return true;
+    }),
+];
+
+export const deleteMusicGenreValidationRules = [];
+export const getMusicGenresValidationRules = [];

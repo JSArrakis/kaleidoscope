@@ -63,7 +63,7 @@ export async function transformShowFromRequest(
   //assume the episodes of the show are in order and set the episode number to the index of the episode in the array + 1
   parsedShow.episodes.forEach((episode, index) => {
     episode.episodeNumber = index + 1;
-    episode.episodeId = `${parsedShow.mediaItemId}-${episode.episodeNumber}`;
+    episode.mediaItemId = `${parsedShow.mediaItemId}-${episode.episodeNumber}`;
   });
 
   //set the episode count to the length of the episodes array

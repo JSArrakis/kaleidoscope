@@ -5,8 +5,10 @@ import * as commCont from '../controllers/commercialControllers';
 import * as shortCont from '../controllers/shortControllers';
 import * as musicCont from '../controllers/musicControllers';
 import * as promoCont from '../controllers/promoControllers';
+import * as bumperCont from '../controllers/bumperControllers';
 import * as collectionCont from '../controllers/collectionControllers';
 import * as tagCont from '../controllers/tagControllers';
+import * as musicGenreCont from '../controllers/musicGenreControllers';
 // import * as blockCont from '../controllers/blockControllers';
 import * as verify from '../middleware/validationMiddleware';
 
@@ -204,6 +206,28 @@ router.get(
   promoCont.getAllPromosHandler,
 );
 
+// Bumper Management
+router.post(
+  '/create-bumper',
+  verify.createBufferValidationRules,
+  bumperCont.createBumperHandler,
+);
+router.delete(
+  '/delete-bumper',
+  verify.deleteBufferValidationRules,
+  bumperCont.deleteBumperHandler,
+);
+router.put(
+  '/update-bumper',
+  verify.updateBufferValidationRules,
+  bumperCont.updateBumperHandler,
+);
+router.get(
+  '/get-all-bumpers',
+  verify.getBufferValidationRules,
+  bumperCont.getAllBumpersHandler,
+);
+
 // Tag Management
 router.post(
   '/create-aesthetic-tag',
@@ -224,21 +248,27 @@ router.get(
 );
 
 router.post(
-  '/create-age-group-tag',
-  verify.createTagValidationRules,
-  tagCont.createAgeGroupTagHandler,
+  '/create-age-group',
+  verify.createAgeGroupValidationRules,
+  tagCont.createAgeGroupHandler,
 );
 
 router.delete(
-  '/delete-age-group-tag',
-  verify.deleteTagValidationRules,
-  tagCont.deleteAgeGroupTagHandler,
+  '/delete-age-group',
+  verify.deleteAgeGroupValidationRules,
+  tagCont.deleteAgeGroupHandler,
+);
+
+router.put(
+  '/update-age-group',
+  verify.updateAgeGroupValidationRules,
+  tagCont.updateAgeGroupHandler,
 );
 
 router.get(
-  '/get-all-age-group-tags',
-  verify.getTagsValidationRules,
-  tagCont.getAllAgeGroupTagsHandler,
+  '/get-all-age-groups',
+  verify.getAgeGroupsValidationRules,
+  tagCont.getAllAgeGroupsHandler,
 );
 
 router.post(
@@ -311,6 +341,24 @@ router.get(
   '/get-all-specialty-tags',
   verify.getTagsValidationRules,
   tagCont.getAllSpecialtyTagsHandler,
+);
+
+router.post(
+  '/create-music-genre',
+  verify.createTagValidationRules,
+  musicGenreCont.createMusicGenreHandler,
+);
+
+router.delete(
+  '/delete-music-genre',
+  verify.deleteTagValidationRules,
+  musicGenreCont.deleteMusicGenreHandler,
+);
+
+router.get(
+  '/get-all-music-genres',
+  verify.getTagsValidationRules,
+  musicGenreCont.getAllMusicGenresHandler,
 );
 
 // Collection Management

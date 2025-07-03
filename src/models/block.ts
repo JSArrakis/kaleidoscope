@@ -3,7 +3,7 @@ import { Promo } from './promo';
 import { Episode } from './show';
 
 export class Block {
-  block: string;
+  title: string;
   mediaItemId: string;
   type: string;
   duration: number;
@@ -28,7 +28,7 @@ export class Block {
     shows: BlockShow[],
     path: string,
   ) {
-    this.block = title;
+    this.title = title;
     this.mediaItemId = mediaItemId;
     this.type = type;
     this.duration = duration;

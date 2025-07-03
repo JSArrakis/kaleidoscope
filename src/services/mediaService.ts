@@ -5,12 +5,15 @@ import {
   createDefaultPromo,
   createDefaultCommercials,
 } from '../db/defaultMedia';
-import { loadDefaultEnvConfig } from '../config/configService';
+
 import { StreamType } from '../models/enum/streamTypes';
 import { IStreamRequest } from '../models/streamRequest';
 import { Mosaic } from '../models/mosaic';
+import { Holiday } from '../models/holiday';
 
 let media: Media = new Media([], [], [], [], [], [], [], [], []);
+let holidays: Holiday[] = [];
+let currentHolidays: Holiday[] = [];
 let mosaics: Mosaic[] = [];
 let streamType: StreamType;
 let args: IStreamRequest;
@@ -49,9 +52,32 @@ export async function loadMedia(config: Config): Promise<void> {
     blocks: [],
   };
 
-  await loadDefaultEnvConfig(config.defaultPromo);
+  await +config.defaultPromo;
 
   mosaics = await dataLoader.loadMosaics();
+  holidays = await dataLoader.loadHolidays();
+}
+
+export function getHolidays(): Holiday[] {
+  return holidays;
+}
+
+export function getCurrentHolidays(): Holiday[] {
+  return currentHolidays;
+}
+
+export function setCurrentHolidays(): void {
+  currentHolidays = holidays.filter(holiday => {
+    const today = new Date();
+    if (holiday.seasonStartDate && holiday.seasonEndDate) {
+      return (
+        today >= new Date(holiday.seasonStartDate) &&
+        today <= new Date(holiday.seasonEndDate)
+      );
+    } else {
+      return today === new Date(holiday.holidayDate);
+    }
+  });
 }
 
 export function getMedia(): Media {

@@ -5,13 +5,15 @@ import { MediaBlock } from '../models/mediaBlock';
 import * as VLC from 'vlc-client';
 import { ContStreamRequest } from '../models/streamRequest';
 import { StreamType } from '../models/enum/streamTypes';
-import { getMedia, getMosaics, getStreamType } from './mediaService';
+import { getMedia, getMosaics, getStreamType, setCurrentHolidays, getCurrentHolidays } from './mediaService';
 import { getConfig } from '../config/configService';
 
 const intervalInSeconds: number = 300;
 let vlc: VLC.Client;
 let endOfDayMarker: number = 0;
 let tomorrow: number = 0;
+let initialStart: boolean = true;
+let currentHolidays: string[] = []; // This will hold the current holidays, if any
 
 function calculateDelayToNextInterval(intervalInSeconds: number): number {
   // Get the current Unix timestamp

@@ -23,7 +23,9 @@ export async function createCommercialHandler(
   let mediaItemId = req.body.mediaItemId;
 
   // Retrieve commercial from MongoDB using commercial load title if it exists
-  const commercial = await CommercialModel.findOne({ mediaItemId: mediaItemId });
+  const commercial = await CommercialModel.findOne({
+    mediaItemId: mediaItemId,
+  });
 
   // If it exists, return error
   if (commercial) {
@@ -163,7 +165,9 @@ export async function updateCommercialHandler(
   }
 
   // Retrieve commercial from MongoDB using commercial load title if it exists
-  const commercial = await CommercialModel.findOne({ mediaItemId: req.body.mediaItemId });
+  const commercial = await CommercialModel.findOne({
+    mediaItemId: req.body.mediaItemId,
+  });
 
   // If it doesn't exist, return error
   if (!commercial) {

@@ -631,7 +631,7 @@ export function assignBlockEpisodes(
       1,
       args,
       StreamType.Block,
-      block.block,
+      block.title,
     )[0];
     // Get the episode that matches the episode number from the progression
     blockShow.episode = selectedShow.episodes.filter(
