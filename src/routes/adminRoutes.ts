@@ -8,15 +8,10 @@ import * as promoCont from '../controllers/promoControllers';
 import * as bumperCont from '../controllers/bumperControllers';
 import * as collectionCont from '../controllers/collectionControllers';
 import * as tagCont from '../controllers/tagControllers';
-import * as musicGenreCont from '../controllers/musicGenreControllers';
 // import * as blockCont from '../controllers/blockControllers';
 import * as verify from '../middleware/validationMiddleware';
 
 const router = Router();
-
-// ===========================================
-//            DATABASE MANAGEMENT
-// ===========================================
 
 // Show Management
 router.post(
@@ -36,11 +31,6 @@ router.put(
 );
 router.get('/get-show', verify.getShowValidationRules, showCont.getShowHandler);
 router.get(
-  '/get-all-show-data',
-  verify.getShowValidationRules,
-  showCont.getAllShowsDataHandler,
-);
-router.get(
   '/get-all-shows',
   verify.getShowValidationRules,
   showCont.getAllShowsHandler,
@@ -51,11 +41,6 @@ router.post(
   '/create-movie',
   verify.createMovieValidationRules,
   movCont.createMovieHandler,
-);
-router.post(
-  '/bulk-create-movies',
-  verify.bulkCreateMoviesValidationRules,
-  movCont.bulkCreateMovieHandler,
 );
 router.delete(
   '/delete-movie',
@@ -84,11 +69,6 @@ router.post(
   verify.createBufferValidationRules,
   commCont.createCommercialHandler,
 );
-router.post(
-  '/bulk-create-commercials',
-  verify.bulkCreateBufferValidationRules,
-  commCont.bulkCreateCommercialHandler,
-);
 router.delete(
   '/delete-commercial',
   verify.deleteBufferValidationRules,
@@ -115,11 +95,6 @@ router.post(
   '/create-short',
   verify.createBufferValidationRules,
   shortCont.createShortHandler,
-);
-router.post(
-  '/bulk-create-shorts',
-  verify.bulkCreateBufferValidationRules,
-  shortCont.bulkCreateShortHandler,
 );
 router.delete(
   '/delete-short',
@@ -148,11 +123,6 @@ router.post(
   verify.createBufferValidationRules,
   musicCont.createMusicHandler,
 );
-router.post(
-  '/bulk-create-music',
-  verify.bulkCreateBufferValidationRules,
-  musicCont.bulkCreateMusicHandler,
-);
 router.delete(
   '/delete-music',
   verify.deleteBufferValidationRules,
@@ -179,11 +149,6 @@ router.post(
   '/create-promo',
   verify.createBufferValidationRules,
   promoCont.createPromoHandler,
-);
-router.post(
-  '/bulk-create-promos',
-  verify.bulkCreateBufferValidationRules,
-  promoCont.bulkCreatePromoHandler,
 );
 router.delete(
   '/delete-promo',
@@ -227,138 +192,37 @@ router.get(
   verify.getBufferValidationRules,
   bumperCont.getAllBumpersHandler,
 );
+router.get(
+  '/get-bumper',
+  verify.getBufferValidationRules,
+  bumperCont.getBumperHandler,
+);
 
 // Tag Management
 router.post(
-  '/create-aesthetic-tag',
+  '/create-tag',
   verify.createTagValidationRules,
-  tagCont.createAestheticTagHandler,
+  tagCont.createTagHandler,
 );
 
 router.delete(
-  '/delete-aesthetic-tag',
+  '/delete-tag',
   verify.deleteTagValidationRules,
-  tagCont.deleteAestheticTagHandler,
+  tagCont.deleteTagHandler,
 );
 
 router.get(
-  '/get-all-aesthetic-tags',
+  '/get-all-tags',
   verify.getTagsValidationRules,
-  tagCont.getAllAestheticTagsHandler,
+  tagCont.getAllTagsHandler,
 );
 
-router.post(
-  '/create-age-group',
-  verify.createAgeGroupValidationRules,
-  tagCont.createAgeGroupHandler,
-);
-
-router.delete(
-  '/delete-age-group',
-  verify.deleteAgeGroupValidationRules,
-  tagCont.deleteAgeGroupHandler,
-);
-
-router.put(
-  '/update-age-group',
-  verify.updateAgeGroupValidationRules,
-  tagCont.updateAgeGroupHandler,
-);
+router.get('/get-tag', verify.getTagsValidationRules, tagCont.getTagHandler);
 
 router.get(
-  '/get-all-age-groups',
-  verify.getAgeGroupsValidationRules,
-  tagCont.getAllAgeGroupsHandler,
-);
-
-router.post(
-  '/create-era-tag',
-  verify.createTagValidationRules,
-  tagCont.createEraTagHandler,
-);
-
-router.delete(
-  '/delete-era-tag',
-  verify.deleteTagValidationRules,
-  tagCont.deleteEraTagHandler,
-);
-
-router.get(
-  '/get-all-era-tags',
+  '/get-all-tags-by-type',
   verify.getTagsValidationRules,
-  tagCont.getAllEraTagsHandler,
-);
-
-router.post(
-  '/create-holiday-tag',
-  verify.createTagValidationRules,
-  tagCont.createHolidayTagHandler,
-);
-
-router.delete(
-  '/delete-holiday-tag',
-  verify.deleteTagValidationRules,
-  tagCont.deleteHolidayTagHandler,
-);
-
-router.get(
-  '/get-all-holiday-tags',
-  verify.getTagsValidationRules,
-  tagCont.getAllHolidayTagsHandler,
-);
-
-router.post(
-  '/create-genre-tag',
-  verify.createTagValidationRules,
-  tagCont.createGenreTagHandler,
-);
-
-router.delete(
-  '/delete-genre-tag',
-  verify.deleteTagValidationRules,
-  tagCont.deleteGenreTagHandler,
-);
-
-router.get(
-  '/get-all-genre-tags',
-  verify.getTagsValidationRules,
-  tagCont.getAllGenreTagsHandler,
-);
-
-router.post(
-  '/create-specialty-tag',
-  verify.createTagValidationRules,
-  tagCont.createSpecialtyTagHandler,
-);
-
-router.delete(
-  '/delete-specialty-tag',
-  verify.deleteTagValidationRules,
-  tagCont.deleteSpecialtyTagHandler,
-);
-
-router.get(
-  '/get-all-specialty-tags',
-  verify.getTagsValidationRules,
-  tagCont.getAllSpecialtyTagsHandler,
-);
-
-router.post(
-  '/create-music-genre',
-  verify.createTagValidationRules,
-  musicGenreCont.createMusicGenreHandler,
-);
-
-router.delete(
-  '/delete-music-genre',
-  verify.deleteTagValidationRules,
-  musicGenreCont.deleteMusicGenreHandler,
-);
-
-router.get(
-  '/get-all-music-genres',
-  verify.getTagsValidationRules,
-  musicGenreCont.getAllMusicGenresHandler,
+  tagCont.getAllTagsByTypeHandler,
 );
 
 // Collection Management

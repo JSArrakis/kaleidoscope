@@ -1,13 +1,8 @@
 import { Request, Response } from 'express';
 import { validationResult } from 'express-validator';
-import { BumperModel, Bumper } from '../models/bumper';
-import { LoadTitleError } from '../models/loadTitleError';
-import { createMediaValidation } from '../middleware/validationMiddleware';
+import { Bumper } from '../models/bumper';
 import { getMediaDuration } from '../utils/utilities';
-
-// ===========================================
-//               BUMPER HANDLERS
-// ===========================================
+import { bumperRepository } from '../repositories/bumperRepository';
 
 export async function createBumperHandler(
   req: Request,
@@ -22,98 +17,32 @@ export async function createBumperHandler(
 
   let mediaItemId = req.body.mediaItemId;
 
-  // Retrieve bumper from MongoDB using bumper load title if it exists
-  const bumper = await BumperModel.findOne({ mediaItemId: mediaItemId });
+  if (!mediaItemId) {
+    res.status(400).json({ message: 'Media Item ID is required' });
+    return;
+  }
+
+  const bumper = bumperRepository.findByMediaItemId(mediaItemId);
 
   // If it exists, return error
   if (bumper) {
-    res.status(400).json({ message: 'Bumper already exists' });
+    res
+      .status(400)
+      .json({ message: `Bumper with Id ${mediaItemId} already exists` });
     return;
   }
   // If it doesn't exist, perform transformations
-  let transformedComm = await transformBumperFromRequest(req.body, mediaItemId);
+  let transformedBumper = await transformBumperFromRequest(
+    req.body,
+    mediaItemId,
+  );
 
   // Insert bumper into MongoDB
-  await BumperModel.create(transformedComm);
+  await bumperRepository.create(transformedBumper);
 
-  res.status(200).json({ message: 'Bumper Created' });
-  return;
-}
-
-export async function bulkCreateBumperHandler(
-  req: Request,
-  res: Response,
-): Promise<void> {
-  // Check for validation errors
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    res.status(400).json({ errors: errors.array() });
-    return;
-  }
-  // Validate request body is an array
-  if (!Array.isArray(req.body)) {
-    res.status(400).json({ message: 'Request body must be an array' });
-    return;
-  }
-  // Validate request body is an array of objects
-  if (!req.body.every((item: any) => typeof item === 'object')) {
-    res
-      .status(400)
-      .json({ message: 'Request body must be an array of bumper objects' });
-    return;
-  }
-  let createdBumpers: string[] = [];
-  let responseErrors: LoadTitleError[] = [];
-  for (const bumperEntry of req.body) {
-    let err = createMediaValidation(bumperEntry);
-    if (err !== '') {
-      responseErrors.push(new LoadTitleError(bumperEntry.mediaItemId, err));
-      continue;
-    }
-    try {
-      let mediaItemId = bumperEntry.path
-        .replace(/[^a-zA-Z0-9]/g, '')
-        .toLowerCase();
-      const bumper = await BumperModel.findOne({ mediaItemId: mediaItemId });
-      if (bumper) {
-        // If it exists, return error
-        responseErrors.push(
-          new LoadTitleError(
-            bumperEntry.title,
-            `Bumper ${bumperEntry.mediaItemId} already exists`,
-          ),
-        );
-        continue;
-      }
-
-      let transformedComm = await transformBumperFromRequest(
-        bumperEntry,
-        mediaItemId,
-      );
-
-      await BumperModel.create(transformedComm);
-      createdBumpers.push(transformedComm.mediaItemId);
-    } catch (err) {
-      responseErrors.push(
-        new LoadTitleError(bumperEntry.mediaItemId, err as string),
-      );
-    }
-  }
-
-  if (responseErrors.length === req.body.length) {
-    res.status(400).json({
-      message: 'Bumpers Not Created',
-      createdBumpers: [],
-      errors: responseErrors,
-    });
-    return;
-  }
-
-  res.status(200).json({
-    message: 'Bumpers Created',
-    createdBumpers: createdBumpers,
-    errors: responseErrors,
-  });
+  res
+    .status(200)
+    .json({ message: `Bumper ${transformedBumper.title} Created` });
   return;
 }
 
@@ -128,10 +57,14 @@ export async function deleteBumperHandler(
     return;
   }
 
+  let mediaItemId = req.query.mediaItemId as string;
+  if (!mediaItemId) {
+    res.status(400).json({ message: 'Media Item ID is required' });
+    return;
+  }
+
   // Retrieve bumper from MongoDB using bumper load title if it exists
-  const bumper = await BumperModel.findOne({
-    mediaItemId: req.query.mediaItemId,
-  });
+  const bumper = bumperRepository.findByMediaItemId(mediaItemId);
 
   // If it doesn't exist, return error
   if (!bumper) {
@@ -140,7 +73,7 @@ export async function deleteBumperHandler(
   }
 
   // If it exists, delete it
-  await BumperModel.deleteOne({ _id: bumper._id });
+  bumperRepository.delete(mediaItemId);
 
   res.status(200).json({ message: 'Bumper Deleted' });
   return;
@@ -157,12 +90,20 @@ export async function updateBumperHandler(
     return;
   }
 
+  let mediaItemId = req.body.mediaItemId;
+  if (!mediaItemId) {
+    res.status(400).json({ message: 'Media Item ID is required' });
+    return;
+  }
+
   // Retrieve bumper from MongoDB using bumper load title if it exists
-  const bumper = await BumperModel.findOne({ mediaItemId: req.body.mediaItemId });
+  const bumper = bumperRepository.findByMediaItemId(mediaItemId);
 
   // If it doesn't exist, return error
   if (!bumper) {
-    res.status(400).json({ message: 'Bumper does not exist' });
+    res
+      .status(400)
+      .json({ message: `Bumper with ID ${mediaItemId} does not exist` });
     return;
   }
 
@@ -173,9 +114,11 @@ export async function updateBumperHandler(
   );
 
   // Update bumper in MongoDB
-  await BumperModel.updateOne({ _id: bumper._id }, updatedBumper);
+  bumperRepository.update(bumper.mediaItemId, updatedBumper);
 
-  res.status(200).json({ message: 'Bumper Updated' });
+  res
+    .status(200)
+    .json({ message: `Bumper ${updatedBumper.title} Updated` });
   return;
 }
 
@@ -190,14 +133,20 @@ export async function getBumperHandler(
     return;
   }
 
+  let mediaItemId = req.query.mediaItemId as string;
+  if (!mediaItemId) {
+    res.status(400).json({ message: 'Media Item ID is required' });
+    return;
+  }
+
   // Retrieve bumper from MongoDB using bumper load title if it exists using request params
-  const bumper = await BumperModel.findOne({
-    mediaItemId: req.query.mediaItemId,
-  });
+  const bumper = bumperRepository.findByMediaItemId(mediaItemId);
 
   // If it doesn't exist, return error
   if (!bumper) {
-    res.status(404).json({ message: 'Bumper does not exist' });
+    res
+      .status(404)
+      .json({ message: `Bumper with ID ${mediaItemId} does not exist` });
     return;
   }
 
@@ -209,26 +158,8 @@ export async function getAllBumpersHandler(
   req: Request,
   res: Response,
 ): Promise<void> {
-  const bumpers = await BumperModel.find();
+  const bumpers = bumperRepository.findAll();
 
-  res.status(200).json(bumpers);
-  return;
-}
-
-// ===========================================
-//          DEFAULT PROMO HANDLERS
-// ===========================================
-
-export async function getAllDefaultBumpersHandler(
-  req: Request,
-  res: Response,
-): Promise<void> {
-  const bumpers = await BumperModel.find({});
-
-  if (!bumpers || bumpers.length === 0) {
-    res.status(404).json({ message: 'Default No Bumpers Found' });
-    return;
-  }
   res.status(200).json(bumpers);
   return;
 }

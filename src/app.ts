@@ -25,7 +25,7 @@ const config = Config.fromJsonObject(configData);
 // Gets the config from the config.json file and sets it in the stream service
 conf.setConfig(config);
 
-// Loads media from the MongoDB database
+// Loads media from the SQLite database
 connectToDB().then(() => {
   medServ.loadMedia(conf.getConfig()).then(() => {
     const app = express();

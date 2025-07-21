@@ -1,4 +1,3 @@
-import mongoose, { Document, Model } from 'mongoose';
 import { StreamType } from './enum/streamTypes';
 
 export class ProgressionContext {
@@ -20,30 +19,6 @@ export class ProgressionContext {
     this.environment = environment;
     this.type = type;
     this.watchRecords = progressions;
-  }
-
-  static fromMongoObject(mongoObject: any): ProgressionContext {
-    return new ProgressionContext(
-      mongoObject.title,
-      mongoObject.loadTitle,
-      mongoObject.environment,
-      mongoObject.type,
-      mongoObject.progressions.map((progression: any) =>
-        WatchRecord.fromMongoObject(progression),
-      ),
-    );
-  }
-
-  static toMongoObject(mediaProgression: ProgressionContext): any {
-    return {
-      title: mediaProgression.title,
-      loadTitle: mediaProgression.loadTitle,
-      environment: mediaProgression.environment,
-      type: mediaProgression.type,
-      episodes: mediaProgression.watchRecords.map((progression: WatchRecord) =>
-        WatchRecord.toMongoObject(progression),
-      ),
-    };
   }
 }
 
@@ -67,26 +42,6 @@ export class WatchRecord {
     this.lastPlayed = lastPlayed;
     this.nextEpisodeDurLimit = nextEpisodeDurLimit;
   }
-
-  static fromMongoObject(mongoObject: any): WatchRecord {
-    return new WatchRecord(
-      mongoObject.title,
-      mongoObject.loadTitle,
-      mongoObject.episode,
-      mongoObject.lastPlayed,
-      mongoObject.nextEpisodeDurLimit,
-    );
-  }
-
-  static toMongoObject(progression: WatchRecord): any {
-    return {
-      title: progression.title,
-      loadTitle: progression.mediaItemId,
-      episode: progression.episode,
-      lastPlayed: progression.lastPlayed,
-      nextEpisodeDurLimit: progression.nextEpisodeDurLimit,
-    };
-  }
 }
 
 export interface IWatchRecord {
@@ -102,23 +57,3 @@ export interface IProgressionContext extends Document {
   type: string;
   progressions: WatchRecord[];
 }
-
-export const WatchRecordSchema = new mongoose.Schema({
-  title: String,
-  mediaItemId: String,
-  episode: Number,
-  lastPlayed: Number,
-});
-
-export const ProgressionContextSchema = new mongoose.Schema({
-  title: String,
-  mediaItemId: {
-    type: String,
-    index: true,
-  },
-  type: String,
-  progressions: [WatchRecordSchema],
-});
-
-export const ProgressionContextModel: Model<IProgressionContext> =
-  mongoose.model<IProgressionContext>('Progression', ProgressionContextSchema);

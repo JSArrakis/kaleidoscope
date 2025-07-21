@@ -1,4 +1,3 @@
-import mongoose, { Document, Model } from 'mongoose';
 import { MediaType } from './enum/mediaTypes';
 import { BaseMedia } from './mediaInterface';
 
@@ -10,15 +9,6 @@ export interface IShort extends BaseMedia {
   Type: number;
   tags: string[];
 }
-
-export const ShortSchema = new mongoose.Schema({
-  title: String,
-  mediaItemId: String,
-  duration: Number,
-  path: String,
-  type: Number,
-  tags: [String],
-});
 
 export class Short {
   title: string;
@@ -44,28 +34,6 @@ export class Short {
     this.tags = tags;
   }
 
-  static fromMongoObject(mongoObject: any): Short {
-    return new Short(
-      mongoObject.title,
-      mongoObject.mediaItemId,
-      mongoObject.duration,
-      mongoObject.path,
-      mongoObject.type,
-      mongoObject.tags,
-    );
-  }
-
-  static toMongoObject(movie: Short): any {
-    return {
-      title: movie.title,
-      mediaItemId: movie.mediaItemId,
-      duration: movie.duration,
-      path: movie.path,
-      type: movie.type,
-      tags: movie.tags,
-    };
-  }
-
   static fromRequestObject(requestObject: any): Short {
     return new Short(
       requestObject.title,
@@ -77,8 +45,3 @@ export class Short {
     );
   }
 }
-
-export const ShortModel: Model<IShort> = mongoose.model<IShort>(
-  'Short',
-  ShortSchema,
-);

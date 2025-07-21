@@ -1,13 +1,8 @@
 import { Request, Response } from 'express';
 import { validationResult } from 'express-validator';
-import { PromoModel, Promo } from '../models/promo';
-import { LoadTitleError } from '../models/loadTitleError';
-import { createMediaValidation } from '../middleware/validationMiddleware';
+import { Promo } from '../models/promo';
 import { getMediaDuration } from '../utils/utilities';
-
-// ===========================================
-//               PROMO HANDLERS
-// ===========================================
+import { promoRepository } from '../repositories/promoRepository';
 
 export async function createPromoHandler(
   req: Request,
@@ -22,98 +17,26 @@ export async function createPromoHandler(
 
   let mediaItemId = req.body.mediaItemId;
 
+  if( !mediaItemId) {
+    res.status(400).json({ message: 'mediaItemId is required' });
+    return;
+  }
+
   // Retrieve promo from MongoDB using promo load title if it exists
-  const promo = await PromoModel.findOne({ mediaItemId: mediaItemId });
+  const promo = promoRepository.findByMediaItemId(mediaItemId);
 
   // If it exists, return error
   if (promo) {
-    res.status(400).json({ message: 'Promo already exists' });
+    res.status(400).json({ message: `Promo with ID ${mediaItemId} already exists` });
     return;
   }
   // If it doesn't exist, perform transformations
-  let transformedComm = await transformPromoFromRequest(req.body, mediaItemId);
+  let transformedPromo = await transformPromoFromRequest(req.body, mediaItemId);
 
   // Insert promo into MongoDB
-  await PromoModel.create(transformedComm);
+  promoRepository.create(transformedPromo);
 
-  res.status(200).json({ message: 'Promo Created' });
-  return;
-}
-
-export async function bulkCreatePromoHandler(
-  req: Request,
-  res: Response,
-): Promise<void> {
-  // Check for validation errors
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    res.status(400).json({ errors: errors.array() });
-    return;
-  }
-  // Validate request body is an array
-  if (!Array.isArray(req.body)) {
-    res.status(400).json({ message: 'Request body must be an array' });
-    return;
-  }
-  // Validate request body is an array of objects
-  if (!req.body.every((item: any) => typeof item === 'object')) {
-    res
-      .status(400)
-      .json({ message: 'Request body must be an array of promo objects' });
-    return;
-  }
-  let createdPromos: string[] = [];
-  let responseErrors: LoadTitleError[] = [];
-  for (const promoEntry of req.body) {
-    let err = createMediaValidation(promoEntry);
-    if (err !== '') {
-      responseErrors.push(new LoadTitleError(promoEntry.mediaItemId, err));
-      continue;
-    }
-    try {
-      let mediaItemId = promoEntry.path
-        .replace(/[^a-zA-Z0-9]/g, '')
-        .toLowerCase();
-      const promo = await PromoModel.findOne({ mediaItemId: mediaItemId });
-      if (promo) {
-        // If it exists, return error
-        responseErrors.push(
-          new LoadTitleError(
-            promoEntry.title,
-            `Promo ${promoEntry.mediaItemId} already exists`,
-          ),
-        );
-        continue;
-      }
-
-      let transformedComm = await transformPromoFromRequest(
-        promoEntry,
-        mediaItemId,
-      );
-
-      await PromoModel.create(transformedComm);
-      createdPromos.push(transformedComm.mediaItemId);
-    } catch (err) {
-      responseErrors.push(
-        new LoadTitleError(promoEntry.mediaItemId, err as string),
-      );
-    }
-  }
-
-  if (responseErrors.length === req.body.length) {
-    res.status(400).json({
-      message: 'Promos Not Created',
-      createdPromos: [],
-      errors: responseErrors,
-    });
-    return;
-  }
-
-  res.status(200).json({
-    message: 'Promos Created',
-    createdPromos: createdPromos,
-    errors: responseErrors,
-  });
+  res.status(200).json({ message: `Promo ${transformedPromo.title} Created` });
   return;
 }
 
@@ -128,21 +51,26 @@ export async function deletePromoHandler(
     return;
   }
 
+  let mediaItemId = req.query.mediaItemId as string;
+
+  if (!mediaItemId) {
+    res.status(400).json({ message: 'mediaItemId is required' });
+    return;
+  }
+
   // Retrieve promo from MongoDB using promo load title if it exists
-  const promo = await PromoModel.findOne({
-    mediaItemId: req.query.mediaItemId,
-  });
+  const promo = promoRepository.findByMediaItemId(mediaItemId);
 
   // If it doesn't exist, return error
   if (!promo) {
-    res.status(400).json({ message: 'Promo does not exist' });
+    res.status(400).json({ message: `Promo with ID ${mediaItemId} does not exist` });
     return;
   }
 
   // If it exists, delete it
-  await PromoModel.deleteOne({ _id: promo._id });
+  promoRepository.delete(mediaItemId);
 
-  res.status(200).json({ message: 'Promo Deleted' });
+  res.status(200).json({ message: `Promo ${promo.title} Deleted` });
   return;
 }
 
@@ -157,12 +85,18 @@ export async function updatePromoHandler(
     return;
   }
 
+  let mediaItemId = req.body.mediaItemId;
+  if (!mediaItemId) {
+    res.status(400).json({ message: 'mediaItemId is required' });
+    return;
+  }
+
   // Retrieve promo from MongoDB using promo load title if it exists
-  const promo = await PromoModel.findOne({ mediaItemId: req.body.mediaItemId });
+  const promo = promoRepository.findByMediaItemId(mediaItemId);
 
   // If it doesn't exist, return error
   if (!promo) {
-    res.status(400).json({ message: 'Promo does not exist' });
+    res.status(400).json({ message: `Promo with ID ${mediaItemId} does not exist` });
     return;
   }
 
@@ -173,9 +107,9 @@ export async function updatePromoHandler(
   );
 
   // Update promo in MongoDB
-  await PromoModel.updateOne({ _id: promo._id }, updatedPromo);
+  promoRepository.update(mediaItemId, updatedPromo);
 
-  res.status(200).json({ message: 'Promo Updated' });
+  res.status(200).json({ message: `Promo ${updatedPromo.title} Updated` });
   return;
 }
 
@@ -190,14 +124,18 @@ export async function getPromoHandler(
     return;
   }
 
+  let mediaItemId = req.query.mediaItemId as string;
+  if (!mediaItemId) {
+    res.status(400).json({ message: 'mediaItemId is required' });
+    return;
+  }
+
   // Retrieve promo from MongoDB using promo load title if it exists using request params
-  const promo = await PromoModel.findOne({
-    mediaItemId: req.query.mediaItemId,
-  });
+  const promo = promoRepository.findByMediaItemId(mediaItemId);
 
   // If it doesn't exist, return error
   if (!promo) {
-    res.status(404).json({ message: 'Promo does not exist' });
+    res.status(404).json({ message: `Promo with ID ${mediaItemId} does not exist` });
     return;
   }
 
@@ -209,26 +147,8 @@ export async function getAllPromosHandler(
   req: Request,
   res: Response,
 ): Promise<void> {
-  const promos = await PromoModel.find();
+  const promos = promoRepository.findAll();
 
-  res.status(200).json(promos);
-  return;
-}
-
-// ===========================================
-//          DEFAULT PROMO HANDLERS
-// ===========================================
-
-export async function getAllDefaultPromosHandler(
-  req: Request,
-  res: Response,
-): Promise<void> {
-  const promos = await PromoModel.find({});
-
-  if (!promos || promos.length === 0) {
-    res.status(404).json({ message: 'Default No Promos Found' });
-    return;
-  }
   res.status(200).json(promos);
   return;
 }

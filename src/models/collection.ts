@@ -1,24 +1,9 @@
-import mongoose, { Model } from 'mongoose';
-
 export interface ICollection {
   mediaItemId: string;
   title: string;
   description: string;
   items: ICollectionItem[];
 }
-
-export const CollectionSchema = new mongoose.Schema({
-  mediaItemId: String,
-  title: String,
-  description: String,
-  items: [
-    {
-      mediaItemId: String,
-      mediaItemTitle: String,
-      sequence: Number,
-    },
-  ],
-});
 
 export class Collection {
   mediaItemId: string;
@@ -36,24 +21,6 @@ export class Collection {
     this.title = title;
     this.description = description;
     this.items = items;
-  }
-
-  static fromMongoObject(mongoObject: any): Collection {
-    return new Collection(
-      mongoObject.mediaItemId,
-      mongoObject.title,
-      mongoObject.description,
-      mongoObject.items,
-    );
-  }
-
-  static toMongoObject(collection: Collection): any {
-    return {
-      id: collection.mediaItemId,
-      title: collection.title,
-      description: collection.description,
-      items: collection.items,
-    };
   }
 
   static fromRequestObject(requestObject: any): Collection {
@@ -91,8 +58,3 @@ export class CollectionItem {
     );
   }
 }
-
-export const CollectionModel: Model<ICollection> = mongoose.model<ICollection>(
-  'Collection',
-  CollectionSchema,
-);

@@ -1,14 +1,12 @@
 import { body } from 'express-validator';
 import path from 'path';
 import fs from 'fs';
-
-// ===========================================
-//             MOVIE VALIDATION
-// ===========================================
+import { CollectionReference } from '../models/movie';
+import { CollectionItem } from '../models/collection';
 
 export const createMovieValidationRules = [
+  body('mediaItemId').isString().notEmpty(),
   body('title').isString().notEmpty(),
-
   body('tags')
     .isArray({ min: 1 })
     .withMessage('Tags must be an array with at least 1 item')
@@ -20,7 +18,6 @@ export const createMovieValidationRules = [
       }
       return true;
     }),
-
   body('path')
     .isString()
     .notEmpty()
@@ -39,13 +36,13 @@ export const createMovieValidationRules = [
     }),
 ];
 
-export const bulkCreateMoviesValidationRules = [];
-
 export const updateMovieValidationRules = [
-  body('title').isString().notEmpty(),
-
+  body('mediaItemId').isString().notEmpty(),
+  body('title').isString(),
+  body('alias').isString(),
+  body('imdb').isString(),
   body('tags')
-    .isArray({ min: 1 })
+    .isArray()
     .custom((value: string[]) => {
       for (const item of value) {
         if (typeof item !== 'string') {
@@ -54,9 +51,16 @@ export const updateMovieValidationRules = [
       }
       return true;
     }),
-
-  body('path').isString().notEmpty(),
-  body('mediaItemId').isString().notEmpty(),
+  body('collections')
+    .isArray()
+    .custom((value: CollectionReference[]) => {
+      for (const item of value) {
+        if (!(item instanceof CollectionReference)) {
+          throw new Error('collections must be an array of Collection Reference objects');
+        }
+      }
+      return true;
+    }),
 ];
 
 export const deleteMovieValidationRules = [];
@@ -256,7 +260,7 @@ export const createCollectionValidationRules = [
   // if there are items in the request body, they must be an array
   body('items')
     .isArray()
-    .custom((value: any[]) => {
+    .custom((value: CollectionItem[]) => {
       for (const item of value) {
         if (typeof item !== 'object') {
           throw new Error('items must be an array of objects');
@@ -341,7 +345,6 @@ export const updateTagValidationRules = [
 export const deleteTagValidationRules = [];
 
 export const getTagsValidationRules = [];
-
 
 export const createAgeGroupValidationRules = [
   body('name').isString().notEmpty(),

@@ -1,16 +1,23 @@
-import { ShowModel, Show } from '../models/show';
-import { MovieModel, Movie } from '../models/movie';
-import { PromoModel, Promo } from '../models/promo';
-import { CommercialModel, Commercial } from '../models/commercial';
-import { MusicModel, Music } from '../models/music';
-import { ShortModel, Short } from '../models/short';
-import { HolidayModel, Holiday } from '../models/holiday';
-import { DefaultCommercialModel } from '../models/defaultCommercial';
-import { DefaultPromoModel } from '../models/defaultPromo';
-import { MosaicModel, Mosaic } from '../models/mosaic';
+import { Show } from '../models/show';
+import { Movie } from '../models/movie';
+import { Promo } from '../models/promo';
+import { Commercial } from '../models/commercial';
+import { Music } from '../models/music';
+import { Short } from '../models/short';
+import { Holiday } from '../models/holiday';
+import { Mosaic } from '../models/mosaic';
+
+// Import repositories
+import { movieRepository } from '../repositories/movieRepository';
+import { showRepository } from '../repositories/showRepository';
+import { commercialRepository } from '../repositories/commercialRepository';
+import { promoRepository } from '../repositories/promoRepository';
+import { musicRepository } from '../repositories/musicRepository';
+import { shortRepository } from '../repositories/shortRepository';
+import { holidayRepository } from '../repositories/holidayRepository';
 
 export async function loadMovies(): Promise<Movie[]> {
-  const movies = (await MovieModel.find()) as Movie[];
+  const movies = movieRepository.findAll();
   if (!movies || movies.length === 0) {
     console.log('No Movies Found');
     return [];
@@ -20,7 +27,7 @@ export async function loadMovies(): Promise<Movie[]> {
 }
 
 export async function loadShows(): Promise<Show[]> {
-  const shows = (await ShowModel.find()) as Show[];
+  const shows = showRepository.findAll();
   if (!shows || shows.length === 0) {
     console.log('No Shows Found');
     return [];
@@ -30,7 +37,7 @@ export async function loadShows(): Promise<Show[]> {
 }
 
 export async function loadPromos(): Promise<Promo[]> {
-  const promos = (await PromoModel.find()) as Promo[];
+  const promos = promoRepository.findAll() as Promo[];
   if (!promos || promos.length === 0) {
     console.log('No Promos Found');
     return [];
@@ -40,7 +47,8 @@ export async function loadPromos(): Promise<Promo[]> {
 }
 
 export async function loadDefaultPromos(): Promise<Promo[]> {
-  const promos = (await DefaultPromoModel.find()) as Promo[];
+  // For now, return regular promos - you may want to implement a separate default_promos table
+  const promos = promoRepository.findAll() as Promo[];
   if (!promos || promos.length === 0) {
     console.log('No Default Promos Found');
     return [];
@@ -50,7 +58,7 @@ export async function loadDefaultPromos(): Promise<Promo[]> {
 }
 
 export async function loadCommercials(): Promise<Commercial[]> {
-  const commercials = (await CommercialModel.find()) as Commercial[];
+  const commercials = commercialRepository.findAll();
   if (!commercials || commercials.length === 0) {
     console.log('No Commercials Found');
     return [];
@@ -60,7 +68,8 @@ export async function loadCommercials(): Promise<Commercial[]> {
 }
 
 export async function loadDefaultCommercials(): Promise<Commercial[]> {
-  const commercials = (await DefaultCommercialModel.find()) as Commercial[];
+  // For now, return regular commercials - you may want to implement a separate default_commercials table
+  const commercials = commercialRepository.findAll();
   if (!commercials || commercials.length === 0) {
     console.log('No Default Commercials Found');
     return [];
@@ -70,7 +79,7 @@ export async function loadDefaultCommercials(): Promise<Commercial[]> {
 }
 
 export async function loadMusic(): Promise<Music[]> {
-  const music = (await MusicModel.find()) as Music[];
+  const music = musicRepository.findAll() as Music[];
   if (!music || music.length === 0) {
     console.log('No Music Found');
     return [];
@@ -80,7 +89,7 @@ export async function loadMusic(): Promise<Music[]> {
 }
 
 export async function loadShorts(): Promise<Short[]> {
-  const shorts = (await ShortModel.find()) as Short[];
+  const shorts = shortRepository.findAll() as Short[];
   if (!shorts || shorts.length === 0) {
     console.log('No Shorts Found');
     return [];
@@ -90,7 +99,7 @@ export async function loadShorts(): Promise<Short[]> {
 }
 
 export async function loadHolidays(): Promise<Holiday[]> {
-  const holidays = await HolidayModel.find();
+  const holidays = holidayRepository.findAll() as Holiday[];
   if (!holidays || holidays.length === 0) {
     console.log('No Holidays Found');
     return [];
@@ -99,12 +108,12 @@ export async function loadHolidays(): Promise<Holiday[]> {
   return holidays;
 }
 
-export async function loadMosaics(): Promise<Mosaic[]> {
-  const mosaics = await MosaicModel.find();
-  if (!mosaics || mosaics.length === 0) {
-    console.log('No Mosaics Found');
-    return [];
-  }
-  console.log(mosaics.length + ' Mosaics loaded');
-  return mosaics;
-}
+// export async function loadMosaics(): Promise<Mosaic[]> {
+//   const mosaics = mosaicRepository.findAll() as Mosaic[];
+//   if (!mosaics || mosaics.length === 0) {
+//     console.log('No Mosaics Found');
+//     return [];
+//   }
+//   console.log(mosaics.length + ' Mosaics loaded');
+//   return mosaics;
+// }

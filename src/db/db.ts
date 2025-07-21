@@ -1,14 +1,15 @@
-import mongoose from 'mongoose';
-
-const uri: string = 'mongodb://127.0.0.1:27017/streamAssistantMedia';
+import { connectToSQLite, closeSQLite } from './sqlite';
 
 export async function connectToDB() {
-  await mongoose.connect(uri).then(
-    () => {
-      console.log('Connected to Mongo');
-    },
-    err => {
-      console.log('Error connecting to Mongo: ', err);
-    },
-  );
+  try {
+    await connectToSQLite();
+    console.log('Connected to SQLite');
+  } catch (err) {
+    console.log('Error connecting to SQLite: ', err);
+    throw err;
+  }
+}
+
+export function closeDB() {
+  closeSQLite();
 }

@@ -1,10 +1,9 @@
-import mongoose, { Model } from 'mongoose';
 import { MediaType } from './enum/mediaTypes';
 import { BaseMedia } from './mediaInterface';
-import { arch } from 'os';
 
 export interface IMusic extends BaseMedia {
   title: string;
+  artist: string;
   mediaItemId: string;
   duration: number;
   path: string;
@@ -12,17 +11,9 @@ export interface IMusic extends BaseMedia {
   tags: string[];
 }
 
-export const MusicSchema = new mongoose.Schema({
-  title: String,
-  mediaItemId: String,
-  duration: Number,
-  path: String,
-  type: Number,
-  tags: [String],
-});
-
 export class Music {
   title: string;
+  artist: string;
   mediaItemId: string;
   duration: number;
   path: string;
@@ -31,6 +22,7 @@ export class Music {
 
   constructor(
     title: string,
+    artist: string,
     mediaItemId: string,
     duration: number,
     path: string,
@@ -38,6 +30,7 @@ export class Music {
     tags: string[],
   ) {
     this.title = title;
+    this.artist = artist;
     this.mediaItemId = mediaItemId;
     this.duration = duration;
     this.path = path;
@@ -45,31 +38,10 @@ export class Music {
     this.tags = tags;
   }
 
-  static fromMongoObject(mongoObject: any): Music {
-    return new Music(
-      mongoObject.title,
-      mongoObject.mediaItemId,
-      mongoObject.duration,
-      mongoObject.path,
-      mongoObject.type,
-      mongoObject.tags,
-    );
-  }
-
-  static toMongoObject(movie: Music): any {
-    return {
-      title: movie.title,
-      loadTitle: movie.mediaItemId,
-      duration: movie.duration,
-      path: movie.path,
-      type: movie.type,
-      tags: movie.tags,
-    };
-  }
-
   static fromRequestObject(requestObject: any): Music {
     return new Music(
       requestObject.title,
+      requestObject.artist,
       requestObject.mediaItemId,
       requestObject.duration,
       requestObject.path,
@@ -78,8 +50,3 @@ export class Music {
     );
   }
 }
-
-export const MusicModel: Model<IMusic> = mongoose.model<IMusic>(
-  'Music',
-  MusicSchema,
-);

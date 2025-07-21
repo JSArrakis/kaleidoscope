@@ -1,4 +1,3 @@
-import mongoose, { Model } from 'mongoose';
 import { MediaType } from './enum/mediaTypes';
 
 export interface IBumper {
@@ -9,15 +8,6 @@ export interface IBumper {
   type: number;
   tags: string[];
 }
-
-export const BumperSchema = new mongoose.Schema({
-  title: String,
-  mediaItemId: String,
-  duration: Number,
-  path: String,
-  type: Number,
-  tags: [String],
-});
 
 export class Bumper {
   title: string;
@@ -43,28 +33,6 @@ export class Bumper {
     this.tags = tags;
   }
 
-  static fromMongoObject(mongoObject: any): Bumper {
-    return new Bumper(
-      mongoObject.title,
-      mongoObject.mediaItemId,
-      mongoObject.duration,
-      mongoObject.path,
-      mongoObject.type,
-      mongoObject.tags,
-    );
-  }
-
-  static toMongoObject(movie: Bumper): any {
-    return {
-      title: movie.title,
-      loadTitle: movie.mediaItemId,
-      duration: movie.duration,
-      path: movie.path,
-      type: movie.type,
-      tags: movie.tags,
-    };
-  }
-
   static fromRequestObject(requestObject: any): Bumper {
     return new Bumper(
       requestObject.title,
@@ -76,8 +44,3 @@ export class Bumper {
     );
   }
 }
-
-export const BumperModel: Model<IBumper> = mongoose.model<IBumper>(
-  'Bumper',
-  BumperSchema,
-);

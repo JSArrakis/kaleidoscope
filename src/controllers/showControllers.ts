@@ -1,11 +1,8 @@
 import { Request, Response } from 'express';
 import { validationResult } from 'express-validator';
-import { ShowModel, Show } from '../models/show';
+import { Show } from '../models/show';
 import { getMediaDuration } from '../utils/utilities';
-
-// ===========================================
-//               SHOW HANDLERS
-// ===========================================
+import { showRepository } from '../repositories/showRepository';
 
 export async function createShowHandler(
   req: Request,
@@ -18,23 +15,41 @@ export async function createShowHandler(
     return;
   }
 
-  // Retrieve show from MongoDB using show load title if it exists
-  const show = await ShowModel.findOne({ mediaItemId: req.body.mediaItemId });
+  let mediaItemId = req.body.mediaItemId;
 
-  // If it exists, return error
+  if (!mediaItemId) {
+    res.status(400).json({ message: 'mediaItemId is required' });
+    return;
+  }
+
+  const show = showRepository.findByMediaItemId(mediaItemId);
+
   if (show) {
     res.status(400).json({
-      message: `Show with mediaItemId : ${req.body.mediaItemId} already exists`,
+      message: `Show with mediaItemId: ${req.body.mediaItemId} already exists`,
     });
     return;
   }
   // If it doesn't exist, perform transformations
   let createdShow = await transformShowFromRequest(req.body);
+  // TODO: Check for duplicate episode paths on this show
+  // If there are duplicate episode paths, return error
+  const episodePaths = createdShow.episodes.map(episode => episode.path);
+  const uniqueEpisodePaths = new Set(episodePaths);
+  if (uniqueEpisodePaths.size !== episodePaths.length) {
+    res.status(400).json({
+      message: 'Show contains duplicate episode paths',
+      duplicatePaths: episodePaths.filter(
+        (path, index) => episodePaths.indexOf(path) !== index,
+      ),
+    });
+    return;
+  }
 
   // Insert show into MongoDB
-  await ShowModel.create(createdShow);
+  showRepository.create(createdShow);
 
-  res.status(200).json({ message: 'Show Created' });
+  res.status(200).json({ message: 'Show  Created' });
   return;
 }
 
@@ -50,8 +65,15 @@ export async function deleteShowHandler(
     return;
   }
 
+  let mediaItemId = req.query.mediaItemId as string;
+
+  if (!mediaItemId) {
+    res.status(400).json({ message: 'mediaItemId is required' });
+    return;
+  }
+
   // Retrieve show from MongoDB using show load title if it exists
-  const show = await ShowModel.findOne({ mediaItemId: req.query.mediaItemId });
+  const show = showRepository.findByMediaItemId(mediaItemId);
 
   // If it doesn't exist, return error
   if (!show) {
@@ -60,9 +82,9 @@ export async function deleteShowHandler(
   }
 
   // If it exists, delete it
-  await ShowModel.deleteOne({ _id: show._id });
+  showRepository.delete(mediaItemId);
 
-  res.status(200).json({ message: 'Show Deleted' });
+  res.status(200).json({ message: `Show ${show.title} Deleted` });
   return;
 }
 
@@ -77,22 +99,41 @@ export async function updateShowHandler(
     return;
   }
 
+  let mediaItemId = req.body.mediaItemId;
+  if (!mediaItemId) {
+    res.status(400).json({ message: 'MediaItemId is required' });
+    return;
+  }
+
   // Retrieve show from MongoDB using show load title if it exists
-  const show = await ShowModel.findOne({ mediaItemId: req.body.mediaItemId });
+  const show = showRepository.findByMediaItemId(mediaItemId);
 
   // If it doesn't exist, return error
   if (!show) {
-    res.status(400).json({ message: 'Show does not exist' });
+    res
+      .status(400)
+      .json({ message: `Show with ID ${mediaItemId} does not exist` });
     return;
   }
 
   // If it exists, perform transformations
   let updatedShow = await transformShowFromRequest(req.body);
+  const episodePaths = updatedShow.episodes.map(episode => episode.path);
+  const uniqueEpisodePaths = new Set(episodePaths);
+  if (uniqueEpisodePaths.size !== episodePaths.length) {
+    res.status(400).json({
+      message: 'Show contains duplicate episode paths',
+      duplicatePaths: episodePaths.filter(
+        (path, index) => episodePaths.indexOf(path) !== index,
+      ),
+    });
+    return;
+  }
 
   // Update show in MongoDB
-  await ShowModel.updateOne({ _id: show._id }, updatedShow);
+  showRepository.update(mediaItemId, updatedShow);
 
-  res.status(200).json({ message: 'Show Updated' });
+  res.status(200).json({ message: `Show ${updatedShow.title} Updated` });
   return;
 }
 
@@ -107,12 +148,20 @@ export async function getShowHandler(
     return;
   }
 
-  // Retrieve show from MongoDB using show load title if it exists using request params
-  const show = await ShowModel.findOne({ mediaItemId: req.query.mediaItemId });
+  let mediaItemId = req.query.mediaItemId as string;
+
+  if (!mediaItemId) {
+    res.status(400).json({ message: 'mediaItemId is required' });
+    return;
+  }
+
+  const show = showRepository.findByMediaItemId(mediaItemId);
 
   // If it doesn't exist, return error
   if (!show) {
-    res.status(404).json({ message: 'Show does not exist' });
+    res
+      .status(404)
+      .json({ message: `Show with ID ${mediaItemId} does not exist` });
     return;
   }
 
@@ -124,44 +173,16 @@ export async function getAllShowsHandler(
   req: Request,
   res: Response,
 ): Promise<void> {
-  const shows = await ShowModel.find();
+  const shows = showRepository.findAll();
 
   res.status(200).json(shows);
-  return;
-}
-
-export async function getAllShowsDataHandler(
-  req: Request,
-  res: Response,
-): Promise<void> {
-  const shows = await ShowModel.find();
-
-  if (!shows || shows.length === 0) {
-    res.status(404).json({ message: 'No Shows Found' });
-    return;
-  }
-  let showsData = shows.map((show: any) => {
-    return {
-      title: show.title,
-      mediaItemId: show.mediaItemId,
-      alias: show.alias,
-      imdb: show.imdb,
-      durationLimit: show.durationLimit,
-      overDuration: show.overDuration,
-      firstEpisodeOverDuration: show.firstEpisodeOverDuration,
-      tags: show.tags,
-      secondaryTags: show.secondaryTags,
-      episodeCount: show.episodeCount,
-    };
-  });
-
-  res.status(200).json(showsData);
   return;
 }
 
 export async function transformShowFromRequest(show: Show): Promise<Show> {
   for (const episode of show.episodes) {
     if (episode.duration > 0) continue; // Skip if duration is already set
+    episode.showItemId = show.mediaItemId; // Set showItemId for the episode
     console.log(`Getting duration for ${episode.path}`);
     let durationInSeconds = await getMediaDuration(episode.path);
     episode.duration = durationInSeconds; // Update duration value

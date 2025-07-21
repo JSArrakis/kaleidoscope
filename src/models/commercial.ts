@@ -1,4 +1,3 @@
-import mongoose, { Model } from 'mongoose';
 import { MediaType } from './enum/mediaTypes';
 import { BaseMedia } from './mediaInterface';
 
@@ -10,15 +9,6 @@ export interface ICommercial extends BaseMedia {
   Type: Number;
   tags: string[];
 }
-
-export const CommercialSchema = new mongoose.Schema({
-  title: String,
-  mediaItemId: String,
-  duration: Number,
-  path: String,
-  type: Number,
-  tags: [String],
-});
 
 export class Commercial {
   title: string;
@@ -44,28 +34,6 @@ export class Commercial {
     this.tags = tags;
   }
 
-  static fromMongoObject(mongoObject: any): Commercial {
-    return new Commercial(
-      mongoObject.title,
-      mongoObject.mediaItemId,
-      mongoObject.duration,
-      mongoObject.path,
-      MediaType.Commercial,
-      mongoObject.tags,
-    );
-  }
-
-  static toMongoObject(commercial: Commercial): any {
-    return {
-      title: commercial.title,
-      loadTitle: commercial.mediaItemId,
-      duration: commercial.duration,
-      path: commercial.path,
-      type: commercial.type,
-      tags: commercial.tags,
-    };
-  }
-
   static fromRequestObject(requestObject: any): Commercial {
     return new Commercial(
       requestObject.title,
@@ -77,8 +45,3 @@ export class Commercial {
     );
   }
 }
-
-export const CommercialModel: Model<ICommercial> = mongoose.model<ICommercial>(
-  'Commercial',
-  CommercialSchema,
-);

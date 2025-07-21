@@ -1,4 +1,3 @@
-import mongoose, { Document, Model } from 'mongoose';
 import { BaseMedia } from './mediaInterface';
 
 export interface IEpisode {
@@ -8,6 +7,7 @@ export interface IEpisode {
   path: string;
   title: string;
   mediaItemId: string;
+  showItemId: string;
   duration: number;
   durationLimit: number;
   tags: string[];
@@ -27,73 +27,6 @@ export interface IShow extends Document, BaseMedia {
   episodes: IEpisode[];
 }
 
-export const EpisodeSchema = new mongoose.Schema({
-  season: String,
-  episode: String,
-  episodeNumber: Number,
-  path: String,
-  title: String,
-  mediaItemId: String,
-  duration: Number,
-  durationLimit: Number,
-  tags: [String],
-});
-
-export const ShowSchema = new mongoose.Schema({
-  title: String,
-  mediaItemId: {
-    type: String,
-    index: true,
-  },
-  alias: String,
-  imdb: String,
-  durationLimit: Number,
-  overDuration: Boolean,
-  firstEpisodeOverDuration: Boolean,
-  tags: [String],
-  secondaryTags: [String],
-  episodeCount: Number,
-  episodes: [EpisodeSchema],
-});
-
-export class ShowData {
-  public title: string;
-  public mediaItemId: string;
-  public alias: string;
-  public imdb: string;
-  public durationLimit: number;
-  public overDuration: boolean;
-  public firstEpisodeOverDuration: boolean;
-  public tags: string[];
-  public secondaryTags: string[];
-  public episodeCount: number;
-
-  constructor(
-    title: string,
-    mediaItemId: string,
-    alias: string,
-    imdb: string,
-    durationLimit: number,
-    overDuration: boolean,
-    firstEpisodeOverDuration: boolean,
-    tags: string[],
-    secondaryTags: string[],
-    episodeCount: number,
-    episodes: Episode[],
-  ) {
-    this.title = title;
-    this.mediaItemId = mediaItemId;
-    this.alias = alias;
-    this.imdb = imdb;
-    this.durationLimit = durationLimit;
-    this.overDuration = overDuration;
-    this.firstEpisodeOverDuration = firstEpisodeOverDuration;
-    this.tags = tags;
-    this.secondaryTags = secondaryTags;
-    this.episodeCount = episodeCount;
-  }
-}
-
 export class Episode {
   public season: string;
   public episode: string;
@@ -101,6 +34,7 @@ export class Episode {
   public path: string;
   public title: string;
   public mediaItemId: string;
+  public showItemId: string;
   public duration: number;
   public durationLimit: number;
   public tags: string[];
@@ -112,6 +46,7 @@ export class Episode {
     path: string,
     title: string,
     mediaItemId: string,
+    showItemId: string,
     duration: number,
     durationLimit: number,
     tags: string[],
@@ -122,37 +57,10 @@ export class Episode {
     this.path = path;
     this.title = title;
     this.mediaItemId = mediaItemId;
+    this.showItemId = showItemId;
     this.duration = duration;
     this.durationLimit = durationLimit;
     this.tags = tags;
-  }
-
-  static fromMongoObject(mongoObject: any): Episode {
-    return new Episode(
-      mongoObject.season,
-      mongoObject.episode,
-      mongoObject.episodeNumber,
-      mongoObject.path,
-      mongoObject.title,
-      mongoObject.mediaItemId,
-      mongoObject.duration,
-      mongoObject.durationLimit,
-      mongoObject.tags,
-    );
-  }
-
-  static toMongoObject(episode: Episode): any {
-    return {
-      season: episode.season,
-      episode: episode.episode,
-      episodeNumber: episode.episodeNumber,
-      path: episode.path,
-      title: episode.title,
-      mediaItemId: episode.mediaItemId,
-      duration: episode.duration,
-      durationLimit: episode.durationLimit,
-      tags: episode.tags,
-    };
   }
 
   static fromRequestObject(requestObject: any): Episode {
@@ -163,6 +71,7 @@ export class Episode {
       requestObject.path,
       requestObject.title,
       requestObject.mediaItemId,
+      requestObject.showItemId,
       requestObject.duration,
       requestObject.durationLimit,
       requestObject.tags,
@@ -209,42 +118,6 @@ export class Show {
     this.episodes = episodes;
   }
 
-  static fromMongoObject(mongoObject: any): Show {
-    return new Show(
-      mongoObject.title,
-      mongoObject.mediaItemId,
-      mongoObject.alias,
-      mongoObject.imdb,
-      mongoObject.durationLimit,
-      mongoObject.overDuration,
-      mongoObject.firstEpisodeOverDuration,
-      mongoObject.tags,
-      mongoObject.secondaryTags,
-      mongoObject.episodeCount,
-      mongoObject.episodes.map((episode: any) =>
-        Episode.fromMongoObject(episode),
-      ),
-    );
-  }
-
-  static toMongoObject(show: Show): any {
-    return {
-      title: show.title,
-      mediaItemId: show.mediaItemId,
-      alias: show.alias,
-      imdb: show.imdb,
-      durationLimit: show.durationLimit,
-      overDuration: show.overDuration,
-      firstEpisodeOverDuration: show.firstEpisodeOverDuration,
-      tags: show.tags,
-      secondaryTags: show.secondaryTags,
-      episodeCount: show.episodeCount,
-      episodes: show.episodes.map((episode: Episode) =>
-        Episode.toMongoObject(episode),
-      ),
-    };
-  }
-
   static fromRequestObject(requestObject: any): Show {
     return new Show(
       requestObject.title,
@@ -263,8 +136,3 @@ export class Show {
     );
   }
 }
-
-export const ShowModel: Model<IShow> = mongoose.model<IShow>(
-  'Show',
-  ShowSchema,
-);

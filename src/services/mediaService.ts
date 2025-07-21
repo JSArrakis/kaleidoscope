@@ -1,11 +1,6 @@
 import { Media } from '../models/media';
 import { Config } from '../models/config';
 import * as dataLoader from '../db/dataLoader';
-import {
-  createDefaultPromo,
-  createDefaultCommercials,
-} from '../db/defaultMedia';
-
 import { StreamType } from '../models/enum/streamTypes';
 import { IStreamRequest } from '../models/streamRequest';
 import { Mosaic } from '../models/mosaic';
@@ -52,9 +47,7 @@ export async function loadMedia(config: Config): Promise<void> {
     blocks: [],
   };
 
-  await +config.defaultPromo;
-
-  mosaics = await dataLoader.loadMosaics();
+  // mosaics = await dataLoader.loadMosaics();
   holidays = await dataLoader.loadHolidays();
 }
 
@@ -75,7 +68,7 @@ export function setCurrentHolidays(): void {
         today <= new Date(holiday.seasonEndDate)
       );
     } else {
-      return today === new Date(holiday.holidayDate);
+      return holiday.holidayDates.includes(today.toISOString().split('T')[0]);
     }
   });
 }

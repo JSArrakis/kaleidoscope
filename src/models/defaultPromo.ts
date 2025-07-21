@@ -1,4 +1,3 @@
-import mongoose, { Model } from 'mongoose';
 import { MediaType } from './enum/mediaTypes';
 
 export interface IDefaultPromo {
@@ -9,15 +8,6 @@ export interface IDefaultPromo {
   type: number;
   tags: string[];
 }
-
-export const DefaultPromoSchema = new mongoose.Schema({
-  title: String,
-  mediaItemId: String,
-  duration: Number,
-  path: String,
-  type: Number,
-  tags: [String],
-});
 
 export class DefaultPromo {
   title: string;
@@ -43,28 +33,6 @@ export class DefaultPromo {
     this.tags = tags;
   }
 
-  static fromMongoObject(mongoObject: any): DefaultPromo {
-    return new DefaultPromo(
-      mongoObject.title,
-      mongoObject.mediaItemId,
-      mongoObject.duration,
-      mongoObject.path,
-      mongoObject.type,
-      mongoObject.tags,
-    );
-  }
-
-  static toMongoObject(movie: DefaultPromo): any {
-    return {
-      title: movie.title,
-      loadTitle: movie.mediaItemId,
-      duration: movie.duration,
-      path: movie.path,
-      type: movie.type,
-      tags: movie.tags,
-    };
-  }
-
   static fromRequestObject(requestObject: any): DefaultPromo {
     return new DefaultPromo(
       requestObject.title,
@@ -76,6 +44,3 @@ export class DefaultPromo {
     );
   }
 }
-
-export const DefaultPromoModel: Model<IDefaultPromo> =
-  mongoose.model<IDefaultPromo>('DefaultPromo', DefaultPromoSchema);

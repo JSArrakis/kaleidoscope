@@ -1,4 +1,3 @@
-import mongoose, { Model, Schema } from 'mongoose';
 import { BaseMedia } from './mediaInterface';
 
 export interface IMovie extends BaseMedia {
@@ -39,25 +38,6 @@ export class CollectionReference {
   }
 }
 
-// Define the CollectionReference schema
-const CollectionReferenceSchema = new Schema({
-  mediaItemId: String,
-  title: String,
-  sequence: Number,
-});
-
-export const MovieSchema = new mongoose.Schema({
-  title: String,
-  mediaItemId: String,
-  alias: String,
-  imdb: String,
-  tags: [String],
-  path: String,
-  duration: Number,
-  durationLimit: Number,
-  collections: [CollectionReferenceSchema], // Reference the CollectionReference schema here
-});
-
 export class Movie {
   title: string;
   mediaItemId: string;
@@ -91,34 +71,6 @@ export class Movie {
     this.collections = collections;
   }
 
-  static fromMongoObject(mongoObject: any): Movie {
-    return new Movie(
-      mongoObject.title,
-      mongoObject.mediaItemId,
-      mongoObject.alias,
-      mongoObject.imdb,
-      mongoObject.tags,
-      mongoObject.path,
-      mongoObject.duration,
-      mongoObject.durationLimit,
-      mongoObject.collections,
-    );
-  }
-
-  static toMongoObject(movie: Movie): any {
-    return {
-      title: movie.title,
-      loadTitle: movie.mediaItemId,
-      alias: movie.alias,
-      imdb: movie.imdb,
-      tags: movie.tags,
-      path: movie.path,
-      duration: movie.duration,
-      durationLimit: movie.durationLimit,
-      collections: movie.collections,
-    };
-  }
-
   static fromRequestObject(requestObject: any): Movie {
     return new Movie(
       requestObject.title,
@@ -133,8 +85,3 @@ export class Movie {
     );
   }
 }
-
-export const MovieModel: Model<IMovie> = mongoose.model<IMovie>(
-  'Movie',
-  MovieSchema,
-);
