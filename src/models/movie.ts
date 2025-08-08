@@ -1,11 +1,14 @@
 import { BaseMedia } from './mediaInterface';
+import { Tag } from './tag';
+import { MediaTag } from './const/tagTypes';
+import { tagRepository } from '../repositories/tagsRepository';
 
-export interface IMovie extends BaseMedia {
+export interface IMovie {
   title: string;
   mediaItemId: string;
   alias: string;
   imdb: string;
-  tags: string[];
+  tags: MediaTag[];
   path: string;
   duration: number;
   durationlimit: number;
@@ -43,7 +46,7 @@ export class Movie {
   mediaItemId: string;
   alias: string;
   imdb: string;
-  tags: string[];
+  tags: MediaTag[];
   path: string;
   duration: number;
   durationLimit: number;
@@ -54,7 +57,7 @@ export class Movie {
     mediaItemId: string,
     alias: string,
     imdb: string,
-    tags: string[],
+    tags: MediaTag[],
     path: string,
     duration: number,
     durationLimit: number,
@@ -72,16 +75,34 @@ export class Movie {
   }
 
   static fromRequestObject(requestObject: any): Movie {
+    // Handle tag names - convert tag names (strings) to Tag objects
+    const tags: MediaTag[] = [];
+    for (const tagName of requestObject.tags) {
+      if (typeof tagName === 'string') {
+        // Look up the tag by name in the database (try exact match first, then case-insensitive)
+        let foundTag = tagRepository.findByName(tagName);
+        if (!foundTag) {
+          foundTag = tagRepository.findByNameIgnoreCase(tagName);
+        }
+
+        if (foundTag) {
+          tags.push(foundTag);
+        } else {
+          console.warn(`Tag with name "${tagName}" not found`);
+        }
+      }
+    }
+
     return new Movie(
       requestObject.title,
       requestObject.mediaItemId,
       requestObject.alias,
       requestObject.imdb,
-      requestObject.tags,
+      tags,
       requestObject.path,
       requestObject.duration,
       requestObject.durationLimit,
-      requestObject.collections,
+      requestObject.collections || [],
     );
   }
 }

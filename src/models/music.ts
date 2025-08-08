@@ -1,5 +1,7 @@
 import { MediaType } from './enum/mediaTypes';
 import { BaseMedia } from './mediaInterface';
+import { MediaTag } from './const/tagTypes';
+import { tagRepository } from '../repositories/tagsRepository';
 
 export interface IMusic extends BaseMedia {
   title: string;
@@ -8,7 +10,7 @@ export interface IMusic extends BaseMedia {
   duration: number;
   path: string;
   Type: number;
-  tags: string[];
+  tags: MediaTag[];
 }
 
 export class Music {
@@ -18,7 +20,7 @@ export class Music {
   duration: number;
   path: string;
   type: number;
-  tags: string[];
+  tags: MediaTag[];
 
   constructor(
     title: string,
@@ -27,7 +29,7 @@ export class Music {
     duration: number,
     path: string,
     type: number,
-    tags: string[],
+    tags: MediaTag[],
   ) {
     this.title = title;
     this.artist = artist;
@@ -38,7 +40,18 @@ export class Music {
     this.tags = tags;
   }
 
-  static fromRequestObject(requestObject: any): Music {
+  static async fromRequestObject(requestObject: any): Promise<Music> {
+    // Convert tag names to Tag objects
+    const tags: MediaTag[] = [];
+    if (requestObject.tags && Array.isArray(requestObject.tags)) {
+      for (const tagName of requestObject.tags) {
+        const tag = tagRepository.findByName(tagName);
+        if (tag) {
+          tags.push(tag);
+        }
+      }
+    }
+
     return new Music(
       requestObject.title,
       requestObject.artist,
@@ -46,7 +59,7 @@ export class Music {
       requestObject.duration,
       requestObject.path,
       MediaType.Music,
-      requestObject.tags,
+      tags,
     );
   }
 }

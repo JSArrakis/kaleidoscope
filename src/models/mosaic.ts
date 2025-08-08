@@ -1,34 +1,34 @@
 export interface IMosaic {
-  key: string;
-  genres: string[];
+  tagId: string;
+  tags: string[];
   musicGenres: string[];
-  musicSubGenres: string[];
+  title?: string;
 }
 
 export class Mosaic {
-  key: string;
-  genres: string[];
+  tagId: string;
+  tags: string[];
   musicGenres: string[];
-  musicSubGenres: string[];
+  title?: string;
 
   constructor(
-    key: string,
-    genres: string[],
+    tagId: string,
+    tags: string[],
     musicGenres: string[],
-    musicSubGenres: string[],
+    title?: string,
   ) {
-    this.key = key;
-    this.genres = genres;
+    this.tagId = tagId;
+    this.tags = tags;
     this.musicGenres = musicGenres;
-    this.musicSubGenres = musicSubGenres;
+    this.title = title;
   }
 
   static fromRequestObject(requestObject: any): Mosaic {
     return new Mosaic(
-      requestObject.key,
-      requestObject.genre,
+      requestObject.tagId,
+      requestObject.tags,
       requestObject.musicGenres,
-      requestObject.musicSubGenres,
+      requestObject.title,
     );
   }
 }

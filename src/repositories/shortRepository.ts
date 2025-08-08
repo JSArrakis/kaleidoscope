@@ -1,26 +1,37 @@
 import { getDB } from '../db/sqlite';
 import { Short } from '../models/short';
+import { MediaTag } from '../models/const/tagTypes';
+import { Tag } from '../models/tag';
 
 export class ShortRepository {
   private get db() {
     return getDB();
   }
+
+  // Create a new short
   create(short: Short): Short {
-    const stmt = this.db.prepare(`
-      INSERT INTO shorts (title, mediaItemId, duration, path, type, tags)
-      VALUES (?, ?, ?, ?, ?, ?)
-    `);
+    const transaction = this.db.transaction(() => {
+      // Insert short record
+      const stmt = this.db.prepare(`
+        INSERT INTO shorts (title, mediaItemId, duration, path, type)
+        VALUES (?, ?, ?, ?, ?)
+      `);
 
-    stmt.run(
-      short.title,
-      short.mediaItemId,
-      short.duration,
-      short.path,
-      short.type,
-      JSON.stringify(short.tags),
-    );
+      stmt.run(
+        short.title,
+        short.mediaItemId,
+        short.duration,
+        short.path,
+        short.type,
+      );
 
-    return this.findByMediaItemId(short.mediaItemId)!;
+      // Insert tag relationships
+      this.insertShortTags(short.mediaItemId, short.tags);
+
+      return this.findByMediaItemId(short.mediaItemId)!;
+    });
+
+    return transaction();
   }
 
   findByMediaItemId(mediaItemId: string): Short | null {
@@ -28,38 +39,97 @@ export class ShortRepository {
     const row = stmt.get(mediaItemId) as any;
     if (!row) return null;
 
-    return this.mapRowToShort(row);
+    const short = this.mapRowToShort(row);
+    short.tags = this.loadShortTags(mediaItemId);
+    return short;
   }
 
   findAll(): Short[] {
     const stmt = this.db.prepare(`SELECT * FROM shorts ORDER BY title`);
     const rows = stmt.all() as any[];
-    return rows.map(row => this.mapRowToShort(row));
+    return rows.map(row => {
+      const short = this.mapRowToShort(row);
+      short.tags = this.loadShortTags(short.mediaItemId);
+      return short;
+    });
   }
 
   update(mediaItemId: string, short: Short): Short | null {
-    const stmt = this.db.prepare(`
+    const transaction = this.db.transaction(() => {
+      // Update short record
+      const stmt = this.db.prepare(`
         UPDATE shorts 
-        SET title = ?, duration = ?, path = ?, type = ?, tags = ?, updatedAt = CURRENT_TIMESTAMP
+        SET title = ?, duration = ?, path = ?, type = ?, updatedAt = CURRENT_TIMESTAMP
         WHERE mediaItemId = ?
       `);
 
-    const result = stmt.run(
-      short.title,
-      short.duration,
-      short.path,
-      short.type,
-      JSON.stringify(short.tags),
-      mediaItemId,
-    );
+      const result = stmt.run(
+        short.title,
+        short.duration,
+        short.path,
+        short.type,
+        mediaItemId,
+      );
 
-    return result.changes > 0 ? this.findByMediaItemId(mediaItemId) : null;
+      if (result.changes === 0) return null;
+
+      // Update tag relationships
+      this.deleteShortTags(mediaItemId);
+      this.insertShortTags(mediaItemId, short.tags);
+
+      return this.findByMediaItemId(mediaItemId);
+    });
+
+    return transaction();
   }
 
+  // Delete short
   delete(mediaItemId: string): boolean {
     const stmt = this.db.prepare(`DELETE FROM shorts WHERE mediaItemId = ?`);
     const result = stmt.run(mediaItemId);
     return result.changes > 0;
+  }
+
+  // Find shorts by tags
+  findByTags(tags: string[]): Short[] {
+    if (tags.length === 0) return [];
+
+    const placeholders = tags.map(() => '?').join(',');
+    const stmt = this.db.prepare(`
+      SELECT DISTINCT s.* FROM shorts s
+      INNER JOIN short_tags st ON s.mediaItemId = st.mediaItemId
+      INNER JOIN tags t ON st.tagId = t.tagId
+      WHERE t.name IN (${placeholders})
+      ORDER BY s.title
+    `);
+
+    const rows = stmt.all(...tags) as any[];
+    return rows.map(row => {
+      const short = this.mapRowToShort(row);
+      short.tags = this.loadShortTags(short.mediaItemId);
+      return short;
+    });
+  }
+
+  // Find shorts by type
+  findByType(type: number): Short[] {
+    const stmt = this.db.prepare(`
+      SELECT * FROM shorts WHERE type = ? ORDER BY title
+    `);
+
+    const rows = stmt.all(type) as any[];
+    return rows.map(row => {
+      const short = this.mapRowToShort(row);
+      short.tags = this.loadShortTags(short.mediaItemId);
+      return short;
+    });
+  }
+
+  // Count all shorts
+  count(): number {
+    const stmt = this.db.prepare(`SELECT COUNT(*) as count FROM shorts`);
+    const result = stmt.get() as any;
+    return result.count;
   }
 
   private mapRowToShort(row: any): Short {
@@ -69,8 +139,56 @@ export class ShortRepository {
       row.duration,
       row.path,
       row.type,
-      JSON.parse(row.tags || '[]'),
+      [], // Tags will be loaded separately
     );
+  }
+
+  // Helper method to insert short tags
+  private insertShortTags(mediaItemId: string, tags: MediaTag[]): void {
+    if (tags.length === 0) return;
+
+    const stmt = this.db.prepare(`
+      INSERT INTO short_tags (mediaItemId, tagId)
+      VALUES (?, ?)
+    `);
+
+    for (const tag of tags) {
+      try {
+        stmt.run(mediaItemId, tag.tagId);
+      } catch (error) {
+        // Skip duplicates
+        console.warn(`Failed to insert tag ${tag.tagId} for short ${mediaItemId}:`, error);
+      }
+    }
+  }
+
+  // Helper method to load short tags
+  private loadShortTags(mediaItemId: string): MediaTag[] {
+    const stmt = this.db.prepare(`
+      SELECT t.* FROM tags t
+      INNER JOIN short_tags st ON t.tagId = st.tagId
+      WHERE st.mediaItemId = ?
+    `);
+
+    const rows = stmt.all(mediaItemId) as any[];
+    return rows.map(row => new Tag(
+      row.tagId,
+      row.name,
+      row.type,
+      row.holidayDates ? JSON.parse(row.holidayDates) : undefined,
+      row.exclusionGenres ? JSON.parse(row.exclusionGenres) : undefined,
+      row.seasonStartDate,
+      row.seasonEndDate,
+      row.sequence,
+    ));
+  }
+
+  // Helper method to delete short tags
+  private deleteShortTags(mediaItemId: string): void {
+    const stmt = this.db.prepare(`
+      DELETE FROM short_tags WHERE mediaItemId = ?
+    `);
+    stmt.run(mediaItemId);
   }
 }
 

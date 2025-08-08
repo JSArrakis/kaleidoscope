@@ -1,65 +1,115 @@
 import { getDB } from '../db/sqlite';
 import { Bumper } from '../models/bumper';
+import { MediaTag } from '../models/const/tagTypes';
 
 export class BumperRepository {
   private get db() {
     return getDB();
   }
 
-  // Create a new bumper
-  create(bumper: Bumper): Bumper {
+  // Helper method to insert bumper tags into junction table
+  private insertBumperTags(mediaItemId: string, tags: MediaTag[]): void {
+    if (tags.length === 0) return;
+
     const stmt = this.db.prepare(`
-      INSERT INTO bumpers (title, mediaItemId, duration, path, type, tags)
-      VALUES (?, ?, ?, ?, ?, ?)
+      INSERT INTO bumper_tags (mediaItemId, tagId)
+      VALUES (?, ?)
     `);
 
-    const result = stmt.run(
-      bumper.title,
-      bumper.mediaItemId,
-      bumper.duration,
-      bumper.path,
-      bumper.type,
-      JSON.stringify(bumper.tags),
-    );
+    for (const tag of tags) {
+      try {
+        stmt.run(mediaItemId, tag.tagId);
+      } catch (error) {
+        // Ignore duplicate key errors, but log other errors
+        if (!(error instanceof Error) || !error.message.includes('UNIQUE constraint failed')) {
+          console.error('Error inserting bumper tag:', error);
+        }
+      }
+    }
+  }
 
-    return this.findByMediaItemId(bumper.mediaItemId)!;
+  // Helper method to load bumper tags from junction table
+  private loadBumperTags(mediaItemId: string): MediaTag[] {
+    const stmt = this.db.prepare(`
+      SELECT t.*
+      FROM tags t
+      INNER JOIN bumper_tags bt ON t.tagId = bt.tagId
+      WHERE bt.mediaItemId = ?
+    `);
+
+    return stmt.all(mediaItemId) as MediaTag[];
+  }
+
+  // Helper method to delete bumper tags from junction table
+  private deleteBumperTags(mediaItemId: string): void {
+    const stmt = this.db.prepare(`
+      DELETE FROM bumper_tags WHERE mediaItemId = ?
+    `);
+    stmt.run(mediaItemId);
+  }
+
+  // Create a new bumper
+  create(bumper: Bumper): Bumper {
+    const transaction = this.db.transaction(() => {
+      // Insert the bumper record
+      const stmt = this.db.prepare(`
+        INSERT INTO bumpers (title, mediaItemId, duration, path, type)
+        VALUES (?, ?, ?, ?, ?)
+      `);
+
+      stmt.run(
+        bumper.title,
+        bumper.mediaItemId,
+        bumper.duration,
+        bumper.path,
+        bumper.type,
+      );
+
+      // Insert bumper tags
+      this.insertBumperTags(bumper.mediaItemId, bumper.tags);
+
+      return this.findByMediaItemId(bumper.mediaItemId)!;
+    });
+
+    return transaction();
   }
 
   // Create multiple bumpers in a transaction
   createMany(bumpers: Bumper[]): Bumper[] {
-    const stmt = this.db.prepare(`
-      INSERT INTO bumpers (title, mediaItemId, duration, path, type, tags)
-      VALUES (?, ?, ?, ?, ?, ?)
-    `);
+    const transaction = this.db.transaction(() => {
+      const results: Bumper[] = [];
+      const stmt = this.db.prepare(`
+        INSERT INTO bumpers (title, mediaItemId, duration, path, type)
+        VALUES (?, ?, ?, ?, ?)
+      `);
 
-    const transaction = this.db.transaction(
-      (bumpersToInsert: Bumper[]) => {
-        const results: Bumper[] = [];
-        for (const bumper of bumpersToInsert) {
-          try {
-            stmt.run(
-              bumper.title,
-              bumper.mediaItemId,
-              bumper.duration,
-              bumper.path,
-              bumper.type,
-              JSON.stringify(bumper.tags),
-            );
-            const created = this.findByMediaItemId(bumper.mediaItemId);
-            if (created) results.push(created);
-          } catch (error) {
-            // Skip duplicates or other errors
-            console.warn(
-              `Failed to insert bumper ${bumper.mediaItemId}:`,
-              error,
-            );
-          }
+      for (const bumper of bumpers) {
+        try {
+          stmt.run(
+            bumper.title,
+            bumper.mediaItemId,
+            bumper.duration,
+            bumper.path,
+            bumper.type,
+          );
+
+          // Insert bumper tags
+          this.insertBumperTags(bumper.mediaItemId, bumper.tags);
+
+          const created = this.findByMediaItemId(bumper.mediaItemId);
+          if (created) results.push(created);
+        } catch (error) {
+          // Skip duplicates or other errors
+          console.warn(
+            `Failed to insert bumper ${bumper.mediaItemId}:`,
+            error,
+          );
         }
-        return results;
-      },
-    );
+      }
+      return results;
+    });
 
-    return transaction(bumpers);
+    return transaction();
   }
 
   // Find bumper by mediaItemId
@@ -74,7 +124,7 @@ export class BumperRepository {
     return this.mapRowToBumper(row);
   }
 
-  // Find all commercials
+  // Find all bumpers
   findAll(): Bumper[] {
     const stmt = this.db.prepare(`
       SELECT * FROM bumpers ORDER BY title
@@ -86,45 +136,67 @@ export class BumperRepository {
 
   // Update bumper
   update(mediaItemId: string, bumper: Bumper): Bumper | null {
-    const stmt = this.db.prepare(`
-      UPDATE bumpers
-      SET title = ?, duration = ?, path = ?, type = ?, tags = ?, updatedAt = CURRENT_TIMESTAMP
-      WHERE mediaItemId = ?
-    `);
+    const transaction = this.db.transaction(() => {
+      // Update the bumper record
+      const stmt = this.db.prepare(`
+        UPDATE bumpers
+        SET title = ?, duration = ?, path = ?, type = ?, updatedAt = CURRENT_TIMESTAMP
+        WHERE mediaItemId = ?
+      `);
 
-    const result = stmt.run(
-      bumper.title,
-      bumper.duration,
-      bumper.path,
-      bumper.type,
-      JSON.stringify(bumper.tags),
-      mediaItemId,
-    );
+      const result = stmt.run(
+        bumper.title,
+        bumper.duration,
+        bumper.path,
+        bumper.type,
+        mediaItemId,
+      );
 
-    if (result.changes === 0) return null;
-    return this.findByMediaItemId(mediaItemId);
+      if (result.changes === 0) return null;
+
+      // Delete existing tags and insert new ones
+      this.deleteBumperTags(mediaItemId);
+      this.insertBumperTags(mediaItemId, bumper.tags);
+
+      return this.findByMediaItemId(mediaItemId);
+    });
+
+    return transaction();
   }
 
-  // Delete commercial
+  // Delete bumper
   delete(mediaItemId: string): boolean {
-    const stmt = this.db.prepare(`
-      DELETE FROM bumpers WHERE mediaItemId = ?
-    `);
+    const transaction = this.db.transaction(() => {
+      // Delete tags first (will cascade, but explicit is better)
+      this.deleteBumperTags(mediaItemId);
 
-    const result = stmt.run(mediaItemId);
-    return result.changes > 0;
+      // Delete the bumper record
+      const stmt = this.db.prepare(`
+        DELETE FROM bumpers WHERE mediaItemId = ?
+      `);
+
+      const result = stmt.run(mediaItemId);
+      return result.changes > 0;
+    });
+
+    return transaction();
   }
 
-  // Find bumpers by tags
+  // Find bumpers by tags using SQL joins
   findByTags(tags: string[]): Bumper[] {
+    if (tags.length === 0) return [];
+
+    const placeholders = tags.map(() => '?').join(',');
     const stmt = this.db.prepare(`
-      SELECT * FROM bumpers
-      WHERE ${tags.map((_, index) => `tags LIKE ?`).join(' OR ')}
-      ORDER BY title
+      SELECT DISTINCT b.*
+      FROM bumpers b
+      INNER JOIN bumper_tags bt ON b.mediaItemId = bt.mediaItemId
+      INNER JOIN tags t ON bt.tagId = t.tagId
+      WHERE t.name IN (${placeholders})
+      ORDER BY b.title
     `);
 
-    const params = tags.map(tag => `%"${tag}"%`);
-    const rows = stmt.all(...params) as any[];
+    const rows = stmt.all(...tags) as any[];
     return rows.map(row => this.mapRowToBumper(row));
   }
 
@@ -152,7 +224,7 @@ export class BumperRepository {
       row.duration,
       row.path,
       row.type,
-      JSON.parse(row.tags || '[]'),
+      this.loadBumperTags(row.mediaItemId),
     );
   }
 }

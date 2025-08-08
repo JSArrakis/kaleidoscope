@@ -120,81 +120,81 @@ router.get(
 // Music Management
 router.post(
   '/create-music',
-  verify.createBufferValidationRules,
+  verify.createMusicValidationRules,
   musicCont.createMusicHandler,
 );
 router.delete(
   '/delete-music',
-  verify.deleteBufferValidationRules,
+  verify.deleteMusicValidationRules,
   musicCont.deleteMusicHandler,
 );
 router.put(
   '/update-music',
-  verify.updateBufferValidationRules,
+  verify.updateMusicValidationRules,
   musicCont.updateMusicHandler,
 );
 router.get(
   '/get-music',
-  verify.getBufferValidationRules,
+  verify.getMusicValidationRules,
   musicCont.getMusicHandler,
 );
 router.get(
   '/get-all-music',
-  verify.getBufferValidationRules,
+  verify.getMusicValidationRules,
   musicCont.getAllMusicHandler,
 );
 
 // Promo Management
 router.post(
   '/create-promo',
-  verify.createBufferValidationRules,
+  verify.createPromoValidationRules,
   promoCont.createPromoHandler,
 );
 router.delete(
   '/delete-promo',
-  verify.deleteBufferValidationRules,
+  verify.deletePromoValidationRules,
   promoCont.deletePromoHandler,
 );
 router.put(
   '/update-promo',
-  verify.updateBufferValidationRules,
+  verify.updatePromoValidationRules,
   promoCont.updatePromoHandler,
 );
 router.get(
   '/get-promo',
-  verify.getBufferValidationRules,
+  verify.getPromoValidationRules,
   promoCont.getPromoHandler,
 );
 router.get(
   '/get-all-promos',
-  verify.getBufferValidationRules,
+  verify.getPromoValidationRules,
   promoCont.getAllPromosHandler,
 );
 
 // Bumper Management
 router.post(
   '/create-bumper',
-  verify.createBufferValidationRules,
+  verify.createBumperValidationRules,
   bumperCont.createBumperHandler,
 );
 router.delete(
   '/delete-bumper',
-  verify.deleteBufferValidationRules,
+  verify.deleteBumperValidationRules,
   bumperCont.deleteBumperHandler,
 );
 router.put(
   '/update-bumper',
-  verify.updateBufferValidationRules,
+  verify.updateBumperValidationRules,
   bumperCont.updateBumperHandler,
 );
 router.get(
   '/get-all-bumpers',
-  verify.getBufferValidationRules,
+  verify.getBumperValidationRules,
   bumperCont.getAllBumpersHandler,
 );
 router.get(
   '/get-bumper',
-  verify.getBufferValidationRules,
+  verify.getBumperValidationRules,
   bumperCont.getBumperHandler,
 );
 

@@ -6,21 +6,74 @@ export class CollectionRepository {
     return getDB();
   }
 
-  // Create a new collection
-  create(collection: Collection): Collection {
+  // Helper method to insert collection items into junction table
+  private insertCollectionItems(collectionId: string, items: CollectionItem[]): void {
+    if (items.length === 0) return;
+
     const stmt = this.db.prepare(`
-      INSERT INTO collections (mediaItemId, title, description, items)
+      INSERT INTO collection_items (collectionId, mediaItemId, mediaItemTitle, sequence)
       VALUES (?, ?, ?, ?)
     `);
 
-    const result = stmt.run(
-      collection.mediaItemId,
-      collection.title,
-      collection.description,
-      JSON.stringify(collection.items),
-    );
+    for (const item of items) {
+      try {
+        stmt.run(collectionId, item.mediaItemId, item.mediaItemTitle, item.sequence);
+      } catch (error) {
+        // Ignore duplicate key errors, but log other errors
+        if (!(error instanceof Error) || !error.message.includes('UNIQUE constraint failed')) {
+          console.error('Error inserting collection item:', error);
+        }
+      }
+    }
+  }
 
-    return this.findByMediaItemId(collection.mediaItemId)!;
+  // Helper method to load collection items from junction table
+  private loadCollectionItems(collectionId: string): CollectionItem[] {
+    const stmt = this.db.prepare(`
+      SELECT mediaItemId, mediaItemTitle, sequence
+      FROM collection_items
+      WHERE collectionId = ?
+      ORDER BY sequence
+    `);
+
+    const rows = stmt.all(collectionId) as any[];
+    return rows.map(row => new CollectionItem(
+      row.mediaItemId,
+      row.mediaItemTitle,
+      row.sequence
+    ));
+  }
+
+  // Helper method to delete collection items from junction table
+  private deleteCollectionItems(collectionId: string): void {
+    const stmt = this.db.prepare(`
+      DELETE FROM collection_items WHERE collectionId = ?
+    `);
+    stmt.run(collectionId);
+  }
+
+  // Create a new collection
+  create(collection: Collection): Collection {
+    const transaction = this.db.transaction(() => {
+      // Insert the collection record
+      const stmt = this.db.prepare(`
+        INSERT INTO collections (mediaItemId, title, description)
+        VALUES (?, ?, ?)
+      `);
+
+      stmt.run(
+        collection.mediaItemId,
+        collection.title,
+        collection.description,
+      );
+
+      // Insert collection items
+      this.insertCollectionItems(collection.mediaItemId, collection.items);
+
+      return this.findByMediaItemId(collection.mediaItemId)!;
+    });
+
+    return transaction();
   }
 
   // Find collection by mediaItemId
@@ -47,38 +100,55 @@ export class CollectionRepository {
 
   // Update collection
   update(mediaItemId: string, collection: Collection): Collection | null {
-    const stmt = this.db.prepare(`
-      UPDATE collections 
-      SET title = ?, description = ?, items = ?, updatedAt = CURRENT_TIMESTAMP
-      WHERE mediaItemId = ?
-    `);
+    const transaction = this.db.transaction(() => {
+      // Update the collection record
+      const stmt = this.db.prepare(`
+        UPDATE collections 
+        SET title = ?, description = ?, updatedAt = CURRENT_TIMESTAMP
+        WHERE mediaItemId = ?
+      `);
 
-    console.log('Updating collection:', {
-      title: collection.title,
-      description: collection.description,
-      items: collection.items,
-      mediaItemId,
+      console.log('Updating collection:', {
+        title: collection.title,
+        description: collection.description,
+        items: collection.items,
+        mediaItemId,
+      });
+
+      const result = stmt.run(
+        collection.title,
+        collection.description,
+        mediaItemId,
+      );
+
+      if (result.changes === 0) return null;
+
+      // Delete existing items and insert new ones
+      this.deleteCollectionItems(mediaItemId);
+      this.insertCollectionItems(mediaItemId, collection.items);
+
+      return this.findByMediaItemId(mediaItemId);
     });
 
-    const result = stmt.run(
-      collection.title,
-      collection.description,
-      JSON.stringify(collection.items),
-      mediaItemId,
-    );
-
-    if (result.changes === 0) return null;
-    return this.findByMediaItemId(mediaItemId);
+    return transaction();
   }
 
   // Delete collection
   delete(mediaItemId: string): boolean {
-    const stmt = this.db.prepare(`
-      DELETE FROM collections WHERE mediaItemId = ?
-    `);
+    const transaction = this.db.transaction(() => {
+      // Delete items first (will cascade, but explicit is better)
+      this.deleteCollectionItems(mediaItemId);
 
-    const result = stmt.run(mediaItemId);
-    return result.changes > 0;
+      // Delete the collection record
+      const stmt = this.db.prepare(`
+        DELETE FROM collections WHERE mediaItemId = ?
+      `);
+
+      const result = stmt.run(mediaItemId);
+      return result.changes > 0;
+    });
+
+    return transaction();
   }
 
   // Find collections by title (partial match)
@@ -93,6 +163,20 @@ export class CollectionRepository {
     return rows.map(row => this.mapRowToCollection(row));
   }
 
+  // Find collections that contain a specific media item
+  findByMediaItem(mediaItemId: string): Collection[] {
+    const stmt = this.db.prepare(`
+      SELECT DISTINCT c.*
+      FROM collections c
+      INNER JOIN collection_items ci ON c.mediaItemId = ci.collectionId
+      WHERE ci.mediaItemId = ?
+      ORDER BY c.title
+    `);
+
+    const rows = stmt.all(mediaItemId) as any[];
+    return rows.map(row => this.mapRowToCollection(row));
+  }
+
   // Count all collections
   count(): number {
     const stmt = this.db.prepare(`SELECT COUNT(*) as count FROM collections`);
@@ -100,22 +184,42 @@ export class CollectionRepository {
     return result.count;
   }
 
+  // Get the next sequence number for a collection
+  getNextSequence(collectionId: string): number {
+    const stmt = this.db.prepare(`
+      SELECT MAX(sequence) as maxSequence FROM collection_items WHERE collectionId = ?
+    `);
+    const result = stmt.get(collectionId) as any;
+    return (result.maxSequence || 0) + 1;
+  }
+
+  // Reorder collection items
+  reorderItems(collectionId: string, itemSequences: { mediaItemId: string; sequence: number }[]): boolean {
+    const transaction = this.db.transaction(() => {
+      const stmt = this.db.prepare(`
+        UPDATE collection_items 
+        SET sequence = ? 
+        WHERE collectionId = ? AND mediaItemId = ?
+      `);
+
+      for (const item of itemSequences) {
+        stmt.run(item.sequence, collectionId, item.mediaItemId);
+      }
+      
+      return true;
+    });
+
+    return transaction();
+  }
+
   private mapRowToCollection(row: any): Collection {
-    const items = row.items ? JSON.parse(row.items) : [];
-    const collectionItems = items.map(
-      (item: any) =>
-        new CollectionItem(
-          item.mediaItemId,
-          item.mediaItemTitle,
-          item.sequence,
-        ),
-    );
+    const items = this.loadCollectionItems(row.mediaItemId);
 
     return new Collection(
       row.mediaItemId,
       row.title,
       row.description,
-      collectionItems,
+      items,
     );
   }
 }

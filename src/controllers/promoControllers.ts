@@ -157,7 +157,7 @@ export async function transformPromoFromRequest(
   promo: any,
   mediaItemId: string,
 ): Promise<Promo> {
-  let parsedPromo: Promo = Promo.fromRequestObject(promo);
+  let parsedPromo: Promo = await Promo.fromRequestObject(promo);
 
   parsedPromo.mediaItemId = mediaItemId;
 

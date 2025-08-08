@@ -161,7 +161,7 @@ export async function transformShortFromRequest(
   short: any,
   mediaItemId: string,
 ): Promise<Short> {
-  let parsedShort: Short = Short.fromRequestObject(short);
+  let parsedShort: Short = await Short.fromRequestObject(short);
 
   parsedShort.mediaItemId = mediaItemId;
 

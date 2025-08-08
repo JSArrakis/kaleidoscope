@@ -168,7 +168,7 @@ export async function transformBumperFromRequest(
   bumper: any,
   mediaItemId: string,
 ): Promise<Bumper> {
-  let parsedBumper: Bumper = Bumper.fromRequestObject(bumper);
+   let parsedBumper: Bumper = await Bumper.fromRequestObject(bumper);
 
   parsedBumper.mediaItemId = mediaItemId;
 

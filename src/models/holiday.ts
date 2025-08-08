@@ -1,6 +1,7 @@
 export interface IHoliday {
   name: string;
   tagId: string;
+  type: string;
   holidayDates: string[];
   exclusionGenres: string[];
   seasonStartDate?: string;

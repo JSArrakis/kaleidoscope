@@ -159,7 +159,7 @@ export async function transformMusicFromRequest(
   music: any,
   mediaItemId: string,
 ): Promise<Music> {
-  let parsedMusic: Music = Music.fromRequestObject(music);
+  let parsedMusic: Music = await Music.fromRequestObject(music);
 
   parsedMusic.mediaItemId = mediaItemId;
 

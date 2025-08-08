@@ -38,9 +38,17 @@ export async function createTagHandler(
     return;
   }
 
-  tagRepository.create(req.body);
-
-  res.status(200).json({ message: `Tag ${req.body.name} Created` });
+  try {
+    tagRepository.create(req.body);
+    res.status(200).json({ message: `Tag ${req.body.name} Created` });
+  } catch (error: any) {
+    if (error.message.includes('already exists')) {
+      res.status(400).json({ message: error.message });
+    } else {
+      console.error('Error creating tag:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  }
   return;
 }
 

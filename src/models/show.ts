@@ -1,4 +1,7 @@
 import { BaseMedia } from './mediaInterface';
+import { Tag } from './tag';
+import { MediaTag } from './const/tagTypes';
+import { tagRepository } from '../repositories/tagsRepository';
 
 export interface IEpisode {
   season: string;
@@ -10,7 +13,7 @@ export interface IEpisode {
   showItemId: string;
   duration: number;
   durationLimit: number;
-  tags: string[];
+  tags: MediaTag[];
 }
 
 export interface IShow extends Document, BaseMedia {
@@ -21,8 +24,8 @@ export interface IShow extends Document, BaseMedia {
   durationLimit: number;
   overDuration: boolean;
   firstEpisodeOverDuration: boolean;
-  tags: string[];
-  secondaryTags: string[];
+  tags: MediaTag[];
+  secondaryTags: MediaTag[];
   episodeCount: number;
   episodes: IEpisode[];
 }
@@ -37,7 +40,7 @@ export class Episode {
   public showItemId: string;
   public duration: number;
   public durationLimit: number;
-  public tags: string[];
+  public tags: MediaTag[];
 
   constructor(
     season: string,
@@ -49,7 +52,7 @@ export class Episode {
     showItemId: string,
     duration: number,
     durationLimit: number,
-    tags: string[],
+    tags: MediaTag[],
   ) {
     this.season = season;
     this.episode = episode;
@@ -64,6 +67,24 @@ export class Episode {
   }
 
   static fromRequestObject(requestObject: any): Episode {
+    // Handle tag names - convert tag names (strings) to Tag objects
+    const tags: MediaTag[] = [];
+    for (const tagName of requestObject.tags || []) {
+      if (typeof tagName === 'string') {
+        // Look up the tag by name in the database (try exact match first, then case-insensitive)
+        let foundTag = tagRepository.findByName(tagName);
+        if (!foundTag) {
+          foundTag = tagRepository.findByNameIgnoreCase(tagName);
+        }
+
+        if (foundTag) {
+          tags.push(foundTag);
+        } else {
+          console.warn(`Tag with name "${tagName}" not found`);
+        }
+      }
+    }
+
     return new Episode(
       requestObject.season,
       requestObject.episode,
@@ -74,7 +95,7 @@ export class Episode {
       requestObject.showItemId,
       requestObject.duration,
       requestObject.durationLimit,
-      requestObject.tags,
+      tags,
     );
   }
 }
@@ -87,8 +108,8 @@ export class Show {
   public durationLimit: number;
   public overDuration: boolean;
   public firstEpisodeOverDuration: boolean;
-  public tags: string[];
-  public secondaryTags: string[];
+  public tags: MediaTag[];
+  public secondaryTags: MediaTag[];
   public episodeCount: number;
   public episodes: Episode[];
 
@@ -100,8 +121,8 @@ export class Show {
     durationLimit: number,
     overDuration: boolean,
     firstEpisodeOverDuration: boolean,
-    tags: string[],
-    secondaryTags: string[],
+    tags: MediaTag[],
+    secondaryTags: MediaTag[],
     episodeCount: number,
     episodes: Episode[],
   ) {
@@ -119,6 +140,27 @@ export class Show {
   }
 
   static fromRequestObject(requestObject: any): Show {
+    // Handle tag names - convert tag names (strings) to Tag objects
+    const tags: MediaTag[] = [];
+    for (const tagName of requestObject.tags || []) {
+      if (typeof tagName === 'string') {
+        // Look up the tag by name in the database (try exact match first, then case-insensitive)
+        let foundTag = tagRepository.findByName(tagName);
+        if (!foundTag) {
+          foundTag = tagRepository.findByNameIgnoreCase(tagName);
+        }
+
+        if (foundTag) {
+          tags.push(foundTag);
+        } else {
+          console.warn(`Tag with name "${tagName}" not found`);
+        }
+      }
+    }
+
+    // Handle secondary tags (initially empty, will be populated during transformation)
+    const secondaryTags: MediaTag[] = [];
+
     return new Show(
       requestObject.title,
       requestObject.mediaItemId,
@@ -127,12 +169,12 @@ export class Show {
       requestObject.durationLimit,
       requestObject.overDuration,
       requestObject.firstEpisodeOverDuration,
-      requestObject.tags,
-      requestObject.secondaryTags,
+      tags,
+      secondaryTags,
       requestObject.episodeCount,
-      requestObject.episodes.map((episode: any) =>
+      requestObject.episodes?.map((episode: any) =>
         Episode.fromRequestObject(episode),
-      ),
+      ) || [],
     );
   }
 }

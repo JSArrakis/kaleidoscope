@@ -1,5 +1,7 @@
 import { getDB } from '../db/sqlite';
 import { Movie, CollectionReference } from '../models/movie';
+import { Tag } from '../models/tag';
+import { MediaTag } from '../models/const/tagTypes';
 
 export class MovieRepository {
   private get db() {
@@ -8,59 +10,29 @@ export class MovieRepository {
 
   // Create a new movie
   create(movie: Movie): Movie {
-    const stmt = this.db.prepare(`
-      INSERT INTO movies (title, mediaItemId, alias, imdb, tags, path, duration, durationLimit, collections)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `);
+    const transaction = this.db.transaction(() => {
+      // Insert movie without tags or collections
+      const movieStmt = this.db.prepare(`
+        INSERT INTO movies (title, mediaItemId, alias, imdb, path, duration, durationLimit)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+      `);
 
-    const result = stmt.run(
-      movie.title,
-      movie.mediaItemId,
-      movie.alias,
-      movie.imdb,
-      JSON.stringify(movie.tags),
-      movie.path,
-      movie.duration,
-      movie.durationLimit,
-      JSON.stringify(movie.collections),
-    );
+      const result = movieStmt.run(
+        movie.title,
+        movie.mediaItemId,
+        movie.alias,
+        movie.imdb,
+        movie.path,
+        movie.duration,
+        movie.durationLimit,
+      );
 
-    return this.findByMediaItemId(movie.mediaItemId)!;
-  }
-
-  // Create multiple movies in a transaction
-  createMany(movies: Movie[]): Movie[] {
-    const stmt = this.db.prepare(`
-      INSERT INTO movies (title, mediaItemId, alias, imdb, tags, path, duration, durationLimit, collections)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `);
-
-    const transaction = this.db.transaction((moviesToInsert: Movie[]) => {
-      const results: Movie[] = [];
-      for (const movie of moviesToInsert) {
-        try {
-          stmt.run(
-            movie.title,
-            movie.mediaItemId,
-            movie.alias,
-            movie.imdb,
-            JSON.stringify(movie.tags),
-            movie.path,
-            movie.duration,
-            movie.durationLimit,
-            JSON.stringify(movie.collections),
-          );
-          const created = this.findByMediaItemId(movie.mediaItemId);
-          if (created) results.push(created);
-        } catch (error) {
-          // Skip duplicates or other errors
-          console.warn(`Failed to insert movie ${movie.mediaItemId}:`, error);
-        }
-      }
-      return results;
+      // Insert tags
+      this.insertMediaTags(movie.mediaItemId, movie.tags);
     });
 
-    return transaction(movies);
+    transaction();
+    return this.findByMediaItemId(movie.mediaItemId)!;
   }
 
   // Find movie by mediaItemId
@@ -87,25 +59,36 @@ export class MovieRepository {
 
   // Update movie
   update(mediaItemId: string, movie: Movie): Movie | null {
-    const stmt = this.db.prepare(`
-      UPDATE movies 
-      SET title = ?, alias = ?, imdb = ?, tags = ?, path = ?, duration = ?, durationLimit = ?, collections = ?, updatedAt = CURRENT_TIMESTAMP
-      WHERE mediaItemId = ?
-    `);
+    const transaction = this.db.transaction(() => {
+      // Update movie
+      const movieStmt = this.db.prepare(`
+        UPDATE movies 
+        SET title = ?, alias = ?, imdb = ?, path = ?, duration = ?, durationLimit = ?, updatedAt = CURRENT_TIMESTAMP
+        WHERE mediaItemId = ?
+      `);
 
-    const result = stmt.run(
-      movie.title,
-      movie.alias,
-      movie.imdb,
-      JSON.stringify(movie.tags),
-      movie.path,
-      movie.duration,
-      movie.durationLimit,
-      JSON.stringify(movie.collections),
-      mediaItemId,
-    );
+      const result = movieStmt.run(
+        movie.title,
+        movie.alias,
+        movie.imdb,
+        movie.path,
+        movie.duration,
+        movie.durationLimit,
+        mediaItemId,
+      );
 
-    if (result.changes === 0) return null;
+      if (result.changes === 0) return null;
+
+      // Delete existing tags
+      this.db
+        .prepare('DELETE FROM media_tags WHERE mediaItemId = ?')
+        .run(mediaItemId);
+
+      // Insert new tags
+      this.insertMediaTags(mediaItemId, movie.tags);
+    });
+
+    transaction();
     return this.findByMediaItemId(mediaItemId);
   }
 
@@ -120,16 +103,31 @@ export class MovieRepository {
   }
 
   // Find movies by tags
-  findByTags(tags: string[]): Movie[] {
-    const placeholders = tags.map(() => '?').join(',');
+  findByTags(tagIds: string[]): Movie[] {
+    if (tagIds.length === 0) return [];
+
+    const placeholders = tagIds.map(() => '?').join(',');
     const stmt = this.db.prepare(`
-      SELECT * FROM movies 
-      WHERE ${tags.map((_, index) => `tags LIKE ?`).join(' OR ')}
-      ORDER BY title
+      SELECT DISTINCT m.* FROM movies m
+      INNER JOIN media_tags mt ON m.mediaItemId = mt.mediaItemId
+      WHERE mt.tagId IN (${placeholders})
+      ORDER BY m.title
     `);
 
-    const params = tags.map(tag => `%"${tag}"%`);
-    const rows = stmt.all(...params) as any[];
+    const rows = stmt.all(...tagIds) as any[];
+    return rows.map(row => this.mapRowToMovie(row));
+  }
+
+  // Find movies by tag type
+  findByTagType(tagType: string): Movie[] {
+    const stmt = this.db.prepare(`
+      SELECT DISTINCT m.* FROM movies m
+      INNER JOIN media_tags mt ON m.mediaItemId = mt.mediaItemId
+      WHERE mt.tagType = ?
+      ORDER BY m.title
+    `);
+
+    const rows = stmt.all(tagType) as any[];
     return rows.map(row => this.mapRowToMovie(row));
   }
 
@@ -140,20 +138,87 @@ export class MovieRepository {
     return result.count;
   }
 
+  // Helper method to insert media tags
+  private insertMediaTags(mediaItemId: string, tags: MediaTag[]): void {
+    if (tags.length === 0) return;
+
+    const stmt = this.db.prepare(`
+      INSERT INTO media_tags (mediaItemId, tagId, tagType)
+      VALUES (?, ?, ?)
+    `);
+
+    for (const tag of tags) {
+      try {
+        stmt.run(mediaItemId, tag.tagId, tag.type);
+      } catch (error) {
+        console.warn(
+          `Failed to insert tag ${tag.tagId} for media item ${mediaItemId}:`,
+          error,
+        );
+      }
+    }
+  }
+
+  // Helper method to load tags for a media item
+  private loadMediaTags(mediaItemId: string): MediaTag[] {
+    const stmt = this.db.prepare(`
+      SELECT t.* FROM tags t
+      INNER JOIN media_tags mt ON t.tagId = mt.tagId
+      WHERE mt.mediaItemId = ?
+    `);
+
+    const tagRows = stmt.all(mediaItemId) as any[];
+    const tags: MediaTag[] = [];
+
+    for (const tagRow of tagRows) {
+      const tag = new Tag(
+        tagRow.tagId,
+        tagRow.name,
+        tagRow.type,
+        tagRow.holidayDates ? JSON.parse(tagRow.holidayDates) : undefined,
+        tagRow.exclusionGenres ? JSON.parse(tagRow.exclusionGenres) : undefined,
+        tagRow.seasonStartDate,
+        tagRow.seasonEndDate,
+        tagRow.sequence,
+      );
+      tags.push(tag);
+    }
+
+    return tags;
+  }
+
+  // Helper method to load collections for a movie
+  private loadMovieCollections(mediaItemId: string): CollectionReference[] {
+    const stmt = this.db.prepare(`
+      SELECT c.mediaItemId, c.title, ci.sequence
+      FROM collections c
+      INNER JOIN collection_items ci ON c.mediaItemId = ci.collectionId
+      WHERE ci.mediaItemId = ?
+      ORDER BY ci.sequence
+    `);
+
+    const rows = stmt.all(mediaItemId) as any[];
+    return rows.map(row => new CollectionReference(
+      row.mediaItemId,
+      row.title,
+      row.sequence
+    ));
+  }
+
   private mapRowToMovie(row: any): Movie {
-    const collections = row.collections ? JSON.parse(row.collections) : [];
+    const tags = this.loadMediaTags(row.mediaItemId);
+    const collections = this.loadMovieCollections(row.mediaItemId);
+
     return new Movie(
       row.title,
       row.mediaItemId,
       row.alias,
       row.imdb,
-      JSON.parse(row.tags || '[]'),
+      tags,
       row.path,
       row.duration,
       row.durationLimit,
-      collections.map(
-        (c: any) => new CollectionReference(c.mediaItemId, c.title, c.sequence),
-      ),
+      collections,
     );
   }
 }

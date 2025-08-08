@@ -2,21 +2,32 @@ import { body } from 'express-validator';
 import path from 'path';
 import fs from 'fs';
 import { CollectionReference } from '../models/movie';
-import { CollectionItem } from '../models/collection';
+import { tagRepository } from '../repositories/tagsRepository';
+
+// Helper function to validate tag names exist in database
+function validateTagNamesExist(tagNames: string[]): boolean {
+  for (const tagName of tagNames) {
+    const tag = tagRepository.findByName(tagName);
+    if (!tag) {
+      throw new Error(`Tag "${tagName}" does not exist in the database`);
+    }
+  }
+  return true;
+}
 
 export const createMovieValidationRules = [
   body('mediaItemId').isString().notEmpty(),
   body('title').isString().notEmpty(),
   body('tags')
-    .isArray({ min: 1 })
-    .withMessage('Tags must be an array with at least 1 item')
+    .isArray()
     .custom((value: string[]) => {
       for (const item of value) {
         if (typeof item !== 'string') {
-          throw new Error('Tags must be an array of strings');
+          throw new Error('Tags must be an array of tag names (strings)');
         }
       }
-      return true;
+      // Validate that all tag names exist in the database
+      return validateTagNamesExist(value);
     }),
   body('path')
     .isString()
@@ -46,17 +57,20 @@ export const updateMovieValidationRules = [
     .custom((value: string[]) => {
       for (const item of value) {
         if (typeof item !== 'string') {
-          throw new Error('tags must be an array of strings');
+          throw new Error('Tags must be an array of tag names (strings)');
         }
       }
-      return true;
+      // Validate that all tag names exist in the database
+      return validateTagNamesExist(value);
     }),
   body('collections')
     .isArray()
     .custom((value: CollectionReference[]) => {
       for (const item of value) {
         if (!(item instanceof CollectionReference)) {
-          throw new Error('collections must be an array of Collection Reference objects');
+          throw new Error(
+            'collections must be an array of Collection Reference objects',
+          );
         }
       }
       return true;
@@ -81,10 +95,11 @@ export const createShowValidationRules = [
     .custom((value: string[]) => {
       for (const item of value) {
         if (typeof item !== 'string') {
-          throw new Error('tags must be an array of strings');
+          throw new Error('Tags must be an array of tag names (strings)');
         }
       }
-      return true;
+      // Validate that all tag names exist in the database
+      return validateTagNamesExist(value);
     }),
 
   // episodes must be an array of Episode objects
@@ -122,10 +137,13 @@ export const createShowValidationRules = [
     .custom((value: string[]) => {
       for (const item of value) {
         if (typeof item !== 'string') {
-          throw new Error('tags must be an array of strings');
+          throw new Error(
+            'Episode tags must be an array of tag names (strings)',
+          );
         }
       }
-      return true;
+      // Validate that all tag names exist in the database
+      return validateTagNamesExist(value);
     }),
 ];
 
@@ -139,10 +157,11 @@ export const updateShowValidationRules = [
     .custom((value: string[]) => {
       for (const item of value) {
         if (typeof item !== 'string') {
-          throw new Error('tags must be an array of strings');
+          throw new Error('Tags must be an array of tag names (strings)');
         }
       }
-      return true;
+      // Validate that all tag names exist in the database
+      return validateTagNamesExist(value);
     }),
 
   // episodes must be an array of Episode objects
@@ -180,10 +199,13 @@ export const updateShowValidationRules = [
     .custom((value: string[]) => {
       for (const item of value) {
         if (typeof item !== 'string') {
-          throw new Error('tags must be an array of strings');
+          throw new Error(
+            'Episode tags must be an array of tag names (strings)',
+          );
         }
       }
-      return true;
+      // Validate that all tag names exist in the database
+      return validateTagNamesExist(value);
     }),
 ];
 
@@ -260,7 +282,7 @@ export const createCollectionValidationRules = [
   // if there are items in the request body, they must be an array
   body('items')
     .isArray()
-    .custom((value: CollectionItem[]) => {
+    .custom((value: any[]) => {
       for (const item of value) {
         if (typeof item !== 'object') {
           throw new Error('items must be an array of objects');
@@ -329,16 +351,177 @@ export const deleteCollectionValidationRules = [];
 export const getCollectionValidationRules = [];
 
 // ===========================================
+//          COMMERCIAL VALIDATION
+// ===========================================
+
+export const createCommercialValidationRules = [
+  body('mediaItemId').isString().notEmpty(),
+  body('title').isString().notEmpty(),
+  body('type').isNumeric().notEmpty(),
+  body('tags')
+    .isArray()
+    .custom((value: string[]) => {
+      for (const item of value) {
+        if (typeof item !== 'string') {
+          throw new Error('Tags must be an array of strings');
+        }
+      }
+      // Validate that all tag names exist in the database
+      return validateTagNamesExist(value);
+    }),
+  body('path')
+    .isString()
+    .notEmpty()
+    .custom(value => {
+      if (!path.isAbsolute(value)) {
+        throw new Error('Path must be an absolute path');
+      }
+      try {
+        fs.accessSync(value, fs.constants.F_OK);
+      } catch (err) {
+        throw new Error('Path does not exist');
+      }
+      return true;
+    }),
+];
+
+export const updateCommercialValidationRules = [
+  body('mediaItemId').isString().notEmpty(),
+  body('title').isString(),
+  body('type').isNumeric(),
+  body('tags')
+    .isArray()
+    .custom((value: string[]) => {
+      for (const item of value) {
+        if (typeof item !== 'string') {
+          throw new Error('Tags must be an array of strings');
+        }
+      }
+      // Validate that all tag names exist in the database
+      return validateTagNamesExist(value);
+    }),
+  body('path')
+    .isString()
+    .custom(value => {
+      if (value && !path.isAbsolute(value)) {
+        throw new Error('Path must be an absolute path');
+      }
+      if (value) {
+        try {
+          fs.accessSync(value, fs.constants.F_OK);
+        } catch (err) {
+          throw new Error('Path does not exist');
+        }
+      }
+      return true;
+    }),
+];
+
+export const deleteCommercialValidationRules = [];
+
+export const getCommercialValidationRules = [];
+
+// ===========================================
+//          SHORT VALIDATION
+// ===========================================
+
+export const createShortValidationRules = [
+  body('mediaItemId').isString().notEmpty(),
+  body('title').isString().notEmpty(),
+  body('type').isNumeric().notEmpty(),
+  body('tags')
+    .isArray()
+    .custom((value: string[]) => {
+      for (const item of value) {
+        if (typeof item !== 'string') {
+          throw new Error('Tags must be an array of strings');
+        }
+      }
+      // Validate that all tag names exist in the database
+      return validateTagNamesExist(value);
+    }),
+  body('path')
+    .isString()
+    .notEmpty()
+    .custom(value => {
+      if (!path.isAbsolute(value)) {
+        throw new Error('Path must be an absolute path');
+      }
+      try {
+        fs.accessSync(value, fs.constants.F_OK);
+      } catch (err) {
+        throw new Error('Path does not exist');
+      }
+      return true;
+    }),
+];
+
+export const updateShortValidationRules = [
+  body('mediaItemId').isString().notEmpty(),
+  body('title').isString(),
+  body('type').isNumeric(),
+  body('tags')
+    .isArray()
+    .custom((value: string[]) => {
+      for (const item of value) {
+        if (typeof item !== 'string') {
+          throw new Error('Tags must be an array of strings');
+        }
+      }
+      // Validate that all tag names exist in the database
+      return validateTagNamesExist(value);
+    }),
+  body('path')
+    .isString()
+    .custom(value => {
+      if (value && !path.isAbsolute(value)) {
+        throw new Error('Path must be an absolute path');
+      }
+      if (value) {
+        try {
+          fs.accessSync(value, fs.constants.F_OK);
+        } catch (err) {
+          throw new Error('Path does not exist');
+        }
+      }
+      return true;
+    }),
+];
+
+export const deleteShortValidationRules = [];
+
+export const getShortValidationRules = [];
+
+// ===========================================
 //          TAG VALIDATION
 // ===========================================
 
 export const createTagValidationRules = [
-  body('name').isString().notEmpty(),
+  body('name')
+    .isString()
+    .notEmpty()
+    .custom((value: string) => {
+      // Check if tag name already exists
+      if (tagRepository.isNameTaken(value)) {
+        throw new Error(`Tag name "${value}" already exists`);
+      }
+      return true;
+    }),
   body('tagId').isString().notEmpty(),
 ];
 
 export const updateTagValidationRules = [
-  body('name').isString().notEmpty(),
+  body('name')
+    .isString()
+    .notEmpty()
+    .custom((value: string, { req }) => {
+      // Check if tag name already exists (excluding current tag)
+      const currentTagId = req.params?.tagId || req.body?.tagId;
+      if (tagRepository.isNameTaken(value, currentTagId)) {
+        throw new Error(`Tag name "${value}" already exists`);
+      }
+      return true;
+    }),
   body('tagId').isString().notEmpty(),
 ];
 
@@ -346,14 +529,37 @@ export const deleteTagValidationRules = [];
 
 export const getTagsValidationRules = [];
 
+// ===========================================
+//          AGE GROUP VALIDATION
+// ===========================================
+
 export const createAgeGroupValidationRules = [
-  body('name').isString().notEmpty(),
+  body('name')
+    .isString()
+    .notEmpty()
+    .custom((value: string) => {
+      // Check if tag name already exists
+      if (tagRepository.isNameTaken(value)) {
+        throw new Error(`Tag name "${value}" already exists`);
+      }
+      return true;
+    }),
   body('tagId').isString().notEmpty(),
   body('sequence').isNumeric().notEmpty(),
 ];
 
 export const updateAgeGroupValidationRules = [
-  body('name').isString().notEmpty(),
+  body('name')
+    .isString()
+    .notEmpty()
+    .custom((value: string, { req }) => {
+      // Check if tag name already exists (excluding current tag)
+      const currentTagId = req.params?.tagId || req.body?.tagId;
+      if (tagRepository.isNameTaken(value, currentTagId)) {
+        throw new Error(`Tag name "${value}" already exists`);
+      }
+      return true;
+    }),
   body('tagId').isString().notEmpty(),
   body('sequence').isNumeric().notEmpty(),
 ];
@@ -361,59 +567,290 @@ export const updateAgeGroupValidationRules = [
 export const deleteAgeGroupValidationRules = [];
 export const getAgeGroupsValidationRules = [];
 
-export const createMusicGenreValidationRules = [
-  body('title').isString().notEmpty(),
-  body('tagId').isString().notEmpty(),
-  // for each sub-genre, check if it is an object and has a title and tagId
+// ===========================================
+//           HOLIDAY VALIDATION
+// ===========================================
 
-  body('subGenres')
-    .isArray()
-    .custom((value: any[]) => {
+export const createHolidayValidationRules = [
+  body('tagId').isString().notEmpty(),
+  body('name')
+    .isString()
+    .notEmpty()
+    .custom((value: string) => {
+      // Check if tag name already exists
+      if (tagRepository.isNameTaken(value)) {
+        throw new Error(`Tag name "${value}" already exists`);
+      }
+      return true;
+    }),
+  body('holidayDates')
+    .isArray({ min: 1 })
+    .custom((value: string[]) => {
       for (const item of value) {
-        if (typeof item !== 'object') {
-          throw new Error('subGenres must be an array of objects');
-        }
-        if (!item.title || typeof item.title !== 'string') {
+        // strings must to be in MM-DD format
+        if (typeof item !== 'string' || !/^\d{2}-\d{2}$/.test(item)) {
           throw new Error(
-            'subGenres must have a "title" field that is a string',
-          );
-        }
-        if (!item.tagId || typeof item.tagId !== 'string') {
-          throw new Error(
-            'subGenres must have a "tagId" field that is a string',
+            'holidayDates must be an array of strings in MM-DD format',
           );
         }
       }
       return true;
     }),
+  body('exclusionGenres')
+    .isArray()
+    .custom((value: string[]) => {
+      for (const item of value) {
+        if (typeof item !== 'string') {
+          throw new Error('exclusionGenres must be an array of strings');
+        }
+      }
+      return true;
+    }),
+  body('seasonStartDate')
+    .isString()
+    .matches(/^\d{2}-\d{2}$/),
+  body('seasonEndDate')
+    .isString()
+    .matches(/^\d{2}-\d{2}$/),
 ];
 
-export const updateMusicGenreValidationRules = [
-  body('title').isString().notEmpty(),
+export const updateHolidayValidationRules = [
   body('tagId').isString().notEmpty(),
-  // for each sub-genre, check if it is an object and has a title and tagId
-
-  body('subGenres')
-    .isArray()
-    .custom((value: any[]) => {
+  body('name')
+    .isString()
+    .notEmpty()
+    .custom((value: string, { req }) => {
+      // Check if tag name already exists (excluding current tag)
+      const currentTagId = req.params?.tagId || req.body?.tagId;
+      if (tagRepository.isNameTaken(value, currentTagId)) {
+        throw new Error(`Tag name "${value}" already exists`);
+      }
+      return true;
+    }),
+  body('holidayDates')
+    .isArray({ min: 1 })
+    .custom((value: string[]) => {
       for (const item of value) {
-        if (typeof item !== 'object') {
-          throw new Error('subGenres must be an array of objects');
-        }
-        if (!item.title || typeof item.title !== 'string') {
+        // strings must to be in MM-DD format
+        if (typeof item !== 'string' || !/^\d{2}-\d{2}$/.test(item)) {
           throw new Error(
-            'subGenres must have a "title" field that is a string',
-          );
-        }
-        if (!item.tagId || typeof item.tagId !== 'string') {
-          throw new Error(
-            'subGenres must have a "tagId" field that is a string',
+            'holidayDates must be an array of strings in MM-DD format',
           );
         }
       }
       return true;
     }),
+  body('exclusionGenres')
+    .isArray()
+    .custom((value: string[]) => {
+      for (const item of value) {
+        if (typeof item !== 'string') {
+          throw new Error('exclusionGenres must be an array of strings');
+        }
+      }
+      return true;
+    }),
+  body('seasonStartDate')
+    .isString()
+    .matches(/^\d{2}-\d{2}$/),
+  body('seasonEndDate')
+    .isString()
+    .matches(/^\d{2}-\d{2}$/),
 ];
 
-export const deleteMusicGenreValidationRules = [];
-export const getMusicGenresValidationRules = [];
+export const deleteHolidayValidationRules = [];
+export const getHolidayValidationRules = [];
+
+export const createPromoValidationRules = [
+  body('mediaItemId').isString().notEmpty(),
+  body('title').isString().notEmpty(),
+  body('type').isNumeric().notEmpty(),
+  body('tags')
+    .isArray()
+    .custom((value: string[]) => {
+      for (const item of value) {
+        if (typeof item !== 'string') {
+          throw new Error('Tags must be an array of strings');
+        }
+      }
+      // Validate that all tag names exist in the database
+      return validateTagNamesExist(value);
+    }),
+  body('path')
+    .isString()
+    .notEmpty()
+    .custom(value => {
+      if (!path.isAbsolute(value)) {
+        throw new Error('Path must be an absolute path');
+      }
+      try {
+        fs.accessSync(value, fs.constants.F_OK);
+      } catch (err) {
+        throw new Error('Path does not exist');
+      }
+      return true;
+    }),
+];
+
+export const updatePromoValidationRules = [
+  body('mediaItemId').isString().notEmpty(),
+  body('title').isString(),
+  body('type').isNumeric(),
+  body('tags')
+    .isArray()
+    .custom((value: string[]) => {
+      for (const item of value) {
+        if (typeof item !== 'string') {
+          throw new Error('Tags must be an array of strings');
+        }
+      }
+      // Validate that all tag names exist in the database
+      return validateTagNamesExist(value);
+    }),
+  body('path')
+    .isString()
+    .custom(value => {
+      if (!path.isAbsolute(value)) {
+        throw new Error('Path must be an absolute path');
+      }
+      try {
+        fs.accessSync(value, fs.constants.F_OK);
+      } catch (err) {
+        throw new Error('Path does not exist');
+      }
+      return true;
+    }),
+];
+
+export const deletePromoValidationRules = [];
+export const getPromoValidationRules = [];
+
+export const createBumperValidationRules = [
+  body('mediaItemId').isString().notEmpty(),
+  body('title').isString().notEmpty(),
+  body('type').isNumeric().notEmpty(),
+  body('tags')
+    .isArray()
+    .custom((value: string[]) => {
+      for (const item of value) {
+        if (typeof item !== 'string') {
+          throw new Error('Tags must be an array of strings');
+        }
+      }
+      // Validate that all tag names exist in the database
+      return validateTagNamesExist(value);
+    }),
+  body('path')
+    .isString()
+    .notEmpty()
+    .custom(value => {
+      if (!path.isAbsolute(value)) {
+        throw new Error('Path must be an absolute path');
+      }
+      try {
+        fs.accessSync(value, fs.constants.F_OK);
+      } catch (err) {
+        throw new Error('Path does not exist');
+      }
+      return true;
+    }),
+];
+
+export const updateBumperValidationRules = [
+  body('mediaItemId').isString().notEmpty(),
+  body('title').isString(),
+  body('type').isNumeric(),
+  body('tags')
+    .isArray()
+    .custom((value: string[]) => {
+      for (const item of value) {
+        if (typeof item !== 'string') {
+          throw new Error('Tags must be an array of strings');
+        }
+      }
+      // Validate that all tag names exist in the database
+      return validateTagNamesExist(value);
+    }),
+  body('path')
+    .isString()
+    .custom(value => {
+      if (!path.isAbsolute(value)) {
+        throw new Error('Path must be an absolute path');
+      }
+      try {
+        fs.accessSync(value, fs.constants.F_OK);
+      } catch (err) {
+        throw new Error('Path does not exist');
+      }
+      return true;
+    }),
+];
+
+export const deleteBumperValidationRules = [];
+export const getBumperValidationRules = [];
+
+export const createMusicValidationRules = [
+  body('mediaItemId').isString().notEmpty(),
+  body('title').isString().notEmpty(),
+  body('artist').isString(),
+  body('type').isNumeric().notEmpty(),
+  body('tags')
+    .isArray()
+    .custom((value: string[]) => {
+      for (const item of value) {
+        if (typeof item !== 'string') {
+          throw new Error('Tags must be an array of strings');
+        }
+      }
+      // Validate that all tag names exist in the database
+      return validateTagNamesExist(value);
+    }),
+  body('path')
+    .isString()
+    .notEmpty()
+    .custom(value => {
+      if (!path.isAbsolute(value)) {
+        throw new Error('Path must be an absolute path');
+      }
+      try {
+        fs.accessSync(value, fs.constants.F_OK);
+      } catch (err) {
+        throw new Error('Path does not exist');
+      }
+      return true;
+    }),
+];
+
+export const updateMusicValidationRules = [
+  body('mediaItemId').isString().notEmpty(),
+  body('title').isString(),
+  body('artist').isString(),
+  body('type').isNumeric(),
+  body('tags')
+    .isArray()
+    .custom((value: string[]) => {
+      for (const item of value) {
+        if (typeof item !== 'string') {
+          throw new Error('Tags must be an array of strings');
+        }
+      }
+      // Validate that all tag names exist in the database
+      return validateTagNamesExist(value);
+    }),
+  body('path')
+    .isString()
+    .custom(value => {
+      if (!path.isAbsolute(value)) {
+        throw new Error('Path must be an absolute path');
+      }
+      try {
+        fs.accessSync(value, fs.constants.F_OK);
+      } catch (err) {
+        throw new Error('Path does not exist');
+      }
+      return true;
+    }),
+];
+
+export const deleteMusicValidationRules = [];
+export const getMusicValidationRules = [];

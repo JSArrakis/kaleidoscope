@@ -225,14 +225,26 @@ export async function transformShowFromRequest(show: Show): Promise<Show> {
   show.episodeCount = show.episodes.length;
 
   //specific epdiode tags that are not presenting in the show tags are added as secondary tags
-  show.secondaryTags = show.episodes.reduce((acc: string[], episode) => {
-    episode.tags.forEach((tag: string) => {
-      if (!show.tags.includes(tag)) {
-        acc.push(tag);
+  const showTagIds = new Set(show.tags.map(tag => tag.tagId));
+  const secondaryTagsSet = new Set<string>();
+  
+  show.episodes.forEach(episode => {
+    episode.tags.forEach(tag => {
+      if (!showTagIds.has(tag.tagId)) {
+        secondaryTagsSet.add(tag.tagId);
       }
     });
-    return acc;
-  }, []);
+  });
+
+  // Convert secondary tag IDs back to Tag objects
+  show.secondaryTags = Array.from(secondaryTagsSet).map(tagId => {
+    // Find the tag object from any episode that has it
+    for (const episode of show.episodes) {
+      const foundTag = episode.tags.find(tag => tag.tagId === tagId);
+      if (foundTag) return foundTag;
+    }
+    return null;
+  }).filter(tag => tag !== null) as any[];
 
   //create a list of episodes that is sorted by episode.episode disregarding the fields episodeNumber and season
   const sortedEpisodes = show.episodes.sort((a, b) => {

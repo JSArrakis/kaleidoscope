@@ -66,13 +66,109 @@ class SQLiteService {
         mediaItemId TEXT UNIQUE NOT NULL,
         alias TEXT,
         imdb TEXT,
-        tags TEXT, -- JSON string array
         path TEXT NOT NULL,
         duration INTEGER,
         durationLimit INTEGER,
-        collections TEXT, -- JSON object array
         createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
         updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    // Media Tags junction table
+    this.db.exec(`
+      CREATE TABLE IF NOT EXISTS media_tags (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        mediaItemId TEXT NOT NULL,
+        tagId TEXT NOT NULL,
+        tagType TEXT NOT NULL, -- 'tag', 'age_group', 'holiday'
+        createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (mediaItemId) REFERENCES movies (mediaItemId) ON DELETE CASCADE,
+        UNIQUE(mediaItemId, tagId, tagType)
+      )
+    `);
+
+    // Show Tags junction table (for primary show tags)
+    this.db.exec(`
+      CREATE TABLE IF NOT EXISTS show_tags (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        mediaItemId TEXT NOT NULL,
+        tagId TEXT NOT NULL,
+        tagType TEXT NOT NULL, -- 'primary' or 'secondary'
+        createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (mediaItemId) REFERENCES shows (mediaItemId) ON DELETE CASCADE,
+        UNIQUE(mediaItemId, tagId, tagType)
+      )
+    `);
+
+    // Episode Tags junction table
+    this.db.exec(`
+      CREATE TABLE IF NOT EXISTS episode_tags (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        mediaItemId TEXT NOT NULL,
+        tagId TEXT NOT NULL,
+        createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (mediaItemId) REFERENCES episodes (mediaItemId) ON DELETE CASCADE,
+        UNIQUE(mediaItemId, tagId)
+      )
+    `);
+
+    // Commercial Tags junction table
+    this.db.exec(`
+      CREATE TABLE IF NOT EXISTS commercial_tags (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        mediaItemId TEXT NOT NULL,
+        tagId TEXT NOT NULL,
+        createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (mediaItemId) REFERENCES commercials (mediaItemId) ON DELETE CASCADE,
+        UNIQUE(mediaItemId, tagId)
+      )
+    `);
+
+    // Short Tags junction table
+    this.db.exec(`
+      CREATE TABLE IF NOT EXISTS short_tags (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        mediaItemId TEXT NOT NULL,
+        tagId TEXT NOT NULL,
+        createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (mediaItemId) REFERENCES shorts (mediaItemId) ON DELETE CASCADE,
+        UNIQUE(mediaItemId, tagId)
+      )
+    `);
+
+    // Promo Tags junction table
+    this.db.exec(`
+      CREATE TABLE IF NOT EXISTS promo_tags (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        mediaItemId TEXT NOT NULL,
+        tagId TEXT NOT NULL,
+        createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (mediaItemId) REFERENCES promos (mediaItemId) ON DELETE CASCADE,
+        UNIQUE(mediaItemId, tagId)
+      )
+    `);
+
+    // Bumper Tags junction table
+    this.db.exec(`
+      CREATE TABLE IF NOT EXISTS bumper_tags (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        mediaItemId TEXT NOT NULL,
+        tagId TEXT NOT NULL,
+        createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (mediaItemId) REFERENCES bumpers (mediaItemId) ON DELETE CASCADE,
+        UNIQUE(mediaItemId, tagId)
+      )
+    `);
+
+    // Music Tags junction table
+    this.db.exec(`
+      CREATE TABLE IF NOT EXISTS music_tags (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        mediaItemId TEXT NOT NULL,
+        tagId TEXT NOT NULL,
+        createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (mediaItemId) REFERENCES music (mediaItemId) ON DELETE CASCADE,
+        UNIQUE(mediaItemId, tagId)
       )
     `);
 
@@ -87,8 +183,6 @@ class SQLiteService {
         durationLimit INTEGER,
         overDuration BOOLEAN DEFAULT FALSE,
         firstEpisodeOverDuration BOOLEAN DEFAULT FALSE,
-        tags TEXT, -- JSON string array
-        secondaryTags TEXT, -- JSON string array
         episodeCount INTEGER DEFAULT 0,
         createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
         updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
@@ -109,7 +203,6 @@ class SQLiteService {
         showItemId TEXT,
         duration INTEGER,
         durationLimit INTEGER,
-        tags TEXT, -- JSON string array
         createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
         updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (showId) REFERENCES shows (id) ON DELETE CASCADE
@@ -125,7 +218,6 @@ class SQLiteService {
         duration INTEGER,
         path TEXT NOT NULL,
         type INTEGER,
-        tags TEXT, -- JSON string array
         createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
         updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
       )
@@ -138,9 +230,23 @@ class SQLiteService {
         mediaItemId TEXT UNIQUE NOT NULL,
         title TEXT NOT NULL,
         description TEXT,
-        items TEXT, -- JSON object array
         createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
         updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    // Collection Items junction table
+    this.db.exec(`
+      CREATE TABLE IF NOT EXISTS collection_items (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        collectionId TEXT NOT NULL,
+        mediaItemId TEXT NOT NULL,
+        mediaItemTitle TEXT NOT NULL,
+        sequence INTEGER NOT NULL,
+        createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (collectionId) REFERENCES collections (mediaItemId) ON DELETE CASCADE,
+        UNIQUE(collectionId, mediaItemId),
+        UNIQUE(collectionId, sequence)
       )
     `);
 
@@ -153,7 +259,6 @@ class SQLiteService {
         duration INTEGER,
         path TEXT NOT NULL,
         type INTEGER,
-        tags TEXT, -- JSON string array
         createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
         updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
       )
@@ -169,8 +274,6 @@ class SQLiteService {
         duration INTEGER,
         path TEXT NOT NULL,
         type INTEGER,
-        tags TEXT, -- JSON string array
-        genre TEXT,
         createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
         updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
       )
@@ -185,7 +288,6 @@ class SQLiteService {
         duration INTEGER,
         path TEXT NOT NULL,
         type INTEGER,
-        tags TEXT, -- JSON string array
         createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
         updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
       )
@@ -200,46 +302,25 @@ class SQLiteService {
         duration INTEGER,
         path TEXT NOT NULL,
         type INTEGER,
-        tags TEXT, -- JSON string array
         createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
         updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
       )
     `);
 
-    // Tags table
+    // Tags table (consolidated to include holidays and age groups)
     this.db.exec(`
       CREATE TABLE IF NOT EXISTS tags (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         tagId TEXT UNIQUE NOT NULL,
-        name TEXT NOT NULL,
-        type TEXT NOT NULL,
-        createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
-        updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
-      )
-    `);
-
-    // Holidays table
-    this.db.exec(`
-      CREATE TABLE IF NOT EXISTS holidays (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        tagId TEXT UNIQUE NOT NULL,
-        name TEXT NOT NULL,
-        holidayDates TEXT, -- JSON string array
-        exclusionGenres TEXT, -- JSON string array
-        seasonStartDate TEXT,
-        seasonEndDate TEXT,
-        createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
-        updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
-      )
-    `);
-
-    // Age Groups table
-    this.db.exec(`
-      CREATE TABLE IF NOT EXISTS age_groups (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        tagId TEXT UNIQUE NOT NULL,
-        name TEXT NOT NULL,
-        sequence INTEGER NOT NULL,
+        name TEXT UNIQUE NOT NULL,
+        type TEXT NOT NULL, -- 'Aesthetic', 'Era', 'Genre', 'Specialty', 'Holiday', 'AgeGroup'
+        -- Holiday-specific fields
+        holidayDates TEXT, -- JSON string array (only for Holiday type)
+        exclusionGenres TEXT, -- JSON string array (only for Holiday type)
+        seasonStartDate TEXT, -- only for Holiday type
+        seasonEndDate TEXT, -- only for Holiday type
+        -- Age Group-specific fields
+        sequence INTEGER, -- only for AgeGroup type
         createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
         updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
       )
@@ -249,10 +330,10 @@ class SQLiteService {
     this.db.exec(`
       CREATE TABLE IF NOT EXISTS mosaics (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        title TEXT NOT NULL,
         tagId TEXT UNIQUE NOT NULL,
-        description TEXT,
-        items TEXT, -- JSON string array
+        name TEXT NOT NULL,
+        tags TEXT, -- JSON string array
+        musicalGenres TEXT, -- JSON string array
         createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
         updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
       )
@@ -272,45 +353,41 @@ class SQLiteService {
       )
     `);
 
-    // Default Commercials table
-    this.db.exec(`
-      CREATE TABLE IF NOT EXISTS default_commercials (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        title TEXT NOT NULL,
-        mediaItemId TEXT UNIQUE NOT NULL,
-        commercials TEXT, -- JSON string array
-        createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
-        updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
-      )
-    `);
-
-    // Default Promos table
-    this.db.exec(`
-      CREATE TABLE IF NOT EXISTS default_promos (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        title TEXT NOT NULL,
-        mediaItemId TEXT UNIQUE NOT NULL,
-        promos TEXT, -- JSON string array
-        createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
-        updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
-      )
-    `);
-
     // Create indexes for better performance
     this.db.exec(`
       CREATE INDEX IF NOT EXISTS idx_movies_mediaItemId ON movies(mediaItemId);
+      CREATE INDEX IF NOT EXISTS idx_media_tags_mediaItemId ON media_tags(mediaItemId);
+      CREATE INDEX IF NOT EXISTS idx_media_tags_tagId ON media_tags(tagId);
+      CREATE INDEX IF NOT EXISTS idx_media_tags_tagType ON media_tags(tagType);
       CREATE INDEX IF NOT EXISTS idx_shows_mediaItemId ON shows(mediaItemId);
+      CREATE INDEX IF NOT EXISTS idx_show_tags_mediaItemId ON show_tags(mediaItemId);
+      CREATE INDEX IF NOT EXISTS idx_show_tags_tagId ON show_tags(tagId);
+      CREATE INDEX IF NOT EXISTS idx_show_tags_tagType ON show_tags(tagType);
       CREATE INDEX IF NOT EXISTS idx_episodes_showId ON episodes(showId);
       CREATE INDEX IF NOT EXISTS idx_episodes_mediaItemId ON episodes(mediaItemId);
+      CREATE INDEX IF NOT EXISTS idx_episode_tags_mediaItemId ON episode_tags(mediaItemId);
+      CREATE INDEX IF NOT EXISTS idx_episode_tags_tagId ON episode_tags(tagId);
       CREATE INDEX IF NOT EXISTS idx_commercials_mediaItemId ON commercials(mediaItemId);
+      CREATE INDEX IF NOT EXISTS idx_commercial_tags_mediaItemId ON commercial_tags(mediaItemId);
+      CREATE INDEX IF NOT EXISTS idx_commercial_tags_tagId ON commercial_tags(tagId);
       CREATE INDEX IF NOT EXISTS idx_collections_mediaItemId ON collections(mediaItemId);
+      CREATE INDEX IF NOT EXISTS idx_collection_items_collectionId ON collection_items(collectionId);
+      CREATE INDEX IF NOT EXISTS idx_collection_items_mediaItemId ON collection_items(mediaItemId);
+      CREATE INDEX IF NOT EXISTS idx_collection_items_sequence ON collection_items(sequence);
       CREATE INDEX IF NOT EXISTS idx_shorts_mediaItemId ON shorts(mediaItemId);
+      CREATE INDEX IF NOT EXISTS idx_short_tags_mediaItemId ON short_tags(mediaItemId);
+      CREATE INDEX IF NOT EXISTS idx_short_tags_tagId ON short_tags(tagId);
       CREATE INDEX IF NOT EXISTS idx_music_mediaItemId ON music(mediaItemId);
+      CREATE INDEX IF NOT EXISTS idx_music_tags_mediaItemId ON music_tags(mediaItemId);
+      CREATE INDEX IF NOT EXISTS idx_music_tags_tagId ON music_tags(tagId);
       CREATE INDEX IF NOT EXISTS idx_promos_mediaItemId ON promos(mediaItemId);
+      CREATE INDEX IF NOT EXISTS idx_promo_tags_mediaItemId ON promo_tags(mediaItemId);
+      CREATE INDEX IF NOT EXISTS idx_promo_tags_tagId ON promo_tags(tagId);
       CREATE INDEX IF NOT EXISTS idx_bumpers_mediaItemId ON bumpers(mediaItemId);
-      CREATE INDEX IF NOT EXISTS idx_holidays_tagId ON holidays(tagId);
+      CREATE INDEX IF NOT EXISTS idx_tags_tagId ON tags(tagId);
+      CREATE INDEX IF NOT EXISTS idx_tags_type ON tags(type);
+      CREATE INDEX IF NOT EXISTS idx_tags_name ON tags(name);
       CREATE INDEX IF NOT EXISTS idx_mosaics_tagId ON mosaics(tagId);
-      CREATE INDEX IF NOT EXISTS idx_age_groups_tagId ON age_groups(tagId);
     `);
   }
 }

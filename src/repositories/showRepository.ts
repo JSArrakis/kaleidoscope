@@ -1,5 +1,7 @@
 import { getDB } from '../db/sqlite';
 import { Show, Episode } from '../models/show';
+import { Tag } from '../models/tag';
+import { MediaTag } from '../models/const/tagTypes';
 
 export class ShowRepository {
   private get db() {
@@ -11,8 +13,8 @@ export class ShowRepository {
     const transaction = this.db.transaction(() => {
       // Insert show
       const showStmt = this.db.prepare(`
-        INSERT INTO shows (title, mediaItemId, alias, imdb, durationLimit, overDuration, firstEpisodeOverDuration, tags, secondaryTags, episodeCount)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO shows (title, mediaItemId, alias, imdb, durationLimit, overDuration, firstEpisodeOverDuration, episodeCount)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
       `);
 
       const showResult = showStmt.run(
@@ -23,23 +25,25 @@ export class ShowRepository {
         show.durationLimit,
         show.overDuration ? 1 : 0,
         show.firstEpisodeOverDuration ? 1 : 0,
-        JSON.stringify(show.tags),
-        JSON.stringify(show.secondaryTags),
         show.episodeCount,
       );
 
       const showId = showResult.lastInsertRowid as number;
       const showItemId = show.mediaItemId;
 
+      // Insert show tags
+      this.insertShowTags(show.mediaItemId, show.tags, 'primary');
+      this.insertShowTags(show.mediaItemId, show.secondaryTags, 'secondary');
+
       // Insert episodes
       if (show.episodes && show.episodes.length > 0) {
         const episodeStmt = this.db.prepare(`
-          INSERT INTO episodes (showId, season, episode, episodeNumber, path, title, mediaItemId, showItemId, duration, durationLimit, tags)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          INSERT INTO episodes (showId, season, episode, episodeNumber, path, title, mediaItemId, showItemId, duration, durationLimit)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `);
 
         for (const episode of show.episodes) {
-          episodeStmt.run(
+          const episodeResult = episodeStmt.run(
             showId,
             episode.season,
             episode.episode,
@@ -50,8 +54,10 @@ export class ShowRepository {
             showItemId,
             episode.duration,
             episode.durationLimit,
-            JSON.stringify(episode.tags),
           );
+
+          // Insert episode tags
+          this.insertEpisodeTags(episode.mediaItemId, episode.tags);
         }
       }
 
@@ -107,7 +113,7 @@ export class ShowRepository {
       // Update show
       const showStmt = this.db.prepare(`
         UPDATE shows 
-        SET title = ?, alias = ?, imdb = ?, durationLimit = ?, overDuration = ?, firstEpisodeOverDuration = ?, tags = ?, secondaryTags = ?, episodeCount = ?, updatedAt = CURRENT_TIMESTAMP
+        SET title = ?, alias = ?, imdb = ?, durationLimit = ?, overDuration = ?, firstEpisodeOverDuration = ?, episodeCount = ?, updatedAt = CURRENT_TIMESTAMP
         WHERE mediaItemId = ?
       `);
 
@@ -118,8 +124,6 @@ export class ShowRepository {
         show.durationLimit,
         show.overDuration ? 1 : 0,
         show.firstEpisodeOverDuration ? 1 : 0,
-        JSON.stringify(show.tags),
-        JSON.stringify(show.secondaryTags),
         show.episodeCount,
         mediaItemId,
       );
@@ -133,7 +137,21 @@ export class ShowRepository {
       const showIdRow = showIdStmt.get(mediaItemId) as any;
       const showId = showIdRow.id;
 
-      // Delete existing episodes
+      // Delete existing show tags
+      this.db.prepare('DELETE FROM show_tags WHERE mediaItemId = ?').run(mediaItemId);
+
+      // Insert new show tags
+      this.insertShowTags(mediaItemId, show.tags, 'primary');
+      this.insertShowTags(mediaItemId, show.secondaryTags, 'secondary');
+
+      // Delete existing episodes and their tags
+      const deleteEpisodeTagsStmt = this.db.prepare(`
+        DELETE FROM episode_tags WHERE mediaItemId IN (
+          SELECT mediaItemId FROM episodes WHERE showId = ?
+        )
+      `);
+      deleteEpisodeTagsStmt.run(showId);
+
       const deleteEpisodesStmt = this.db.prepare(
         `DELETE FROM episodes WHERE showId = ?`,
       );
@@ -144,8 +162,8 @@ export class ShowRepository {
       // Insert new episodes
       if (show.episodes && show.episodes.length > 0) {
         const episodeStmt = this.db.prepare(`
-          INSERT INTO episodes (showId, season, episode, episodeNumber, path, title, mediaItemId, showItemId, duration, durationLimit, tags)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          INSERT INTO episodes (showId, season, episode, episodeNumber, path, title, mediaItemId, showItemId, duration, durationLimit)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `);
 
         for (const episode of show.episodes) {
@@ -160,8 +178,10 @@ export class ShowRepository {
             showItemId,
             episode.duration,
             episode.durationLimit,
-            JSON.stringify(episode.tags),
           );
+
+          // Insert episode tags
+          this.insertEpisodeTags(episode.mediaItemId, episode.tags);
         }
       }
 
@@ -183,6 +203,20 @@ export class ShowRepository {
 
       if (!showIdRow) return false;
 
+      // Delete episode tags first (before episodes are deleted)
+      const deleteEpisodeTagsStmt = this.db.prepare(`
+        DELETE FROM episode_tags WHERE mediaItemId IN (
+          SELECT mediaItemId FROM episodes WHERE showId = ?
+        )
+      `);
+      deleteEpisodeTagsStmt.run(showIdRow.id);
+
+      // Delete show tags
+      const deleteShowTagsStmt = this.db.prepare(
+        `DELETE FROM show_tags WHERE mediaItemId = ?`,
+      );
+      deleteShowTagsStmt.run(mediaItemId);
+
       // Delete episodes (foreign key constraint will handle this automatically, but being explicit)
       const deleteEpisodesStmt = this.db.prepare(
         `DELETE FROM episodes WHERE showId = ?`,
@@ -201,16 +235,47 @@ export class ShowRepository {
     return transaction();
   }
 
-  // Find shows by tags
-  findByTags(tags: string[]): Show[] {
+  // Find shows by tags (searches both primary and secondary tags)
+  findByTags(tagIds: string[]): Show[] {
+    if (tagIds.length === 0) return [];
+
+    const placeholders = tagIds.map(() => '?').join(',');
     const stmt = this.db.prepare(`
-      SELECT * FROM shows 
-      WHERE ${tags.map((_, index) => `tags LIKE ?`).join(' OR ')}
-      ORDER BY title
+      SELECT DISTINCT s.* FROM shows s
+      INNER JOIN show_tags st ON s.mediaItemId = st.mediaItemId
+      WHERE st.tagId IN (${placeholders})
+      ORDER BY s.title
     `);
 
-    const params = tags.map(tag => `%"${tag}"%`);
-    const showRows = stmt.all(...params) as any[];
+    const showRows = stmt.all(...tagIds) as any[];
+
+    const shows: Show[] = [];
+    for (const showRow of showRows) {
+      const episodesStmt = this.db.prepare(`
+        SELECT * FROM episodes WHERE showId = ? ORDER BY episodeNumber, episode
+      `);
+
+      const episodeRows = episodesStmt.all(showRow.id) as any[];
+      shows.push(this.mapRowToShow(showRow, episodeRows));
+    }
+
+    return shows;
+  }
+
+  // Find shows that have episodes with specific tags (secondary tag search)
+  findByEpisodeTags(tagIds: string[]): Show[] {
+    if (tagIds.length === 0) return [];
+
+    const placeholders = tagIds.map(() => '?').join(',');
+    const stmt = this.db.prepare(`
+      SELECT DISTINCT s.* FROM shows s
+      INNER JOIN episodes e ON s.id = e.showId
+      INNER JOIN episode_tags et ON e.mediaItemId = et.mediaItemId
+      WHERE et.tagId IN (${placeholders})
+      ORDER BY s.title
+    `);
+
+    const showRows = stmt.all(...tagIds) as any[];
 
     const shows: Show[] = [];
     for (const showRow of showRows) {
@@ -232,10 +297,112 @@ export class ShowRepository {
     return result.count;
   }
 
+  // Helper method to insert show tags
+  private insertShowTags(mediaItemId: string, tags: MediaTag[], tagType: 'primary' | 'secondary'): void {
+    if (tags.length === 0) return;
+
+    const stmt = this.db.prepare(`
+      INSERT INTO show_tags (mediaItemId, tagId, tagType)
+      VALUES (?, ?, ?)
+    `);
+
+    for (const tag of tags) {
+      try {
+        stmt.run(mediaItemId, tag.tagId, tagType);
+      } catch (error) {
+        console.warn(
+          `Failed to insert show tag ${tag.tagId} for media item ${mediaItemId}:`,
+          error,
+        );
+      }
+    }
+  }
+
+  // Helper method to insert episode tags
+  private insertEpisodeTags(mediaItemId: string, tags: MediaTag[]): void {
+    if (tags.length === 0) return;
+
+    const stmt = this.db.prepare(`
+      INSERT INTO episode_tags (mediaItemId, tagId)
+      VALUES (?, ?)
+    `);
+
+    for (const tag of tags) {
+      try {
+        stmt.run(mediaItemId, tag.tagId);
+      } catch (error) {
+        console.warn(
+          `Failed to insert episode tag ${tag.tagId} for media item ${mediaItemId}:`,
+          error,
+        );
+      }
+    }
+  }
+
+  // Helper method to load show tags
+  private loadShowTags(mediaItemId: string, tagType: 'primary' | 'secondary'): MediaTag[] {
+    const stmt = this.db.prepare(`
+      SELECT t.* FROM tags t
+      INNER JOIN show_tags st ON t.tagId = st.tagId
+      WHERE st.mediaItemId = ? AND st.tagType = ?
+    `);
+
+    const tagRows = stmt.all(mediaItemId, tagType) as any[];
+    const tags: MediaTag[] = [];
+
+    for (const tagRow of tagRows) {
+      const tag = new Tag(
+        tagRow.tagId,
+        tagRow.name,
+        tagRow.type,
+        tagRow.holidayDates ? JSON.parse(tagRow.holidayDates) : undefined,
+        tagRow.exclusionGenres ? JSON.parse(tagRow.exclusionGenres) : undefined,
+        tagRow.seasonStartDate,
+        tagRow.seasonEndDate,
+        tagRow.sequence,
+      );
+      tags.push(tag);
+    }
+
+    return tags;
+  }
+
+  // Helper method to load episode tags
+  private loadEpisodeTags(mediaItemId: string): MediaTag[] {
+    const stmt = this.db.prepare(`
+      SELECT t.* FROM tags t
+      INNER JOIN episode_tags et ON t.tagId = et.tagId
+      WHERE et.mediaItemId = ?
+    `);
+
+    const tagRows = stmt.all(mediaItemId) as any[];
+    const tags: MediaTag[] = [];
+
+    for (const tagRow of tagRows) {
+      const tag = new Tag(
+        tagRow.tagId,
+        tagRow.name,
+        tagRow.type,
+        tagRow.holidayDates ? JSON.parse(tagRow.holidayDates) : undefined,
+        tagRow.exclusionGenres ? JSON.parse(tagRow.exclusionGenres) : undefined,
+        tagRow.seasonStartDate,
+        tagRow.seasonEndDate,
+        tagRow.sequence,
+      );
+      tags.push(tag);
+    }
+
+    return tags;
+  }
+
   private mapRowToShow(showRow: any, episodeRows: any[]): Show {
+    const primaryTags = this.loadShowTags(showRow.mediaItemId, 'primary');
+    const secondaryTags = this.loadShowTags(showRow.mediaItemId, 'secondary');
+
     const episodes = episodeRows.map(
-      episodeRow =>
-        new Episode(
+      episodeRow => {
+        const episodeTags = this.loadEpisodeTags(episodeRow.mediaItemId);
+        return new Episode(
           episodeRow.season,
           episodeRow.episode,
           episodeRow.episodeNumber,
@@ -245,8 +412,9 @@ export class ShowRepository {
           episodeRow.showItemId,
           episodeRow.duration,
           episodeRow.durationLimit,
-          JSON.parse(episodeRow.tags || '[]'),
-        ),
+          episodeTags,
+        );
+      }
     );
 
     return new Show(
@@ -257,8 +425,8 @@ export class ShowRepository {
       showRow.durationLimit,
       Boolean(showRow.overDuration),
       Boolean(showRow.firstEpisodeOverDuration),
-      JSON.parse(showRow.tags || '[]'),
-      JSON.parse(showRow.secondaryTags || '[]'),
+      primaryTags,
+      secondaryTags,
       showRow.episodeCount,
       episodes,
     );

@@ -217,7 +217,9 @@ async function updateMovie(
     originalMovie.imdb = newMovieValues.imdb;
   }
   if (newMovieValues.tags) {
-    originalMovie.tags = newMovieValues.tags;
+    // Convert tag names to Tag objects using Movie.fromRequestObject logic
+    const tempMovie = Movie.fromRequestObject({ tags: newMovieValues.tags });
+    originalMovie.tags = tempMovie.tags;
   }
   if (newMovieValues.collections) {
     originalMovie.collections = newMovieValues.collections;

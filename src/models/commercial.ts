@@ -1,5 +1,6 @@
 import { MediaType } from './enum/mediaTypes';
 import { BaseMedia } from './mediaInterface';
+import { MediaTag } from './const/tagTypes';
 
 export interface ICommercial extends BaseMedia {
   title: string;
@@ -7,7 +8,7 @@ export interface ICommercial extends BaseMedia {
   duration: number;
   path: string;
   Type: Number;
-  tags: string[];
+  tags: MediaTag[];
 }
 
 export class Commercial {
@@ -16,7 +17,7 @@ export class Commercial {
   duration: number;
   path: string;
   type: number;
-  tags: string[];
+  tags: MediaTag[];
 
   constructor(
     title: string,
@@ -24,7 +25,7 @@ export class Commercial {
     duration: number,
     path: string,
     type: number,
-    tags: string[],
+    tags: MediaTag[],
   ) {
     this.title = title;
     this.mediaItemId = mediaItemId;
@@ -34,14 +35,27 @@ export class Commercial {
     this.tags = tags;
   }
 
-  static fromRequestObject(requestObject: any): Commercial {
+  static async fromRequestObject(requestObject: any): Promise<Commercial> {
+    const { tagRepository } = await import('../repositories/tagsRepository');
+
+    // Convert tag names to Tag objects
+    let tags: MediaTag[] = [];
+    if (requestObject.tags && Array.isArray(requestObject.tags)) {
+      for (const tagName of requestObject.tags) {
+        const tag = tagRepository.findByName(tagName);
+        if (tag) {
+          tags.push(tag);
+        }
+      }
+    }
+
     return new Commercial(
       requestObject.title,
       requestObject.mediaItemId,
       requestObject.duration,
       requestObject.path,
       MediaType.Commercial,
-      requestObject.tags,
+      tags,
     );
   }
 }

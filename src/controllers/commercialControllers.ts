@@ -168,7 +168,8 @@ export async function transformCommercialFromRequest(
   commercial: any,
   mediaItemId: string,
 ): Promise<Commercial> {
-  let parsedCommercial: Commercial = Commercial.fromRequestObject(commercial);
+  let parsedCommercial: Commercial =
+    await Commercial.fromRequestObject(commercial);
 
   parsedCommercial.mediaItemId = mediaItemId;
 

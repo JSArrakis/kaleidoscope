@@ -1,6 +1,7 @@
 export interface IAgeGroup {
   tagId: string;
   name: string;
+  type: string;
   sequence: number;
 }
 

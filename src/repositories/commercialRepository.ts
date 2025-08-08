@@ -1,5 +1,7 @@
 import { getDB } from '../db/sqlite';
 import { Commercial } from '../models/commercial';
+import { MediaTag } from '../models/const/tagTypes';
+import { Tag } from '../models/tag';
 
 export class CommercialRepository {
   private get db() {
@@ -8,43 +10,54 @@ export class CommercialRepository {
 
   // Create a new commercial
   create(commercial: Commercial): Commercial {
-    const stmt = this.db.prepare(`
-      INSERT INTO commercials (title, mediaItemId, duration, path, type, tags)
-      VALUES (?, ?, ?, ?, ?, ?)
-    `);
+    const transaction = this.db.transaction(() => {
+      // Insert commercial record
+      const stmt = this.db.prepare(`
+        INSERT INTO commercials (title, mediaItemId, duration, path, type)
+        VALUES (?, ?, ?, ?, ?)
+      `);
 
-    const result = stmt.run(
-      commercial.title,
-      commercial.mediaItemId,
-      commercial.duration,
-      commercial.path,
-      commercial.type,
-      JSON.stringify(commercial.tags),
-    );
+      stmt.run(
+        commercial.title,
+        commercial.mediaItemId,
+        commercial.duration,
+        commercial.path,
+        commercial.type,
+      );
 
-    return this.findByMediaItemId(commercial.mediaItemId)!;
+      // Insert tag relationships
+      this.insertCommercialTags(commercial.mediaItemId, commercial.tags);
+
+      return this.findByMediaItemId(commercial.mediaItemId)!;
+    });
+
+    return transaction();
   }
 
   // Create multiple commercials in a transaction
   createMany(commercials: Commercial[]): Commercial[] {
-    const stmt = this.db.prepare(`
-      INSERT INTO commercials (title, mediaItemId, duration, path, type, tags)
-      VALUES (?, ?, ?, ?, ?, ?)
-    `);
-
     const transaction = this.db.transaction(
       (commercialsToInsert: Commercial[]) => {
         const results: Commercial[] = [];
         for (const commercial of commercialsToInsert) {
           try {
+            // Insert commercial record
+            const stmt = this.db.prepare(`
+            INSERT INTO commercials (title, mediaItemId, duration, path, type)
+            VALUES (?, ?, ?, ?, ?)
+          `);
+
             stmt.run(
               commercial.title,
               commercial.mediaItemId,
               commercial.duration,
               commercial.path,
               commercial.type,
-              JSON.stringify(commercial.tags),
             );
+
+            // Insert tag relationships
+            this.insertCommercialTags(commercial.mediaItemId, commercial.tags);
+
             const created = this.findByMediaItemId(commercial.mediaItemId);
             if (created) results.push(created);
           } catch (error) {
@@ -71,7 +84,9 @@ export class CommercialRepository {
     const row = stmt.get(mediaItemId) as any;
     if (!row) return null;
 
-    return this.mapRowToCommercial(row);
+    const commercial = this.mapRowToCommercial(row);
+    commercial.tags = this.loadCommercialTags(mediaItemId);
+    return commercial;
   }
 
   // Find all commercials
@@ -81,28 +96,41 @@ export class CommercialRepository {
     `);
 
     const rows = stmt.all() as any[];
-    return rows.map(row => this.mapRowToCommercial(row));
+    return rows.map(row => {
+      const commercial = this.mapRowToCommercial(row);
+      commercial.tags = this.loadCommercialTags(commercial.mediaItemId);
+      return commercial;
+    });
   }
 
   // Update commercial
   update(mediaItemId: string, commercial: Commercial): Commercial | null {
-    const stmt = this.db.prepare(`
-      UPDATE commercials 
-      SET title = ?, duration = ?, path = ?, type = ?, tags = ?, updatedAt = CURRENT_TIMESTAMP
-      WHERE mediaItemId = ?
-    `);
+    const transaction = this.db.transaction(() => {
+      // Update commercial record
+      const stmt = this.db.prepare(`
+        UPDATE commercials 
+        SET title = ?, duration = ?, path = ?, type = ?, updatedAt = CURRENT_TIMESTAMP
+        WHERE mediaItemId = ?
+      `);
 
-    const result = stmt.run(
-      commercial.title,
-      commercial.duration,
-      commercial.path,
-      commercial.type,
-      JSON.stringify(commercial.tags),
-      mediaItemId,
-    );
+      const result = stmt.run(
+        commercial.title,
+        commercial.duration,
+        commercial.path,
+        commercial.type,
+        mediaItemId,
+      );
 
-    if (result.changes === 0) return null;
-    return this.findByMediaItemId(mediaItemId);
+      if (result.changes === 0) return null;
+
+      // Update tag relationships
+      this.deleteCommercialTags(mediaItemId);
+      this.insertCommercialTags(mediaItemId, commercial.tags);
+
+      return this.findByMediaItemId(mediaItemId);
+    });
+
+    return transaction();
   }
 
   // Delete commercial
@@ -117,15 +145,23 @@ export class CommercialRepository {
 
   // Find commercials by tags
   findByTags(tags: string[]): Commercial[] {
+    if (tags.length === 0) return [];
+
+    const placeholders = tags.map(() => '?').join(',');
     const stmt = this.db.prepare(`
-      SELECT * FROM commercials 
-      WHERE ${tags.map((_, index) => `tags LIKE ?`).join(' OR ')}
-      ORDER BY title
+      SELECT DISTINCT c.* FROM commercials c
+      INNER JOIN commercial_tags ct ON c.mediaItemId = ct.mediaItemId
+      INNER JOIN tags t ON ct.tagId = t.tagId
+      WHERE t.name IN (${placeholders})
+      ORDER BY c.title
     `);
 
-    const params = tags.map(tag => `%"${tag}"%`);
-    const rows = stmt.all(...params) as any[];
-    return rows.map(row => this.mapRowToCommercial(row));
+    const rows = stmt.all(...tags) as any[];
+    return rows.map(row => {
+      const commercial = this.mapRowToCommercial(row);
+      commercial.tags = this.loadCommercialTags(commercial.mediaItemId);
+      return commercial;
+    });
   }
 
   // Find commercials by type
@@ -135,7 +171,11 @@ export class CommercialRepository {
     `);
 
     const rows = stmt.all(type) as any[];
-    return rows.map(row => this.mapRowToCommercial(row));
+    return rows.map(row => {
+      const commercial = this.mapRowToCommercial(row);
+      commercial.tags = this.loadCommercialTags(commercial.mediaItemId);
+      return commercial;
+    });
   }
 
   // Count all commercials
@@ -152,8 +192,62 @@ export class CommercialRepository {
       row.duration,
       row.path,
       row.type,
-      JSON.parse(row.tags || '[]'),
+      [], // Tags will be loaded separately
     );
+  }
+
+  // Helper method to insert commercial tags
+  private insertCommercialTags(mediaItemId: string, tags: MediaTag[]): void {
+    if (tags.length === 0) return;
+
+    const stmt = this.db.prepare(`
+      INSERT INTO commercial_tags (mediaItemId, tagId)
+      VALUES (?, ?)
+    `);
+
+    for (const tag of tags) {
+      try {
+        stmt.run(mediaItemId, tag.tagId);
+      } catch (error) {
+        // Skip duplicates
+        console.warn(
+          `Failed to insert tag ${tag.tagId} for commercial ${mediaItemId}:`,
+          error,
+        );
+      }
+    }
+  }
+
+  // Helper method to load commercial tags
+  private loadCommercialTags(mediaItemId: string): MediaTag[] {
+    const stmt = this.db.prepare(`
+      SELECT t.* FROM tags t
+      INNER JOIN commercial_tags ct ON t.tagId = ct.tagId
+      WHERE ct.mediaItemId = ?
+    `);
+
+    const rows = stmt.all(mediaItemId) as any[];
+    return rows.map(
+      row =>
+        new Tag(
+          row.tagId,
+          row.name,
+          row.type,
+          row.holidayDates ? JSON.parse(row.holidayDates) : undefined,
+          row.exclusionGenres ? JSON.parse(row.exclusionGenres) : undefined,
+          row.seasonStartDate,
+          row.seasonEndDate,
+          row.sequence,
+        ),
+    );
+  }
+
+  // Helper method to delete commercial tags
+  private deleteCommercialTags(mediaItemId: string): void {
+    const stmt = this.db.prepare(`
+      DELETE FROM commercial_tags WHERE mediaItemId = ?
+    `);
+    stmt.run(mediaItemId);
   }
 }
 

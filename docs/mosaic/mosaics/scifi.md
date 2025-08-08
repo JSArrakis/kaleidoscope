@@ -42,5 +42,5 @@ Atomic Sci-Fi thrives on music that accentuates cerebral engagement, intellectua
 ### Examples
 
 - **Arrival** (Minimalist Electronic, Neo-Classical)
-- **nterstellar** (Neo-Classical, Ambient)
+- **Interstellar** (Neo-Classical, Ambient)
 - **Gattaca** (Ambient, Minimalist Electronic)
