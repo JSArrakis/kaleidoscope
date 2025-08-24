@@ -6,7 +6,7 @@ Kaleidoscope is a desktop media streaming assistant built to recreate the experi
 
 ## The core problem
 
-Modern personal media libraries are vast and diverse, but this abundance often works against the viewer. Random playback tends to feel disjointed and unsatisfying, while manual browsing can lead to choice paralysis—especially when someone only has a vague sense of what they want to watch. The result is wasted time, indecision, and a tendency to fall back on the same familiar titles.
+Modern personal media libraries are vast and diverse, but this abundance often works against the viewer. Random playback tends to feel disjointed and unsatisfying, while manual browsing can lead to choice paralysis - especially when someone only has a vague sense of what they want to watch. The result is wasted time, indecision, and a tendency to fall back on the same familiar titles.
 
 In contrast, television in the 90s and 2000s offered a very different experience. With limited options at any given time, viewers simply accepted what was 'on'. This structure - programming blocks, scheduled rotations, and the lack of constant choice - often led to surprising discoveries and a more relaxed kind of enjoyment. Paradoxically, less control created more satisfaction by removing the burden of endless decision-making.
 
@@ -33,3 +33,19 @@ As previously stated, Kaleidoscope's curated flow depends on more than just pick
 To address this, Kaleidoscope classifies media along multiple dimensions - not just genre, but also aesthetics, age group, era, special categories, holidays, and even musical genres for music videos. These overlapping lenses make it possible to 'walk' viewers through their collection in a way that avoids thematic dissonance while still offering variety. A film’s narrative structure, its visual and tonal presentation, the audience it’s meant for, and even the era in which it was created all contribute to how it fits into a larger stream.
 
 By combining these taxonomies, Kaleidoscope can schedule media side by side in ways that feel coherent without being repetitive. A fantasy adventure series might flow naturally into an animated movie with a similar mythic tone, which then eases into family programming before shifting into darker fare later in the schedule. The result is a channel that feels alive and thoughtfully curated, rather than a random shuffle of disconnected files.
+
+## The Prisms – How Taxonomies Refract Through the Selection System
+
+If taxonomies are the raw spectrum of data describing media, then the prisms are how Kaleidoscope bends and refracts that spectrum into programming decisions. They are the rulesets, filters, and weighting systems that interpret media attributes and translate them into meaningful selections for the continuous stream.
+
+Each prism serves a different purpose. Some enforce hard boundaries—ensuring, for example, that mature content never follows a children’s show. Others act more softly, nudging transitions toward related aesthetics, tones, or eras while still leaving room for surprise. In this way, prisms don’t just protect against dissonance; they shape the personality of the channel, balancing comfort with novelty.
+
+Because prisms operate across multiple dimensions, they allow Kaleidoscope to move fluidly between different parts of a user’s library. A prism might weigh heavily on genre tags during one transition, then pivot to era or visual style for the next. The result is a stream that feels organic - less like a shuffled playlist, more like a living channel with its own rhythm and identity.
+
+Together, taxonomies and prisms ensure that Kaleidoscope’s procedural curation produces streams that are cohesive, context-aware, and endlessly reconfigurable. Where taxonomies describe, prisms decide.
+
+## Building Blocks of the Stream
+
+Kaleidoscope supports a wide range of media types. Movies and shows provide the long-form backbone of a stream, while shorter formats like music videos or commercials bring variety and pacing. Promos and bumpers add personality, giving the channel its own voice and style.
+
+Not every stream will use the same combination of types, and will avoid replaying media that has recently played. This mix is what makes the experience feel like a channel rather than a playlist. A feature might be followed by a burst of music, a nostalgic promo, or even a small block commercials - small shifts that keep the flow dynamic and familiar.
