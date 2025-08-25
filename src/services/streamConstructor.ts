@@ -195,15 +195,15 @@ export function constructStream(
 //     */
 
 //     /*
-//     -- Author note:: A good example of this is with the summer 2000 broadcast of Toonami with Tenchi Muyo.
-//     Tenchi has a few episodes that are weirdly 45 minutes instead of 30 minutes randomly with no real rhyme
-//     or reason. To handle this randomness, Toonami in it's original broadcast pulled the episode of Batman the
-//     Animated series which usually followed Tenchi for that day only and populated the remainder of the
-//     15 minutes that would have normally been Batman with Power Puff Girl episodes instead. This allowed
-//     Toonami to keep the fidelity of a 3 hour block run time and decreasing dead time and keeping interest of the
-//     audience while staying within theme (Toonami being a series of mostly violence driven animated shows
-//     in which the only Cartoon Network licensed property that fit in the alloted time slot that was also
-//     themed correctly was PPG)
+    // -- Author note:: A good example of this is with the summer 2000 broadcast of Toonami with Tenchi Muyo.
+    // Tenchi has a few episodes that are weirdly 45 minutes instead of 30 minutes randomly with no real rhyme
+    // or reason. To handle this randomness, Toonami in it's original broadcast pulled the episode of Batman the
+    // Animated series which usually followed Tenchi for that day only and populated the remainder of the
+    // 15 minutes that would have normally been Batman with Power Puff Girl episodes instead. This allowed
+    // Toonami to keep the fidelity of a 3 hour block run time and decreasing dead time and keeping interest of the
+    // audience while staying within theme (Toonami being a series of mostly violence driven animated shows
+    // in which the only Cartoon Network licensed property that fit in the alloted time slot that was also
+    // themed correctly was PPG)
 //     */
 //     let remainder = 0;
 //     let stream: string[] = [];
