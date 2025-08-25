@@ -4,7 +4,7 @@
 
 Kaleidoscope is a desktop media streaming assistant built to recreate the experience of a curated broadcast channel using the user’s own media library with the main goal of creating an always-on continuous stream either based on a set of rules for procedural selection or specifically designated and scheduled media in the form of adhoc one off selections or patterned reoccuring media blocks reminiscient of Tv Programming Blocks such as Fox Kids, Toonami, Nick Jr., UPN Afternoon, SNICK etc.
 
-## The core problem
+## The Core Problem
 
 Modern personal media libraries are vast and diverse, but this abundance often works against the viewer. Random playback tends to feel disjointed and unsatisfying, while manual browsing can lead to choice paralysis - especially when someone only has a vague sense of what they want to watch. The result is wasted time, indecision, and a tendency to fall back on the same familiar titles.
 
@@ -16,7 +16,7 @@ The result is a continuous, context-aware stream that transforms a disconnected 
 
 ## Smart Procedural Curation for a Continuous Stream
 
-Kaleidoscope builds its streams by 'walking' the viewer through their library in a way that feels natural and intentional. Instead of abrupt jumps, the system uses taxonomies to gradually transition between genres, aesthetics, tones, and even target age groups. A all-ages cartoon block  might ease into an family-friendly movie, which in turn flows toward more mature programming or back again later in the schedule. This creates an arc to the channel that mirrors the rhythms of real broadcast programming, balancing variety with cohesion.
+Kaleidoscope builds its streams by 'walking' the viewer through their library in a way that feels natural and intentional. Instead of abrupt jumps, the system uses taxonomies to gradually transition between genres, aesthetics, tones, and even target age groups. A all-ages cartoon block might ease into an family-friendly movie, which in turn flows toward more mature programming or back again later in the schedule. This creates an arc to the channel that mirrors the rhythms of real broadcast programming, balancing variety with cohesion.
 
 To anchor this flow in a recognizable structure, feature media such as movies or full episodes are aligned to start on the hour or half-hour, just as they did on network TV. Since most media doesn’t neatly fit into thirty-minute blocks, Kaleidoscope calculates the remaining time until the next block and fills it precisely with interludes.
 
@@ -26,7 +26,7 @@ Thematic curation extends into these interludes as well. The first half is tailo
 
 This interplay of thematic 'walking', broadcast-style timing, and carefully constructed interludes is made possible by Kaleidoscope’s taxonomy system - the connective tissue that ensures every transition feels deliberate.
 
-## How the Taxonomies fit in
+## How the Taxonomies Fit In
 
 As previously stated, Kaleidoscope's curated flow depends on more than just picking media at random - it relies on a custom taxonomy system to keep transitions natural and engaging. Early experiments with simple random selection revealed how jarring it could be to jump between significantly tonally different media meant for different audiences or moods. Traditional genre labels weren’t enough to solve this problem, since many works that share a genre can feel wildly different in tone, style, or intended audience.
 
@@ -34,7 +34,7 @@ To address this, Kaleidoscope classifies media along multiple dimensions - not j
 
 By combining these taxonomies, Kaleidoscope can schedule media side by side in ways that feel coherent without being repetitive. A fantasy adventure series might flow naturally into an animated movie with a similar mythic tone, which then eases into family programming before shifting into darker fare later in the schedule. The result is a channel that feels alive and thoughtfully curated, rather than a random shuffle of disconnected files.
 
-## The Prisms – How Taxonomies Refract Through the Selection System
+## The Prisms - How Taxonomies Refract Through the Selection System
 
 If taxonomies are the raw spectrum of data describing media, then the prisms are how Kaleidoscope bends and refracts that spectrum into programming decisions. They are the rulesets, filters, and weighting systems that interpret media attributes and translate them into meaningful selections for the continuous stream.
 
@@ -50,7 +50,7 @@ Kaleidoscope supports a wide range of media types. Movies and shows provide the 
 
 Not every stream will use the same combination of types, and will avoid replaying media that has recently played. This mix is what makes the experience feel like a channel rather than a playlist. A feature might be followed by a burst of music, a nostalgic promo, or even a small block commercials - small shifts that keep the flow dynamic and familiar.
 
-## Programming Blocks – Building Identity Through Rhythm
+## Programming Blocks - Building Identity Through Rhythm
 
 Programming blocks are curated stretches of time that give structure and rhythm to a stream. A block can be as short as 30 minutes or run the length of a full day, depending on the experience the creator wants to design. Within that span, you decide what fills each slot - shows, movies, music videos, or even a lineup made entirely of shorts.
 
