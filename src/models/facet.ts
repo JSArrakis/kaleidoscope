@@ -1,60 +1,27 @@
-import { MediaType } from './enum/mediaTypes';
-import { MediaTag } from './const/tagTypes';
+import { Tag } from './tag';
 
-export interface IPromo {
-  title: string;
-  mediaItemId: string;
-  duration: number;
-  path: string;
-  type: number;
-  tags: MediaTag[];
+export interface IFacet {
+  source: Tag[];
+  targets: Tag[][];
 }
 
-export class Promo {
-  title: string;
-  mediaItemId: string;
-  duration: number;
-  path: string;
-  type: number;
-  tags: MediaTag[];
+export class Facet {
+  source: Tag[];
+  targets: Tag[][];
 
   constructor(
-    title: string,
-    mediaItemId: string,
-    duration: number,
-    path: string,
-    type: number,
-    tags: MediaTag[],
+    source: Tag[],
+    targets: Tag[][],
   ) {
-    this.title = title;
-    this.mediaItemId = mediaItemId;
-    this.duration = duration;
-    this.path = path;
-    this.type = type;
-    this.tags = tags;
+    this.source = source;
+    this.targets = targets;
   }
 
-  static async fromRequestObject(requestObject: any): Promise<Promo> {
-    const { tagRepository } = await import('../repositories/tagsRepository');
-    
-    // Convert tag names to Tag objects
-    let tags: MediaTag[] = [];
-    if (requestObject.tags && Array.isArray(requestObject.tags)) {
-      for (const tagName of requestObject.tags) {
-        const tag = tagRepository.findByName(tagName);
-        if (tag) {
-          tags.push(tag);
-        }
-      }
-    }
+  static async fromRequestObject(requestObject: any): Promise<Facet> {
 
-    return new Promo(
-      requestObject.title,
-      requestObject.mediaItemId,
-      requestObject.duration,
-      requestObject.path,
-      MediaType.Promo,
-      tags,
+    return new Facet(
+      requestObject.source,
+      requestObject.targets,
     );
   }
 }

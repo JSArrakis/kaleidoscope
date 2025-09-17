@@ -10,11 +10,13 @@ Through these concepts I did an analysis on a large variety of movies and drille
 
 ## 1 - Genres
 
-Genres are the narrative backbone of media - they describe the fundamental story type or plot structure. These are broad categories that communicate the kind of story being told rather than the style or mood in which it is presented. Some examples include Science Fiction, Fantasy, Action, Horror, Drama, Comedy, Romance, Mystery, and Thriller.
+Genres are the narrative backbone of media - they describe the fundamental story type or plot structure. These are broad categories that communicate the kind of story being told rather than the style or mood in which it is presented. Some examples include Science Fiction, Action, Horror, Drama, Comedy, Romance, Mystery, and Thriller.
 
-In Kaleidoscope, genres are used to help identify the primary narrative DNA of a piece of media. A Western (such as The Magnificent Seven) and a Samurai film (Seven Samurai) can share the same narrative genre (e.g., Action-Drama) even though they differ wildly in aesthetic presentation. In essence, the plot is what the piece of media is trying to say, the main points its trying to make or convey, how the plot is presented is separated from the main narrative. It doesnt matter if you met the wizard in a galaxy far far away or in middle earth - if there is magic and the hero's journey, it is likely a Fantasy genre.
+In Kaleidoscope, genres are used to help identify the primary narrative DNA of a piece of media. A Western (such as The Magnificent Seven) and a Samurai film (Seven Samurai) can share the same narrative genre (e.g., Action-Drama) even though they differ wildly in aesthetic presentation. In essence, the plot is what the piece of media is trying to say, the main points its trying to make or convey, how the plot is presented is separated from the main narrative. It doesnt matter if you met the wizard in a galaxy far far away or in middle earth - if there is magic and the hero's journey, it is likely a Fantasy aesthetic - the actual Genre will most likely be Adventure. Spaceships do not automatically make the genre Science Fiction, only the plot narrative can do that.
 
 It is important to note that many films have multiple genres, and the combination of those genres change the tone of the media over all to be greater than the some of its parts. For instance Horror encapsulates the idea of dread, where the main narrative is being confronted with fear and the unknown and the other, such as in movies like Halloween, The Exorcist, or Hellraiser. Science Fiction however lays heavily in existential philosophy and speculative realistic technologies over spiritual or magical justifications, movies such as Arrival, Interstellar or Gattaca. However when you combine Science Fiction and Horror, you arrive on the horrors of technology and the hubris of man in it's usage, where they go wrong and how the ethics of them can cause harm and terror, movies such as The Fly, Alien, and Event Horizon - the philosophical discussion of our future is surrounding the terrors it causes. This pattern is common when you combine genres, the genres combined usually 'speak' about eachother in some way.
+
+[Read more about Genres](genres/index.md)
 
 ## 2 - Aesthetics
 
@@ -24,7 +26,9 @@ Some Examples include Western, Wuxia, Space Opera, Mecha, Noir, Cyberpunk, Gothi
 
 Aesthetics can cut across genres - Science Fiction media can be presented as a Space Opera (The Expanse), Dystopian (Interstellar), Mecha (Gundam), etc. By tracking aesthetics independently from narrative genre, Kaleidoscope can group thematically similar works even when their genres differ.
 
-Note also that it is possible for media to have more than one Aesthetic taxonomy, much like Genres, some examples being Pacific Rim (Dystopian Mecha) or Mortal Engines (Dystopian Diesel-Punk), and while these aesthetics can work in conjunction with eachother the however do not 'comment' on eachother the way that Genre taxonomies do.
+Note also that it is possible for media to have more than one Aesthetic taxonomy, much like Genres, some examples being Pacific Rim (Dystopian Mecha) or Mortal Engines (Dystopian Diesel-Punk), and while these aesthetics can work in conjunction with each other they however do not 'comment' on each other the way that Genre taxonomies do.
+
+[Read more about Aesthetics](aesthetics/index.md)
 
 ## 3 - Age Groups
 
@@ -32,7 +36,7 @@ Age Groups define the intended audience maturity level for a piece of media. Thi
 
 Kaleidoscope comes with 4 Age Groups by default based on the standard MPAA ratings but they can be changed, increased or decreased based on the user's own idiom. The 4 default Age Groups are:
 
-Kids - simple lessons, low tension, broad strokes 
+Kids - simple lessons, low tension, broad strokes
 
 Family – suitable for ages 6–12, mild peril, light humor
 
@@ -59,7 +63,6 @@ Movies were built around a bold, simple “hook” and the story served that hoo
 Movies in the 1990s, storytelling began turning inward. Directors became more fascinated by flawed characters, moral gray zones, and the idea that the ending might not actually solve the problem. Stories were less about the plot as a straight line and more about exploring personality and perspective. It wasn’t enough to have a 'good guy vs bad guy' - now the protagonist might be deeply conflicted, or even unreliable, and the story could jump around in time or style to reflect that.
 
 There was also a layer of self-awareness. Movies in the 90s often felt like they knew they were movies: characters talked like real people, referencing pop culture, arguing about TV shows, or rambling about their philosophies. The emotional tone was often ironic or detached, as if the movie itself was commenting on its own genre. You can see that in Pulp Fiction, where violence is mixed with casual conversations about fast food and foot massages, or in Fight Club, where the movie is less a plot-driven action story and more a psychological reflection on masculinity, consumerism, and identity. Endings weren’t always neat, and sometimes they were left ambiguous or unsettling on purpose.
-
 
 ## 5 - Specialties
 

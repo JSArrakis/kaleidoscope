@@ -34,6 +34,8 @@ To address this, Kaleidoscope classifies media along multiple dimensions - not j
 
 By combining these taxonomies, Kaleidoscope can schedule media side by side in ways that feel coherent without being repetitive. A fantasy adventure series might flow naturally into an animated movie with a similar mythic tone, which then eases into family programming before shifting into darker fare later in the schedule. The result is a channel that feels alive and thoughtfully curated, rather than a random shuffle of disconnected files.
 
+[Read more about the Taxonomies](taxonomies/index.md)
+
 ## The Prisms - How Taxonomies Refract Through the Selection System
 
 If taxonomies are the raw spectrum of data describing media, then the prisms are how Kaleidoscope bends and refracts that spectrum into programming decisions. They are the rulesets, filters, and weighting systems that interpret media attributes and translate them into meaningful selections for the continuous stream.
