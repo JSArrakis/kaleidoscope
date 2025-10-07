@@ -27,16 +27,26 @@ export async function createMusicHandler(
 
   // If it exists, return error
   if (music) {
-    res.status(400).json({ message: `Music Video with ID ${mediaItemId} already exists` });
+    res
+      .status(400)
+      .json({ message: `Music Video with ID ${mediaItemId} already exists` });
     return;
   }
   // If it doesn't exist, perform transformations
-  let transformedMusic = await transformMusicFromRequest(req.body, mediaItemId);
-
-  // Insert music into MongoDB
-  musicRepository.create(transformedMusic);
-
-  res.status(200).json({ message: `Music Video ${transformedMusic.title} Created` });
+  try {
+    let transformedMusic = await transformMusicFromRequest(
+      req.body,
+      mediaItemId,
+    );
+    // Insert music into database
+    musicRepository.create(transformedMusic);
+    res
+      .status(200)
+      .json({ message: `Music Video ${transformedMusic.title} Created` });
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    res.status(400).json({ message: errorMessage });
+  }
   return;
 }
 
@@ -63,7 +73,9 @@ export async function deleteMusicHandler(
 
   // If it doesn't exist, return error
   if (!music) {
-    res.status(400).json({ message: `Music Video with ID ${mediaItemId} does not exist` });
+    res
+      .status(400)
+      .json({ message: `Music Video with ID ${mediaItemId} does not exist` });
     return;
   }
 
@@ -97,20 +109,27 @@ export async function updateMusicHandler(
 
   // If it doesn't exist, return error
   if (!music) {
-    res.status(400).json({ message: `Music Video with ID ${mediaItemId} does not exist` });
+    res
+      .status(400)
+      .json({ message: `Music Video with ID ${mediaItemId} does not exist` });
     return;
   }
 
   // If it exists, perform transformations
-  let updatedMusic = await transformMusicFromRequest(
-    req.body,
-    music.mediaItemId,
-  );
-
-  // Update music in MongoDB
-  musicRepository.update(mediaItemId, updatedMusic);
-
-  res.status(200).json({ message: `Music Video ${updatedMusic.title} Updated` });
+  try {
+    let updatedMusic = await transformMusicFromRequest(
+      req.body,
+      music.mediaItemId,
+    );
+    // Update music in database
+    musicRepository.update(mediaItemId, updatedMusic);
+    res
+      .status(200)
+      .json({ message: `Music Video ${updatedMusic.title} Updated` });
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    res.status(400).json({ message: errorMessage });
+  }
   return;
 }
 
@@ -137,7 +156,9 @@ export async function getMusicHandler(
 
   // If it doesn't exist, return error
   if (!music) {
-    res.status(404).json({ message: `Music Video with ID ${mediaItemId} does not exist` });
+    res
+      .status(404)
+      .json({ message: `Music Video with ID ${mediaItemId} does not exist` });
     return;
   }
 
@@ -166,9 +187,17 @@ export async function transformMusicFromRequest(
   if (parsedMusic.duration > 0) {
     return parsedMusic;
   }
-  console.log(`Getting duration for ${parsedMusic.path}`);
-  let durationInSeconds = await getMediaDuration(parsedMusic.path);
-  parsedMusic.duration = durationInSeconds; // Update duration value
+
+  try {
+    console.log(`Getting duration for ${parsedMusic.path}`);
+    let durationInSeconds = await getMediaDuration(parsedMusic.path);
+    parsedMusic.duration = durationInSeconds; // Update duration value
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    throw new Error(
+      `Cannot process music "${parsedMusic.title}": ${errorMessage}`,
+    );
+  }
 
   return parsedMusic;
 }

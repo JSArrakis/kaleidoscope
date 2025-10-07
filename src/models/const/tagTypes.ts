@@ -2,24 +2,27 @@ import { AgeGroup } from '../ageGroup';
 import { Holiday } from '../holiday';
 import { Tag } from '../tag';
 
-// Define the values first - now includes Holiday and AgeGroup
-export const TAG_TYPES = [
-  'Aesthetic',
-  'Era',
-  'Genre',
-  'Specialty',
-  'Holiday',
-  'AgeGroup',
-  'MusicalGenre',
-] as const;
+// Enum for better readability and type safety
+export enum TagType {
+  Aesthetic = 'Aesthetic',
+  Era = 'Era',
+  Genre = 'Genre',
+  Specialty = 'Specialty',
+  Holiday = 'Holiday',
+  AgeGroup = 'AgeGroup',
+  MusicalGenre = 'MusicalGenre',
+}
 
-// Derive the type from the values
-export type TagType = (typeof TAG_TYPES)[number];
+// Array of all tag types (for iteration, validation, etc.)
+export const TAG_TYPES = Object.values(TagType);
 
-// Type guard function that validates against the union type
+// Type guard function that validates against the enum
 export function isValidTagType(value: string): value is TagType {
-  return TAG_TYPES.includes(value as TagType);
+  return Object.values(TagType).includes(value as TagType);
 }
 
 // All tags are now just Tag objects with different types
-export type MediaTag = Tag;
+// During migration allow MediaTag to be either a Tag object or a string name.
+// This lets tests and older call sites continue to pass string arrays until everything
+// is migrated to Tag objects. We'll handle both shapes in selection code paths.
+export type MediaTag = Tag | string;

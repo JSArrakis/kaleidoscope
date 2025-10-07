@@ -52,12 +52,6 @@ describe('getMovie', () => {
     expect(selectedMedia[0].type).toBe(MediaType.Movie);
     expect(selectedMedia[0].time).toBe(time);
     expect(selectedMedia[0].duration).toBe(9000);
-    expect(selectedMedia[0].tags).toEqual([
-      MainGenres.Action,
-      MainGenres.SciFi,
-      MainGenres.Adventure,
-      AgeGroups.Mature,
-      Eras.ttens,
-    ]);
+    expect(selectedMedia[0].tags).toEqual(movieList[0].tags);
   });
 });

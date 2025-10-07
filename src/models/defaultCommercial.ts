@@ -1,5 +1,6 @@
 import { MediaType } from './enum/mediaTypes';
 import { BaseMedia } from './mediaInterface';
+import { MediaTag } from './const/tagTypes';
 
 export interface IDefaultCommercial extends BaseMedia {
   name: string;
@@ -7,7 +8,7 @@ export interface IDefaultCommercial extends BaseMedia {
   duration: number;
   path: string;
   Type: Number;
-  tags: string[];
+  tags: MediaTag[];
 }
 
 export class DefaultCommercial {
@@ -16,7 +17,7 @@ export class DefaultCommercial {
   duration: number;
   path: string;
   type: number;
-  tags: string[];
+  tags: MediaTag[];
 
   constructor(
     title: string,
@@ -24,7 +25,7 @@ export class DefaultCommercial {
     duration: number,
     path: string,
     type: number,
-    tags: string[],
+    tags: MediaTag[],
   ) {
     this.title = title;
     this.mediaItemId = mediaItemId;

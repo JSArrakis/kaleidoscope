@@ -1,10 +1,11 @@
 import { keyNormalizer } from '../utils/utilities';
+import { MediaTag } from './const/tagTypes';
 
 export interface IStreamRequest {
   Title: string;
   Env: string;
   Movies: string[];
-  Tags: string[];
+  Tags: MediaTag[];
   MultiTags: string[][];
   Blocks: string[];
   StartTime: number;
@@ -16,7 +17,7 @@ export class ContStreamRequest implements IStreamRequest {
   Title: string;
   Env: string;
   Movies: string[];
-  Tags: string[];
+  Tags: MediaTag[];
   MultiTags: string[][];
   Blocks: string[];
   StartTime: number;
@@ -27,7 +28,7 @@ export class ContStreamRequest implements IStreamRequest {
     title: string = 'Default',
     env: string = 'default',
     movies: string[] = [],
-    tags: string[] = [],
+    tags: MediaTag[] = [],
     multiTags: string[][] = [],
     blocks: string[] = [],
     startTime: number = 0,
@@ -44,6 +45,7 @@ export class ContStreamRequest implements IStreamRequest {
 
   static fromRequestObject(requestObject: any): ContStreamRequest {
     return new ContStreamRequest(
+      requestObject.password,
       requestObject.title || 'Default',
       requestObject.env || 'default',
       requestObject.movies || [],
@@ -51,7 +53,6 @@ export class ContStreamRequest implements IStreamRequest {
       requestObject.multiTags || [],
       requestObject.blocks || [],
       requestObject.startTime || 0,
-      requestObject.password,
     );
   }
 }
@@ -60,7 +61,7 @@ export class AdhocStreamRequest implements IStreamRequest {
   Title: string;
   Env: string;
   Movies: string[];
-  Tags: string[];
+  Tags: MediaTag[];
   MultiTags: string[][];
   Blocks: string[];
   StartTime: number;
@@ -72,7 +73,7 @@ export class AdhocStreamRequest implements IStreamRequest {
     title: string = 'Default',
     env: string = 'default',
     movies: string[] = [],
-    tags: string[] = [],
+    tags: MediaTag[] = [],
     multiTags: string[][] = [],
     collections: string[] = [],
     startTime: number = 0,
@@ -91,14 +92,15 @@ export class AdhocStreamRequest implements IStreamRequest {
 
   static fromRequestObject(requestObject: any): AdhocStreamRequest {
     return new AdhocStreamRequest(
+      requestObject.password,
       requestObject.title || 'Default',
       requestObject.env || 'default',
       requestObject.movies || [],
       requestObject.tags || [],
       requestObject.multiTags || [],
       requestObject.collections || [],
+      requestObject.startTime || 0,
       requestObject.endtime || 0,
-      requestObject.password,
     );
   }
 }

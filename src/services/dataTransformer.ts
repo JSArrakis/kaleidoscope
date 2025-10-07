@@ -1,4 +1,3 @@
-import * as ffmpeg from 'fluent-ffmpeg';
 import { Show } from '../models/show';
 import { Movie } from '../models/movie';
 import { Commercial } from '../models/commercial';
@@ -6,9 +5,11 @@ import { Music } from '../models/music';
 import { Promo } from '../models/promo';
 import { Short } from '../models/short';
 import { SegmentedTags } from '../models/segmentedTags';
+import { MediaTag } from '../models/const/tagTypes';
 import { Eras } from '../models/const/eras';
 import { MainGenres } from '../models/const/mainGenres';
 import { AgeGroups } from '../models/const/ageGroups';
+import { getMediaDuration } from '../utils/utilities';
 
 export async function transformShowFromRequest(
   show: any,
@@ -108,7 +109,7 @@ export async function updateMovieFromRequest(
 export async function transformCommercialFromRequest(
   buffer: any,
 ): Promise<Commercial> {
-  let parsedCommercial: Commercial = Commercial.fromRequestObject(buffer);
+  let parsedCommercial: Commercial = await Commercial.fromRequestObject(buffer);
 
   if (parsedCommercial.duration > 0) {
     return parsedCommercial;
@@ -121,7 +122,7 @@ export async function transformCommercialFromRequest(
 }
 
 export async function transformMusicFromRequest(buffer: any): Promise<Music> {
-  let parsedMusic: Music = Music.fromRequestObject(buffer);
+  let parsedMusic: Music = await Music.fromRequestObject(buffer);
 
   if (parsedMusic.duration > 0) {
     return parsedMusic;
@@ -134,7 +135,7 @@ export async function transformMusicFromRequest(buffer: any): Promise<Music> {
 }
 
 export async function transformPromoFromRequest(buffer: any): Promise<Promo> {
-  let parsedPromo: Promo = Promo.fromRequestObject(buffer);
+  let parsedPromo: Promo = await Promo.fromRequestObject(buffer);
 
   if (parsedPromo.duration > 0) {
     return parsedPromo;
@@ -147,7 +148,7 @@ export async function transformPromoFromRequest(buffer: any): Promise<Promo> {
 }
 
 export async function transformShortFromRequest(buffer: any): Promise<Short> {
-  let parsedShort: Short = Short.fromRequestObject(buffer);
+  let parsedShort: Short = await Short.fromRequestObject(buffer);
 
   if (parsedShort.duration > 0) {
     return parsedShort;
@@ -159,40 +160,40 @@ export async function transformShortFromRequest(buffer: any): Promise<Short> {
   return parsedShort;
 }
 
-export async function getMediaDuration(filePath: string): Promise<number> {
-  return new Promise((resolve, reject) => {
-    ffmpeg.ffprobe(filePath, (err, metadata) => {
-      if (!err) {
-        const durationInSeconds: number =
-          Math.round(Number(metadata.format.duration)) || 0;
-        resolve(durationInSeconds);
-      } else {
-        reject(err);
-      }
-    });
-  });
-}
-
-export function segmentTags(tags: string[]): SegmentedTags {
+export function segmentTags(tags: MediaTag[]): SegmentedTags {
   let segmentedTags: SegmentedTags = new SegmentedTags([], [], [], [], []);
 
+  function getTagName(tag: MediaTag | string): string {
+    return typeof tag === 'string' ? tag : (tag as any).name;
+  }
+
   tags.forEach(tag => {
-    if (Object.values(Eras).includes(tag)) {
+    const name = getTagName(tag);
+    if (Object.values(Eras).includes(name)) {
       segmentedTags.eraTags.push(tag);
-    } else if (Object.values(MainGenres).includes(tag)) {
+    } else if (Object.values(MainGenres).includes(name)) {
       segmentedTags.genreTags.push(tag);
-    } else if (Object.values(AgeGroups).includes(tag)) {
+    } else if (Object.values(AgeGroups).includes(name)) {
       segmentedTags.ageGroupTags.push(tag);
     } else {
       segmentedTags.specialtyTags.push(tag);
     }
   });
 
-  segmentedTags.eraTags = [...new Set(segmentedTags.eraTags)];
-  segmentedTags.genreTags = [...new Set(segmentedTags.genreTags)];
-  segmentedTags.specialtyTags = [...new Set(segmentedTags.specialtyTags)];
-  segmentedTags.ageGroupTags = [...new Set(segmentedTags.ageGroupTags)];
-  segmentedTags.holidayTags = [...new Set(segmentedTags.holidayTags)];
+  // Deduplicate by tag name
+  const uniqByName = (arr: MediaTag[]) =>
+    Object.values(
+      arr.reduce((acc: any, t) => {
+        acc[getTagName(t)] = t;
+        return acc;
+      }, {}),
+    ) as MediaTag[];
+
+  segmentedTags.eraTags = uniqByName(segmentedTags.eraTags);
+  segmentedTags.genreTags = uniqByName(segmentedTags.genreTags);
+  segmentedTags.specialtyTags = uniqByName(segmentedTags.specialtyTags);
+  segmentedTags.ageGroupTags = uniqByName(segmentedTags.ageGroupTags);
+  segmentedTags.holidayTags = uniqByName(segmentedTags.holidayTags);
 
   return segmentedTags;
 }

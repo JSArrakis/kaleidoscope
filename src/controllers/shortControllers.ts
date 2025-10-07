@@ -33,12 +33,20 @@ export async function createShortHandler(
     return;
   }
   // If it doesn't exist, perform transformations
-  let transformedShort = await transformShortFromRequest(req.body, mediaItemId);
-
-  // Insert short into MongoDB
-  shortRepository.create(transformedShort);
-
-  res.status(200).json({ message: `Short ${transformedShort.title} Created` });
+  try {
+    let transformedShort = await transformShortFromRequest(
+      req.body,
+      mediaItemId,
+    );
+    // Insert short into database
+    shortRepository.create(transformedShort);
+    res
+      .status(200)
+      .json({ message: `Short ${transformedShort.title} Created` });
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    res.status(400).json({ message: errorMessage });
+  }
   return;
 }
 
@@ -104,15 +112,18 @@ export async function updateShortHandler(
   }
 
   // If it exists, perform transformations
-  let updatedShort = await transformShortFromRequest(
-    req.body,
-    short.mediaItemId,
-  );
-
-  // Update short in MongoDB
-  await shortRepository.update(mediaItemId, updatedShort);
-
-  res.status(200).json({ message: `Short ${updatedShort.title} Updated` });
+  try {
+    let updatedShort = await transformShortFromRequest(
+      req.body,
+      short.mediaItemId,
+    );
+    // Update short in database
+    await shortRepository.update(mediaItemId, updatedShort);
+    res.status(200).json({ message: `Short ${updatedShort.title} Updated` });
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    res.status(400).json({ message: errorMessage });
+  }
   return;
 }
 
@@ -139,7 +150,9 @@ export async function getShortHandler(
 
   // If it doesn't exist, return error
   if (!short) {
-    res.status(404).json({ message: `Short with ID ${mediaItemId} does not exist` });
+    res
+      .status(404)
+      .json({ message: `Short with ID ${mediaItemId} does not exist` });
     return;
   }
 
@@ -168,9 +181,17 @@ export async function transformShortFromRequest(
   if (parsedShort.duration > 0) {
     return parsedShort;
   }
-  console.log(`Getting duration for ${parsedShort.path}`);
-  let durationInSeconds = await getMediaDuration(parsedShort.path);
-  parsedShort.duration = durationInSeconds; // Update duration value
+
+  try {
+    console.log(`Getting duration for ${parsedShort.path}`);
+    let durationInSeconds = await getMediaDuration(parsedShort.path);
+    parsedShort.duration = durationInSeconds; // Update duration value
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    throw new Error(
+      `Cannot process short "${parsedShort.title}": ${errorMessage}`,
+    );
+  }
 
   return parsedShort;
 }

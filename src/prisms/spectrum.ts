@@ -1,6 +1,7 @@
 import { BaseMedia } from '../models/mediaInterface';
 import { SegmentedTags } from '../models/segmentedTags';
 import { AgeGroups } from '../models/const/ageGroups';
+import { MediaTag } from '../models/const/tagTypes';
 import * as core from './core';
 import { Holidays } from '../models/const/holidays';
 
@@ -69,7 +70,7 @@ export function getMediaByAgeGroupHierarchy(
   media: BaseMedia[],
   alreadySelectedMedia: BaseMedia[],
   tags: SegmentedTags,
-  requestedHolidayTags: string[],
+  requestedHolidayTags: MediaTag[],
   duration: number,
 ): BaseMedia[] {
   let selectedMedia: BaseMedia[] = [];
@@ -88,7 +89,7 @@ export function getMediaByAgeGroupHierarchy(
 
   ({ holidayMedia, nonHolidayMedia } = core.splitMediaByHoliday(
     media,
-    requestedHolidayTags,
+    core.tagNamesFrom(requestedHolidayTags),
     Object.values(Holidays),
   ));
 

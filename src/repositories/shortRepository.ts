@@ -2,6 +2,8 @@ import { getDB } from '../db/sqlite';
 import { Short } from '../models/short';
 import { MediaTag } from '../models/const/tagTypes';
 import { Tag } from '../models/tag';
+import { tagRepository } from './tagsRepository';
+import { tagNamesFrom } from '../prisms/core';
 
 export class ShortRepository {
   private get db() {
@@ -90,11 +92,12 @@ export class ShortRepository {
     return result.changes > 0;
   }
 
-  // Find shorts by tags
-  findByTags(tags: string[]): Short[] {
+  // Find shorts by tags (accept MediaTag[] and map to tag names)
+  findByTags(tags: MediaTag[]): Short[] {
     if (tags.length === 0) return [];
 
-    const placeholders = tags.map(() => '?').join(',');
+    const tagNames = tagNamesFrom(tags);
+    const placeholders = tagNames.map(() => '?').join(',');
     const stmt = this.db.prepare(`
       SELECT DISTINCT s.* FROM shorts s
       INNER JOIN short_tags st ON s.mediaItemId = st.mediaItemId
@@ -103,7 +106,7 @@ export class ShortRepository {
       ORDER BY s.title
     `);
 
-    const rows = stmt.all(...tags) as any[];
+    const rows = stmt.all(...tagNames) as any[];
     return rows.map(row => {
       const short = this.mapRowToShort(row);
       short.tags = this.loadShortTags(short.mediaItemId);
@@ -154,10 +157,24 @@ export class ShortRepository {
 
     for (const tag of tags) {
       try {
-        stmt.run(mediaItemId, tag.tagId);
+        // tag may be a Tag object or a string during migration; resolve to Tag
+        let tagId: string | undefined;
+        if (typeof tag === 'string') {
+          const found = tagRepository.findByNameIgnoreCase(tag);
+          tagId = found ? found.tagId : undefined;
+        } else if ((tag as any).tagId) {
+          tagId = (tag as any).tagId;
+        }
+
+        if (!tagId) {
+          console.warn(`Skipping unknown tag for short ${mediaItemId}:`, tag);
+          continue;
+        }
+
+        stmt.run(mediaItemId, tagId);
       } catch (error) {
         // Skip duplicates
-        console.warn(`Failed to insert tag ${tag.tagId} for short ${mediaItemId}:`, error);
+        console.warn(`Failed to insert tag for short ${mediaItemId}:`, error);
       }
     }
   }
@@ -171,16 +188,19 @@ export class ShortRepository {
     `);
 
     const rows = stmt.all(mediaItemId) as any[];
-    return rows.map(row => new Tag(
-      row.tagId,
-      row.name,
-      row.type,
-      row.holidayDates ? JSON.parse(row.holidayDates) : undefined,
-      row.exclusionGenres ? JSON.parse(row.exclusionGenres) : undefined,
-      row.seasonStartDate,
-      row.seasonEndDate,
-      row.sequence,
-    ));
+    return rows.map(
+      row =>
+        new Tag(
+          row.tagId,
+          row.name,
+          row.type,
+          row.holidayDates ? JSON.parse(row.holidayDates) : undefined,
+          row.exclusionGenres ? JSON.parse(row.exclusionGenres) : undefined,
+          row.seasonStartDate,
+          row.seasonEndDate,
+          row.sequence,
+        ),
+    );
   }
 
   // Helper method to delete short tags

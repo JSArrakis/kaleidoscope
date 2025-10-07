@@ -14,4 +14,10 @@ router.post(
   streamCont.continuousStreamHandler,
 );
 
+// Get current stream status
+router.get('/status', streamCont.streamStatusHandler);
+
+// Stop current continuous stream
+router.post('/stop', streamCont.stopStreamHandler);
+
 export default router;

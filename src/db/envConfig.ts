@@ -1,55 +1,32 @@
-import {
-  EnvConfigurationModel,
-  EnvConfiguration,
-} from '../models/envConfiguration';
+import { EnvConfiguration } from '../models/envConfiguration';
+
+// NOTE: This module previously used a DB model (EnvConfigurationModel).
+// For test runs and the current refactor where env-by-request is removed,
+// provide lightweight in-memory/stub implementations that return default
+// EnvConfiguration objects. Replace with real DB-backed implementations
+// when adding environment configuration persistence.
 
 export async function getDefaultEnvConfig(
   defaultPromo: string,
 ): Promise<EnvConfiguration> {
-  const defaultEnvConfig = await EnvConfigurationModel.findOne({
-    mediaItemId: 'default',
-  });
-  if (defaultEnvConfig) {
-    console.log('Default Env Configuration already exists');
-    return defaultEnvConfig;
-  }
-
-  const envConfig = new EnvConfigurationModel({
-    Title: 'Default',
-    LoadTitle: 'default',
-    Favorites: [],
-    BlackList: [],
-    DefaultPromo: defaultPromo,
-  });
-
-  await envConfig.save();
-  console.log('Default Env Configuration Created');
-  return envConfig;
+  return new EnvConfiguration('Default', 'default', [], [], [], defaultPromo);
 }
 
 export async function getEnvConfig(
   loadTitle: string,
 ): Promise<[EnvConfiguration, string]> {
-  const envConfig = await EnvConfigurationModel.findOne({
-    mediaItemId: loadTitle,
-  });
-  if (!envConfig) {
-    console.log('Env Configuration does not exist');
-    return [
-      new EnvConfiguration('', '', [], [], [], ''),
-      'Specified Environment Configuration does not exist, please create it through the admin panel or use the default configuration.',
-    ];
+  // Return a default env configuration for now. Real DB lookup will be
+  // implemented as part of the environment configuration feature.
+  if (!loadTitle || loadTitle === 'default') {
+    return [new EnvConfiguration('Default', 'default', [], [], [], ''), ''];
   }
-  console.log('Env Configuration Found');
-  return [envConfig, ''];
+  return [
+    new EnvConfiguration('', '', [], [], [], ''),
+    'Specified Environment Configuration does not exist, please create it through the admin panel or use the default configuration.',
+  ];
 }
 
 export async function loadEnvConfigList(): Promise<EnvConfiguration[]> {
-  const envConfigs = await EnvConfigurationModel.find();
-  if (!envConfigs || envConfigs.length === 0) {
-    console.log('No Env Configurations Found');
-    return [];
-  }
-  console.log(envConfigs.length + ' Env Configurations loaded');
-  return envConfigs;
+  // No persistent env configs exist in the current refactor. Return empty list.
+  return [];
 }

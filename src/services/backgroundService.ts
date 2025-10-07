@@ -5,7 +5,13 @@ import { MediaBlock } from '../models/mediaBlock';
 import * as VLC from 'vlc-client';
 import { ContStreamRequest } from '../models/streamRequest';
 import { StreamType } from '../models/enum/streamTypes';
-import { getMedia, getMosaics, getStreamType, setCurrentHolidays, getCurrentHolidays } from './mediaService';
+import {
+  getMedia,
+  getMosaics,
+  getStreamType,
+  setCurrentHolidays,
+  getCurrentHolidays,
+} from './mediaService';
 import { getConfig } from '../config/configService';
 
 const intervalInSeconds: number = 300;
@@ -21,7 +27,6 @@ function calculateDelayToNextInterval(intervalInSeconds: number): number {
   console.log(`Current Unix Timestamp: ${now}`);
   // Calculate the seconds until the next interval
   // The interval in seconds equals 5 minutes (300 seconds)
-  // THE DREADED MODULO OPERATION
   const secondsToNextInterval = intervalInSeconds - (now % intervalInSeconds);
   console.log(`Seconds to next interval: ${secondsToNextInterval}`);
   return secondsToNextInterval * 1000; // Convert seconds to milliseconds
@@ -109,15 +114,20 @@ async function cycleCheck() {
         streamMan.getContinuousStreamArgs();
       // Create a new StreamArgs object with the same password as the current continuous stream arguments
       // This piece is here for future development to allow for different arguments for the next day's stream if we so choose
+      // Create a safer copy of the continuous args for tomorrow. Many of these
+      // fields may be empty when the continuous endpoint is password-only,
+      // so default to empty arrays or existing values to avoid crashes.
       let tomorrowsContinuousStreamArgs = new ContStreamRequest(
         continuousStreamArgs.Password,
       );
-      tomorrowsContinuousStreamArgs.Title = continuousStreamArgs.Title;
-      tomorrowsContinuousStreamArgs.Env = continuousStreamArgs.Env;
-      tomorrowsContinuousStreamArgs.Movies = continuousStreamArgs.Movies;
-      tomorrowsContinuousStreamArgs.Tags = continuousStreamArgs.Tags;
-      tomorrowsContinuousStreamArgs.MultiTags = continuousStreamArgs.MultiTags;
-      tomorrowsContinuousStreamArgs.Blocks = continuousStreamArgs.Blocks;
+      tomorrowsContinuousStreamArgs.Title =
+        continuousStreamArgs.Title || 'Default';
+      tomorrowsContinuousStreamArgs.Env = continuousStreamArgs.Env || 'default';
+      tomorrowsContinuousStreamArgs.Movies = continuousStreamArgs.Movies || [];
+      tomorrowsContinuousStreamArgs.Tags = continuousStreamArgs.Tags || [];
+      tomorrowsContinuousStreamArgs.MultiTags =
+        continuousStreamArgs.MultiTags || [];
+      tomorrowsContinuousStreamArgs.Blocks = continuousStreamArgs.Blocks || [];
       tomorrowsContinuousStreamArgs.StartTime = tomorrow;
       // Constructs the stream for the next day and adds it to the upcoming stream
       const stream: [MediaBlock[], string] = constructStream(
@@ -127,8 +137,9 @@ async function cycleCheck() {
         getMosaics(),
         getStreamType(),
       );
-      // TODO - I do not remember why I added this as it looks like it adds the entirety of tomorrow's stream to the on deck stream, this might need to be reworked
-      streamMan.addToOnDeckStream(stream[0]);
+      // Add tomorrow's stream to the upcoming stream buffer (not on-deck to prevent memory issues)
+      // This ensures continuous operation while keeping the on-deck stream limited to 2 items
+      streamMan.addToUpcomingStream(stream[0]);
     }
   }
 
@@ -197,6 +208,25 @@ async function addMediaBlock(item: MediaBlock | undefined): Promise<void> {
   }
 }
 
+function getVLCStatus(): any {
+  if (!vlc) {
+    return { connected: false, error: 'VLC client not initialized' };
+  }
+
+  try {
+    return {
+      connected: true,
+      client: !!vlc,
+      error: null,
+    };
+  } catch (error) {
+    return {
+      connected: false,
+      error: error instanceof Error ? error.message : 'Unknown VLC error',
+    };
+  }
+}
+
 export {
   cycleCheck,
   startBackgroundProcess,
@@ -206,4 +236,5 @@ export {
   calculateDelayToNextInterval,
   setEndOfDayMarker,
   setTomorrow,
+  getVLCStatus,
 };

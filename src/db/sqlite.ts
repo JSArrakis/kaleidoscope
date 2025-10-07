@@ -74,6 +74,34 @@ class SQLiteService {
       )
     `);
 
+    // Facets table - stores facet definitions (genre + aesthetic and relationships)
+    this.db.exec(`
+      CREATE TABLE IF NOT EXISTS facets (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        facetId TEXT UNIQUE NOT NULL,
+        genre TEXT NOT NULL,
+        aesthetic TEXT NOT NULL,
+        relationships TEXT, -- JSON string array of related facetIds and weights
+        createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    // Facet distances table - stores pairwise distances between facets
+    this.db.exec(`
+      CREATE TABLE IF NOT EXISTS facet_distances (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        sourceFacetId TEXT NOT NULL,
+        targetFacetId TEXT NOT NULL,
+        distance REAL NOT NULL,
+        createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (sourceFacetId) REFERENCES facets (facetId) ON DELETE CASCADE,
+        FOREIGN KEY (targetFacetId) REFERENCES facets (facetId) ON DELETE CASCADE,
+        UNIQUE(sourceFacetId, targetFacetId)
+      )
+    `);
+
     // Media Tags junction table
     this.db.exec(`
       CREATE TABLE IF NOT EXISTS media_tags (
@@ -199,7 +227,7 @@ class SQLiteService {
         episodeNumber INTEGER,
         path TEXT NOT NULL,
         title TEXT,
-        mediaItemId TEXT,
+        mediaItemId TEXT UNIQUE NOT NULL,
         showItemId TEXT,
         duration INTEGER,
         durationLimit INTEGER,
@@ -388,6 +416,11 @@ class SQLiteService {
       CREATE INDEX IF NOT EXISTS idx_tags_type ON tags(type);
       CREATE INDEX IF NOT EXISTS idx_tags_name ON tags(name);
       CREATE INDEX IF NOT EXISTS idx_mosaics_tagId ON mosaics(tagId);
+      CREATE INDEX IF NOT EXISTS idx_facets_facetId ON facets(facetId);
+      CREATE INDEX IF NOT EXISTS idx_facets_genre ON facets(genre);
+      CREATE INDEX IF NOT EXISTS idx_facets_aesthetic ON facets(aesthetic);
+  CREATE INDEX IF NOT EXISTS idx_facet_distances_from ON facet_distances(sourceFacetId);
+  CREATE INDEX IF NOT EXISTS idx_facet_distances_to ON facet_distances(targetFacetId);
     `);
   }
 }

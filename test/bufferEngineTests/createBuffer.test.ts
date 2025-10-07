@@ -1,6 +1,5 @@
 import { Commercial } from '../../src/models/commercial';
 import { Media } from '../../src/models/media';
-import { Mosaic } from '../../src/models/mosaic';
 import { Music } from '../../src/models/music';
 import { Promo } from '../../src/models/promo';
 import { Short } from '../../src/models/short';
@@ -10,7 +9,7 @@ import * as tdShorts from '../testData/shorts';
 import * as tdMusic from '../testData/music';
 import * as tdPromos from '../testData/promos';
 import * as tdCommercials from '../testData/commercials';
-import * as tdMosaics from '../testData/mosaics';
+// Mosaic functionality removed — use empty mosaics arrays in tests
 import { MainGenres } from '../../src/models/const/mainGenres';
 import { AgeGroups } from '../../src/models/const/ageGroups';
 
@@ -39,7 +38,7 @@ describe('createBuffer', () => {
       defaultCommercials: [],
       blocks: [],
     };
-    const mosaics: Mosaic[] = [];
+    const mosaics: any[] = [];
     const halfATags: string[] = [];
     const halfBTags: string[] = [];
     const prevBuff: Media = {
@@ -109,7 +108,7 @@ describe('createBuffer', () => {
       defaultCommercials: tdCommercials.defaultCommercials,
       blocks: [],
     };
-    const mosaics: Mosaic[] = tdMosaics.mosaics;
+    const mosaics: any[] = [];
     const halfATags: string[] = [MainGenres.Action, AgeGroups.Kids];
     const halfBTags: string[] = [MainGenres.Action, AgeGroups.Kids];
     const prevBuff: Media = {
@@ -181,7 +180,7 @@ describe('createBuffer', () => {
       defaultCommercials: tdCommercials.defaultCommercials,
       blocks: [],
     };
-    const mosaics: Mosaic[] = tdMosaics.mosaics;
+    const mosaics: any[] = [];
     const halfATags: string[] = [MainGenres.Action, AgeGroups.Kids];
     const halfBTags: string[] = [MainGenres.Action, AgeGroups.Kids];
     const prevBuff: Media = {
@@ -255,7 +254,7 @@ describe('createBuffer', () => {
       defaultCommercials: tdCommercials.defaultCommercials,
       blocks: [],
     };
-    const mosaics: Mosaic[] = tdMosaics.mosaics;
+    const mosaics: any[] = [];
     const halfATags: string[] = [MainGenres.Action, AgeGroups.Kids];
     const halfBTags: string[] = [MainGenres.Action, AgeGroups.Kids];
     const prevBuff: Media = {
@@ -344,7 +343,7 @@ describe('createBuffer', () => {
       defaultCommercials: tdCommercials.defaultCommercials,
       blocks: [],
     };
-    const mosaics: Mosaic[] = tdMosaics.mosaics;
+    const mosaics: any[] = [];
     const halfATags: string[] = [MainGenres.Adventure, AgeGroups.Kids];
     const halfBTags: string[] = [MainGenres.Adventure, AgeGroups.Kids];
     const prevBuff: Media = {
@@ -435,7 +434,7 @@ describe('createBuffer', () => {
       defaultCommercials: tdCommercials.defaultCommercials,
       blocks: [],
     };
-    const mosaics: Mosaic[] = tdMosaics.mosaics;
+    const mosaics: any[] = [];
     const halfATags: string[] = [];
     const halfBTags: string[] = [MainGenres.Adventure, AgeGroups.Kids];
     const prevBuff: Media = {
@@ -526,7 +525,7 @@ describe('createBuffer', () => {
       defaultCommercials: tdCommercials.defaultCommercials,
       blocks: [],
     };
-    const mosaics: Mosaic[] = tdMosaics.mosaics;
+    const mosaics: any[] = [];
     const halfATags: string[] = [MainGenres.Adventure, AgeGroups.Kids];
     const halfBTags: string[] = [];
     const prevBuff: Media = {

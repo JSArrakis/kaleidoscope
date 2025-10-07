@@ -32,17 +32,20 @@ export async function createCommercialHandler(
     return;
   }
   // If it doesn't exist, perform transformations
-  let transformedComm = await transformCommercialFromRequest(
-    req.body,
-    mediaItemId,
-  );
-
-  // Insert commercial into MongoDB
-  await commercialRepository.create(transformedComm);
-
-  res
-    .status(200)
-    .json({ message: `Commercial ${transformedComm.title} Created` });
+  try {
+    let transformedComm = await transformCommercialFromRequest(
+      req.body,
+      mediaItemId,
+    );
+    // Insert commercial into database
+    await commercialRepository.create(transformedComm);
+    res
+      .status(200)
+      .json({ message: `Commercial ${transformedComm.title} Created` });
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    res.status(400).json({ message: errorMessage });
+  }
   return;
 }
 
@@ -108,17 +111,20 @@ export async function updateCommercialHandler(
   }
 
   // If it exists, perform transformations
-  let updatedCommercial = await transformCommercialFromRequest(
-    req.body,
-    commercial.mediaItemId,
-  );
-
-  // Update commercial in MongoDB
-  commercialRepository.update(commercial.mediaItemId, updatedCommercial);
-
-  res
-    .status(200)
-    .json({ message: `Commercial ${updatedCommercial.title} Updated` });
+  try {
+    let updatedCommercial = await transformCommercialFromRequest(
+      req.body,
+      commercial.mediaItemId,
+    );
+    // Update commercial in database
+    commercialRepository.update(commercial.mediaItemId, updatedCommercial);
+    res
+      .status(200)
+      .json({ message: `Commercial ${updatedCommercial.title} Updated` });
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    res.status(400).json({ message: errorMessage });
+  }
   return;
 }
 
@@ -176,9 +182,17 @@ export async function transformCommercialFromRequest(
   if (parsedCommercial.duration > 0) {
     return parsedCommercial;
   }
-  console.log(`Getting duration for ${parsedCommercial.path}`);
-  let durationInSeconds = await getMediaDuration(parsedCommercial.path);
-  parsedCommercial.duration = durationInSeconds; // Update duration value
+
+  try {
+    console.log(`Getting duration for ${parsedCommercial.path}`);
+    let durationInSeconds = await getMediaDuration(parsedCommercial.path);
+    parsedCommercial.duration = durationInSeconds; // Update duration value
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    throw new Error(
+      `Cannot process commercial "${parsedCommercial.title}": ${errorMessage}`,
+    );
+  }
 
   return parsedCommercial;
 }

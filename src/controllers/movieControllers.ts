@@ -31,11 +31,15 @@ export async function createMovieHandler(
     });
     return;
   }
-  let createdMovie = await transformMovieFromRequest(req.body, mediaItemId);
 
-  movieRepository.create(createdMovie);
-
-  res.status(200).json({ message: `Movie ${createdMovie.title} Created` });
+  try {
+    let createdMovie = await transformMovieFromRequest(req.body, mediaItemId);
+    movieRepository.create(createdMovie);
+    res.status(200).json({ message: `Movie ${createdMovie.title} Created` });
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    res.status(400).json({ message: errorMessage });
+  }
   return;
 }
 
@@ -194,11 +198,19 @@ async function transformMovieFromRequest(
   if (parsedMovie.duration > 0) {
     return parsedMovie;
   }
-  let durationInSeconds = await getMediaDuration(parsedMovie.path);
-  parsedMovie.duration = durationInSeconds;
-  parsedMovie.durationLimit =
-    Math.floor(parsedMovie.duration / 1800) * 1800 +
-    (parsedMovie.duration % 1800 > 0 ? 1800 : 0);
+
+  try {
+    let durationInSeconds = await getMediaDuration(parsedMovie.path);
+    parsedMovie.duration = durationInSeconds;
+    parsedMovie.durationLimit =
+      Math.floor(parsedMovie.duration / 1800) * 1800 +
+      (parsedMovie.duration % 1800 > 0 ? 1800 : 0);
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    throw new Error(
+      `Cannot process movie "${parsedMovie.title}": ${errorMessage}`,
+    );
+  }
 
   return parsedMovie;
 }

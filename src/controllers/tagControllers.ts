@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { validationResult } from 'express-validator';
 import { tagRepository } from '../repositories/tagsRepository';
 import { isValidTagType } from '../models/const/tagTypes';
+import { Tag } from '../models/tag';
 
 export async function createTagHandler(
   req: Request,
@@ -39,7 +40,8 @@ export async function createTagHandler(
   }
 
   try {
-    tagRepository.create(req.body);
+    const tagObject = Tag.fromRequestObject(req.body);
+    tagRepository.create(tagObject);
     res.status(200).json({ message: `Tag ${req.body.name} Created` });
   } catch (error: any) {
     if (error.message.includes('already exists')) {

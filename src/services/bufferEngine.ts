@@ -4,13 +4,14 @@ import { Commercial } from '../models/commercial';
 import { Short } from '../models/short';
 import { Music } from '../models/music';
 import { IStreamRequest } from '../models/streamRequest';
+import { MediaTag } from '../models/const/tagTypes';
 import { keyNormalizer } from '../utils/utilities';
 import { SegmentedTags } from '../models/segmentedTags';
 import { segmentTags } from './dataTransformer';
 import { BaseMedia } from '../models/mediaInterface';
-import { sumMediaDuration } from '../prisms/core';
+import { sumMediaDuration, tagNamesFrom, getTagName } from '../prisms/core';
 import { getMediaByAgeGroupHierarchy } from '../prisms/spectrum';
-import { getMediaByMosaicTags } from '../prisms/mosaic';
+// import { getMediaByMosaicTags } from '../prisms/mosaic';
 import { Mosaic } from '../models/mosaic';
 
 export function createBuffer(
@@ -18,8 +19,8 @@ export function createBuffer(
   args: IStreamRequest,
   media: Media,
   mosaics: Mosaic[],
-  halfATags: string[],
-  halfBTags: string[],
+  halfATags: MediaTag[],
+  halfBTags: MediaTag[],
   prevBuff: Media,
   holidays: string[],
 ): {
@@ -47,11 +48,11 @@ export function createBuffer(
   // TODO - not sure why Im even checking MainTags here, it might not be necessary
 
   //Get Holiday Tags from the options
-  let selectedHolidayTags: string[] = getHolidayTags(args.Tags, holidays);
+  let selectedHolidayTags: MediaTag[] = getHolidayTags(args.Tags, holidays);
 
   // Get the promos for the environment
   let envPromos: Promo[] = media.promos.filter(promo =>
-    promo.tags.includes(keyNormalizer(args.Env)),
+    tagNamesFrom(promo.tags).includes(keyNormalizer(args.Env)),
   );
 
   if (envPromos.length === 0) {
@@ -228,11 +229,15 @@ export function createBuffer(
   }
 }
 
-export function getHolidayTags(tags: string[], holidays: string[]): string[] {
-  let holidayTags: string[] = [];
+export function getHolidayTags(
+  tags: MediaTag[] | string[],
+  holidays: string[],
+): MediaTag[] {
+  let holidayTags: MediaTag[] = [];
   tags.forEach(tag => {
-    if (holidays.includes(tag)) {
-      holidayTags.push(tag);
+    const name = typeof tag === 'string' ? tag : tag.name;
+    if (holidays.includes(name)) {
+      holidayTags.push(tag as MediaTag);
     }
   });
   return holidayTags;
@@ -423,7 +428,7 @@ export function selectBufferMediaWithinDuration(
   tags: SegmentedTags,
   duration: number,
   alreadyUsedMedia: Media,
-  selectedHolidayTags: string[],
+  selectedHolidayTags: MediaTag[],
 ): {
   selectedMedia: (Commercial | Short | Music)[];
   segmentedSelectedMedia: Media;
@@ -453,22 +458,24 @@ export function selectBufferMediaWithinDuration(
     media.commercials,
     usedCommercials,
     tags,
-    [],
+    selectedHolidayTags,
     remainingDuration,
   );
-  const filteredMusic = getMediaByMosaicTags(
-    media.music,
-    usedMusic,
-    tags,
-    mosaics,
-    [],
-    remainingDuration,
-  );
+  const filteredMusic = [] as Music[];
+  //TODO
+  // const filteredMusic = getMediaByMosaicTags(
+  //   media.music,
+  //   usedMusic,
+  //   tags,
+  //   mosaics,
+  //   [],
+  //   remainingDuration,
+  // );
   const filteredShorts = getMediaByAgeGroupHierarchy(
     media.shorts,
     usedShorts,
     tags,
-    [],
+    selectedHolidayTags,
     remainingDuration,
   );
   /*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*/

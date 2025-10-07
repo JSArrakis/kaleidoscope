@@ -1,6 +1,7 @@
 import { AgeGroups } from '../../src/models/const/ageGroups';
 import { Eras } from '../../src/models/const/eras';
 import { MainGenres } from '../../src/models/const/mainGenres';
+import { makeTag } from '../utils/tagFactory';
 import { MediaType } from '../../src/models/enum/mediaTypes';
 import { Short } from '../../src/models/short';
 
@@ -11,10 +12,10 @@ export const code8 = new Short(
   '/path/code8.mp4',
   MediaType.Short,
   [
-    MainGenres.Action,
-    MainGenres.SciFi,
-    AgeGroups.YoungAdult,
-    Eras.twothousands,
+    makeTag(MainGenres.Action),
+    makeTag(MainGenres.SciFi),
+    makeTag(AgeGroups.YoungAdult, 'AgeGroup'),
+    makeTag(Eras.twothousands, 'Era'),
   ],
 );
 export const lightsout = new Short(
@@ -23,7 +24,11 @@ export const lightsout = new Short(
   180,
   '/path/lightsout.mp4',
   MediaType.Short,
-  [MainGenres.Horror, AgeGroups.Mature, Eras.twothousands],
+  [
+    makeTag(MainGenres.Horror),
+    makeTag(AgeGroups.Mature, 'AgeGroup'),
+    makeTag(Eras.twothousands, 'Era'),
+  ],
 );
 export const rakka = new Short(
   'Rakka',
@@ -31,7 +36,11 @@ export const rakka = new Short(
   480,
   '/path/rakka.mp4',
   MediaType.Short,
-  [MainGenres.SciFi, AgeGroups.Mature, Eras.twothousands],
+  [
+    makeTag(MainGenres.SciFi),
+    makeTag(AgeGroups.Mature, 'AgeGroup'),
+    makeTag(Eras.twothousands, 'Era'),
+  ],
 );
 export const theblackhole = new Short(
   'The Black Hole',
@@ -40,10 +49,10 @@ export const theblackhole = new Short(
   '/path/theblackhole.mp4',
   MediaType.Short,
   [
-    MainGenres.SciFi,
-    MainGenres.Horror,
-    AgeGroups.YoungAdult,
-    Eras.twothousands,
+    makeTag(MainGenres.SciFi),
+    makeTag(MainGenres.Horror),
+    makeTag(AgeGroups.YoungAdult, 'AgeGroup'),
+    makeTag(Eras.twothousands, 'Era'),
   ],
 );
 export const cargo = new Short(
@@ -52,7 +61,11 @@ export const cargo = new Short(
   420,
   '/path/cargo.mp4',
   MediaType.Short,
-  [MainGenres.Horror, AgeGroups.Mature, Eras.twothousands],
+  [
+    makeTag(MainGenres.Horror),
+    makeTag(AgeGroups.Mature, 'AgeGroup'),
+    makeTag(Eras.twothousands, 'Era'),
+  ],
 );
 export const dust = new Short(
   'Dust',
@@ -61,10 +74,10 @@ export const dust = new Short(
   '/path/dust.mp4',
   MediaType.Short,
   [
-    MainGenres.SciFi,
-    MainGenres.Action,
-    AgeGroups.YoungAdult,
-    Eras.twothousands,
+    makeTag(MainGenres.SciFi),
+    makeTag(MainGenres.Action),
+    makeTag(AgeGroups.YoungAdult, 'AgeGroup'),
+    makeTag(Eras.twothousands, 'Era'),
   ],
 );
 export const portal = new Short(
@@ -74,10 +87,10 @@ export const portal = new Short(
   '/path/portal.mp4',
   MediaType.Short,
   [
-    MainGenres.SciFi,
-    MainGenres.Action,
-    AgeGroups.YoungAdult,
-    Eras.twothousands,
+    makeTag(MainGenres.SciFi),
+    makeTag(MainGenres.Action),
+    makeTag(AgeGroups.YoungAdult, 'AgeGroup'),
+    makeTag(Eras.twothousands, 'Era'),
   ],
 );
 export const thegate = new Short(
@@ -86,7 +99,12 @@ export const thegate = new Short(
   360,
   '/path/thegate.mp4',
   MediaType.Short,
-  [MainGenres.Horror, MainGenres.Action, AgeGroups.Mature, Eras.twothousands],
+  [
+    makeTag(MainGenres.Horror),
+    makeTag(MainGenres.Action),
+    makeTag(AgeGroups.Mature, 'AgeGroup'),
+    makeTag(Eras.twothousands, 'Era'),
+  ],
 );
 export const alienharvest = new Short(
   'Alien: Harvest',
@@ -94,7 +112,12 @@ export const alienharvest = new Short(
   540,
   '/path/alienharvest.mp4',
   MediaType.Short,
-  [MainGenres.SciFi, MainGenres.Horror, AgeGroups.Mature, Eras.twothousands],
+  [
+    makeTag(MainGenres.SciFi),
+    makeTag(MainGenres.Horror),
+    makeTag(AgeGroups.Mature, 'AgeGroup'),
+    makeTag(Eras.twothousands, 'Era'),
+  ],
 );
 export const adam = new Short(
   'Adam',
@@ -102,7 +125,11 @@ export const adam = new Short(
   540,
   '/path/adam.mp4',
   MediaType.Short,
-  [MainGenres.SciFi, AgeGroups.YoungAdult, Eras.twothousands],
+  [
+    makeTag(MainGenres.SciFi),
+    makeTag(AgeGroups.YoungAdult, 'AgeGroup'),
+    makeTag(Eras.twothousands, 'Era'),
+  ],
 );
 
 export const gopherBroke = new Short(
@@ -111,7 +138,11 @@ export const gopherBroke = new Short(
   300,
   '/path/gopherbroke.mp4',
   MediaType.Short,
-  [MainGenres.Adventure, AgeGroups.Family, Eras.twothousands],
+  [
+    makeTag(MainGenres.Adventure),
+    makeTag(AgeGroups.Family, 'AgeGroup'),
+    makeTag(Eras.twothousands, 'Era'),
+  ],
 );
 
 export const forTheBirds = new Short(
@@ -120,7 +151,11 @@ export const forTheBirds = new Short(
   240,
   '/path/forthebirds.mp4',
   MediaType.Short,
-  [MainGenres.Adventure, AgeGroups.Family, Eras.nnineties],
+  [
+    makeTag(MainGenres.Adventure),
+    makeTag(AgeGroups.Family, 'AgeGroup'),
+    makeTag(Eras.nnineties, 'Era'),
+  ],
 );
 
 export const boundin = new Short(
@@ -129,7 +164,11 @@ export const boundin = new Short(
   300,
   '/path/boundin.mp4',
   MediaType.Short,
-  [MainGenres.Adventure, AgeGroups.Family, Eras.twothousands],
+  [
+    makeTag(MainGenres.Adventure),
+    makeTag(AgeGroups.Family, 'AgeGroup'),
+    makeTag(Eras.twothousands, 'Era'),
+  ],
 );
 
 export const tinToy = new Short(
@@ -138,7 +177,12 @@ export const tinToy = new Short(
   300,
   '/path/tintoy.mp4',
   MediaType.Short,
-  [MainGenres.Adventure, MainGenres.SciFi, AgeGroups.Kids, Eras.nnineties],
+  [
+    makeTag(MainGenres.Adventure),
+    makeTag(MainGenres.SciFi),
+    makeTag(AgeGroups.Kids, 'AgeGroup'),
+    makeTag(Eras.nnineties, 'Era'),
+  ],
 );
 
 export const theAdventuresOfAndreAndWallyB = new Short(
@@ -147,7 +191,12 @@ export const theAdventuresOfAndreAndWallyB = new Short(
   120,
   '/path/andreandwallyb.mp4',
   MediaType.Short,
-  [MainGenres.Adventure, MainGenres.SciFi, AgeGroups.Kids, Eras.nnineties],
+  [
+    makeTag(MainGenres.Adventure),
+    makeTag(MainGenres.SciFi),
+    makeTag(AgeGroups.Kids, 'AgeGroup'),
+    makeTag(Eras.nnineties, 'Era'),
+  ],
 );
 
 export const luxoJunior = new Short(
@@ -156,7 +205,11 @@ export const luxoJunior = new Short(
   120,
   '/path/luxojunior.mp4',
   MediaType.Short,
-  [MainGenres.Adventure, AgeGroups.Kids, Eras.nnineties],
+  [
+    makeTag(MainGenres.Adventure),
+    makeTag(AgeGroups.Kids, 'AgeGroup'),
+    makeTag(Eras.nnineties, 'Era'),
+  ],
 );
 
 export const oneManBand = new Short(
@@ -165,7 +218,11 @@ export const oneManBand = new Short(
   300,
   '/path/onemanband.mp4',
   MediaType.Short,
-  [MainGenres.Adventure, AgeGroups.Family, Eras.twothousands],
+  [
+    makeTag(MainGenres.Adventure),
+    makeTag(AgeGroups.Family, 'AgeGroup'),
+    makeTag(Eras.twothousands, 'Era'),
+  ],
 );
 
 export const lifted = new Short(
@@ -174,7 +231,11 @@ export const lifted = new Short(
   300,
   '/path/lifted.mp4',
   MediaType.Short,
-  [MainGenres.SciFi, AgeGroups.Kids, Eras.twothousands],
+  [
+    makeTag(MainGenres.SciFi),
+    makeTag(AgeGroups.Kids, 'AgeGroup'),
+    makeTag(Eras.twothousands, 'Era'),
+  ],
 );
 
 export const knickknack = new Short(
@@ -183,7 +244,11 @@ export const knickknack = new Short(
   240,
   '/path/knickknack.mp4',
   MediaType.Short,
-  [MainGenres.Adventure, AgeGroups.Kids, Eras.nnineties],
+  [
+    makeTag(MainGenres.Adventure),
+    makeTag(AgeGroups.Kids, 'AgeGroup'),
+    makeTag(Eras.nnineties, 'Era'),
+  ],
 );
 
 export const partlyCloudy = new Short(
@@ -192,7 +257,11 @@ export const partlyCloudy = new Short(
   300,
   '/path/partlycloudy.mp4',
   MediaType.Short,
-  [MainGenres.Adventure, AgeGroups.Family, Eras.twothousands],
+  [
+    makeTag(MainGenres.Adventure),
+    makeTag(AgeGroups.Family, 'AgeGroup'),
+    makeTag(Eras.twothousands, 'Era'),
+  ],
 );
 
 export const presto = new Short(
@@ -201,7 +270,11 @@ export const presto = new Short(
   300,
   '/path/presto.mp4',
   MediaType.Short,
-  [MainGenres.Adventure, AgeGroups.Kids, Eras.twothousands],
+  [
+    makeTag(MainGenres.Adventure),
+    makeTag(AgeGroups.Kids, 'AgeGroup'),
+    makeTag(Eras.twothousands, 'Era'),
+  ],
 );
 
 export const gerisGame = new Short(
@@ -210,7 +283,11 @@ export const gerisGame = new Short(
   240,
   '/path/gerisgame.mp4',
   MediaType.Short,
-  [MainGenres.Adventure, AgeGroups.Family, Eras.nnineties],
+  [
+    makeTag(MainGenres.Adventure),
+    makeTag(AgeGroups.Family, 'AgeGroup'),
+    makeTag(Eras.nnineties, 'Era'),
+  ],
 );
 
 export const shorts = [

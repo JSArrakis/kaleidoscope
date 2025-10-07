@@ -5,12 +5,13 @@ import { StreamType } from '../models/enum/streamTypes';
 import { IStreamRequest } from '../models/streamRequest';
 import { Mosaic } from '../models/mosaic';
 import { Holiday } from '../models/holiday';
+import { parseMonthDayToCurrentYear } from '../utils/utilities';
 
 let media: Media = new Media([], [], [], [], [], [], [], [], []);
 let holidays: Holiday[] = [];
 let currentHolidays: Holiday[] = [];
 let mosaics: Mosaic[] = [];
-let streamType: StreamType;
+let streamType: StreamType = StreamType.Adhoc;
 let args: IStreamRequest;
 
 export function setStreamType(value: StreamType): void {
@@ -63,12 +64,15 @@ export function setCurrentHolidays(): void {
   currentHolidays = holidays.filter(holiday => {
     const today = new Date();
     if (holiday.seasonStartDate && holiday.seasonEndDate) {
-      return (
-        today >= new Date(holiday.seasonStartDate) &&
-        today <= new Date(holiday.seasonEndDate)
-      );
+      const seasonStart = parseMonthDayToCurrentYear(holiday.seasonStartDate);
+      const seasonEnd = parseMonthDayToCurrentYear(holiday.seasonEndDate);
+      return today >= seasonStart && today <= seasonEnd;
     } else {
-      return holiday.holidayDates.includes(today.toISOString().split('T')[0]);
+      // Check if any of the holiday dates match today's date
+      return holiday.holidayDates.some(holidayDate => {
+        const parsedHolidayDate = parseMonthDayToCurrentYear(holidayDate);
+        return today.toDateString() === parsedHolidayDate.toDateString();
+      });
     }
   });
 }

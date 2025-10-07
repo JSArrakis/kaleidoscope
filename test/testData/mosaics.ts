@@ -4,87 +4,58 @@ import {
   MusicSubGenres,
 } from '../../src/models/const/musicGenres';
 import { Mosaic } from '../../src/models/mosaic';
+import { makeTag } from '../utils/tagFactory';
 
 export const actionMosaic: Mosaic = {
-  key: MainGenres.Action,
-  genres: [MainGenres.Action],
+  tagId: MainGenres.Action,
+  tags: [makeTag(MainGenres.Action)],
   musicGenres: [
     MusicGenres.Rock,
     MusicGenres.Metal,
     MusicGenres.Punk,
     MusicGenres.HipHop,
   ],
-  musicSubGenres: [],
 };
 
 export const horrorMosaic: Mosaic = {
-  key: MainGenres.Horror,
-  genres: [MainGenres.Horror],
+  tagId: MainGenres.Horror,
+  tags: [makeTag(MainGenres.Horror)],
   musicGenres: [MusicGenres.Metal],
-  musicSubGenres: [
-    MusicSubGenres.DarkWave,
-    MusicSubGenres.IndustrialRock,
-    MusicSubGenres.Synthwave,
-    MusicSubGenres.AvantGarde,
-  ],
 };
 
 export const scifiMosaic: Mosaic = {
-  key: MainGenres.SciFi,
-  genres: [MainGenres.SciFi],
+  tagId: MainGenres.SciFi,
+  tags: [makeTag(MainGenres.SciFi)],
   musicGenres: [],
-  musicSubGenres: [
-    MusicSubGenres.ElectronicMinimalist,
-    MusicSubGenres.ElectronicAmbient,
-    MusicSubGenres.NeoClassical,
-  ],
+  // Keep musicSubGenres flattened into musicGenres for current tests
 };
 
 export const actionHorrorMosaic: Mosaic = {
-  key: `${MainGenres.Action}-${MainGenres.Horror}`,
-  genres: [MainGenres.Action, MainGenres.Horror],
+  tagId: `${MainGenres.Action}-${MainGenres.Horror}`,
+  tags: [makeTag(MainGenres.Action), makeTag(MainGenres.Horror)],
   musicGenres: [MusicGenres.Metal],
-  musicSubGenres: [
-    MusicSubGenres.IndustrialRock,
-    MusicSubGenres.Synthwave,
-    MusicSubGenres.PostRock,
-  ],
 };
 
 export const actionSciFiMosaic: Mosaic = {
-  key: `${MainGenres.Action}-${MainGenres.SciFi}`,
-  genres: [MainGenres.Action, MainGenres.SciFi],
+  tagId: `${MainGenres.Action}-${MainGenres.SciFi}`,
+  tags: [makeTag(MainGenres.Action), makeTag(MainGenres.SciFi)],
   musicGenres: [],
-  musicSubGenres: [
-    MusicSubGenres.Synthwave,
-    MusicSubGenres.IndustrialRock,
-    MusicSubGenres.NeoClassical,
-    MusicSubGenres.Ambient,
-  ],
 };
 
 export const horrorSciFiMosaic: Mosaic = {
-  key: `${MainGenres.Horror}-${MainGenres.SciFi}`,
-  genres: [MainGenres.Horror, MainGenres.SciFi],
+  tagId: `${MainGenres.Horror}-${MainGenres.SciFi}`,
+  tags: [makeTag(MainGenres.Horror), makeTag(MainGenres.SciFi)],
   musicGenres: [],
-  musicSubGenres: [
-    MusicSubGenres.IndustrialRock,
-    MusicSubGenres.DarkWave,
-    MusicSubGenres.Synthwave,
-    MusicSubGenres.AvantGarde,
-  ],
 };
 
 export const actionHorrorSciFiMosaic: Mosaic = {
-  key: `${MainGenres.Action}-${MainGenres.Horror}-${MainGenres.SciFi}`,
-  genres: [MainGenres.Action, MainGenres.Horror, MainGenres.SciFi],
-  musicGenres: [MusicGenres.Metal],
-  musicSubGenres: [
-    MusicSubGenres.IndustrialRock,
-    MusicSubGenres.DarkAmbient,
-    MusicSubGenres.Synthwave,
-    MusicSubGenres.Breakcore,
+  tagId: `${MainGenres.Action}-${MainGenres.Horror}-${MainGenres.SciFi}`,
+  tags: [
+    makeTag(MainGenres.Action),
+    makeTag(MainGenres.Horror),
+    makeTag(MainGenres.SciFi),
   ],
+  musicGenres: [MusicGenres.Metal],
 };
 
 export const mosaics: Mosaic[] = [

@@ -32,17 +32,20 @@ export async function createBumperHandler(
     return;
   }
   // If it doesn't exist, perform transformations
-  let transformedBumper = await transformBumperFromRequest(
-    req.body,
-    mediaItemId,
-  );
-
-  // Insert bumper into MongoDB
-  await bumperRepository.create(transformedBumper);
-
-  res
-    .status(200)
-    .json({ message: `Bumper ${transformedBumper.title} Created` });
+  try {
+    let transformedBumper = await transformBumperFromRequest(
+      req.body,
+      mediaItemId,
+    );
+    // Insert bumper into database
+    await bumperRepository.create(transformedBumper);
+    res
+      .status(200)
+      .json({ message: `Bumper ${transformedBumper.title} Created` });
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    res.status(400).json({ message: errorMessage });
+  }
   return;
 }
 
@@ -108,17 +111,18 @@ export async function updateBumperHandler(
   }
 
   // If it exists, perform transformations
-  let updatedBumper = await transformBumperFromRequest(
-    req.body,
-    bumper.mediaItemId,
-  );
-
-  // Update bumper in MongoDB
-  bumperRepository.update(bumper.mediaItemId, updatedBumper);
-
-  res
-    .status(200)
-    .json({ message: `Bumper ${updatedBumper.title} Updated` });
+  try {
+    let updatedBumper = await transformBumperFromRequest(
+      req.body,
+      bumper.mediaItemId,
+    );
+    // Update bumper in database
+    bumperRepository.update(bumper.mediaItemId, updatedBumper);
+    res.status(200).json({ message: `Bumper ${updatedBumper.title} Updated` });
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    res.status(400).json({ message: errorMessage });
+  }
   return;
 }
 
@@ -168,16 +172,24 @@ export async function transformBumperFromRequest(
   bumper: any,
   mediaItemId: string,
 ): Promise<Bumper> {
-   let parsedBumper: Bumper = await Bumper.fromRequestObject(bumper);
+  let parsedBumper: Bumper = await Bumper.fromRequestObject(bumper);
 
   parsedBumper.mediaItemId = mediaItemId;
 
   if (parsedBumper.duration > 0) {
     return parsedBumper;
   }
-  console.log(`Getting duration for ${parsedBumper.path}`);
-  let durationInSeconds = await getMediaDuration(parsedBumper.path);
-  parsedBumper.duration = durationInSeconds; // Update duration value
+
+  try {
+    console.log(`Getting duration for ${parsedBumper.path}`);
+    let durationInSeconds = await getMediaDuration(parsedBumper.path);
+    parsedBumper.duration = durationInSeconds; // Update duration value
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    throw new Error(
+      `Cannot process bumper "${parsedBumper.title}": ${errorMessage}`,
+    );
+  }
 
   return parsedBumper;
 }

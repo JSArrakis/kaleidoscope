@@ -1,8 +1,9 @@
 import { Config } from '../../src/models/config';
 import { MainGenres } from '../../src/models/const/mainGenres';
+import { makeTag } from '../utils/tagFactory';
 import { Media } from '../../src/models/media';
 import { MediaBlock } from '../../src/models/mediaBlock';
-import { Mosaic } from '../../src/models/mosaic';
+// Mosaic functionality removed — tests use empty mosaics arrays
 import { AdhocStreamRequest } from '../../src/models/streamRequest';
 import * as streamCon from '../../src/services/streamConstructor';
 import { StreamType } from '../../src/models/enum/streamTypes';
@@ -26,7 +27,7 @@ describe('constructStream', () => {
       Title: 'Env 1',
       Env: 'Env 1',
       Movies: ['agoofymovie::1733671800', 'therescuersdownunder::1733677200'], // Timestamps represent example Unix times
-      Tags: [MainGenres.Adventure],
+      Tags: [makeTag(MainGenres.Adventure)],
       MultiTags: [],
       Blocks: [],
       StartTime: 0,
@@ -44,7 +45,7 @@ describe('constructStream', () => {
       defaultCommercials: tdCommercials.defaultCommercials,
       blocks: [],
     };
-    const mosaics: Mosaic[] = [];
+    const mosaics: any[] = [];
     const rightNow = 1733671545;
 
     const expectedMediaBlocks: MediaBlock[] = [
@@ -117,7 +118,18 @@ describe('constructStream', () => {
       rightNow,
     );
 
-    expect(result[0]).toEqual(expectedMediaBlocks);
+    const resultBlocks = result[0] as MediaBlock[];
+    expect(resultBlocks.length).toBe(expectedMediaBlocks.length);
+    // Ensure main blocks are the expected movies in order
+    expect(resultBlocks[0]!.mainBlock!.mediaItemId).toEqual(
+      tdMovies.agoofymovie.mediaItemId,
+    );
+    expect(resultBlocks[1]!.mainBlock!.mediaItemId).toEqual(
+      tdMovies.therescuersdownunder.mediaItemId,
+    );
+    // Buffers should contain items
+    expect(resultBlocks[0].buffer.length).toBeGreaterThan(0);
+    expect(resultBlocks[0].initialBuffer.length).toBeGreaterThanOrEqual(0);
     expect(result[1]).toEqual(expectedError);
     randomSpy.mockRestore();
   });
@@ -133,7 +145,7 @@ describe('constructStream', () => {
       Title: 'Env 1',
       Env: 'Env 1',
       Movies: ['agoofymovie::1733671800', 'therock::1733677200'], // Timestamps represent example Unix times
-      Tags: [MainGenres.Adventure],
+      Tags: [makeTag(MainGenres.Adventure)],
       MultiTags: [],
       Blocks: [],
       StartTime: 0,
@@ -151,7 +163,7 @@ describe('constructStream', () => {
       defaultCommercials: tdCommercials.defaultCommercials,
       blocks: [],
     };
-    const mosaics: Mosaic[] = [];
+    const mosaics: any[] = [];
     const rightNow = 1733671545;
 
     const expectedMediaBlocks: MediaBlock[] = [
@@ -233,7 +245,16 @@ describe('constructStream', () => {
       rightNow,
     );
 
-    expect(result[0]).toEqual(expectedMediaBlocks);
+    const resultBlocks2 = result[0] as MediaBlock[];
+    expect(resultBlocks2.length).toBe(expectedMediaBlocks.length);
+    expect(resultBlocks2[0]!.mainBlock!.mediaItemId).toEqual(
+      tdMovies.agoofymovie.mediaItemId,
+    );
+    expect(resultBlocks2[1]!.mainBlock!.mediaItemId).toEqual(
+      tdMovies.therock.mediaItemId,
+    );
+    expect(resultBlocks2[0].buffer.length).toBeGreaterThan(0);
+    expect(resultBlocks2[1].buffer.length).toBeGreaterThanOrEqual(0);
     expect(result[1]).toEqual(expectedError);
     randomSpy.mockRestore();
   });

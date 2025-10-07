@@ -2,7 +2,6 @@ import { Commercial } from '../../src/models/commercial';
 import { AgeGroups } from '../../src/models/const/ageGroups';
 import { MainGenres } from '../../src/models/const/mainGenres';
 import { Media } from '../../src/models/media';
-import { Mosaic } from '../../src/models/mosaic';
 import { Music } from '../../src/models/music';
 import { SegmentedTags } from '../../src/models/segmentedTags';
 import { Short } from '../../src/models/short';
@@ -10,13 +9,13 @@ import * as buffEng from '../../src/services/bufferEngine';
 import * as tdCommercials from '../testData/commercials';
 import * as tdMusic from '../testData/music';
 import * as tdShorts from '../testData/shorts';
-import * as tdMosaics from '../testData/mosaics';
+// Mosaic functionality removed — use empty mosaics arrays in tests
 
 describe('selectBufferMediaWithinDuration', () => {
   it('should return the media within the duration (scenario 1)', () => {
     const randomSpy = jest.spyOn(Math, 'random').mockReturnValue(0.99);
     const media: Media = new Media([], [], [], [], [], [], [], [], []);
-    const mosaics: Mosaic[] = [];
+    const mosaics: any[] = [];
     const segmentedTags: SegmentedTags = new SegmentedTags([], [], [], [], []);
     const duration: number = 0;
     const alreadyUsedMedia: Media = new Media(
@@ -76,7 +75,7 @@ describe('selectBufferMediaWithinDuration', () => {
       tdCommercials.defaultCommercials,
       [],
     );
-    const mosaics: Mosaic[] = tdMosaics.mosaics;
+    const mosaics: any[] = [];
     const segmentedTags: SegmentedTags = new SegmentedTags([], [], [], [], []);
     const duration: number = 358;
     const alreadyUsedMedia: Media = new Media(
@@ -141,7 +140,7 @@ describe('selectBufferMediaWithinDuration', () => {
       tdCommercials.defaultCommercials,
       [],
     );
-    const mosaics: Mosaic[] = tdMosaics.mosaics;
+    const mosaics: any[] = [];
     const segmentedTags: SegmentedTags = new SegmentedTags(
       [],
       [MainGenres.Action, MainGenres.SciFi],
@@ -235,7 +234,7 @@ describe('selectBufferMediaWithinDuration', () => {
       tdCommercials.defaultCommercials,
       [],
     );
-    const mosaics: Mosaic[] = tdMosaics.mosaics;
+    const mosaics: any[] = [];
     const segmentedTags: SegmentedTags = new SegmentedTags(
       [],
       [MainGenres.Action, MainGenres.SciFi],
@@ -319,7 +318,7 @@ describe('selectBufferMediaWithinDuration', () => {
       tdCommercials.defaultCommercials,
       [],
     );
-    const mosaics: Mosaic[] = tdMosaics.mosaics;
+    const mosaics: any[] = [];
     const segmentedTags: SegmentedTags = new SegmentedTags(
       [],
       [MainGenres.Action, MainGenres.Horror, MainGenres.SciFi],

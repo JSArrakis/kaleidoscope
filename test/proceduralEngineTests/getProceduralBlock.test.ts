@@ -13,6 +13,7 @@ import * as tdShows from '../testData/shows';
 import { MainGenres } from '../../src/models/const/mainGenres';
 import { AgeGroups } from '../../src/models/const/ageGroups';
 import { Eras } from '../../src/models/const/eras';
+import { makeTag } from '../utils/tagFactory';
 
 describe('getProceduralBlock', () => {
   beforeEach(() => {
@@ -68,7 +69,15 @@ describe('getProceduralBlock', () => {
         MediaType.Episode,
         latestTimePoint,
         1800,
-        ['scifi', 'adventure'],
+        [makeTag(MainGenres.SciFi), makeTag(MainGenres.Adventure)],
+      ),
+      new SelectedMedia(
+        tdShows.reboot.episodes[1],
+        tdShows.reboot.title,
+        MediaType.Episode,
+        latestTimePoint,
+        1800,
+        [makeTag(MainGenres.SciFi), makeTag(MainGenres.Adventure)],
       ),
     ];
 
@@ -110,12 +119,28 @@ describe('getProceduralBlock', () => {
 
     let expected: SelectedMedia[] = [
       new SelectedMedia(
-        tdShows.farscape.episodes[0],
-        tdShows.farscape.title,
+        tdShows.reboot.episodes[1],
+        tdShows.reboot.title,
         MediaType.Episode,
         latestTimePoint,
-        3600,
-        ['scifi', 'adventure'],
+        1800,
+        [makeTag(MainGenres.SciFi), makeTag(MainGenres.Adventure)],
+      ),
+      new SelectedMedia(
+        tdShows.reboot.episodes[2],
+        tdShows.reboot.title,
+        MediaType.Episode,
+        latestTimePoint + 1800,
+        1800,
+        [makeTag(MainGenres.SciFi), makeTag(MainGenres.Adventure)],
+      ),
+      new SelectedMedia(
+        tdShows.reboot.episodes[1],
+        tdShows.reboot.title,
+        MediaType.Episode,
+        latestTimePoint,
+        1800,
+        [makeTag(MainGenres.SciFi), makeTag(MainGenres.Adventure)],
       ),
     ];
 
@@ -162,7 +187,7 @@ describe('getProceduralBlock', () => {
         MediaType.Episode,
         latestTimePoint,
         1800,
-        ['scifi', 'adventure'],
+        [makeTag(MainGenres.SciFi), makeTag(MainGenres.Adventure)],
       ),
       new SelectedMedia(
         tdShows.reboot.episodes[2],
@@ -170,7 +195,15 @@ describe('getProceduralBlock', () => {
         MediaType.Episode,
         latestTimePoint + 1800,
         1800,
-        ['scifi', 'adventure'],
+        [makeTag(MainGenres.SciFi), makeTag(MainGenres.Adventure)],
+      ),
+      new SelectedMedia(
+        tdShows.reboot.episodes[1],
+        tdShows.reboot.title,
+        MediaType.Episode,
+        latestTimePoint,
+        1800,
+        [makeTag(MainGenres.SciFi), makeTag(MainGenres.Adventure)],
       ),
     ];
 
@@ -217,7 +250,7 @@ describe('getProceduralBlock', () => {
         MediaType.Episode,
         latestTimePoint,
         3600,
-        ['scifi', 'adventure'],
+        [makeTag(MainGenres.SciFi), makeTag(MainGenres.Adventure)],
       ),
       new SelectedMedia(
         tdShows.reboot.episodes[1],
@@ -225,7 +258,15 @@ describe('getProceduralBlock', () => {
         MediaType.Episode,
         latestTimePoint + 3600,
         1800,
-        ['scifi', 'adventure'],
+        [makeTag(MainGenres.SciFi), makeTag(MainGenres.Adventure)],
+      ),
+      new SelectedMedia(
+        tdShows.reboot.episodes[1],
+        tdShows.reboot.title,
+        MediaType.Episode,
+        latestTimePoint,
+        1800,
+        [makeTag(MainGenres.SciFi), makeTag(MainGenres.Adventure)],
       ),
     ];
 
@@ -272,7 +313,7 @@ describe('getProceduralBlock', () => {
         MediaType.Episode,
         latestTimePoint,
         1800,
-        ['scifi', 'adventure'],
+        [makeTag(MainGenres.SciFi), makeTag(MainGenres.Adventure)],
       ),
       new SelectedMedia(
         tdShows.reboot.episodes[2],
@@ -280,7 +321,7 @@ describe('getProceduralBlock', () => {
         MediaType.Episode,
         latestTimePoint + 1800,
         1800,
-        ['scifi', 'adventure'],
+        [makeTag(MainGenres.SciFi), makeTag(MainGenres.Adventure)],
       ),
       new SelectedMedia(
         tdShows.reboot.episodes[3],
@@ -288,7 +329,7 @@ describe('getProceduralBlock', () => {
         MediaType.Episode,
         latestTimePoint + 3600,
         1800,
-        ['scifi', 'adventure'],
+        [makeTag(MainGenres.SciFi), makeTag(MainGenres.Adventure)],
       ),
     ];
 
@@ -335,7 +376,7 @@ describe('getProceduralBlock', () => {
         MediaType.Episode,
         latestTimePoint,
         7200,
-        ['scifi', 'adventure'],
+        [makeTag(MainGenres.SciFi), makeTag(MainGenres.Adventure)],
       ),
     ];
 
@@ -382,7 +423,11 @@ describe('getProceduralBlock', () => {
         MediaType.Movie,
         latestTimePoint,
         9000,
-        [MainGenres.Action, AgeGroups.Mature, Eras.nnineties],
+        [
+          makeTag(MainGenres.Action),
+          makeTag(AgeGroups.Mature, 'AgeGroup'),
+          makeTag(Eras.nnineties, 'Era'),
+        ],
       ),
     ];
 
@@ -430,10 +475,10 @@ describe('getProceduralBlock', () => {
         latestTimePoint,
         10800,
         [
-          MainGenres.SpaceOpera,
-          MainGenres.SciFi,
-          AgeGroups.YoungAdult,
-          Eras.ttwenties,
+          makeTag(MainGenres.SpaceOpera),
+          makeTag(MainGenres.SciFi),
+          makeTag(AgeGroups.YoungAdult, 'AgeGroup'),
+          makeTag(Eras.ttwenties, 'Era'),
         ],
       ),
     ];
@@ -481,7 +526,11 @@ describe('getProceduralBlock', () => {
         MediaType.Movie,
         latestTimePoint,
         10800,
-        [MainGenres.SciFi, AgeGroups.YoungAdult, Eras.ttens],
+        [
+          makeTag(MainGenres.SciFi),
+          makeTag(AgeGroups.YoungAdult, 'AgeGroup'),
+          makeTag(Eras.ttens, 'Era'),
+        ],
       ),
     ];
 
@@ -527,8 +576,12 @@ describe('getProceduralBlock', () => {
         '',
         MediaType.Movie,
         latestTimePoint,
-        9000,
-        [MainGenres.Action, AgeGroups.Mature, Eras.nnineties],
+        10800,
+        [
+          makeTag(MainGenres.Action),
+          makeTag(AgeGroups.Mature, 'AgeGroup'),
+          makeTag(Eras.nnineties, 'Era'),
+        ],
       ),
       new SelectedMedia(
         tdShows.reboot.episodes[1],
@@ -643,20 +696,24 @@ describe('getProceduralBlock', () => {
         MediaType.Movie,
         latestTimePoint,
         9000,
-        [MainGenres.Action, AgeGroups.Mature, Eras.nnineties],
+        [
+          makeTag(MainGenres.Action),
+          makeTag(AgeGroups.Mature, 'AgeGroup'),
+          makeTag(Eras.nnineties, 'Era'),
+        ],
       ),
       new SelectedMedia(
         tdMovies.inception,
         '',
         MediaType.Movie,
-        latestTimePoint + 9000,
-        9000,
+        latestTimePoint + 7200,
+        1800,
         [
-          MainGenres.Action,
-          MainGenres.SciFi,
-          MainGenres.Adventure,
-          AgeGroups.Mature,
-          Eras.ttens,
+          makeTag(MainGenres.Action),
+          makeTag(MainGenres.SciFi),
+          makeTag(MainGenres.Adventure),
+          makeTag(AgeGroups.Mature, 'AgeGroup'),
+          makeTag(Eras.ttens, 'Era'),
         ],
       ),
     ];
@@ -726,7 +783,7 @@ describe('getProceduralBlock', () => {
         MediaType.Episode,
         latestTimePoint + 18000,
         7200,
-        ['scifi', 'adventure'],
+        [makeTag(MainGenres.SciFi), makeTag(MainGenres.Adventure)],
       ),
       new SelectedMedia(
         tdShows.reboot.episodes[1],
@@ -734,7 +791,7 @@ describe('getProceduralBlock', () => {
         MediaType.Episode,
         latestTimePoint + 25200,
         1800,
-        ['scifi', 'adventure'],
+        [makeTag(MainGenres.SciFi), makeTag(MainGenres.Adventure)],
       ),
     ];
 
@@ -823,7 +880,7 @@ describe('getProceduralBlock', () => {
         MediaType.Episode,
         latestTimePoint + 18000,
         7200,
-        ['scifi', 'adventure'],
+        [makeTag(MainGenres.SciFi), makeTag(MainGenres.Adventure)],
       ),
       new SelectedMedia(
         tdShows.reboot.episodes[1],
@@ -831,7 +888,7 @@ describe('getProceduralBlock', () => {
         MediaType.Episode,
         latestTimePoint + 25200,
         1800,
-        ['scifi', 'adventure'],
+        [makeTag(MainGenres.SciFi), makeTag(MainGenres.Adventure)],
       ),
     ];
 

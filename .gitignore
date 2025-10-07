@@ -133,3 +133,7 @@ dist
 # Ignore all files in /data/promo but keep the directory structure
 /data/promo/*
 !/data/promo/.gitkeep
+
+# Other
+/conversation.md
+/TODOS.md

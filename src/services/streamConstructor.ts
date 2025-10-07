@@ -14,6 +14,7 @@ import { StreamType } from '../models/enum/streamTypes';
 import { ManageShowProgression } from './progressionManager';
 import { IStreamRequest } from '../models/streamRequest';
 import { Mosaic } from '../models/mosaic';
+import { MediaTag } from '../models/const/tagTypes';
 
 export function constructStream(
   config: Config,
@@ -195,15 +196,15 @@ export function constructStream(
 //     */
 
 //     /*
-    // -- Author note:: A good example of this is with the summer 2000 broadcast of Toonami with Tenchi Muyo.
-    // Tenchi has a few episodes that are weirdly 45 minutes instead of 30 minutes randomly with no real rhyme
-    // or reason. To handle this randomness, Toonami in it's original broadcast pulled the episode of Batman the
-    // Animated series which usually followed Tenchi for that day only and populated the remainder of the
-    // 15 minutes that would have normally been Batman with Power Puff Girl episodes instead. This allowed
-    // Toonami to keep the fidelity of a 3 hour block run time and decreasing dead time and keeping interest of the
-    // audience while staying within theme (Toonami being a series of mostly violence driven animated shows
-    // in which the only Cartoon Network licensed property that fit in the alloted time slot that was also
-    // themed correctly was PPG)
+// -- Author note:: A good example of this is with the summer 2000 broadcast of Toonami with Tenchi Muyo.
+// Tenchi has a few episodes that are weirdly 45 minutes instead of 30 minutes randomly with no real rhyme
+// or reason. To handle this randomness, Toonami in it's original broadcast pulled the episode of Batman the
+// Animated series which usually followed Tenchi for that day only and populated the remainder of the
+// 15 minutes that would have normally been Batman with Power Puff Girl episodes instead. This allowed
+// Toonami to keep the fidelity of a 3 hour block run time and decreasing dead time and keeping interest of the
+// audience while staying within theme (Toonami being a series of mostly violence driven animated shows
+// in which the only Cartoon Network licensed property that fit in the alloted time slot that was also
+// themed correctly was PPG)
 //     */
 //     let remainder = 0;
 //     let stream: string[] = [];
@@ -407,20 +408,33 @@ export function setProceduralTags(
   stagedMedia: StagedMedia,
 ): void {
   if (options.MultiTags.length === 0 && options.Tags.length === 0) {
-    let tagList: string[] = [];
+    let tagList: MediaTag[] = [];
     stagedMedia.injectedMovies.forEach(inj => tagList.push(...inj.media.tags));
     stagedMedia.scheduledMedia.forEach(sch => tagList.push(...sch.media.tags));
-    let uniquetags: string[] = [];
+    let uniquetags: MediaTag[] = [];
     //Filter out duplicate tags
     tagList.forEach(tag => {
-      if (!uniquetags.includes(tag)) {
+      const tagName = typeof tag === 'string' ? tag : tag.name;
+      const exists = uniquetags.some(existing => {
+        const existingName =
+          typeof existing === 'string' ? existing : existing.name;
+        return existingName === tagName;
+      });
+      if (!exists) {
         uniquetags.push(tag);
       }
     });
+
+    // If no tags are present at all after filtering, use intelligent starting tag selection
+    if (uniquetags.length === 0) {
+      console.log(
+        '📋 No tags found from scheduled/injected media - using intelligent tag selection',
+      );
+      uniquetags = selectIntelligentStartingTags();
+    }
+
     options.Tags = uniquetags;
     //TODO: v1.4 Create different combos of tags for multitags to give a more streamlined experience
-
-    //TODO - If no tags are present at all, we should default to all base genre tags
   }
 }
 
@@ -638,4 +652,238 @@ export function assignBlockEpisodes(
       ep => ep.episodeNumber === episodeNum,
     )[0];
   });
+}
+
+/**
+ * Checks if a given tag has associated media in any media type
+ */
+function hasMediaWithTag(media: any, tag: any): boolean {
+  const tagName = tag.name;
+
+  // Check movies
+  if (
+    media.movies &&
+    media.movies.some(
+      (movie: any) =>
+        movie.tags &&
+        movie.tags.some(
+          (t: any) => (typeof t === 'string' ? t : t.name) === tagName,
+        ),
+    )
+  ) {
+    return true;
+  }
+
+  // Check shows
+  if (
+    media.shows &&
+    media.shows.some(
+      (show: any) =>
+        show.tags &&
+        show.tags.some(
+          (t: any) => (typeof t === 'string' ? t : t.name) === tagName,
+        ),
+    )
+  ) {
+    return true;
+  }
+
+  // Check music
+  if (
+    media.music &&
+    media.music.some(
+      (music: any) =>
+        music.tags &&
+        music.tags.some(
+          (t: any) => (typeof t === 'string' ? t : t.name) === tagName,
+        ),
+    )
+  ) {
+    return true;
+  }
+
+  // Check shorts
+  if (
+    media.shorts &&
+    media.shorts.some(
+      (short: any) =>
+        short.tags &&
+        short.tags.some(
+          (t: any) => (typeof t === 'string' ? t : t.name) === tagName,
+        ),
+    )
+  ) {
+    return true;
+  }
+
+  // Could also check commercials, promos, etc. if needed for tag selection
+
+  return false;
+}
+
+/**
+ * Gets a random selection of default genres - pure random approach with no biases
+ * Validates that selected tags actually have associated media in the database
+ */
+function getRandomDefaultGenres(): any[] {
+  const { getMedia } = require('./mediaService');
+  const { tagRepository } = require('../repositories/tagsRepository');
+
+  console.log(
+    '🎲 Using pure random genre selection - no time-based or other preferences applied',
+  );
+  console.log(
+    '📝 Future enhancement: User-configurable programming preferences (time-based, mood-based, etc.)',
+  );
+
+  // Get all available genre tags from the database
+  const availableGenreTags = tagRepository.findByType('Genre');
+
+  if (!availableGenreTags || availableGenreTags.length === 0) {
+    console.log('⚠️  No genre tags found in database - returning empty array');
+    return [];
+  }
+
+  console.log(
+    `📚 Found ${availableGenreTags.length} total genre tags in database`,
+  );
+
+  // Get current media to validate against
+  const media = getMedia();
+
+  // Find genre tags that actually have associated media
+  const validGenreTags = availableGenreTags.filter((tag: any) =>
+    hasMediaWithTag(media, tag),
+  );
+
+  if (validGenreTags.length === 0) {
+    console.log(
+      '⚠️  No genre tags found with associated media - returning empty array',
+    );
+    return [];
+  }
+
+  console.log(
+    `✅ Found ${validGenreTags.length} genre tags with associated media`,
+  );
+
+  // Use crypto for better randomness if available, otherwise use Math.random with timestamp seed
+  let randomSeed: number;
+  try {
+    const crypto = require('crypto');
+    randomSeed = crypto.randomBytes(4).readUInt32BE(0);
+  } catch (e) {
+    // Fallback to timestamp-based seed for better randomness than default Math.random
+    randomSeed = Date.now() + Math.floor(Math.random() * 1000);
+  }
+
+  // Create a seeded random number generator for reproducible randomness in testing if needed
+  const seedRandom = (seed: number) => {
+    let s = seed;
+    return () => {
+      s = Math.sin(s) * 10000;
+      return s - Math.floor(s);
+    };
+  };
+
+  const random = seedRandom(randomSeed);
+
+  // Select 3-5 random genres for variety without being too broad
+  const numGenresToSelect = Math.floor(random() * 3) + 3; // Random between 3-5
+  const selectedGenres: any[] = [];
+
+  // Fisher-Yates shuffle algorithm for truly random selection
+  const shuffledTags = [...validGenreTags];
+  for (let i = shuffledTags.length - 1; i > 0; i--) {
+    const j = Math.floor(random() * (i + 1));
+    [shuffledTags[i], shuffledTags[j]] = [shuffledTags[j], shuffledTags[i]];
+  }
+
+  // Take the first N shuffled tags
+  selectedGenres.push(
+    ...shuffledTags.slice(0, Math.min(numGenresToSelect, shuffledTags.length)),
+  );
+
+  console.log(
+    `🎯 Selected ${selectedGenres.length} random genres with verified media: ${selectedGenres.map((g: any) => g.name).join(', ')}`,
+  );
+  console.log(
+    `🎲 Random seed used: ${randomSeed} (ensures different selection each time)`,
+  );
+
+  return selectedGenres;
+}
+
+/**
+ * Gets complementary genres that work well with active holidays
+ * Note: This is ONLY for holiday-specific programming, not general time-based preferences
+ */
+function getHolidayComplementaryGenres(holidays: any[]): any[] {
+  const complementaryGenres: any[] = [];
+
+  console.log(
+    '🎄 Applying holiday-specific genre preferences (not general programming preferences)',
+  );
+
+  // Holiday-specific genre mapping - this is contextually appropriate unlike general time preferences
+  holidays.forEach((holiday: any) => {
+    const holidayName = holiday.name?.toLowerCase() || '';
+
+    if (holidayName.includes('christmas') || holidayName.includes('winter')) {
+      // Christmas/Winter: Family, Fantasy, Romance
+      console.log('🎅 Adding winter holiday genres: Family, Fantasy, Romance');
+    } else if (holidayName.includes('halloween')) {
+      // Halloween: Horror, Mystery, Thriller
+      console.log('🎃 Adding Halloween genres: Horror, Mystery, Thriller');
+    } else if (holidayName.includes('valentine')) {
+      // Valentine's: Romance, Comedy, Drama
+      console.log("💝 Adding Valentine's genres: Romance, Comedy, Drama");
+    } else {
+      // Generic holiday: Family-friendly content
+      console.log('🎊 Adding generic holiday genres: Family, Comedy');
+    }
+  });
+
+  return complementaryGenres;
+}
+
+/**
+ * Intelligently selects starting tags for continuous streams based on:
+ * - Current holidays and seasons (when active)
+ * - Pure random genre selection (clean, unbiased fallback)
+ * Note: Time-based programming removed - should be user-configurable feature, not default behavior
+ */
+export function selectIntelligentStartingTags(): any[] {
+  const { getCurrentHolidays } = require('./mediaService');
+
+  let selectedTags: any[] = [];
+
+  // 1. Check for active holidays first
+  const activeHolidays = getCurrentHolidays();
+  if (activeHolidays && activeHolidays.length > 0) {
+    // Add holiday tags directly
+    selectedTags.push(...activeHolidays);
+
+    console.log(
+      `🎄 Active holidays detected: ${activeHolidays.map((h: any) => h.name).join(', ')}`,
+    );
+    console.log('🎯 Using holiday-based programming for continuous stream');
+
+    // Add complementary genres based on holiday characteristics
+    selectedTags.push(...getHolidayComplementaryGenres(activeHolidays));
+
+    return selectedTags;
+  }
+
+  // 2. Pure random selection when no holidays are active - cleanest approach
+  console.log(
+    `🎲 No active holidays found. Using random genre selection for continuous stream`,
+  );
+
+  selectedTags = getRandomDefaultGenres();
+
+  console.log(
+    `🎬 Selected ${selectedTags.length} random genres for continuous stream`,
+  );
+  return selectedTags;
 }

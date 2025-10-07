@@ -1,6 +1,7 @@
 import { Episode, Show } from '../../src/models/show';
+import { ageGroupTags, aestheticTags, eraTags, genreTags } from './tags';
 
-export const sailor = new Show(
+export const sailormoon = new Show(
   'Sailor Moon',
   'sailormoon',
   'sailormoon',
@@ -8,7 +9,15 @@ export const sailor = new Show(
   1800,
   false,
   false,
-  ['fantasy', 'action'],
+  [
+    genreTags.action,
+    genreTags.romance,
+    genreTags.drama,
+    aestheticTags.anime,
+    aestheticTags.fantasy,
+    ageGroupTags.family,
+    eraTags.nineties,
+  ],
   [],
   5,
   [
@@ -82,7 +91,14 @@ export const reboot = new Show(
   1800,
   false,
   false,
-  ['scifi', 'adventure'],
+  [
+    genreTags.adventure,
+    genreTags.action,
+    aestheticTags.cgi,
+    aestheticTags.fantasy,
+    ageGroupTags.family,
+    eraTags.nineties,
+  ],
   [],
   5,
   [
@@ -156,7 +172,15 @@ export const dragonballz = new Show(
   1800,
   false,
   false,
-  ['action', 'adventure'],
+  [
+    genreTags.action,
+    genreTags.adventure,
+    aestheticTags.anime,
+    aestheticTags.fantasy,
+    aestheticTags.superhero,
+    ageGroupTags.family,
+    eraTags.nineties,
+  ],
   [],
   5,
   [
@@ -222,7 +246,7 @@ export const dragonballz = new Show(
     ),
   ],
 );
-export const gundam = new Show(
+export const gundamwing = new Show(
   'Gundam Wing',
   'gundamwing',
   'gundamwing',
@@ -230,7 +254,16 @@ export const gundam = new Show(
   1800,
   false,
   false,
-  ['scifi', 'action'],
+  [
+    genreTags.action,
+    genreTags.scifi,
+    genreTags.drama,
+    aestheticTags.anime,
+    aestheticTags.mecha,
+    aestheticTags.military,
+    ageGroupTags.youngAdult,
+    eraTags.nineties,
+  ],
   [],
   5,
   [
@@ -296,7 +329,7 @@ export const gundam = new Show(
     ),
   ],
 );
-export const tenchi = new Show(
+export const tenchimuyo = new Show(
   'Tenchi Muyo',
   'tenchimuyo',
   'tenchimuyo',
@@ -304,7 +337,14 @@ export const tenchi = new Show(
   1800,
   true,
   false,
-  ['scifi', 'comedy'],
+  [
+    genreTags.comedy,
+    genreTags.romance,
+    aestheticTags.anime,
+    aestheticTags.spaceOpera,
+    ageGroupTags.youngAdult,
+    eraTags.nineties,
+  ],
   [],
   5,
   [
@@ -370,7 +410,7 @@ export const tenchi = new Show(
     ),
   ],
 );
-export const batman = new Show(
+export const batmantheanimatedseries = new Show(
   'Batman: The Animated Series',
   'batmantheanimatedseries',
   'batman',
@@ -378,7 +418,16 @@ export const batman = new Show(
   1800,
   false,
   false,
-  ['action', 'drama'],
+  [
+    genreTags.action,
+    genreTags.drama,
+    genreTags.crime,
+    aestheticTags.animation,
+    aestheticTags.superhero,
+    aestheticTags.noir,
+    ageGroupTags.family,
+    eraTags.nineties,
+  ],
   [],
   5,
   [
@@ -444,7 +493,7 @@ export const batman = new Show(
     ),
   ],
 );
-export const startrek = new Show(
+export const startrekthenextgeneration = new Show(
   'Star Trek: The Next Generation',
   'startrekthenextgeneration',
   'startrek',
@@ -452,7 +501,14 @@ export const startrek = new Show(
   3600,
   true,
   true,
-  ['scifi', 'adventure'],
+  [
+    genreTags.scifi,
+    genreTags.adventure,
+    genreTags.drama,
+    aestheticTags.spaceOpera,
+    ageGroupTags.youngAdult,
+    eraTags.nineties,
+  ],
   [],
   5,
   [
@@ -527,7 +583,15 @@ export const farscape = new Show(
   3600,
   false,
   false,
-  ['scifi', 'adventure'],
+  [
+    genreTags.scifi,
+    genreTags.adventure,
+    genreTags.drama,
+    aestheticTags.spaceOpera,
+    aestheticTags.fantasy,
+    ageGroupTags.youngAdult,
+    eraTags.twothousands,
+  ],
   [],
   5,
   [
@@ -602,7 +666,14 @@ export const talespin = new Show(
   1800,
   false,
   false,
-  ['adventure', 'comedy'],
+  [
+    genreTags.adventure,
+    genreTags.comedy,
+    aestheticTags.animation,
+    aestheticTags.historical,
+    ageGroupTags.kids,
+    eraTags.nineties,
+  ],
   [],
   5,
   [

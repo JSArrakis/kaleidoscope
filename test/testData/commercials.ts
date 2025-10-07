@@ -1,7 +1,6 @@
 import { Commercial } from '../../src/models/commercial';
 import { AgeGroups } from '../../src/models/const/ageGroups';
 import { Eras } from '../../src/models/const/eras';
-import { MainGenres } from '../../src/models/const/mainGenres';
 import { MediaType } from '../../src/models/enum/mediaTypes';
 
 export const jurassicparktoys1 = new Commercial(
@@ -10,7 +9,12 @@ export const jurassicparktoys1 = new Commercial(
   10,
   '/path/jurassicparktoys1.mp4',
   MediaType.Commercial,
-  ['jurassicpark', MainGenres.Action, AgeGroups.Kids, Eras.nnineties],
+  [
+    makeTag('jurassicpark'),
+    makeTag(MainGenres.Action),
+    makeTag(AgeGroups.Kids, 'AgeGroup'),
+    makeTag(Eras.nnineties, 'Era'),
+  ],
 );
 export const marvelvsstreetfighter98 = new Commercial(
   '98 Marvel vs StreetFighter',
@@ -19,11 +23,11 @@ export const marvelvsstreetfighter98 = new Commercial(
   '/path/98marvelvsstreetfighter.mp4',
   MediaType.Commercial,
   [
-    'marvel',
-    'streetfighter',
-    MainGenres.Action,
-    AgeGroups.Kids,
-    Eras.nnineties,
+    makeTag('marvel'),
+    makeTag('streetfighter'),
+    makeTag(MainGenres.Action),
+    makeTag(AgeGroups.Kids, 'AgeGroup'),
+    makeTag(Eras.nnineties, 'Era'),
   ],
 );
 export const wildones = new Commercial(
@@ -32,7 +36,11 @@ export const wildones = new Commercial(
   15,
   '/path/wildones.mp4',
   MediaType.Commercial,
-  [MainGenres.Action, AgeGroups.Kids, Eras.nnineties],
+  [
+    makeTag(MainGenres.Action),
+    makeTag(AgeGroups.Kids, 'AgeGroup'),
+    makeTag(Eras.nnineties, 'Era'),
+  ],
 );
 export const dreambuilders = new Commercial(
   'Dream Builders',
@@ -40,7 +48,7 @@ export const dreambuilders = new Commercial(
   15,
   '/path/dreambuilders.mp4',
   MediaType.Commercial,
-  [AgeGroups.Kids, Eras.nnineties],
+  [makeTag(AgeGroups.Kids, 'AgeGroup'), makeTag(Eras.nnineties, 'Era')],
 );
 export const jurassicparktoys2 = new Commercial(
   '93 Jurassic Park Toys 2',
@@ -48,7 +56,12 @@ export const jurassicparktoys2 = new Commercial(
   15,
   '/path/jurassicparktoys2.mp4',
   MediaType.Commercial,
-  ['jurassicpark', MainGenres.Action, AgeGroups.Kids, Eras.nnineties],
+  [
+    makeTag('jurassicpark'),
+    makeTag(MainGenres.Action),
+    makeTag(AgeGroups.Kids, 'AgeGroup'),
+    makeTag(Eras.nnineties, 'Era'),
+  ],
 );
 export const jurassicparktoys3 = new Commercial(
   '93 Jurassic Park Toys 3',
@@ -56,7 +69,12 @@ export const jurassicparktoys3 = new Commercial(
   15,
   '/path/jurassicparktoys3.mp4',
   MediaType.Commercial,
-  ['jurassicpark', MainGenres.Action, AgeGroups.Kids, Eras.nnineties],
+  [
+    makeTag('jurassicpark'),
+    makeTag(MainGenres.Action),
+    makeTag(AgeGroups.Kids, 'AgeGroup'),
+    makeTag(Eras.nnineties, 'Era'),
+  ],
 );
 export const littleoopsiedaisy = new Commercial(
   'Little Oopsie Daisy',
@@ -64,7 +82,7 @@ export const littleoopsiedaisy = new Commercial(
   15,
   '/path/littleoopsiedaisy.mp4',
   MediaType.Commercial,
-  [AgeGroups.Kids, Eras.nnineties],
+  [makeTag(AgeGroups.Kids, 'AgeGroup'), makeTag(Eras.nnineties, 'Era')],
 );
 export const meninblacktoys97 = new Commercial(
   '97 Men in Black Toys',
@@ -73,11 +91,11 @@ export const meninblacktoys97 = new Commercial(
   '/path/97meninblacktoys.mp4',
   MediaType.Commercial,
   [
-    'meninblack',
-    MainGenres.SciFi,
-    MainGenres.Action,
-    AgeGroups.Kids,
-    Eras.nnineties,
+    makeTag('meninblack'),
+    makeTag(MainGenres.SciFi),
+    makeTag(MainGenres.Action),
+    makeTag(AgeGroups.Kids, 'AgeGroup'),
+    makeTag(Eras.nnineties, 'Era'),
   ],
 );
 export const monsterfacetoy = new Commercial(
@@ -86,7 +104,12 @@ export const monsterfacetoy = new Commercial(
   15,
   '/path/monsterfacetoy.mp4',
   MediaType.Commercial,
-  ['halloween', MainGenres.Horror, AgeGroups.Kids, Eras.nnineties],
+  [
+    makeTag('halloween'),
+    makeTag(MainGenres.Horror),
+    makeTag(AgeGroups.Kids, 'AgeGroup'),
+    makeTag(Eras.nnineties, 'Era'),
+  ],
 );
 export const newbluemms = new Commercial(
   'New Blue M&Ms',
@@ -94,7 +117,7 @@ export const newbluemms = new Commercial(
   15,
   '/path/newbluemms.mp4',
   MediaType.Commercial,
-  [AgeGroups.AllAges, Eras.nnineties],
+  [makeTag(AgeGroups.AllAges, 'AgeGroup'), makeTag(Eras.nnineties, 'Era')],
 );
 export const superduperdoublelooper = new Commercial(
   'Super Duper Double Looper',
@@ -102,7 +125,11 @@ export const superduperdoublelooper = new Commercial(
   15,
   '/path/superduperdoublelooper.mp4',
   MediaType.Commercial,
-  [MainGenres.Action, AgeGroups.Kids, Eras.nnineties],
+  [
+    makeTag(MainGenres.Action),
+    makeTag(AgeGroups.Kids, 'AgeGroup'),
+    makeTag(Eras.nnineties, 'Era'),
+  ],
 );
 export const transformersbeastwarstoys = new Commercial(
   'Transformers Beast Wars Toys',
@@ -111,11 +138,11 @@ export const transformersbeastwarstoys = new Commercial(
   '/path/transformersbeastwarstoys.mp4',
   MediaType.Commercial,
   [
-    'transformers',
-    MainGenres.SciFi,
-    MainGenres.Action,
-    AgeGroups.Kids,
-    Eras.nnineties,
+    makeTag('transformers'),
+    makeTag(MainGenres.SciFi),
+    makeTag(MainGenres.Action),
+    makeTag(AgeGroups.Kids, 'AgeGroup'),
+    makeTag(Eras.nnineties, 'Era'),
   ],
 );
 export const gamegear1 = new Commercial(
@@ -124,7 +151,7 @@ export const gamegear1 = new Commercial(
   26,
   '/path/gamegear1.mp4',
   MediaType.Commercial,
-  [AgeGroups.Kids, Eras.nnineties],
+  [makeTag(AgeGroups.Kids, 'AgeGroup'), makeTag(Eras.nnineties, 'Era')],
 );
 export const sonicandknuckles1 = new Commercial(
   'Sonic and Knuckles 1',
@@ -132,7 +159,7 @@ export const sonicandknuckles1 = new Commercial(
   30,
   '/path/sonicandknuckles1.mp4',
   MediaType.Commercial,
-  [AgeGroups.Kids, Eras.nnineties],
+  [makeTag(AgeGroups.Kids, 'AgeGroup'), makeTag(Eras.nnineties, 'Era')],
 );
 export const banjokazooie1 = new Commercial(
   'Banjo Kazooie 1',
@@ -140,7 +167,7 @@ export const banjokazooie1 = new Commercial(
   30,
   '/path/banjokazooie1.mp4',
   MediaType.Commercial,
-  [AgeGroups.Kids, Eras.nnineties],
+  [makeTag(AgeGroups.Kids, 'AgeGroup'), makeTag(Eras.nnineties, 'Era')],
 );
 export const fzero1 = new Commercial(
   'F-Zero 1',
@@ -148,7 +175,7 @@ export const fzero1 = new Commercial(
   30,
   '/path/fzero1.mp4',
   MediaType.Commercial,
-  [AgeGroups.Kids, Eras.nnineties],
+  [makeTag(AgeGroups.Kids, 'AgeGroup'), makeTag(Eras.nnineties, 'Era')],
 );
 export const gauntletlegends1 = new Commercial(
   'Gauntlet Legends 1',
@@ -156,7 +183,7 @@ export const gauntletlegends1 = new Commercial(
   30,
   '/path/gauntletlegends1.mp4',
   MediaType.Commercial,
-  [AgeGroups.Kids, Eras.nnineties],
+  [makeTag(AgeGroups.Kids, 'AgeGroup'), makeTag(Eras.nnineties, 'Era')],
 );
 export const halloween711 = new Commercial(
   'Halloween 7-11',
@@ -164,7 +191,11 @@ export const halloween711 = new Commercial(
   30,
   '/path/halloween711.mp4',
   MediaType.Commercial,
-  ['halloween', AgeGroups.AllAges, Eras.nnineties],
+  [
+    makeTag('halloween'),
+    makeTag(AgeGroups.AllAges, 'AgeGroup'),
+    makeTag(Eras.nnineties, 'Era'),
+  ],
 );
 export const alientrailer1 = new Commercial(
   'Alien Trailer 1',
@@ -173,11 +204,11 @@ export const alientrailer1 = new Commercial(
   '/path/alientrailer1.mp4',
   MediaType.Commercial,
   [
-    'alien',
-    MainGenres.SciFi,
-    MainGenres.Horror,
-    AgeGroups.Mature,
-    Eras.nseventies,
+    makeTag('alien'),
+    makeTag(MainGenres.SciFi),
+    makeTag(MainGenres.Horror),
+    makeTag(AgeGroups.Mature, 'AgeGroup'),
+    makeTag(Eras.nseventies, 'Era'),
   ],
 );
 export const americanwerewolfinlondontrailer1 = new Commercial(
@@ -186,7 +217,11 @@ export const americanwerewolfinlondontrailer1 = new Commercial(
   30,
   '/path/americanwerewolfinlondontrailer1.mp4',
   MediaType.Commercial,
-  [MainGenres.Horror, AgeGroups.Mature, Eras.neighties],
+  [
+    makeTag(MainGenres.Horror),
+    makeTag(AgeGroups.Mature, 'AgeGroup'),
+    makeTag(Eras.neighties, 'Era'),
+  ],
 );
 export const beetlejuicetrailer1 = new Commercial(
   'Beetlejuice Trailer 1',
@@ -194,7 +229,12 @@ export const beetlejuicetrailer1 = new Commercial(
   30,
   '/path/beetlejuicetrailer1.mp4',
   MediaType.Commercial,
-  [MainGenres.Horror, MainGenres.Comedy, AgeGroups.YoungAdult, Eras.neighties],
+  [
+    makeTag(MainGenres.Horror),
+    makeTag(MainGenres.Comedy),
+    makeTag(AgeGroups.YoungAdult, 'AgeGroup'),
+    makeTag(Eras.neighties, 'Era'),
+  ],
 );
 export const ocarinaoftimetrailer1 = new Commercial(
   'Ocarina of Time Trailer 1',
@@ -202,7 +242,7 @@ export const ocarinaoftimetrailer1 = new Commercial(
   62,
   '/path/ocarinaoftimetrailer1.mp4',
   MediaType.Commercial,
-  [AgeGroups.Kids, Eras.nnineties],
+  [makeTag(AgeGroups.Kids, 'AgeGroup'), makeTag(Eras.nnineties, 'Era')],
 );
 export const ijustshippedmybed = new Commercial(
   'I Just Shipped My Bed',
@@ -210,7 +250,11 @@ export const ijustshippedmybed = new Commercial(
   69,
   '/path/ijustshippedmybed.mp4',
   MediaType.Commercial,
-  [MainGenres.Comedy, AgeGroups.AllAges, Eras.ttens],
+  [
+    makeTag(MainGenres.Comedy),
+    makeTag(AgeGroups.AllAges, 'AgeGroup'),
+    makeTag(Eras.ttens, 'Era'),
+  ],
 );
 export const cornpopsgolf = new Commercial(
   'Corn Pops Golf',
@@ -218,7 +262,7 @@ export const cornpopsgolf = new Commercial(
   30,
   '/path/cornpopsgolf.mp4',
   MediaType.Commercial,
-  [AgeGroups.Kids, Eras.nnineties],
+  [makeTag(AgeGroups.Kids, 'AgeGroup'), makeTag(Eras.nnineties, 'Era')],
 );
 export const blacktronlegomaniac = new Commercial(
   'Blacktron Lego Maniac',
@@ -226,7 +270,11 @@ export const blacktronlegomaniac = new Commercial(
   30,
   '/path/blacktronlegomaniac.mp4',
   MediaType.Commercial,
-  ['lego', AgeGroups.Kids, Eras.nnineties],
+  [
+    makeTag('lego'),
+    makeTag(AgeGroups.Kids, 'AgeGroup'),
+    makeTag(Eras.nnineties, 'Era'),
+  ],
 );
 export const starttrektoys = new Commercial(
   'Star Trek Toys',
@@ -234,7 +282,12 @@ export const starttrektoys = new Commercial(
   30,
   '/path/starttrektoys.mp4',
   MediaType.Commercial,
-  ['startrek', MainGenres.SciFi, AgeGroups.Kids, Eras.nnineties],
+  [
+    makeTag('startrek'),
+    makeTag(MainGenres.SciFi),
+    makeTag(AgeGroups.Kids, 'AgeGroup'),
+    makeTag(Eras.nnineties, 'Era'),
+  ],
 );
 export const sharkbitesfruitsnacks = new Commercial(
   'Shark Bites Fruit Snacks',
@@ -242,7 +295,7 @@ export const sharkbitesfruitsnacks = new Commercial(
   30,
   '/path/sharkbitesfruitsnacks.mp4',
   MediaType.Commercial,
-  [AgeGroups.Kids, Eras.nnineties],
+  [makeTag(AgeGroups.Kids, 'AgeGroup'), makeTag(Eras.nnineties, 'Era')],
 );
 export const ricecrispiescerealtalks = new Commercial(
   'Rice Crispies Cereal Talks',
@@ -250,7 +303,7 @@ export const ricecrispiescerealtalks = new Commercial(
   30,
   '/path/ricecrispiescerealtalks.mp4',
   MediaType.Commercial,
-  [AgeGroups.Kids, Eras.nnineties],
+  [makeTag(AgeGroups.Kids, 'AgeGroup'), makeTag(Eras.nnineties, 'Era')],
 );
 export const pizzahutxmen = new Commercial(
   'Pizza Hut X-Men',
@@ -258,7 +311,13 @@ export const pizzahutxmen = new Commercial(
   30,
   '/path/pizzahutxmen.mp4',
   MediaType.Commercial,
-  ['xmen', 'marvel', MainGenres.Action, AgeGroups.Kids, Eras.nnineties],
+  [
+    makeTag('xmen'),
+    makeTag('marvel'),
+    makeTag(MainGenres.Action),
+    makeTag(AgeGroups.Kids, 'AgeGroup'),
+    makeTag(Eras.nnineties, 'Era'),
+  ],
 );
 export const mcdonaldscrush = new Commercial(
   'McDonalds Crush',
@@ -266,7 +325,7 @@ export const mcdonaldscrush = new Commercial(
   30,
   '/path/mcdonaldscrush.mp4',
   MediaType.Commercial,
-  [AgeGroups.Kids, Eras.nnineties],
+  [makeTag(AgeGroups.Kids, 'AgeGroup'), makeTag(Eras.nnineties, 'Era')],
 );
 export const transformers80s1 = new Commercial(
   'Transformers 80s 1',
@@ -275,11 +334,11 @@ export const transformers80s1 = new Commercial(
   '/path/transformers80s1.mp4',
   MediaType.Commercial,
   [
-    'transformers',
-    MainGenres.Action,
-    MainGenres.SciFi,
-    AgeGroups.Kids,
-    Eras.neighties,
+    makeTag('transformers'),
+    makeTag(MainGenres.Action),
+    makeTag(MainGenres.SciFi),
+    makeTag(AgeGroups.Kids, 'AgeGroup'),
+    makeTag(Eras.neighties, 'Era'),
   ],
 );
 export const alienstoys1 = new Commercial(
@@ -289,12 +348,12 @@ export const alienstoys1 = new Commercial(
   '/path/alienstoys1.mp4',
   MediaType.Commercial,
   [
-    'alien',
-    MainGenres.Horror,
-    MainGenres.Action,
-    MainGenres.SciFi,
-    AgeGroups.Kids,
-    Eras.nnineties,
+    makeTag('alien'),
+    makeTag(MainGenres.Horror),
+    makeTag(MainGenres.Action),
+    makeTag(MainGenres.SciFi),
+    makeTag(AgeGroups.Kids, 'AgeGroup'),
+    makeTag(Eras.nnineties, 'Era'),
   ],
 );
 export const jurassicpark3toys = new Commercial(
@@ -303,7 +362,12 @@ export const jurassicpark3toys = new Commercial(
   30,
   '/path/jurassicpark3toys.mp4',
   MediaType.Commercial,
-  ['jurassicpark', MainGenres.Action, AgeGroups.Kids, Eras.twothousands],
+  [
+    makeTag('jurassicpark'),
+    makeTag(MainGenres.Action),
+    makeTag(AgeGroups.Kids, 'AgeGroup'),
+    makeTag(Eras.twothousands, 'Era'),
+  ],
 );
 
 export const commercials = [
@@ -348,7 +412,7 @@ export const default1 = new Commercial(
   15,
   '/path/default1.mp4',
   MediaType.Commercial,
-  [AgeGroups.AllAges],
+  [makeTag(AgeGroups.AllAges, 'AgeGroup')],
 );
 export const default2 = new Commercial(
   'Default 2',
@@ -356,7 +420,7 @@ export const default2 = new Commercial(
   16,
   '/path/default2.mp4',
   MediaType.Commercial,
-  [AgeGroups.AllAges],
+  [makeTag(AgeGroups.AllAges, 'AgeGroup')],
 );
 export const default3 = new Commercial(
   'Default 3',
@@ -364,7 +428,7 @@ export const default3 = new Commercial(
   17,
   '/path/default3.mp4',
   MediaType.Commercial,
-  [AgeGroups.AllAges],
+  [makeTag(AgeGroups.AllAges, 'AgeGroup')],
 );
 export const default4 = new Commercial(
   'Default 4',
@@ -372,7 +436,7 @@ export const default4 = new Commercial(
   18,
   '/path/default4.mp4',
   MediaType.Commercial,
-  [AgeGroups.AllAges],
+  [makeTag(AgeGroups.AllAges, 'AgeGroup')],
 );
 export const default5 = new Commercial(
   'Default 5',
@@ -380,7 +444,7 @@ export const default5 = new Commercial(
   19,
   '/path/default5.mp4',
   MediaType.Commercial,
-  [AgeGroups.AllAges],
+  [makeTag(AgeGroups.AllAges, 'AgeGroup')],
 );
 export const default6 = new Commercial(
   'Default 6',
@@ -388,7 +452,7 @@ export const default6 = new Commercial(
   20,
   '/path/default6.mp4',
   MediaType.Commercial,
-  [AgeGroups.AllAges],
+  [makeTag(AgeGroups.AllAges, 'AgeGroup')],
 );
 export const default7 = new Commercial(
   'Default 7',
@@ -396,7 +460,7 @@ export const default7 = new Commercial(
   30,
   '/path/default7.mp4',
   MediaType.Commercial,
-  [AgeGroups.AllAges],
+  [makeTag(AgeGroups.AllAges, 'AgeGroup')],
 );
 export const default8 = new Commercial(
   'Default 8',
@@ -404,7 +468,7 @@ export const default8 = new Commercial(
   60,
   '/path/default8.mp4',
   MediaType.Commercial,
-  [AgeGroups.AllAges],
+  [makeTag(AgeGroups.AllAges, 'AgeGroup')],
 );
 export const default9 = new Commercial(
   'Default 9',
@@ -412,7 +476,7 @@ export const default9 = new Commercial(
   120,
   '/path/default9.mp4',
   MediaType.Commercial,
-  [AgeGroups.AllAges],
+  [makeTag(AgeGroups.AllAges, 'AgeGroup')],
 );
 
 export const defaultCommercials = [

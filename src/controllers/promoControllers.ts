@@ -17,7 +17,7 @@ export async function createPromoHandler(
 
   let mediaItemId = req.body.mediaItemId;
 
-  if( !mediaItemId) {
+  if (!mediaItemId) {
     res.status(400).json({ message: 'mediaItemId is required' });
     return;
   }
@@ -27,16 +27,26 @@ export async function createPromoHandler(
 
   // If it exists, return error
   if (promo) {
-    res.status(400).json({ message: `Promo with ID ${mediaItemId} already exists` });
+    res
+      .status(400)
+      .json({ message: `Promo with ID ${mediaItemId} already exists` });
     return;
   }
   // If it doesn't exist, perform transformations
-  let transformedPromo = await transformPromoFromRequest(req.body, mediaItemId);
-
-  // Insert promo into MongoDB
-  promoRepository.create(transformedPromo);
-
-  res.status(200).json({ message: `Promo ${transformedPromo.title} Created` });
+  try {
+    let transformedPromo = await transformPromoFromRequest(
+      req.body,
+      mediaItemId,
+    );
+    // Insert promo into database
+    promoRepository.create(transformedPromo);
+    res
+      .status(200)
+      .json({ message: `Promo ${transformedPromo.title} Created` });
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    res.status(400).json({ message: errorMessage });
+  }
   return;
 }
 
@@ -63,7 +73,9 @@ export async function deletePromoHandler(
 
   // If it doesn't exist, return error
   if (!promo) {
-    res.status(400).json({ message: `Promo with ID ${mediaItemId} does not exist` });
+    res
+      .status(400)
+      .json({ message: `Promo with ID ${mediaItemId} does not exist` });
     return;
   }
 
@@ -96,20 +108,25 @@ export async function updatePromoHandler(
 
   // If it doesn't exist, return error
   if (!promo) {
-    res.status(400).json({ message: `Promo with ID ${mediaItemId} does not exist` });
+    res
+      .status(400)
+      .json({ message: `Promo with ID ${mediaItemId} does not exist` });
     return;
   }
 
   // If it exists, perform transformations
-  let updatedPromo = await transformPromoFromRequest(
-    req.body,
-    promo.mediaItemId,
-  );
-
-  // Update promo in MongoDB
-  promoRepository.update(mediaItemId, updatedPromo);
-
-  res.status(200).json({ message: `Promo ${updatedPromo.title} Updated` });
+  try {
+    let updatedPromo = await transformPromoFromRequest(
+      req.body,
+      promo.mediaItemId,
+    );
+    // Update promo in database
+    promoRepository.update(mediaItemId, updatedPromo);
+    res.status(200).json({ message: `Promo ${updatedPromo.title} Updated` });
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    res.status(400).json({ message: errorMessage });
+  }
   return;
 }
 
@@ -135,7 +152,9 @@ export async function getPromoHandler(
 
   // If it doesn't exist, return error
   if (!promo) {
-    res.status(404).json({ message: `Promo with ID ${mediaItemId} does not exist` });
+    res
+      .status(404)
+      .json({ message: `Promo with ID ${mediaItemId} does not exist` });
     return;
   }
 
@@ -164,9 +183,17 @@ export async function transformPromoFromRequest(
   if (parsedPromo.duration > 0) {
     return parsedPromo;
   }
-  console.log(`Getting duration for ${parsedPromo.path}`);
-  let durationInSeconds = await getMediaDuration(parsedPromo.path);
-  parsedPromo.duration = durationInSeconds; // Update duration value
+
+  try {
+    console.log(`Getting duration for ${parsedPromo.path}`);
+    let durationInSeconds = await getMediaDuration(parsedPromo.path);
+    parsedPromo.duration = durationInSeconds; // Update duration value
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    throw new Error(
+      `Cannot process promo "${parsedPromo.title}": ${errorMessage}`,
+    );
+  }
 
   return parsedPromo;
 }

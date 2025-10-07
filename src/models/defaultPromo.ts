@@ -1,4 +1,5 @@
 import { MediaType } from './enum/mediaTypes';
+import { MediaTag } from './const/tagTypes';
 
 export interface IDefaultPromo {
   title: string;
@@ -6,7 +7,7 @@ export interface IDefaultPromo {
   duration: number;
   path: string;
   type: number;
-  tags: string[];
+  tags: MediaTag[];
 }
 
 export class DefaultPromo {
@@ -15,7 +16,7 @@ export class DefaultPromo {
   duration: number;
   path: string;
   type: number;
-  tags: string[];
+  tags: MediaTag[];
 
   constructor(
     title: string,
@@ -23,7 +24,7 @@ export class DefaultPromo {
     duration: number,
     path: string,
     type: number,
-    tags: string[],
+    tags: MediaTag[],
   ) {
     this.title = title;
     this.mediaItemId = mediaItemId;

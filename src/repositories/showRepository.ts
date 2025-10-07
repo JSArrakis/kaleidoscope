@@ -2,6 +2,7 @@ import { getDB } from '../db/sqlite';
 import { Show, Episode } from '../models/show';
 import { Tag } from '../models/tag';
 import { MediaTag } from '../models/const/tagTypes';
+import { tagRepository } from './tagsRepository';
 
 export class ShowRepository {
   private get db() {
@@ -138,7 +139,9 @@ export class ShowRepository {
       const showId = showIdRow.id;
 
       // Delete existing show tags
-      this.db.prepare('DELETE FROM show_tags WHERE mediaItemId = ?').run(mediaItemId);
+      this.db
+        .prepare('DELETE FROM show_tags WHERE mediaItemId = ?')
+        .run(mediaItemId);
 
       // Insert new show tags
       this.insertShowTags(mediaItemId, show.tags, 'primary');
@@ -235,8 +238,20 @@ export class ShowRepository {
     return transaction();
   }
 
-  // Find shows by tags (searches both primary and secondary tags)
-  findByTags(tagIds: string[]): Show[] {
+  // Find shows by tags (searches both primary and secondary tags) - accepts MediaTag[] or string[]
+  findByTags(tags: (MediaTag | string)[]): Show[] {
+    if (tags.length === 0) return [];
+
+    const tagIds: string[] = [];
+    for (const t of tags) {
+      if (typeof t === 'string') {
+        const found = tagRepository.findByNameIgnoreCase(t);
+        if (found) tagIds.push(found.tagId);
+      } else if ((t as any).tagId) {
+        tagIds.push((t as any).tagId);
+      }
+    }
+
     if (tagIds.length === 0) return [];
 
     const placeholders = tagIds.map(() => '?').join(',');
@@ -262,8 +277,20 @@ export class ShowRepository {
     return shows;
   }
 
-  // Find shows that have episodes with specific tags (secondary tag search)
-  findByEpisodeTags(tagIds: string[]): Show[] {
+  // Find shows that have episodes with specific tags (secondary tag search) - accepts MediaTag[] or string[]
+  findByEpisodeTags(tags: (MediaTag | string)[]): Show[] {
+    if (tags.length === 0) return [];
+
+    const tagIds: string[] = [];
+    for (const t of tags) {
+      if (typeof t === 'string') {
+        const found = tagRepository.findByNameIgnoreCase(t);
+        if (found) tagIds.push(found.tagId);
+      } else if ((t as any).tagId) {
+        tagIds.push((t as any).tagId);
+      }
+    }
+
     if (tagIds.length === 0) return [];
 
     const placeholders = tagIds.map(() => '?').join(',');
@@ -298,7 +325,11 @@ export class ShowRepository {
   }
 
   // Helper method to insert show tags
-  private insertShowTags(mediaItemId: string, tags: MediaTag[], tagType: 'primary' | 'secondary'): void {
+  private insertShowTags(
+    mediaItemId: string,
+    tags: MediaTag[],
+    tagType: 'primary' | 'secondary',
+  ): void {
     if (tags.length === 0) return;
 
     const stmt = this.db.prepare(`
@@ -308,10 +339,26 @@ export class ShowRepository {
 
     for (const tag of tags) {
       try {
-        stmt.run(mediaItemId, tag.tagId, tagType);
+        let tagId: string | undefined;
+        if (typeof tag === 'string') {
+          const found = tagRepository.findByNameIgnoreCase(tag);
+          tagId = found ? found.tagId : undefined;
+        } else if ((tag as any).tagId) {
+          tagId = (tag as any).tagId;
+        }
+
+        if (!tagId) {
+          console.warn(
+            `Failed to resolve show tag for media item ${mediaItemId}:`,
+            tag,
+          );
+          continue;
+        }
+
+        stmt.run(mediaItemId, tagId, tagType);
       } catch (error) {
         console.warn(
-          `Failed to insert show tag ${tag.tagId} for media item ${mediaItemId}:`,
+          `Failed to insert show tag for media item ${mediaItemId}:`,
           error,
         );
       }
@@ -329,10 +376,26 @@ export class ShowRepository {
 
     for (const tag of tags) {
       try {
-        stmt.run(mediaItemId, tag.tagId);
+        let tagId: string | undefined;
+        if (typeof tag === 'string') {
+          const found = tagRepository.findByNameIgnoreCase(tag);
+          tagId = found ? found.tagId : undefined;
+        } else if ((tag as any).tagId) {
+          tagId = (tag as any).tagId;
+        }
+
+        if (!tagId) {
+          console.warn(
+            `Failed to resolve episode tag for media item ${mediaItemId}:`,
+            tag,
+          );
+          continue;
+        }
+
+        stmt.run(mediaItemId, tagId);
       } catch (error) {
         console.warn(
-          `Failed to insert episode tag ${tag.tagId} for media item ${mediaItemId}:`,
+          `Failed to insert episode tag for media item ${mediaItemId}:`,
           error,
         );
       }
@@ -340,7 +403,10 @@ export class ShowRepository {
   }
 
   // Helper method to load show tags
-  private loadShowTags(mediaItemId: string, tagType: 'primary' | 'secondary'): MediaTag[] {
+  private loadShowTags(
+    mediaItemId: string,
+    tagType: 'primary' | 'secondary',
+  ): MediaTag[] {
     const stmt = this.db.prepare(`
       SELECT t.* FROM tags t
       INNER JOIN show_tags st ON t.tagId = st.tagId
@@ -399,23 +465,21 @@ export class ShowRepository {
     const primaryTags = this.loadShowTags(showRow.mediaItemId, 'primary');
     const secondaryTags = this.loadShowTags(showRow.mediaItemId, 'secondary');
 
-    const episodes = episodeRows.map(
-      episodeRow => {
-        const episodeTags = this.loadEpisodeTags(episodeRow.mediaItemId);
-        return new Episode(
-          episodeRow.season,
-          episodeRow.episode,
-          episodeRow.episodeNumber,
-          episodeRow.path,
-          episodeRow.title,
-          episodeRow.mediaItemId,
-          episodeRow.showItemId,
-          episodeRow.duration,
-          episodeRow.durationLimit,
-          episodeTags,
-        );
-      }
-    );
+    const episodes = episodeRows.map(episodeRow => {
+      const episodeTags = this.loadEpisodeTags(episodeRow.mediaItemId);
+      return new Episode(
+        episodeRow.season,
+        episodeRow.episode,
+        episodeRow.episodeNumber,
+        episodeRow.path,
+        episodeRow.title,
+        episodeRow.mediaItemId,
+        episodeRow.showItemId,
+        episodeRow.duration,
+        episodeRow.durationLimit,
+        episodeTags,
+      );
+    });
 
     return new Show(
       showRow.title,

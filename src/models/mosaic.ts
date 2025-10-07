@@ -1,19 +1,21 @@
+import { MediaTag } from './const/tagTypes';
+
 export interface IMosaic {
   tagId: string;
-  tags: string[];
+  tags: MediaTag[];
   musicGenres: string[];
   title?: string;
 }
 
 export class Mosaic {
   tagId: string;
-  tags: string[];
+  tags: MediaTag[];
   musicGenres: string[];
   title?: string;
 
   constructor(
     tagId: string,
-    tags: string[],
+    tags: MediaTag[],
     musicGenres: string[],
     title?: string,
   ) {

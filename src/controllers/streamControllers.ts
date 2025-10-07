@@ -34,17 +34,21 @@ export async function continuousStreamHandler(
   const contRequest = mapRequestToContinuousStreamRequest(req);
 
   // Get environment config from DB and set it in the environment manager
-  let env = await getEnvConfig(keyNormalizer(contRequest.Env));
-  if (env[1] !== '') {
-    res.status(400).json({ message: env[1] });
+  // For now we only accept a password for the continuous stream. Other fields
+  // (env, movies, tags, etc.) are ignored at this time. Environment config
+  // will be handled later if/when those fields are reintroduced.
+
+  // Check if Continuous stream is already running, if so return error
+  if (streamMan.isContinuousStream()) {
+    res.status(409).json({
+      error:
+        'Continuous stream is already running. Stop the current stream before starting a new one.',
+    });
     return;
   }
-  envMan.SetEnvConfig(env[0]);
 
   setStreamType(StreamType.Cont);
-  // TODO - Check if Continuous stream is already running, if so return error
-  // Important until I can rewrite module of vlc client to include the ability to close the client
-  // Currently the only way to close the client is to stop the Stream Assistant service
+  streamMan.setContinuousStream(true);
 
   // Set the continuous stream args to the values from the request
   // These values are stored in the stream service and used to determine the stream while it is running continuously
@@ -64,26 +68,40 @@ export async function continuousStreamHandler(
     getMedia(),
     getMosaics(),
     getStreamType(),
+    true, // alignStart - ensure first main media starts at next :00 or :30
   );
   if (streamError !== '') {
     console.log('Error initializing stream: ' + streamError);
+    // Reset the continuous stream flag since initialization failed
+    streamMan.setContinuousStream(false);
     res.status(400).json({ message: streamError });
     return;
   }
 
-  // Pulls the first two items from the initialized stream and adds them to the on deck stream, the on deck stream array is used to load vlc with the next media block
-  // This is done to for a future feature which will function in tandem with a user being able to change or rearrange an upcoming stream's media items.
-  // To prevent a user from creating an issue which could cause the stream to desync with its original schedule, the schedule of the ondeck stream is locked in place
-  streamMan.initializeOnDeckStream();
+  try {
+    // Pulls the first two items from the initialized stream and adds them to the on deck stream, the on deck stream array is used to load vlc with the next media block
+    // This is done to for a future feature which will function in tandem with a user being able to change or rearrange an upcoming stream's media items.
+    // To prevent a user from creating an issue which could cause the stream to desync with its original schedule, the schedule of the ondeck stream is locked in place
+    streamMan.initializeOnDeckStream();
 
-  // Adds the first two media blocks to the VLC client and playlist
-  await streamMan.addInitialMediaBlocks();
+    // Adds the first two media blocks to the VLC client and playlist
+    await streamMan.addInitialMediaBlocks();
 
-  // Starts the VLC client playing the stream
-  await playVLC();
+    // Starts the VLC client playing the stream
+    await playVLC();
 
-  res.status(200).json({ message: 'Stream Starting' });
-  return;
+    res.status(200).json({ message: 'Stream Starting' });
+    return;
+  } catch (error) {
+    console.error('Error during stream startup:', error);
+    // Reset the continuous stream flag since startup failed
+    streamMan.setContinuousStream(false);
+    res.status(500).json({
+      error: 'Failed to start continuous stream',
+      details: error instanceof Error ? error.message : String(error),
+    });
+    return;
+  }
 }
 
 export async function adHocStreamHandler(
@@ -135,14 +153,8 @@ export async function adHocStreamHandler(
 
 export const contStreamValidationRules = [
   (req: Request, res: Response, next: Function) => {
-    // Ensure only allowed fields are present
-    const streamAllowedFields = [
-      'env',
-      'movies',
-      'tags',
-      'multiTags',
-      'password',
-    ];
+    // Only 'password' is allowed in the continuous stream request for now
+    const streamAllowedFields = ['password'];
     const requestBody: Record<string, any> = req.body;
 
     const extraFields = Object.keys(requestBody).filter(
@@ -156,86 +168,7 @@ export const contStreamValidationRules = [
     next();
   },
 
-  // Validate the 'env' field
-  body('env').optional().isString(),
-
-  // Validate the 'movies' field
-  body('movies')
-    .optional()
-    .isArray()
-    .custom((value: string[]) => {
-      for (const item of value) {
-        if (typeof item !== 'string') {
-          throw new Error('movies must be an array of strings');
-        }
-        if (item.includes('::')) {
-          const [firstPart, secondPart] = item.split('::');
-          // Check the first part for only letters and numbers
-          if (!/^[a-zA-Z0-9]+$/.test(firstPart)) {
-            throw new Error(
-              'The first part of movies must contain only letters and numbers',
-            );
-          }
-
-          // Check the second part for ISO 8601 date format with 30-minute increments
-          const isoDateRegex =
-            /^(\d{4}-\d{2}-\d{2}T(?:[01]\d|2[0-3]):(?:00|30))$/;
-          if (!isoDateRegex.test(secondPart)) {
-            throw new Error(
-              'The second part of movies must be in the format YYYY-MM-DDTHH:MM with 30-minute increments in 24-hour time',
-            );
-          }
-        } else {
-          // If no "::" found, check for only letters and numbers
-          if (!/^[a-zA-Z0-9]+$/.test(item)) {
-            throw new Error(
-              'movies must be in the format "string" or "string::ISO8601 date" with allowed characters',
-            );
-          }
-        }
-      }
-      return true;
-    }),
-
-  // Validate the 'tagsOR' field
-  body('tags')
-    .optional()
-    .isArray()
-    .withMessage('tags must be an array')
-    .custom((value: string[]) => {
-      // Check if all elements in the array are strings
-      for (const item of value) {
-        if (typeof item !== 'string') {
-          throw new Error('tags must be an array of strings');
-        }
-      }
-      return true;
-    }),
-  // Validate the 'startTime' field
-  // isOptional() allows the field to be omitted from the request
-  // Must be in the format YYYY-MM-DDTHH:MM
-  // Must be at least the next 30 minute or 1 hour mark on the global clock
-  body('startTime')
-    .optional()
-    .isString()
-    .custom((value: string) => {
-      const isoDateRegex = /^(\d{4}-\d{2}-\d{2}T(?:[01]\d|2[0-3]):(?:00|30))$/;
-      if (!isoDateRegex.test(value)) {
-        throw new Error(
-          'startTime must be in the format YYYY-MM-DDTHH:MM with 30-minute increments in 24-hour time',
-        );
-      }
-      const startTime = new Date(value).getTime();
-      const currentTime = new Date().getTime();
-      const timeDifference = startTime - currentTime;
-      if (timeDifference < 0) {
-        throw new Error(
-          'startTime must be at least the next 30 minute or 1 hour mark on the global clock',
-        );
-      }
-      return true;
-    }),
-  // Validate the 'password' field
+  // Only require a password string
   body('password').isString(),
 ];
 
@@ -377,29 +310,10 @@ export const adHocStreamValidationRules = [
 ];
 
 function mapRequestToContinuousStreamRequest(req: Request): ContStreamRequest {
-  const contRequest = new ContStreamRequest(req.body.password);
-
-  if (req.body.env) {
-    contRequest.Env = req.body.env;
-  }
-
-  if (req.body.movies) {
-    contRequest.Movies = req.body.movies;
-  }
-
-  if (req.body.tags) {
-    contRequest.Tags = req.body.tags;
-  }
-
-  if (req.body.multiTags) {
-    contRequest.MultiTags = req.body.multiTags;
-  }
-
-  if (req.body.startTime) {
-    contRequest.StartTime = convertISOToUnix(req.body.startTime);
-  }
-
-  return contRequest;
+  // For the continuous handler we only set the Password and keep other fields
+  // at their defaults. Downstream code should treat Movies/Tags/etc as optional
+  // and use procedural defaults when empty.
+  return new ContStreamRequest(req.body.password);
 }
 
 function mapRequestToAdhocStreamRequest(req: Request): AdhocStreamRequest {
@@ -434,6 +348,61 @@ function mapRequestToAdhocStreamRequest(req: Request): AdhocStreamRequest {
   }
 
   return adhocRequest;
+}
+
+export async function streamStatusHandler(
+  req: Request,
+  res: Response,
+): Promise<void> {
+  try {
+    const status = streamMan.getStreamStatus();
+    res.status(200).json({
+      status: 'success',
+      data: {
+        streamActive: status.isContinuous,
+        streamType: status.isContinuous ? 'continuous' : 'none',
+        hasUpcomingMedia: status.hasUpcomingStream,
+        onDeckCount: status.onDeckLength,
+        upcomingCount: status.upcomingLength,
+        currentStream: status.streamArgs,
+      },
+    });
+  } catch (error) {
+    console.error('Error getting stream status:', error);
+    res.status(500).json({
+      error: 'Failed to retrieve stream status',
+    });
+  }
+}
+
+export async function stopStreamHandler(
+  req: Request,
+  res: Response,
+): Promise<void> {
+  try {
+    if (!streamMan.isContinuousStream()) {
+      res.status(400).json({
+        error: 'No continuous stream is currently running',
+      });
+      return;
+    }
+
+    // Stop the continuous stream
+    streamMan.stopContinuousStream();
+
+    // Note: VLC client cleanup should be handled here in the future
+    // For now, this clears the stream state but VLC may still be running
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Continuous stream stopped successfully',
+    });
+  } catch (error) {
+    console.error('Error stopping stream:', error);
+    res.status(500).json({
+      error: 'Failed to stop stream',
+    });
+  }
 }
 
 function convertISOToUnix(isoDateTime: string): number {

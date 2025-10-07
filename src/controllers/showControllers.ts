@@ -31,25 +31,29 @@ export async function createShowHandler(
     return;
   }
   // If it doesn't exist, perform transformations
-  let createdShow = await transformShowFromRequest(req.body);
-  // TODO: Check for duplicate episode paths on this show
-  // If there are duplicate episode paths, return error
-  const episodePaths = createdShow.episodes.map(episode => episode.path);
-  const uniqueEpisodePaths = new Set(episodePaths);
-  if (uniqueEpisodePaths.size !== episodePaths.length) {
-    res.status(400).json({
-      message: 'Show contains duplicate episode paths',
-      duplicatePaths: episodePaths.filter(
-        (path, index) => episodePaths.indexOf(path) !== index,
-      ),
-    });
-    return;
+  try {
+    let createdShow = await transformShowFromRequest(req.body);
+    // TODO: Check for duplicate episode paths on this show
+    // If there are duplicate episode paths, return error
+    const episodePaths = createdShow.episodes.map(episode => episode.path);
+    const uniqueEpisodePaths = new Set(episodePaths);
+    if (uniqueEpisodePaths.size !== episodePaths.length) {
+      res.status(400).json({
+        message: 'Show contains duplicate episode paths',
+        duplicatePaths: episodePaths.filter(
+          (path, index) => episodePaths.indexOf(path) !== index,
+        ),
+      });
+      return;
+    }
+
+    // Insert show into database
+    showRepository.create(createdShow);
+    res.status(200).json({ message: `Show ${createdShow.title} Created` });
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    res.status(400).json({ message: errorMessage });
   }
-
-  // Insert show into MongoDB
-  showRepository.create(createdShow);
-
-  res.status(200).json({ message: 'Show  Created' });
   return;
 }
 
@@ -117,23 +121,27 @@ export async function updateShowHandler(
   }
 
   // If it exists, perform transformations
-  let updatedShow = await transformShowFromRequest(req.body);
-  const episodePaths = updatedShow.episodes.map(episode => episode.path);
-  const uniqueEpisodePaths = new Set(episodePaths);
-  if (uniqueEpisodePaths.size !== episodePaths.length) {
-    res.status(400).json({
-      message: 'Show contains duplicate episode paths',
-      duplicatePaths: episodePaths.filter(
-        (path, index) => episodePaths.indexOf(path) !== index,
-      ),
-    });
-    return;
+  try {
+    let updatedShow = await transformShowFromRequest(req.body);
+    const episodePaths = updatedShow.episodes.map(episode => episode.path);
+    const uniqueEpisodePaths = new Set(episodePaths);
+    if (uniqueEpisodePaths.size !== episodePaths.length) {
+      res.status(400).json({
+        message: 'Show contains duplicate episode paths',
+        duplicatePaths: episodePaths.filter(
+          (path, index) => episodePaths.indexOf(path) !== index,
+        ),
+      });
+      return;
+    }
+
+    // Update show in database
+    showRepository.update(mediaItemId, updatedShow);
+    res.status(200).json({ message: `Show ${updatedShow.title} Updated` });
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    res.status(400).json({ message: errorMessage });
   }
-
-  // Update show in MongoDB
-  showRepository.update(mediaItemId, updatedShow);
-
-  res.status(200).json({ message: `Show ${updatedShow.title} Updated` });
   return;
 }
 
@@ -184,11 +192,20 @@ export async function transformShowFromRequest(show: Show): Promise<Show> {
     if (episode.duration > 0) continue; // Skip if duration is already set
     episode.showItemId = show.mediaItemId; // Set showItemId for the episode
     console.log(`Getting duration for ${episode.path}`);
-    let durationInSeconds = await getMediaDuration(episode.path);
-    episode.duration = durationInSeconds; // Update duration value
-    episode.durationLimit =
-      Math.floor(episode.duration / 1800) * 1800 +
-      (episode.duration % 1800 > 0 ? 1800 : 0);
+
+    try {
+      let durationInSeconds = await getMediaDuration(episode.path);
+      episode.duration = durationInSeconds; // Update duration value
+      episode.durationLimit =
+        Math.floor(episode.duration / 1800) * 1800 +
+        (episode.duration % 1800 > 0 ? 1800 : 0);
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      throw new Error(
+        `Cannot process episode "${episode.title}" of show "${show.title}": ${errorMessage}`,
+      );
+    }
     // set episode load title using show load title and episode number
   }
 
@@ -227,7 +244,7 @@ export async function transformShowFromRequest(show: Show): Promise<Show> {
   //specific epdiode tags that are not presenting in the show tags are added as secondary tags
   const showTagIds = new Set(show.tags.map(tag => tag.tagId));
   const secondaryTagsSet = new Set<string>();
-  
+
   show.episodes.forEach(episode => {
     episode.tags.forEach(tag => {
       if (!showTagIds.has(tag.tagId)) {
@@ -237,14 +254,16 @@ export async function transformShowFromRequest(show: Show): Promise<Show> {
   });
 
   // Convert secondary tag IDs back to Tag objects
-  show.secondaryTags = Array.from(secondaryTagsSet).map(tagId => {
-    // Find the tag object from any episode that has it
-    for (const episode of show.episodes) {
-      const foundTag = episode.tags.find(tag => tag.tagId === tagId);
-      if (foundTag) return foundTag;
-    }
-    return null;
-  }).filter(tag => tag !== null) as any[];
+  show.secondaryTags = Array.from(secondaryTagsSet)
+    .map(tagId => {
+      // Find the tag object from any episode that has it
+      for (const episode of show.episodes) {
+        const foundTag = episode.tags.find(tag => tag.tagId === tagId);
+        if (foundTag) return foundTag;
+      }
+      return null;
+    })
+    .filter(tag => tag !== null) as any[];
 
   //create a list of episodes that is sorted by episode.episode disregarding the fields episodeNumber and season
   const sortedEpisodes = show.episodes.sort((a, b) => {

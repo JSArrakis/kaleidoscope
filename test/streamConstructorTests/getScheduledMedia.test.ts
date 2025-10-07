@@ -49,13 +49,7 @@ describe('getScheduledMedia', () => {
         MediaType.Movie,
         1656547200,
         9000,
-        [
-          MainGenres.Action,
-          MainGenres.SciFi,
-          MainGenres.Adventure,
-          AgeGroups.Mature,
-          Eras.ttens,
-        ],
+        tdMovies.inception.tags,
       ),
       new SelectedMedia(
         tdMovies.interstellar,
@@ -63,7 +57,7 @@ describe('getScheduledMedia', () => {
         MediaType.Movie,
         1656633600,
         10800,
-        [MainGenres.SciFi, AgeGroups.YoungAdult, Eras.ttens],
+        tdMovies.interstellar.tags,
       ),
     ];
 
@@ -92,13 +86,7 @@ describe('getScheduledMedia', () => {
         MediaType.Movie,
         1656547200,
         9000,
-        [
-          MainGenres.Action,
-          MainGenres.SciFi,
-          MainGenres.Adventure,
-          AgeGroups.Mature,
-          Eras.ttens,
-        ],
+        tdMovies.inception.tags,
       ),
     ];
 
@@ -162,13 +150,7 @@ describe('getScheduledMedia', () => {
         MediaType.Movie,
         1656547200,
         9000,
-        [
-          MainGenres.Action,
-          MainGenres.SciFi,
-          MainGenres.Adventure,
-          AgeGroups.Mature,
-          Eras.ttens,
-        ],
+        tdMovies.inception.tags,
       ),
       new SelectedMedia(
         tdMovies.interstellar,
@@ -176,7 +158,7 @@ describe('getScheduledMedia', () => {
         MediaType.Movie,
         1656633600,
         10800,
-        [MainGenres.SciFi, AgeGroups.YoungAdult, Eras.ttens],
+        tdMovies.interstellar.tags,
       ),
     ];
 
@@ -217,13 +199,7 @@ describe('getScheduledMedia', () => {
         MediaType.Movie,
         1656547200,
         9000,
-        [
-          MainGenres.Action,
-          MainGenres.SciFi,
-          MainGenres.Adventure,
-          AgeGroups.Mature,
-          Eras.ttens,
-        ],
+        tdMovies.inception.tags,
       ),
       new SelectedMedia(
         tdMovies.thematrix,
@@ -231,12 +207,7 @@ describe('getScheduledMedia', () => {
         MediaType.Movie,
         1656633600,
         9000,
-        [
-          MainGenres.Action,
-          MainGenres.SciFi,
-          AgeGroups.YoungAdult,
-          Eras.nnineties,
-        ],
+        tdMovies.thematrix.tags,
       ),
     ];
 
@@ -247,13 +218,7 @@ describe('getScheduledMedia', () => {
         MediaType.Movie,
         1656547200,
         9000,
-        [
-          MainGenres.Action,
-          MainGenres.SciFi,
-          MainGenres.Adventure,
-          AgeGroups.Mature,
-          Eras.ttens,
-        ],
+        tdMovies.inception.tags,
       ),
       new SelectedMedia(
         tdMovies.interstellar,
@@ -261,7 +226,7 @@ describe('getScheduledMedia', () => {
         MediaType.Movie,
         1656633600,
         10800,
-        [MainGenres.SciFi, AgeGroups.YoungAdult, Eras.ttens],
+        tdMovies.interstellar.tags,
       ),
     ];
 

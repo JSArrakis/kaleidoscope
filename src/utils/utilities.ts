@@ -2,6 +2,7 @@ import { MediaProgression, ShowProgression } from '../models/mediaProgression';
 import { SelectedMedia } from '../models/selectedMedia';
 import { Show } from '../models/show';
 import * as ffmpeg from 'fluent-ffmpeg';
+import * as fs from 'fs';
 
 export function getRandomMedia(objects: SelectedMedia[]): SelectedMedia {
   const randomIndex = Math.floor(Math.random() * objects.length);
@@ -133,13 +134,32 @@ export function deepCopy<T>(obj: T): T {
 
 export async function getMediaDuration(filePath: string): Promise<number> {
   return new Promise((resolve, reject) => {
+    // First check if the file exists
+    if (!fs.existsSync(filePath)) {
+      reject(new Error(`Media file not found: ${filePath}`));
+      return;
+    }
+
     ffmpeg.ffprobe(filePath, (err, metadata) => {
       if (!err) {
         const durationInSeconds: number =
           Math.round(Number(metadata.format.duration)) || 0;
         resolve(durationInSeconds);
       } else {
-        reject(err);
+        // Provide more descriptive error messages
+        if (err.message && err.message.includes('No such file')) {
+          reject(new Error(`Media file not found: ${filePath}`));
+        } else if (err.message && err.message.includes('Invalid data')) {
+          reject(
+            new Error(`Invalid media file or unsupported format: ${filePath}`),
+          );
+        } else {
+          reject(
+            new Error(
+              `Failed to analyze media file: ${filePath}. ${err.message || err}`,
+            ),
+          );
+        }
       }
     });
   });
@@ -155,6 +175,8 @@ export function createMosaicKey(genres: string[]): string {
 export function parseMonthDayToCurrentYear(monthDay: string): Date {
   const currentYear = new Date().getFullYear();
   // Handle formats like "--12-25" or "12-25"
-  const cleanMonthDay = monthDay.startsWith('--') ? monthDay.slice(2) : monthDay;
+  const cleanMonthDay = monthDay.startsWith('--')
+    ? monthDay.slice(2)
+    : monthDay;
   return new Date(`${currentYear}-${cleanMonthDay}`);
 }

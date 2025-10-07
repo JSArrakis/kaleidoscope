@@ -1,5 +1,6 @@
 import { getDB } from '../db/sqlite';
 import { Tag } from '../models/tag';
+import { MediaTag, TagType } from '../models/const/tagTypes';
 
 export class TagRepository {
   private get db() {
@@ -160,15 +161,18 @@ export class TagRepository {
     return result.changes > 0;
   }
 
-  // Find tags by tags
-  findByTags(tags: string[]): Tag[] {
+  // Find tags by tags (accept MediaTag[] or string[])
+  findByTags(tags: (MediaTag | string)[]): Tag[] {
+    if (tags.length === 0) return [];
+
+    const names = tags.map(t => (typeof t === 'string' ? t : (t as any).name));
     const stmt = this.db.prepare(`
       SELECT * FROM tags
-      WHERE ${tags.map((_, index) => `tags LIKE ?`).join(' OR ')}
+      WHERE ${names.map((_, index) => `tags LIKE ?`).join(' OR ')}
       ORDER BY name
     `);
 
-    const params = tags.map(tag => `%"${tag}"%`);
+    const params = names.map(tag => `%"${tag}"%`);
     const rows = stmt.all(...params) as any[];
     return rows.map(row => this.mapRowToTag(row));
   }
@@ -255,7 +259,7 @@ export class TagRepository {
     const holiday = new Tag(
       tagId,
       name,
-      'Holiday',
+      TagType.Holiday,
       holidayDates,
       exclusionGenres,
       seasonStartDate,
@@ -274,7 +278,7 @@ export class TagRepository {
     const ageGroup = new Tag(
       tagId,
       name,
-      'AgeGroup',
+      TagType.AgeGroup,
       undefined,
       undefined,
       undefined,
@@ -291,11 +295,7 @@ export class TagRepository {
       throw new Error(`Tag name "${name}" already exists`);
     }
 
-    const musicalGenre = new Tag(
-      tagId,
-      name,
-      'MusicalGenre',
-    );
+    const musicalGenre = new Tag(tagId, name, TagType.MusicalGenre);
     return this.create(musicalGenre);
   }
 

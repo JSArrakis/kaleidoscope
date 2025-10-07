@@ -11,6 +11,9 @@ import {
   ManageShowProgression,
   GetShowListWatchRecords,
 } from './progressionManager';
+import { getTagName } from '../prisms/core';
+
+// Note: procedural engine expects Tag objects (MediaTag[]) in args.Tags and media.*.tags
 
 export function getProceduralBlock(
   args: IStreamRequest,
@@ -142,10 +145,13 @@ export function selectMovieUnderDuration(
   prevMovies: Movie[],
   duration: number,
 ): Movie {
+  // options.Tags is MediaTag[]; compare by tag.name
+  const optionTagNames = (options.Tags || []).map(t => getTagName(t));
   let filteredMovies: Movie[] = movies.filter(
     movie =>
-      movie.tags.some(tag => options.Tags.includes(tag)) &&
-      movie.durationLimit <= duration,
+      (movie.tags || []).some(tag =>
+        optionTagNames.includes(getTagName(tag)),
+      ) && movie.durationLimit <= duration,
   );
 
   let notRepeatMovies: Movie[] = filteredMovies.filter(
@@ -167,9 +173,10 @@ export function getEpisodesUnderDuration(
   streamType: StreamType,
 ): [Episode[], string] {
   let episodes: Episode[] = [];
+  const argTagNames = (args.Tags || []).map(t => getTagName(t));
   let filteredShows: Show[] = shows.filter(
     show =>
-      show.tags.some(tag => args.Tags.includes(tag)) &&
+      (show.tags || []).some(tag => argTagNames.includes(getTagName(tag))) &&
       show.durationLimit <= duration,
   );
 

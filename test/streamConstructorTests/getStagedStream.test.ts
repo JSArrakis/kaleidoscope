@@ -3,6 +3,7 @@ import { SelectedMedia } from '../../src/models/selectedMedia';
 import * as streamCon from '../../src/services/streamConstructor';
 import { Media } from '../../src/models/media';
 import { ContStreamRequest } from '../../src/models/streamRequest';
+import { makeTag } from '../utils/tagFactory';
 import { StagedMedia } from '../../src/models/stagedMedia';
 import * as proMan from '../../src/services/progressionManager';
 import { Config } from '../../src/models/config';
@@ -730,7 +731,7 @@ describe('getStagedStream', () => {
       Title: tdProgression.continuousProgression.title,
       Env: tdProgression.continuousProgression.environment,
       Movies: [],
-      Tags: [MainGenres.Adventure],
+      Tags: [makeTag(MainGenres.Adventure)],
       MultiTags: [],
       Blocks: [],
       StartTime: 0,
@@ -755,7 +756,11 @@ describe('getStagedStream', () => {
         MediaType.Movie,
         1733671800,
         5400,
-        [MainGenres.Adventure, AgeGroups.Kids, Eras.nnineties],
+        [
+          makeTag(MainGenres.Adventure),
+          makeTag(AgeGroups.Kids, 'AgeGroup'),
+          makeTag(Eras.nnineties, 'Era'),
+        ],
       ),
       new SelectedMedia(
         tdMovies.therescuersdownunder,

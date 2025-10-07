@@ -9,6 +9,8 @@ import * as bumperCont from '../controllers/bumperControllers';
 import * as collectionCont from '../controllers/collectionControllers';
 import * as tagCont from '../controllers/tagControllers';
 // import * as blockCont from '../controllers/blockControllers';
+import * as statusCont from '../controllers/statusControllers';
+import * as facetCont from '../controllers/facetControllers';
 import * as verify from '../middleware/validationMiddleware';
 
 const router = Router();
@@ -262,5 +264,80 @@ router.get(
 //   verify.createBlockValidationRules,
 //   blockCont.createBlockHandler,
 // );
+
+// =====================
+// Facets System Management
+// =====================
+
+// Facet Management
+router.post('/facets', facetCont.createFacetHandler);
+router.get('/facets', facetCont.getAllFacetsHandler);
+router.get('/facets/type/:type', facetCont.getFacetsByTypeHandler);
+router.get('/facets/:facetId', facetCont.getFacetByIdHandler);
+router.put('/facets/:facetId', facetCont.updateFacetHandler);
+router.delete('/facets/:facetId', facetCont.deleteFacetHandler);
+
+// =====================
+// Facets System Routes (Ordered: Specific routes before parameterized)
+// =====================
+
+// System Initialization
+router.post('/facets/initialize', facetCont.initializeFacetSystemHandler);
+
+// Intelligent Transitions
+router.post('/facets/suggest-transitions', facetCont.suggestTransitionsHandler);
+router.post(
+  '/facets/calculate-compatibility',
+  facetCont.calculateTransitionCompatibilityHandler,
+);
+
+// Feedback & Learning
+router.post('/facets/feedback', facetCont.submitFeedbackHandler);
+router.get('/facets/feedback', facetCont.getFeedbackHistoryHandler);
+
+// Bridge Management (dedicated endpoints to avoid routing conflicts)
+router.post('/facet-bridges', facetCont.createFacetBridgeHandler);
+router.get('/facet-bridges', facetCont.getAllBridgesHandler);
+router.post('/facet-bridges/find', facetCont.findAvailableBridgesHandler);
+router.get('/facet-bridges/:bridgeId', facetCont.getBridgeByIdHandler);
+
+// Facet Type Routes (specific)
+router.get('/facets/type/:type', facetCont.getFacetsByTypeHandler);
+
+// Core Facet Management
+router.post('/facets', facetCont.createFacetHandler);
+router.get('/facets', facetCont.getAllFacetsHandler);
+
+// Distance Management (parameterized - order matters)
+router.put(
+  '/facets/:sourceFacetId/distance/:targetFacetId',
+  facetCont.setFacetDistanceHandler,
+);
+router.get(
+  '/facets/:sourceFacetId/distance/:targetFacetId',
+  facetCont.getFacetDistanceHandler,
+);
+router.get('/facets/:facetId/closest', facetCont.getClosestFacetsHandler);
+
+// Individual Facet Routes (most generic - should be last)
+router.get('/facets/:facetId', facetCont.getFacetByIdHandler);
+router.put('/facets/:facetId', facetCont.updateFacetHandler);
+router.delete('/facets/:facetId', facetCont.deleteFacetHandler);
+
+// System Initialization
+router.post('/facets/initialize', facetCont.initializeFacetSystemHandler);
+
+// System Status and Health Check
+router.get('/status', statusCont.systemStatusHandler);
+router.get('/health', statusCont.quickHealthHandler);
+router.post('/test-create-tag', statusCont.testCreateTagHandler);
+router.post('/reset-database', statusCont.resetDatabaseHandler);
+
+// Streaming Service Status Endpoints
+router.get('/streaming-status', statusCont.streamingStatusHandler);
+router.get('/current-media', statusCont.currentMediaHandler);
+router.get('/stream-queue', statusCont.streamQueueHandler);
+router.get('/timing-status', statusCont.timingStatusHandler);
+router.get('/vlc-status', statusCont.vlcStatusHandler);
 
 export default router;

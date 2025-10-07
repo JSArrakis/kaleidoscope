@@ -14,7 +14,7 @@ import { commercialRepository } from '../repositories/commercialRepository';
 import { promoRepository } from '../repositories/promoRepository';
 import { musicRepository } from '../repositories/musicRepository';
 import { shortRepository } from '../repositories/shortRepository';
-import { holidayRepository } from '../repositories/holidayRepository';
+import { tagRepository } from '../repositories/tagsRepository';
 
 export async function loadMovies(): Promise<Movie[]> {
   const movies = movieRepository.findAll();
@@ -99,11 +99,27 @@ export async function loadShorts(): Promise<Short[]> {
 }
 
 export async function loadHolidays(): Promise<Holiday[]> {
-  const holidays = holidayRepository.findAll() as Holiday[];
-  if (!holidays || holidays.length === 0) {
+  // Load holidays as tags with type "Holiday" from tagsRepository
+  const holidayTags = tagRepository.findByType('Holiday');
+
+  if (!holidayTags || holidayTags.length === 0) {
     console.log('No Holidays Found');
     return [];
   }
+
+  // Convert Tag objects to Holiday objects
+  const holidays: Holiday[] = holidayTags.map(
+    tag =>
+      new Holiday(
+        tag.name,
+        tag.tagId,
+        tag.holidayDates || [],
+        tag.exclusionGenres || [],
+        tag.seasonStartDate,
+        tag.seasonEndDate,
+      ),
+  );
+
   console.log(holidays.length + ' Holidays loaded');
   return holidays;
 }

@@ -2,6 +2,7 @@ import { getDB } from '../db/sqlite';
 import { Commercial } from '../models/commercial';
 import { MediaTag } from '../models/const/tagTypes';
 import { Tag } from '../models/tag';
+import { tagRepository } from './tagsRepository';
 
 export class CommercialRepository {
   private get db() {
@@ -144,10 +145,13 @@ export class CommercialRepository {
   }
 
   // Find commercials by tags
-  findByTags(tags: string[]): Commercial[] {
+  findByTags(tags: (MediaTag | string)[]): Commercial[] {
     if (tags.length === 0) return [];
 
-    const placeholders = tags.map(() => '?').join(',');
+    const tagNames = tags.map(t =>
+      typeof t === 'string' ? t : (t as any).name,
+    );
+    const placeholders = tagNames.map(() => '?').join(',');
     const stmt = this.db.prepare(`
       SELECT DISTINCT c.* FROM commercials c
       INNER JOIN commercial_tags ct ON c.mediaItemId = ct.mediaItemId
@@ -156,7 +160,7 @@ export class CommercialRepository {
       ORDER BY c.title
     `);
 
-    const rows = stmt.all(...tags) as any[];
+    const rows = stmt.all(...tagNames) as any[];
     return rows.map(row => {
       const commercial = this.mapRowToCommercial(row);
       commercial.tags = this.loadCommercialTags(commercial.mediaItemId);
@@ -207,11 +211,27 @@ export class CommercialRepository {
 
     for (const tag of tags) {
       try {
-        stmt.run(mediaItemId, tag.tagId);
+        let tagId: string | undefined;
+        if (typeof tag === 'string') {
+          const found = tagRepository.findByNameIgnoreCase(tag);
+          tagId = found ? found.tagId : undefined;
+        } else if ((tag as any).tagId) {
+          tagId = (tag as any).tagId;
+        }
+
+        if (!tagId) {
+          console.warn(
+            `Skipping unknown tag for commercial ${mediaItemId}:`,
+            tag,
+          );
+          continue;
+        }
+
+        stmt.run(mediaItemId, tagId);
       } catch (error) {
         // Skip duplicates
         console.warn(
-          `Failed to insert tag ${tag.tagId} for commercial ${mediaItemId}:`,
+          `Failed to insert tag for commercial ${mediaItemId}:`,
           error,
         );
       }

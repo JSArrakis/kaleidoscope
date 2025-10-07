@@ -87,18 +87,22 @@ describe('getInjectedMovies', () => {
     };
 
     const expected = [
-      new SelectedMedia(tdMovies.inception, '', MediaType.Movie, 0, 9000, [
-        MainGenres.Action,
-        MainGenres.SciFi,
-        MainGenres.Adventure,
-        AgeGroups.Mature,
-        Eras.ttens,
-      ]),
-      new SelectedMedia(tdMovies.interstellar, '', MediaType.Movie, 0, 10800, [
-        MainGenres.SciFi,
-        AgeGroups.YoungAdult,
-        Eras.ttens,
-      ]),
+      new SelectedMedia(
+        tdMovies.inception,
+        '',
+        MediaType.Movie,
+        0,
+        9000,
+        tdMovies.inception.tags,
+      ),
+      new SelectedMedia(
+        tdMovies.interstellar,
+        '',
+        MediaType.Movie,
+        0,
+        10800,
+        tdMovies.interstellar.tags,
+      ),
     ];
 
     const result = streamCon.getInjectedMovies(args, media.movies);

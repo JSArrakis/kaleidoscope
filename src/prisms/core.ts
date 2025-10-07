@@ -1,19 +1,33 @@
 import { BaseMedia } from '../models/mediaInterface';
 import { AgeGroups } from '../models/const/ageGroups';
+import { MediaTag } from '../models/const/tagTypes';
+
+export function tagNamesFrom(tags: MediaTag[]): string[] {
+  return tags
+    .map(t => (typeof t === 'string' ? t : (t as any)?.name))
+    .filter(Boolean) as string[];
+}
+
+export function getTagName(tag: MediaTag | string): string | undefined {
+  if (tag === null || tag === undefined) return undefined;
+  if (typeof tag === 'string') return tag;
+  return (tag as any).name;
+}
 
 export function getMediaByAgeAndEra(
   media: BaseMedia[],
-  eras: string[],
+  eras: MediaTag[],
   age: string,
 ): BaseMedia[] {
   let selectedMedia: BaseMedia[] = [];
+  const eraNames = tagNamesFrom(eras);
 
-  eras.forEach(era => {
+  eraNames.forEach(era => {
     selectedMedia.push(
       ...media.filter(m => {
         return (
-          m.tags.some(tag => tag.name === era) &&
-          m.tags.some(tag => tag.name === age)
+          m.tags.some(tag => getTagName(tag) === era) &&
+          m.tags.some(tag => getTagName(tag) === age)
         );
       }),
     );
@@ -23,19 +37,23 @@ export function getMediaByAgeAndEra(
 }
 
 export function getMediaByAge(media: BaseMedia[], age: string): BaseMedia[] {
-  return media.filter(m => m.tags.some(tag => tag.name === age));
+  return media.filter(m => m.tags.some(tag => getTagName(tag) === age));
 }
 
 export function sumMediaDuration(media: BaseMedia[]): number {
   return media.reduce((acc, val) => acc + val.duration, 0);
 }
 
-export function createTagGroups(tags: string[]): string[][] {
+export function createTagGroups(tags: string[] | MediaTag[]): string[][] {
+  // Return pairs of tag NAMES (string[][]) so tests that pass string[] still work.
   let biGenreGroups: string[][] = [];
   // Create groups of 2 genre tags
-  for (let i = 0; i < tags.length; i++) {
-    for (let j = i + 1; j < tags.length; j++) {
-      biGenreGroups.push([tags[i], tags[j]]);
+  const names = Array.isArray(tags)
+    ? tagNamesFrom(tags as MediaTag[])
+    : (tags as string[]);
+  for (let i = 0; i < names.length; i++) {
+    for (let j = i + 1; j < names.length; j++) {
+      biGenreGroups.push([names[i], names[j]]);
     }
   }
   return biGenreGroups;
@@ -43,16 +61,19 @@ export function createTagGroups(tags: string[]): string[][] {
 
 export function getInEraMedia(
   media: BaseMedia[],
-  eraTags: string[],
-  tags: string[],
+  eraTags: MediaTag[],
+  tags: MediaTag[],
 ): BaseMedia[] {
   let inEra: BaseMedia[] = [];
-  eraTags.forEach(era => {
+  const eraNames = tagNamesFrom(eraTags);
+  const tagNames = tagNamesFrom(tags);
+  eraNames.forEach(era => {
     // Get all media that contains all of the tags and the era tag
     let inEraMedia = media.filter(m => {
       return (
-        tags.every(tag => m.tags.some(mediaTag => mediaTag.name === tag)) &&
-        m.tags.some(mediaTag => mediaTag.name === era)
+        tagNames.every(tag =>
+          m.tags.some(mediaTag => getTagName(mediaTag) === tag),
+        ) && m.tags.some(mediaTag => getTagName(mediaTag) === era)
       );
     });
     inEra.push(...inEraMedia);
@@ -62,14 +83,20 @@ export function getInEraMedia(
 
 export function getOutOfEraMedia(
   media: BaseMedia[],
-  eraTags: string[],
-  tags: string[],
+  eraTags: MediaTag[],
+  tags: MediaTag[],
 ): BaseMedia[] {
+  const eraNames = tagNamesFrom(eraTags);
+  const tagNames = tagNamesFrom(tags);
   // Get all media that contains all of the tags and does not contain any of the era tags
   return media.filter(m => {
     return (
-      tags.every(tag => m.tags.some(mediaTag => mediaTag.name === tag)) &&
-      !eraTags.some(tag => m.tags.some(mediaTag => mediaTag.name === tag))
+      tagNames.every(tag =>
+        m.tags.some(mediaTag => getTagName(mediaTag) === tag),
+      ) &&
+      !eraNames.some(tag =>
+        m.tags.some(mediaTag => getTagName(mediaTag) === tag),
+      )
     );
   });
 }
@@ -78,7 +105,7 @@ export function getMediaWithEraConsiderations(
   alreadySelectedMedia: BaseMedia[],
   allTagMediaInEra: BaseMedia[],
   allTagMediaOutOfEra: BaseMedia[],
-  eraTags: string[],
+  eraTags: MediaTag[],
   duration: number,
 ): BaseMedia[] {
   let selectedMedia: BaseMedia[] = [];
@@ -123,17 +150,20 @@ export function fillMediaByEra(
 
 export function getMediaByTags(
   media: BaseMedia[],
-  tags: string[],
+  tags: MediaTag[],
 ): BaseMedia[] {
+  const tagNames = tagNamesFrom(tags);
   return media.filter(m => {
-    return tags.every(tag => m.tags.some(mediaTag => mediaTag.name === tag));
+    return tagNames.every(tag =>
+      m.tags.some(mediaTag => getTagName(mediaTag) === tag),
+    );
   });
 }
 
 export function getAllTagMedia(
   media: BaseMedia[],
-  eraTags: string[],
-  tags: string[],
+  eraTags: MediaTag[],
+  tags: MediaTag[],
 ): { allTagMediaInEra: BaseMedia[]; allTagMediaOutOfEra: BaseMedia[] } {
   let inEra: BaseMedia[] = [];
   let outOfEra: BaseMedia[] = [];
@@ -149,15 +179,17 @@ export function getAllTagMedia(
 export function getContextMedia(
   alreadySelectedMedia: BaseMedia[],
   media: BaseMedia[],
-  tags: string[],
-  eraTags: string[],
+  tags: MediaTag[],
+  eraTags: MediaTag[],
   age: string,
   duration: number,
 ): BaseMedia[] {
   let selectedMedia: BaseMedia[] = [];
   let allTagMediaInEra: BaseMedia[] = [];
   let allTagMediaOutOfEra: BaseMedia[] = [];
-  let contextTags = [...tags, age];
+  // contextTags is a combination of the tag names and the age group (string)
+  const contextTags: MediaTag[] = [...tags];
+  // Use getAllTagMedia which accepts MediaTag[]
   ({ allTagMediaInEra, allTagMediaOutOfEra } = getAllTagMedia(
     media,
     eraTags,
@@ -175,9 +207,10 @@ export function getContextMedia(
   return selectedMedia;
 }
 
-export function getAgeGroupAdjacencyTags(tags: string[]): string[] {
+export function getAgeGroupAdjacencyTags(tags: MediaTag[]): string[] {
   let adjacencyTags: string[] = [];
-  tags.forEach(tag => {
+  const tagNames = tagNamesFrom(tags);
+  tagNames.forEach(tag => {
     if (tag === AgeGroups.Kids) {
       adjacencyTags.push(AgeGroups.Kids);
       adjacencyTags.push(AgeGroups.Family);
@@ -185,14 +218,14 @@ export function getAgeGroupAdjacencyTags(tags: string[]): string[] {
     if (tag === AgeGroups.Family) {
       adjacencyTags.push(AgeGroups.Family);
       adjacencyTags.push(AgeGroups.Kids);
-      if (!tags.includes(AgeGroups.Kids)) {
+      if (!tagNames.includes(AgeGroups.Kids)) {
         adjacencyTags.push(AgeGroups.YoungAdult);
       }
     }
     if (tag === AgeGroups.YoungAdult) {
       adjacencyTags.push(AgeGroups.YoungAdult);
       adjacencyTags.push(AgeGroups.Family);
-      if (!tags.includes(AgeGroups.Family)) {
+      if (!tagNames.includes(AgeGroups.Family)) {
         adjacencyTags.push(AgeGroups.Mature);
       }
     }
@@ -206,13 +239,14 @@ export function getAgeGroupAdjacencyTags(tags: string[]): string[] {
   );
 }
 
-export function getHighestAgeGroupTag(tags: string[]): string {
+export function getHighestAgeGroupTag(tags: MediaTag[]): string {
   // Mature > Young Adult > Family > Kids
-  if (tags.includes(AgeGroups.Mature)) {
+  const tagNames = tagNamesFrom(tags);
+  if (tagNames.includes(AgeGroups.Mature)) {
     return AgeGroups.Mature;
-  } else if (tags.includes(AgeGroups.YoungAdult)) {
+  } else if (tagNames.includes(AgeGroups.YoungAdult)) {
     return AgeGroups.YoungAdult;
-  } else if (tags.includes(AgeGroups.Family)) {
+  } else if (tagNames.includes(AgeGroups.Family)) {
     return AgeGroups.Family;
   } else {
     return AgeGroups.Kids;
@@ -222,8 +256,8 @@ export function getHighestAgeGroupTag(tags: string[]): string {
 export function getMediaByTagGroupHeirarchy(
   alreadySelectedMedia: BaseMedia[],
   media: BaseMedia[],
-  selectedTags: string[],
-  eraTags: string[],
+  selectedTags: MediaTag[],
+  eraTags: MediaTag[],
   age: string,
   duration: number,
 ): BaseMedia[] {
@@ -316,7 +350,7 @@ export function splitMediaByHoliday(
   inHoliday.push(
     ...media.filter(m =>
       selectedHolidays.some(tag =>
-        m.tags.some(mediaTag => mediaTag.name === tag),
+        m.tags.some(mediaTag => getTagName(mediaTag) === tag),
       ),
     ),
   );
@@ -325,7 +359,9 @@ export function splitMediaByHoliday(
   notHoliday.push(
     ...media.filter(
       m =>
-        !holidays.some(tag => m.tags.some(mediaTag => mediaTag.name === tag)),
+        !holidays.some(tag =>
+          m.tags.some(mediaTag => getTagName(mediaTag) === tag),
+        ),
     ),
   );
 

@@ -1,6 +1,7 @@
 import { getDB } from '../db/sqlite';
 import { Music } from '../models/music';
 import { MediaTag } from '../models/const/tagTypes';
+import { tagRepository } from './tagsRepository';
 
 export class MusicRepository {
   private get db() {
@@ -18,10 +19,26 @@ export class MusicRepository {
 
     for (const tag of tags) {
       try {
-        stmt.run(mediaItemId, tag.tagId);
+        let tagId: string | undefined;
+        if (typeof tag === 'string') {
+          const found = tagRepository.findByNameIgnoreCase(tag);
+          tagId = found ? found.tagId : undefined;
+        } else if ((tag as any).tagId) {
+          tagId = (tag as any).tagId;
+        }
+
+        if (!tagId) {
+          console.warn(`Skipping unknown tag for music ${mediaItemId}:`, tag);
+          continue;
+        }
+
+        stmt.run(mediaItemId, tagId);
       } catch (error) {
         // Ignore duplicate key errors, but log other errors
-        if (!(error instanceof Error) || !error.message.includes('UNIQUE constraint failed')) {
+        if (
+          !(error instanceof Error) ||
+          !error.message.includes('UNIQUE constraint failed')
+        ) {
           console.error('Error inserting music tag:', error);
         }
       }
@@ -132,11 +149,14 @@ export class MusicRepository {
     return transaction();
   }
 
-  // Find music by tags using SQL joins
-  findByTags(tags: string[]): Music[] {
+  // Find music by tags using SQL joins (accept MediaTag[] or string[])
+  findByTags(tags: (MediaTag | string)[]): Music[] {
     if (tags.length === 0) return [];
 
-    const placeholders = tags.map(() => '?').join(',');
+    const tagNames = tags.map(t =>
+      typeof t === 'string' ? t : (t as any).name,
+    );
+    const placeholders = tagNames.map(() => '?').join(',');
     const stmt = this.db.prepare(`
       SELECT DISTINCT m.*
       FROM music m
@@ -146,15 +166,18 @@ export class MusicRepository {
       ORDER BY m.title
     `);
 
-    const rows = stmt.all(...tags) as any[];
+    const rows = stmt.all(...tagNames) as any[];
     return rows.map(row => this.mapRowToMusic(row));
   }
 
   // Find music by musical genres specifically
-  findByMusicalGenres(genres: string[]): Music[] {
+  findByMusicalGenres(genres: (MediaTag | string)[]): Music[] {
     if (genres.length === 0) return [];
 
-    const placeholders = genres.map(() => '?').join(',');
+    const genreNames = genres.map(g =>
+      typeof g === 'string' ? g : (g as any).name,
+    );
+    const placeholders = genreNames.map(() => '?').join(',');
     const stmt = this.db.prepare(`
       SELECT DISTINCT m.*
       FROM music m
@@ -164,7 +187,7 @@ export class MusicRepository {
       ORDER BY m.title
     `);
 
-    const rows = stmt.all(...genres) as any[];
+    const rows = stmt.all(...genreNames) as any[];
     return rows.map(row => this.mapRowToMusic(row));
   }
 

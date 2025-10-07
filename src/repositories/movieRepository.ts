@@ -2,6 +2,7 @@ import { getDB } from '../db/sqlite';
 import { Movie, CollectionReference } from '../models/movie';
 import { Tag } from '../models/tag';
 import { MediaTag } from '../models/const/tagTypes';
+import { tagRepository } from './tagsRepository';
 
 export class MovieRepository {
   private get db() {
@@ -102,8 +103,20 @@ export class MovieRepository {
     return result.changes > 0;
   }
 
-  // Find movies by tags
-  findByTags(tagIds: string[]): Movie[] {
+  // Find movies by tags (accept MediaTag[] or string[] - resolves to tagIds)
+  findByTags(tags: (MediaTag | string)[]): Movie[] {
+    if (tags.length === 0) return [];
+
+    const tagIds: string[] = [];
+    for (const t of tags) {
+      if (typeof t === 'string') {
+        const found = tagRepository.findByNameIgnoreCase(t);
+        if (found) tagIds.push(found.tagId);
+      } else if ((t as any).tagId) {
+        tagIds.push((t as any).tagId);
+      }
+    }
+
     if (tagIds.length === 0) return [];
 
     const placeholders = tagIds.map(() => '?').join(',');
@@ -149,10 +162,31 @@ export class MovieRepository {
 
     for (const tag of tags) {
       try {
-        stmt.run(mediaItemId, tag.tagId, tag.type);
+        let tagId: string | undefined;
+        let tagType: string | undefined;
+        if (typeof tag === 'string') {
+          const found = tagRepository.findByNameIgnoreCase(tag);
+          if (found) {
+            tagId = found.tagId;
+            tagType = found.type;
+          }
+        } else if ((tag as any).tagId) {
+          tagId = (tag as any).tagId;
+          tagType = (tag as any).type;
+        }
+
+        if (!tagId || !tagType) {
+          console.warn(
+            `Failed to resolve tag for media item ${mediaItemId}:`,
+            tag,
+          );
+          continue;
+        }
+
+        stmt.run(mediaItemId, tagId, tagType);
       } catch (error) {
         console.warn(
-          `Failed to insert tag ${tag.tagId} for media item ${mediaItemId}:`,
+          `Failed to insert tag for media item ${mediaItemId}:`,
           error,
         );
       }
@@ -198,11 +232,9 @@ export class MovieRepository {
     `);
 
     const rows = stmt.all(mediaItemId) as any[];
-    return rows.map(row => new CollectionReference(
-      row.mediaItemId,
-      row.title,
-      row.sequence
-    ));
+    return rows.map(
+      row => new CollectionReference(row.mediaItemId, row.title, row.sequence),
+    );
   }
 
   private mapRowToMovie(row: any): Movie {

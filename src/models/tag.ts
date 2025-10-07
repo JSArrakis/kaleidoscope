@@ -1,7 +1,9 @@
+import { TagType } from './const/tagTypes';
+
 export interface ITag {
   tagId: string;
   name: string;
-  type: string;
+  type: TagType;
   // Holiday-specific fields (optional)
   holidayDates?: string[];
   exclusionGenres?: string[];
@@ -14,7 +16,7 @@ export interface ITag {
 export class Tag {
   tagId: string;
   name: string;
-  type: string;
+  type: TagType;
   // Holiday-specific fields
   holidayDates?: string[];
   exclusionGenres?: string[];
@@ -26,7 +28,7 @@ export class Tag {
   constructor(
     tagId: string,
     name: string,
-    type: string,
+    type: TagType,
     holidayDates?: string[],
     exclusionGenres?: string[],
     seasonStartDate?: string,
@@ -58,14 +60,19 @@ export class Tag {
 
   // Helper methods to check tag type
   isHoliday(): boolean {
-    return this.type === 'Holiday';
+    return this.type === TagType.Holiday;
   }
 
   isAgeGroup(): boolean {
-    return this.type === 'AgeGroup';
+    return this.type === TagType.AgeGroup;
   }
 
   isRegularTag(): boolean {
-    return ['Aesthetic', 'Era', 'Genre', 'Specialty'].includes(this.type);
+    return [
+      TagType.Aesthetic,
+      TagType.Era,
+      TagType.Genre,
+      TagType.Specialty,
+    ].includes(this.type);
   }
 }

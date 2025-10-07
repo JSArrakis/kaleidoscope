@@ -28,7 +28,7 @@ describe('setProceduralTags', () => {
         MediaType.Movie,
         1656547200,
         9000,
-        ['scifi'],
+        tdMovies.inception.tags,
       ),
       new SelectedMedia(
         tdMovies.therock,
@@ -36,20 +36,22 @@ describe('setProceduralTags', () => {
         MediaType.Movie,
         1656633600,
         10800,
-        ['action'],
+        tdMovies.therock.tags,
       ),
     ];
 
     const stagedMedia = new StagedMedia(selected, [], 1656633600 + 10800);
     streamCon.setProceduralTags(args, stagedMedia);
 
+    // Expect args.Tags to include the tags from the selected media (deduped)
     expect(args.Tags).toEqual([
-      MainGenres.Action,
-      MainGenres.SciFi,
-      MainGenres.Adventure,
-      AgeGroups.Mature,
-      Eras.ttens,
-      Eras.nnineties,
+      ...tdMovies.inception.tags,
+      ...tdMovies.therock.tags.filter(
+        t =>
+          !tdMovies.inception.tags.some(
+            it => (it as any).name === (t as any).name,
+          ),
+      ),
     ]);
   });
 });

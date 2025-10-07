@@ -19,6 +19,7 @@ function initializeStream(
   media: Media,
   mosaics: Mosaic[],
   streamType: StreamType,
+  alignStart: boolean = false,
 ): string {
   // Constructs the stream based on the config, continuous stream args, and available media
   // The stream is assigned to upcoming stream which the background service will use to populate the on deck stream
@@ -30,6 +31,8 @@ function initializeStream(
     media,
     mosaics,
     streamType,
+    undefined,
+    alignStart,
   );
   if (upcomingStreamResponse[1] !== '') {
     return upcomingStreamResponse[1];
@@ -59,6 +62,10 @@ function removeFromOnDeckStream(): MediaBlock | undefined {
 
 function removeFromUpcomingStream(): MediaBlock | undefined {
   return upcomingStream.shift();
+}
+
+function addToUpcomingStream(mediaBlocks: MediaBlock[]): void {
+  upcomingStream.push(...mediaBlocks);
 }
 
 function getUpcomingStream(): MediaBlock[] {
@@ -97,6 +104,29 @@ function setStreamVariationInSeconds(value: number): void {
   streamVarianceInSeconds = value;
 }
 
+function getStreamStatus() {
+  return {
+    isContinuous: continuousStream,
+    hasUpcomingStream: upcomingStream.length > 0,
+    onDeckLength: onDeckStream.length,
+    upcomingLength: upcomingStream.length,
+    streamArgs: args
+      ? {
+          title: args.Title,
+          env: args.Env,
+          hasPassword: !!args.Password,
+        }
+      : null,
+  };
+}
+
+function stopContinuousStream(): void {
+  continuousStream = false;
+  upcomingStream = [];
+  onDeckStream = [];
+  // Note: VLC client cleanup should be handled separately
+}
+
 async function addInitialMediaBlocks() {
   for (const item of onDeckStream) {
     await addMediaBlock(item);
@@ -108,6 +138,7 @@ export {
   initializeOnDeckStream,
   addToOnDeckStream,
   removeFromOnDeckStream,
+  addToUpcomingStream,
   getUpcomingStream,
   getOnDeckStream,
   getOnDeckStreamLength,
@@ -119,4 +150,6 @@ export {
   removeFromUpcomingStream,
   setStreamVariationInSeconds,
   getStreamVariationInSeconds,
+  getStreamStatus,
+  stopContinuousStream,
 };
