@@ -1,6 +1,10 @@
 import { getDB } from '../db/sqlite';
 import { Tag } from '../models/tag';
 import { MediaTag, TagType } from '../models/const/tagTypes';
+import {
+  convertMMDDToDateTime,
+  convertDateTimeToMMDD,
+} from '../utils/utilities';
 
 export class TagRepository {
   private get db() {
@@ -14,23 +18,61 @@ export class TagRepository {
       throw new Error(`Tag name "${tag.name}" already exists`);
     }
 
-    const stmt = this.db.prepare(`
-      INSERT INTO tags (tagId, name, type, holidayDates, exclusionGenres, seasonStartDate, seasonEndDate, sequence)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    const insertTagStmt = this.db.prepare(`
+      INSERT INTO tags (tagId, name, type, seasonStartDate, seasonEndDate, explicitlyHoliday, sequence)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `);
+
+    const insertHolidayDateStmt = this.db.prepare(`
+      INSERT INTO holiday_dates (tagId, holidayDate)
+      VALUES (?, ?)
+    `);
+
+    const insertExclusionTagStmt = this.db.prepare(`
+      INSERT INTO holiday_exclusion_tags (holidayTagId, excludedTagId)
+      VALUES (?, ?)
     `);
 
     try {
-      const result = stmt.run(
-        tag.tagId,
-        tag.name,
-        tag.type,
-        tag.holidayDates ? JSON.stringify(tag.holidayDates) : null,
-        tag.exclusionGenres ? JSON.stringify(tag.exclusionGenres) : null,
-        tag.seasonStartDate || null,
-        tag.seasonEndDate || null,
-        tag.sequence || null,
-      );
+      // Use transaction to ensure data consistency
+      const transaction = this.db.transaction(() => {
+        // Insert the main tag record
+        insertTagStmt.run(
+          tag.tagId,
+          tag.name,
+          tag.type,
+          tag.seasonStartDate || null,
+          tag.seasonEndDate || null,
+          tag.explicitlyHoliday ? 1 : 0, // Convert boolean to integer for SQLite
+          tag.sequence || null,
+        );
 
+        // Insert holiday dates if this is a holiday tag and has dates
+        if (
+          tag.type === TagType.Holiday &&
+          tag.holidayDates &&
+          tag.holidayDates.length > 0
+        ) {
+          for (const holidayDate of tag.holidayDates) {
+            // Convert MM-DD format to DATETIME for storage
+            const datetime = convertMMDDToDateTime(holidayDate);
+            insertHolidayDateStmt.run(tag.tagId, datetime);
+          }
+        }
+
+        // Insert exclusion tags if this is a holiday tag and has exclusions
+        if (
+          tag.type === TagType.Holiday &&
+          tag.exclusionTags &&
+          tag.exclusionTags.length > 0
+        ) {
+          for (const excludedTagId of tag.exclusionTags) {
+            insertExclusionTagStmt.run(tag.tagId, excludedTagId);
+          }
+        }
+      });
+
+      transaction();
       return this.findByTagId(tag.tagId)!;
     } catch (error: any) {
       if (error.code === 'SQLITE_CONSTRAINT_UNIQUE') {
@@ -121,25 +163,80 @@ export class TagRepository {
       throw new Error(`Tag name "${tag.name}" already exists`);
     }
 
-    const stmt = this.db.prepare(`
+    const updateTagStmt = this.db.prepare(`
       UPDATE tags
-      SET name = ?, type = ?, holidayDates = ?, exclusionGenres = ?, seasonStartDate = ?, seasonEndDate = ?, sequence = ?, updatedAt = CURRENT_TIMESTAMP
+      SET name = ?, type = ?, seasonStartDate = ?, seasonEndDate = ?, explicitlyHoliday = ?, sequence = ?, updatedAt = CURRENT_TIMESTAMP
       WHERE tagId = ?
     `);
 
-    try {
-      const result = stmt.run(
-        tag.name,
-        tag.type,
-        tag.holidayDates ? JSON.stringify(tag.holidayDates) : null,
-        tag.exclusionGenres ? JSON.stringify(tag.exclusionGenres) : null,
-        tag.seasonStartDate || null,
-        tag.seasonEndDate || null,
-        tag.sequence || null,
-        tagId,
-      );
+    const deleteHolidayDatesStmt = this.db.prepare(`
+      DELETE FROM holiday_dates WHERE tagId = ?
+    `);
 
-      if (result.changes === 0) return null;
+    const insertHolidayDateStmt = this.db.prepare(`
+      INSERT INTO holiday_dates (tagId, holidayDate)
+      VALUES (?, ?)
+    `);
+
+    const deleteExclusionTagsStmt = this.db.prepare(`
+      DELETE FROM holiday_exclusion_tags WHERE holidayTagId = ?
+    `);
+
+    const insertExclusionTagStmt = this.db.prepare(`
+      INSERT INTO holiday_exclusion_tags (holidayTagId, excludedTagId)
+      VALUES (?, ?)
+    `);
+
+    try {
+      // Use transaction to ensure data consistency
+      const transaction = this.db.transaction(() => {
+        // Update the main tag record
+        const result = updateTagStmt.run(
+          tag.name,
+          tag.type,
+          tag.seasonStartDate || null,
+          tag.seasonEndDate || null,
+          tag.explicitlyHoliday ? 1 : 0, // Convert boolean to integer for SQLite
+          tag.sequence || null,
+          tagId,
+        );
+
+        if (result.changes === 0) return null;
+
+        // Handle holiday dates
+        // First, delete all existing holiday dates for this tag
+        deleteHolidayDatesStmt.run(tagId);
+
+        // Then insert new holiday dates if this is a holiday tag and has dates
+        if (
+          tag.type === TagType.Holiday &&
+          tag.holidayDates &&
+          tag.holidayDates.length > 0
+        ) {
+          for (const holidayDate of tag.holidayDates) {
+            // Convert MM-DD format to DATETIME for storage
+            const datetime = convertMMDDToDateTime(holidayDate);
+            insertHolidayDateStmt.run(tagId, datetime);
+          }
+        }
+
+        // Handle exclusion tags
+        // First, delete all existing exclusion tags for this holiday tag
+        deleteExclusionTagsStmt.run(tagId);
+
+        // Then insert new exclusion tags if this is a holiday tag and has exclusions
+        if (
+          tag.type === TagType.Holiday &&
+          tag.exclusionTags &&
+          tag.exclusionTags.length > 0
+        ) {
+          for (const excludedTagId of tag.exclusionTags) {
+            insertExclusionTagStmt.run(tagId, excludedTagId);
+          }
+        }
+      });
+
+      transaction();
       return this.findByTagId(tagId);
     } catch (error: any) {
       if (error.code === 'SQLITE_CONSTRAINT_UNIQUE') {
@@ -161,11 +258,11 @@ export class TagRepository {
     return result.changes > 0;
   }
 
-  // Find tags by tags (accept MediaTag[] or string[])
-  findByTags(tags: (MediaTag | string)[]): Tag[] {
+  // Find tags by tags (accept Tag[] or string[])
+  findByTags(tags: (Tag | string)[]): Tag[] {
     if (tags.length === 0) return [];
 
-    const names = tags.map(t => (typeof t === 'string' ? t : (t as any).name));
+    const names = tags.map(t => (typeof t === 'string' ? t : t.name));
     const stmt = this.db.prepare(`
       SELECT * FROM tags
       WHERE ${names.map((_, index) => `tags LIKE ?`).join(' OR ')}
@@ -204,6 +301,33 @@ export class TagRepository {
     return rows.map(row => this.mapRowToTag(row));
   }
 
+  findAllTodaysHolidays(currentDateTime: string): Tag[] {
+    // Extract just the date part for holidayDates comparison (YYYY-MM-DD)
+    const currentDate = currentDateTime.split(' ')[0];
+    // Extract MM-DD format for holiday dates comparison
+    const currentMonthDay = currentDate.substring(5); // Get MM-DD from YYYY-MM-DD
+
+    const stmt = this.db.prepare(`
+      SELECT DISTINCT t.* FROM tags t
+      LEFT JOIN holiday_dates hd ON t.tagId = hd.tagId
+      WHERE t.type = 'Holiday' 
+        AND (
+          DATE(hd.holidayDate) = ? OR 
+          strftime('%m-%d', hd.holidayDate) = ? OR
+          (t.seasonStartDate IS NOT NULL AND t.seasonEndDate IS NOT NULL 
+           AND DATE(t.seasonStartDate) <= ? AND DATE(t.seasonEndDate) >= ?)
+        )
+      ORDER BY t.name
+    `);
+    const rows = stmt.all(
+      currentDate, // YYYY-MM-DD format for full date match
+      currentMonthDay, // MM-DD format for month-day match
+      currentDate,
+      currentDate,
+    ) as any[];
+    return rows.map(row => this.mapRowToTag(row));
+  }
+
   // Find all age groups
   findAllAgeGroups(): Tag[] {
     const stmt = this.db.prepare(`
@@ -225,17 +349,28 @@ export class TagRepository {
   }
 
   // Find holidays by current date
-  findActiveHolidays(currentDate: string): Tag[] {
+  findActiveHolidays(currentDateTime: string): Tag[] {
+    // Extract just the date part for holidayDates comparison (YYYY-MM-DD)
+    const currentDate = currentDateTime.split(' ')[0];
+    // Extract MM-DD format for holiday dates comparison
+    const currentMonthDay = currentDate.substring(5); // Get MM-DD from YYYY-MM-DD
+
     const stmt = this.db.prepare(`
-      SELECT * FROM tags 
-      WHERE type = 'Holiday' 
-        AND (holidayDates LIKE ? OR 
-             (seasonStartDate <= ? AND seasonEndDate >= ?))
-      ORDER BY name
+      SELECT DISTINCT t.* FROM tags t
+      LEFT JOIN holiday_dates hd ON t.tagId = hd.tagId
+      WHERE t.type = 'Holiday' 
+        AND (
+          DATE(hd.holidayDate) = ? OR 
+          strftime('%m-%d', hd.holidayDate) = ? OR
+          (t.seasonStartDate IS NOT NULL AND t.seasonEndDate IS NOT NULL 
+           AND DATE(t.seasonStartDate) <= ? AND DATE(t.seasonEndDate) >= ?)
+        )
+      ORDER BY t.name
     `);
 
     const rows = stmt.all(
-      `%"${currentDate}"%`,
+      currentDate, // YYYY-MM-DD format for full date match
+      currentMonthDay, // MM-DD format for month-day match
       currentDate,
       currentDate,
     ) as any[];
@@ -250,6 +385,7 @@ export class TagRepository {
     exclusionGenres: string[],
     seasonStartDate?: string,
     seasonEndDate?: string,
+    explicitlyHoliday?: boolean,
   ): Tag {
     // Check if name is already taken
     if (this.isNameTaken(name)) {
@@ -264,6 +400,7 @@ export class TagRepository {
       exclusionGenres,
       seasonStartDate,
       seasonEndDate,
+      explicitlyHoliday,
     );
     return this.create(holiday);
   }
@@ -279,11 +416,12 @@ export class TagRepository {
       tagId,
       name,
       TagType.AgeGroup,
-      undefined,
-      undefined,
-      undefined,
-      undefined,
-      sequence,
+      undefined, // holidayDates
+      undefined, // exclusionGenres
+      undefined, // seasonStartDate
+      undefined, // seasonEndDate
+      undefined, // explicitlyHoliday
+      sequence, // sequence
     );
     return this.create(ageGroup);
   }
@@ -300,14 +438,40 @@ export class TagRepository {
   }
 
   private mapRowToTag(row: any): Tag {
+    // Fetch holiday dates if this is a holiday tag
+    let holidayDates: string[] | undefined = undefined;
+    if (row.type === TagType.Holiday) {
+      const holidayDatesStmt = this.db.prepare(`
+        SELECT holidayDate FROM holiday_dates WHERE tagId = ? ORDER BY holidayDate
+      `);
+      const holidayRows = holidayDatesStmt.all(row.tagId) as {
+        holidayDate: string;
+      }[];
+      // Convert DATETIME back to MM-DD format for API responses
+      holidayDates = holidayRows.map(r => convertDateTimeToMMDD(r.holidayDate));
+    }
+
+    // Fetch exclusion tags if this is a holiday tag
+    let exclusionTags: string[] | undefined = undefined;
+    if (row.type === TagType.Holiday) {
+      const exclusionTagsStmt = this.db.prepare(`
+        SELECT excludedTagId FROM holiday_exclusion_tags WHERE holidayTagId = ? ORDER BY excludedTagId
+      `);
+      const exclusionRows = exclusionTagsStmt.all(row.tagId) as {
+        excludedTagId: string;
+      }[];
+      exclusionTags = exclusionRows.map(r => r.excludedTagId);
+    }
+
     return new Tag(
       row.tagId,
       row.name,
       row.type,
-      row.holidayDates ? JSON.parse(row.holidayDates) : undefined,
-      row.exclusionGenres ? JSON.parse(row.exclusionGenres) : undefined,
+      holidayDates,
+      exclusionTags,
       row.seasonStartDate,
       row.seasonEndDate,
+      Boolean(row.explicitlyHoliday), // Convert SQLite integer back to boolean
       row.sequence,
     );
   }

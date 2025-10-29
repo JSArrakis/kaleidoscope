@@ -1,7 +1,7 @@
 import { getDB } from '../db/sqlite';
 import { Movie, CollectionReference } from '../models/movie';
 import { Tag } from '../models/tag';
-import { MediaTag } from '../models/const/tagTypes';
+import { MediaType } from '../models/enum/mediaTypes';
 import { tagRepository } from './tagsRepository';
 
 export class MovieRepository {
@@ -103,8 +103,8 @@ export class MovieRepository {
     return result.changes > 0;
   }
 
-  // Find movies by tags (accept MediaTag[] or string[] - resolves to tagIds)
-  findByTags(tags: (MediaTag | string)[]): Movie[] {
+  // Find movies by tags (accept Tag[] or string[] - resolves to tagIds)
+  findByTags(tags: (Tag | string)[]): Movie[] {
     if (tags.length === 0) return [];
 
     const tagIds: string[] = [];
@@ -152,7 +152,7 @@ export class MovieRepository {
   }
 
   // Helper method to insert media tags
-  private insertMediaTags(mediaItemId: string, tags: MediaTag[]): void {
+  private insertMediaTags(mediaItemId: string, tags: Tag[]): void {
     if (tags.length === 0) return;
 
     const stmt = this.db.prepare(`
@@ -194,7 +194,7 @@ export class MovieRepository {
   }
 
   // Helper method to load tags for a media item
-  private loadMediaTags(mediaItemId: string): MediaTag[] {
+  private loadMediaTags(mediaItemId: string): Tag[] {
     const stmt = this.db.prepare(`
       SELECT t.* FROM tags t
       INNER JOIN media_tags mt ON t.tagId = mt.tagId
@@ -202,7 +202,7 @@ export class MovieRepository {
     `);
 
     const tagRows = stmt.all(mediaItemId) as any[];
-    const tags: MediaTag[] = [];
+    const tags: Tag[] = [];
 
     for (const tagRow of tagRows) {
       const tag = new Tag(
@@ -250,6 +250,7 @@ export class MovieRepository {
       row.path,
       row.duration,
       row.durationLimit,
+      MediaType.Movie,
       collections,
     );
   }

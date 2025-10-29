@@ -1,14 +1,10 @@
 import { MediaType } from './enum/mediaTypes';
-import { MediaTag } from './const/tagTypes';
+import { Tag } from './tag';
+import { BaseMedia } from './mediaInterface';
 import { tagRepository } from '../repositories/tagsRepository';
 
-export interface IBumper {
-  title: string;
-  mediaItemId: string;
-  duration: number;
-  path: string;
-  type: number;
-  tags: MediaTag[];
+export interface IBumper extends BaseMedia {
+  type: MediaType;
 }
 
 export class Bumper {
@@ -16,16 +12,16 @@ export class Bumper {
   mediaItemId: string;
   duration: number;
   path: string;
-  type: number;
-  tags: MediaTag[];
+  type: MediaType;
+  tags: Tag[];
 
   constructor(
     title: string,
     loadtitle: string,
     duration: number,
     path: string,
-    type: number,
-    tags: MediaTag[],
+    type: MediaType,
+    tags: Tag[],
   ) {
     this.title = title;
     this.mediaItemId = loadtitle;
@@ -37,7 +33,7 @@ export class Bumper {
 
   static async fromRequestObject(requestObject: any): Promise<Bumper> {
     // Convert tag names to Tag objects
-    const tags: MediaTag[] = [];
+    const tags: Tag[] = [];
     if (requestObject.tags && Array.isArray(requestObject.tags)) {
       for (const tagName of requestObject.tags) {
         const tag = tagRepository.findByName(tagName);

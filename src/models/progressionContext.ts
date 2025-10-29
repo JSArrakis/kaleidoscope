@@ -1,59 +1,35 @@
 import { StreamType } from './enum/streamTypes';
 
-export class ProgressionContext {
-  title: string;
-  loadTitle: string;
-  environment: string;
-  type: StreamType;
-  watchRecords: WatchRecord[];
-
-  constructor(
-    title: string,
-    loadTitle: string,
-    environment: string,
-    type: StreamType,
-    progressions: WatchRecord[],
-  ) {
-    this.title = title;
-    this.loadTitle = loadTitle;
-    this.environment = environment;
-    this.type = type;
-    this.watchRecords = progressions;
-  }
-}
-
-export class WatchRecord {
-  title: string;
-  mediaItemId: string;
-  episode: number;
+export class EpisodeProgression {
+  showMediaItemId: string;
+  streamType: StreamType;
+  currentEpisode: number;
   lastPlayed: number;
   nextEpisodeDurLimit: number;
+  nextEpisodeOverDuration: boolean;
 
   constructor(
-    title: string,
-    loadTitle: string,
-    episode: number,
+    showMediaItemId: string,
+    streamType: StreamType,
+    currentEpisode: number,
     lastPlayed: number,
     nextEpisodeDurLimit: number,
+    nextEpisodeOverDuration: boolean,
   ) {
-    this.title = title;
-    this.mediaItemId = loadTitle;
-    this.episode = episode;
+    this.showMediaItemId = showMediaItemId;
+    this.streamType = streamType;
+    this.currentEpisode = currentEpisode;
     this.lastPlayed = lastPlayed;
     this.nextEpisodeDurLimit = nextEpisodeDurLimit;
+    this.nextEpisodeOverDuration = nextEpisodeOverDuration;
   }
 }
 
-export interface IWatchRecord {
-  title: string;
-  mediaItemId: string;
-  episode: number;
+export interface IEpisodeProgression {
+  showMediaItemId: string;
+  streamType: string;
+  currentEpisode: number;
   lastPlayed: number;
-}
-
-export interface IProgressionContext extends Document {
-  title: string;
-  mediaItemId: string;
-  type: string;
-  progressions: WatchRecord[];
+  nextEpisodeDurLimit: number;
+  nextEpisodeOverDuration: boolean;
 }

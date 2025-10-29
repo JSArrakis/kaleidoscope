@@ -233,10 +233,14 @@ export async function transformShowFromRequest(show: Show): Promise<Show> {
   });
   show.durationLimit = maxDurationLimit;
 
-  //if there are episodes with durations over the duration limit, set the show to over duration
-  show.overDuration = show.episodes.some(
-    episode => episode.duration > show.durationLimit,
-  );
+  // Set overDuration on individual episodes if they exceed the duration limit
+  show.episodes.forEach(episode => {
+    episode.overDuration = episode.duration > show.durationLimit;
+  });
+
+  // Set firstEpisodeOverDuration on the show only if the first episode is over duration
+  show.firstEpisodeOverDuration =
+    show.episodes.length > 0 && show.episodes[0].overDuration;
 
   //set the episode count to the length of the episodes array
   show.episodeCount = show.episodes.length;

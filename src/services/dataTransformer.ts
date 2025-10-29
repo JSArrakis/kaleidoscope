@@ -5,10 +5,10 @@ import { Music } from '../models/music';
 import { Promo } from '../models/promo';
 import { Short } from '../models/short';
 import { SegmentedTags } from '../models/segmentedTags';
-import { MediaTag } from '../models/const/tagTypes';
-import { Eras } from '../models/const/eras';
-import { MainGenres } from '../models/const/mainGenres';
-import { AgeGroups } from '../models/const/ageGroups';
+import { Tag } from '../models/tag';
+// import { Eras } from '../models/const/eras';
+// import { MainGenres } from '../models/const/mainGenres';
+// import { AgeGroups } from '../models/const/ageGroups';
 import { getMediaDuration } from '../utils/utilities';
 
 export async function transformShowFromRequest(
@@ -56,15 +56,12 @@ export async function transformShowFromRequest(
   });
   parsedShow.durationLimit = maxDurationLimit;
 
-  //if there are episodes with durations over the duration limit, set the show to over duration
-  parsedShow.overDuration = parsedShow.episodes.some(
-    episode => episode.duration > parsedShow.durationLimit,
-  );
-
   //assume the episodes of the show are in order and set the episode number to the index of the episode in the array + 1
   parsedShow.episodes.forEach((episode, index) => {
     episode.episodeNumber = index + 1;
     episode.mediaItemId = `${parsedShow.mediaItemId}-${episode.episodeNumber}`;
+    // Set overDuration flag if episode duration exceeds show's duration limit
+    episode.overDuration = episode.duration > parsedShow.durationLimit;
   });
 
   //set the episode count to the length of the episodes array
@@ -160,34 +157,21 @@ export async function transformShortFromRequest(buffer: any): Promise<Short> {
   return parsedShort;
 }
 
-export function segmentTags(tags: MediaTag[]): SegmentedTags {
-  let segmentedTags: SegmentedTags = new SegmentedTags([], [], [], [], []);
-
-  function getTagName(tag: MediaTag | string): string {
-    return typeof tag === 'string' ? tag : (tag as any).name;
-  }
+export function segmentTags(tags: Tag[]): SegmentedTags {
+  let segmentedTags: SegmentedTags = new SegmentedTags([], [], [], [], [], []);
 
   tags.forEach(tag => {
-    const name = getTagName(tag);
-    if (Object.values(Eras).includes(name)) {
-      segmentedTags.eraTags.push(tag);
-    } else if (Object.values(MainGenres).includes(name)) {
-      segmentedTags.genreTags.push(tag);
-    } else if (Object.values(AgeGroups).includes(name)) {
-      segmentedTags.ageGroupTags.push(tag);
-    } else {
-      segmentedTags.specialtyTags.push(tag);
-    }
+    segmentedTags.specialtyTags.push(tag);
   });
 
   // Deduplicate by tag name
-  const uniqByName = (arr: MediaTag[]) =>
+  const uniqByName = (arr: Tag[]) =>
     Object.values(
       arr.reduce((acc: any, t) => {
-        acc[getTagName(t)] = t;
+        acc[t.name] = t;
         return acc;
       }, {}),
-    ) as MediaTag[];
+    ) as Tag[];
 
   segmentedTags.eraTags = uniqByName(segmentedTags.eraTags);
   segmentedTags.genreTags = uniqByName(segmentedTags.genreTags);

@@ -3,6 +3,7 @@ import { Commercial } from '../models/commercial';
 import { MediaTag } from '../models/const/tagTypes';
 import { Tag } from '../models/tag';
 import { tagRepository } from './tagsRepository';
+import { recentlyUsedMediaRepository } from './recentlyUsedMediaRepository';
 
 export class CommercialRepository {
   private get db() {
@@ -268,6 +269,45 @@ export class CommercialRepository {
       DELETE FROM commercial_tags WHERE mediaItemId = ?
     `);
     stmt.run(mediaItemId);
+  }
+
+  // Find commercials by Genre and Aesthetic tags for buffer selection, excluding recently used commercials
+  findBufferCommercialsByTags(
+    tags: (MediaTag | string)[],
+    hoursBack: number = 2,
+  ): Commercial[] {
+    if (tags.length === 0) return [];
+
+    const tagNames = tags.map(t =>
+      typeof t === 'string' ? t : (t as any).name,
+    );
+    const tagPlaceholders = tagNames.map(() => '?').join(',');
+
+    // Use NOT EXISTS for efficient exclusion of recently used commercials
+    const query = `
+      SELECT DISTINCT c.* FROM commercials c
+      INNER JOIN commercial_tags ct ON c.mediaItemId = ct.mediaItemId
+      INNER JOIN tags t ON ct.tagId = t.tagId
+      WHERE t.name IN (${tagPlaceholders}) 
+      AND t.type IN ('Genre', 'Aesthetic')
+      AND NOT EXISTS (
+        SELECT 1 FROM recently_used_commercials ruc 
+        WHERE ruc.mediaItemId = c.mediaItemId 
+        AND ruc.usageContext = 'buffer'
+        AND (ruc.expiresAt IS NULL OR ruc.expiresAt > datetime('now'))
+        AND ruc.usedAt > datetime('now', '-${hoursBack} hours')
+      )
+      ORDER BY RANDOM()
+    `;
+
+    const stmt = this.db.prepare(query);
+    const rows = stmt.all(...tagNames) as any[];
+
+    return rows.map(row => {
+      const commercial = this.mapRowToCommercial(row);
+      commercial.tags = this.loadCommercialTags(commercial.mediaItemId);
+      return commercial;
+    });
   }
 }
 

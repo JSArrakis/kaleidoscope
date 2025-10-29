@@ -6,9 +6,10 @@ export interface ITag {
   type: TagType;
   // Holiday-specific fields (optional)
   holidayDates?: string[];
-  exclusionGenres?: string[];
-  seasonStartDate?: string;
-  seasonEndDate?: string;
+  exclusionTags?: string[]; // tagIds of tags to exclude during this holiday
+  seasonStartDate?: string; // ISO datetime string (YYYY-MM-DD HH:MM:SS)
+  seasonEndDate?: string; // ISO datetime string (YYYY-MM-DD HH:MM:SS)
+  explicitlyHoliday?: boolean; // if true, content should only play during holiday periods
   // Age Group-specific fields (optional)
   sequence?: number;
 }
@@ -19,9 +20,10 @@ export class Tag {
   type: TagType;
   // Holiday-specific fields
   holidayDates?: string[];
-  exclusionGenres?: string[];
-  seasonStartDate?: string;
-  seasonEndDate?: string;
+  exclusionTags?: string[]; // tagIds of tags to exclude during this holiday
+  seasonStartDate?: string; // ISO datetime string (YYYY-MM-DD HH:MM:SS)
+  seasonEndDate?: string; // ISO datetime string (YYYY-MM-DD HH:MM:SS)
+  explicitlyHoliday?: boolean; // if true, content should only play during holiday periods
   // Age Group-specific fields
   sequence?: number;
 
@@ -30,18 +32,20 @@ export class Tag {
     name: string,
     type: TagType,
     holidayDates?: string[],
-    exclusionGenres?: string[],
+    exclusionTags?: string[],
     seasonStartDate?: string,
     seasonEndDate?: string,
+    explicitlyHoliday?: boolean,
     sequence?: number,
   ) {
     this.tagId = tagId;
     this.name = name;
     this.type = type;
     this.holidayDates = holidayDates;
-    this.exclusionGenres = exclusionGenres;
+    this.exclusionTags = exclusionTags;
     this.seasonStartDate = seasonStartDate;
     this.seasonEndDate = seasonEndDate;
+    this.explicitlyHoliday = explicitlyHoliday;
     this.sequence = sequence;
   }
 
@@ -51,9 +55,10 @@ export class Tag {
       requestObject.name,
       requestObject.type,
       requestObject.holidayDates,
-      requestObject.exclusionGenres,
+      requestObject.exclusionTags,
       requestObject.seasonStartDate,
       requestObject.seasonEndDate,
+      requestObject.explicitlyHoliday,
       requestObject.sequence,
     );
   }
@@ -74,5 +79,15 @@ export class Tag {
       TagType.Genre,
       TagType.Specialty,
     ].includes(this.type);
+  }
+
+  // Helper method for holiday content restrictions
+  isExplicitlyHoliday(): boolean {
+    return this.explicitlyHoliday === true;
+  }
+
+  // Helper method to check if content can play outside holiday periods
+  canPlayAnytime(): boolean {
+    return !this.isExplicitlyHoliday();
   }
 }

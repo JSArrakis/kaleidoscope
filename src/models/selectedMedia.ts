@@ -2,7 +2,7 @@ import { Block } from './block';
 import { MediaType } from './enum/mediaTypes';
 import { Movie } from './movie';
 import { Episode, Show } from './show';
-import { MediaTag } from './const/tagTypes';
+import { Tag } from './tag';
 
 export class SelectedMedia {
   media: Movie | Block | Episode;
@@ -10,7 +10,7 @@ export class SelectedMedia {
   type: MediaType;
   time: number;
   duration: number;
-  tags: MediaTag[];
+  tags: Tag[];
 
   constructor(
     media: Movie | Block | Episode,
@@ -18,7 +18,7 @@ export class SelectedMedia {
     type: MediaType,
     time: number,
     duration: number,
-    tags: MediaTag[],
+    tags: Tag[],
   ) {
     this.media = media;
     this.showTitle = showTitle;

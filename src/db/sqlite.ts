@@ -52,6 +52,7 @@ class SQLiteService {
 
     // Create tables if they don't exist
     this.createTables();
+
     console.log('Database tables initialized');
   }
 
@@ -74,13 +75,11 @@ class SQLiteService {
       )
     `);
 
-    // Facets table - stores facet definitions (genre + aesthetic and relationships)
+    // Facets table - stores facet definitions and relationships
     this.db.exec(`
       CREATE TABLE IF NOT EXISTS facets (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         facetId TEXT UNIQUE NOT NULL,
-        genre TEXT NOT NULL,
-        aesthetic TEXT NOT NULL,
         relationships TEXT, -- JSON string array of related facetIds and weights
         createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
         updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
@@ -99,6 +98,20 @@ class SQLiteService {
         FOREIGN KEY (sourceFacetId) REFERENCES facets (facetId) ON DELETE CASCADE,
         FOREIGN KEY (targetFacetId) REFERENCES facets (facetId) ON DELETE CASCADE,
         UNIQUE(sourceFacetId, targetFacetId)
+      )
+    `);
+
+    // Facet Tags junction table - links facets to their genre and aesthetic tags
+    this.db.exec(`
+      CREATE TABLE IF NOT EXISTS facet_tags (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        facetId TEXT NOT NULL,
+        tagId TEXT NOT NULL,
+        tagType TEXT NOT NULL, -- 'genre' or 'aesthetic'
+        createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (facetId) REFERENCES facets (facetId) ON DELETE CASCADE,
+        FOREIGN KEY (tagId) REFERENCES tags (tagId) ON DELETE CASCADE,
+        UNIQUE(facetId, tagType) -- Each facet can have only one genre and one aesthetic
       )
     `);
 
@@ -209,7 +222,6 @@ class SQLiteService {
         alias TEXT,
         imdb TEXT,
         durationLimit INTEGER,
-        overDuration BOOLEAN DEFAULT FALSE,
         firstEpisodeOverDuration BOOLEAN DEFAULT FALSE,
         episodeCount INTEGER DEFAULT 0,
         createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -231,6 +243,8 @@ class SQLiteService {
         showItemId TEXT,
         duration INTEGER,
         durationLimit INTEGER,
+        overDuration BOOLEAN DEFAULT FALSE,
+        type INTEGER DEFAULT 7, -- MediaType.Episode = 7
         createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
         updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (showId) REFERENCES shows (id) ON DELETE CASCADE
@@ -343,10 +357,9 @@ class SQLiteService {
         name TEXT UNIQUE NOT NULL,
         type TEXT NOT NULL, -- 'Aesthetic', 'Era', 'Genre', 'Specialty', 'Holiday', 'AgeGroup'
         -- Holiday-specific fields
-        holidayDates TEXT, -- JSON string array (only for Holiday type)
-        exclusionGenres TEXT, -- JSON string array (only for Holiday type)
-        seasonStartDate TEXT, -- only for Holiday type
-        seasonEndDate TEXT, -- only for Holiday type
+        seasonStartDate DATETIME, -- only for Holiday type
+        seasonEndDate DATETIME, -- only for Holiday type
+        explicitlyHoliday BOOLEAN DEFAULT FALSE, -- if true, content should only play during holiday periods
         -- Age Group-specific fields
         sequence INTEGER, -- only for AgeGroup type
         createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -354,16 +367,43 @@ class SQLiteService {
       )
     `);
 
-    // Mosaics table
+    // Holiday dates table - stores individual dates for holiday tags
+    this.db.exec(`
+      CREATE TABLE IF NOT EXISTS holiday_dates (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        tagId TEXT NOT NULL,
+        holidayDate DATETIME NOT NULL, -- Full datetime (e.g., '2024-12-25 00:00:00')
+        createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (tagId) REFERENCES tags(tagId) ON DELETE CASCADE,
+        UNIQUE(tagId, holidayDate)
+      )
+    `);
+
+    // Holiday exclusion tags table - stores tags that should be excluded during holiday periods
+    this.db.exec(`
+      CREATE TABLE IF NOT EXISTS holiday_exclusion_tags (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        holidayTagId TEXT NOT NULL, -- The holiday tag that defines the exclusion
+        excludedTagId TEXT NOT NULL, -- The tag to be excluded during this holiday
+        createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (holidayTagId) REFERENCES tags(tagId) ON DELETE CASCADE,
+        FOREIGN KEY (excludedTagId) REFERENCES tags(tagId) ON DELETE CASCADE,
+        UNIQUE(holidayTagId, excludedTagId)
+      )
+    `);
+
+    // Mosaics table - associates facets with musical genres
     this.db.exec(`
       CREATE TABLE IF NOT EXISTS mosaics (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        tagId TEXT UNIQUE NOT NULL,
-        name TEXT NOT NULL,
-        tags TEXT, -- JSON string array
-        musicalGenres TEXT, -- JSON string array
+        mosaicId TEXT UNIQUE NOT NULL,
+        facetId TEXT NOT NULL,
+        musicalGenres TEXT NOT NULL, -- JSON string array of musical genre names
+        name TEXT, -- Optional descriptive name
+        description TEXT, -- Optional description
         createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
-        updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
+        updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (facetId) REFERENCES facets(facetId)
       )
     `);
 
@@ -378,6 +418,84 @@ class SQLiteService {
         defaultPromo TEXT,
         createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
         updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    // Recently Used Media tables - separate tables for each media type for faster lookups
+    this.db.exec(`
+      CREATE TABLE IF NOT EXISTS recently_used_commercials (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        mediaItemId TEXT NOT NULL,
+        usageContext TEXT NOT NULL, -- 'buffer', 'main_content', 'promo'
+        streamSessionId TEXT, -- optional stream session identifier
+        usedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+        expiresAt DATETIME, -- when this usage record should be considered expired
+        FOREIGN KEY (mediaItemId) REFERENCES commercials(mediaItemId) ON DELETE CASCADE
+      )
+    `);
+
+    this.db.exec(`
+      CREATE TABLE IF NOT EXISTS recently_used_shorts (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        mediaItemId TEXT NOT NULL,
+        usageContext TEXT NOT NULL, -- 'buffer', 'main_content', 'promo'
+        streamSessionId TEXT, -- optional stream session identifier
+        usedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+        expiresAt DATETIME, -- when this usage record should be considered expired
+        FOREIGN KEY (mediaItemId) REFERENCES shorts(mediaItemId) ON DELETE CASCADE
+      )
+    `);
+
+    this.db.exec(`
+      CREATE TABLE IF NOT EXISTS recently_used_music (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        mediaItemId TEXT NOT NULL,
+        usageContext TEXT NOT NULL, -- 'buffer', 'main_content', 'promo'
+        streamSessionId TEXT, -- optional stream session identifier
+        usedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+        expiresAt DATETIME, -- when this usage record should be considered expired
+        FOREIGN KEY (mediaItemId) REFERENCES music(mediaItemId) ON DELETE CASCADE
+      )
+    `);
+
+    this.db.exec(`
+      CREATE TABLE IF NOT EXISTS recently_used_movies (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        mediaItemId TEXT NOT NULL,
+        usageContext TEXT NOT NULL, -- 'buffer', 'main_content', 'promo'
+        streamSessionId TEXT, -- optional stream session identifier
+        usedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+        expiresAt DATETIME, -- when this usage record should be considered expired
+        FOREIGN KEY (mediaItemId) REFERENCES movies(mediaItemId) ON DELETE CASCADE
+      )
+    `);
+
+    this.db.exec(`
+      CREATE TABLE IF NOT EXISTS recently_used_shows (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        mediaItemId TEXT NOT NULL,
+        usageContext TEXT NOT NULL, -- 'buffer', 'main_content', 'promo'
+        streamSessionId TEXT, -- optional stream session identifier
+        usedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+        expiresAt DATETIME, -- when this usage record should be considered expired
+        FOREIGN KEY (mediaItemId) REFERENCES shows(mediaItemId) ON DELETE CASCADE
+      )
+    `);
+
+    // Episode Progression table - tracks episode progression for each show per stream type
+    this.db.exec(`
+      CREATE TABLE IF NOT EXISTS episode_progression (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        show_media_item_id TEXT NOT NULL, -- MediaItemId of the show
+        stream_type TEXT NOT NULL, -- 'Cont', 'Adhoc', 'Block'
+        current_episode INTEGER DEFAULT 0, -- 0 = not started, 1+ = next episode to play
+        last_played_timestamp INTEGER DEFAULT 0,
+        next_episode_duration_limit INTEGER DEFAULT 0,
+        next_episode_over_duration BOOLEAN DEFAULT FALSE, -- TRUE if next episode exceeds show's durationLimit
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (show_media_item_id) REFERENCES shows(mediaItemId) ON DELETE CASCADE,
+        UNIQUE(show_media_item_id, stream_type)
       )
     `);
 
@@ -415,12 +533,47 @@ class SQLiteService {
       CREATE INDEX IF NOT EXISTS idx_tags_tagId ON tags(tagId);
       CREATE INDEX IF NOT EXISTS idx_tags_type ON tags(type);
       CREATE INDEX IF NOT EXISTS idx_tags_name ON tags(name);
-      CREATE INDEX IF NOT EXISTS idx_mosaics_tagId ON mosaics(tagId);
+      CREATE INDEX IF NOT EXISTS idx_holiday_dates_tagId ON holiday_dates(tagId);
+      CREATE INDEX IF NOT EXISTS idx_holiday_dates_holidayDate ON holiday_dates(holidayDate);
+      CREATE INDEX IF NOT EXISTS idx_holiday_exclusion_tags_holidayTagId ON holiday_exclusion_tags(holidayTagId);
+      CREATE INDEX IF NOT EXISTS idx_holiday_exclusion_tags_excludedTagId ON holiday_exclusion_tags(excludedTagId);
+      CREATE INDEX IF NOT EXISTS idx_mosaics_mosaicId ON mosaics(mosaicId);
+      CREATE INDEX IF NOT EXISTS idx_mosaics_facetId ON mosaics(facetId);
       CREATE INDEX IF NOT EXISTS idx_facets_facetId ON facets(facetId);
       CREATE INDEX IF NOT EXISTS idx_facets_genre ON facets(genre);
       CREATE INDEX IF NOT EXISTS idx_facets_aesthetic ON facets(aesthetic);
-  CREATE INDEX IF NOT EXISTS idx_facet_distances_from ON facet_distances(sourceFacetId);
-  CREATE INDEX IF NOT EXISTS idx_facet_distances_to ON facet_distances(targetFacetId);
+      CREATE INDEX IF NOT EXISTS idx_facet_distances_from ON facet_distances(sourceFacetId);
+      CREATE INDEX IF NOT EXISTS idx_facet_distances_to ON facet_distances(targetFacetId);
+      CREATE INDEX IF NOT EXISTS idx_recently_used_commercials_mediaItemId ON recently_used_commercials(mediaItemId);
+      CREATE INDEX IF NOT EXISTS idx_recently_used_commercials_usageContext ON recently_used_commercials(usageContext);
+      CREATE INDEX IF NOT EXISTS idx_recently_used_commercials_usedAt ON recently_used_commercials(usedAt);
+      CREATE INDEX IF NOT EXISTS idx_recently_used_commercials_expiresAt ON recently_used_commercials(expiresAt);
+      CREATE INDEX IF NOT EXISTS idx_recently_used_commercials_session ON recently_used_commercials(streamSessionId);
+      CREATE INDEX IF NOT EXISTS idx_recently_used_shorts_mediaItemId ON recently_used_shorts(mediaItemId);
+      CREATE INDEX IF NOT EXISTS idx_recently_used_shorts_usageContext ON recently_used_shorts(usageContext);
+      CREATE INDEX IF NOT EXISTS idx_recently_used_shorts_usedAt ON recently_used_shorts(usedAt);
+      CREATE INDEX IF NOT EXISTS idx_recently_used_shorts_expiresAt ON recently_used_shorts(expiresAt);
+      CREATE INDEX IF NOT EXISTS idx_recently_used_shorts_session ON recently_used_shorts(streamSessionId);
+      CREATE INDEX IF NOT EXISTS idx_recently_used_music_mediaItemId ON recently_used_music(mediaItemId);
+      CREATE INDEX IF NOT EXISTS idx_recently_used_music_usageContext ON recently_used_music(usageContext);
+      CREATE INDEX IF NOT EXISTS idx_recently_used_music_usedAt ON recently_used_music(usedAt);
+      CREATE INDEX IF NOT EXISTS idx_recently_used_music_expiresAt ON recently_used_music(expiresAt);
+      CREATE INDEX IF NOT EXISTS idx_recently_used_music_session ON recently_used_music(streamSessionId);
+      CREATE INDEX IF NOT EXISTS idx_recently_used_movies_mediaItemId ON recently_used_movies(mediaItemId);
+      CREATE INDEX IF NOT EXISTS idx_recently_used_movies_usageContext ON recently_used_movies(usageContext);
+      CREATE INDEX IF NOT EXISTS idx_recently_used_movies_usedAt ON recently_used_movies(usedAt);
+      CREATE INDEX IF NOT EXISTS idx_recently_used_movies_expiresAt ON recently_used_movies(expiresAt);
+      CREATE INDEX IF NOT EXISTS idx_recently_used_movies_session ON recently_used_movies(streamSessionId);
+      CREATE INDEX IF NOT EXISTS idx_recently_used_shows_mediaItemId ON recently_used_shows(mediaItemId);
+      CREATE INDEX IF NOT EXISTS idx_recently_used_shows_usageContext ON recently_used_shows(usageContext);
+      CREATE INDEX IF NOT EXISTS idx_recently_used_shows_usedAt ON recently_used_shows(usedAt);
+      CREATE INDEX IF NOT EXISTS idx_recently_used_shows_expiresAt ON recently_used_shows(expiresAt);
+      CREATE INDEX IF NOT EXISTS idx_recently_used_shows_session ON recently_used_shows(streamSessionId);
+      CREATE INDEX IF NOT EXISTS idx_episode_progression_show_media_item_id ON episode_progression(show_media_item_id);
+      CREATE INDEX IF NOT EXISTS idx_episode_progression_stream_type ON episode_progression(stream_type);
+      CREATE INDEX IF NOT EXISTS idx_episode_progression_current_episode ON episode_progression(current_episode);
+      CREATE INDEX IF NOT EXISTS idx_episode_progression_last_played ON episode_progression(last_played_timestamp);
+      CREATE INDEX IF NOT EXISTS idx_episode_progression_unique ON episode_progression(show_media_item_id, stream_type);
     `);
   }
 }

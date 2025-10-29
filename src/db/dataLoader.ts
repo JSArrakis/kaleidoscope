@@ -114,7 +114,7 @@ export async function loadHolidays(): Promise<Holiday[]> {
         tag.name,
         tag.tagId,
         tag.holidayDates || [],
-        tag.exclusionGenres || [],
+        tag.exclusionTags || [],
         tag.seasonStartDate,
         tag.seasonEndDate,
       ),

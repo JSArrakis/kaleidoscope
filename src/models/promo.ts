@@ -1,13 +1,9 @@
 import { MediaType } from './enum/mediaTypes';
-import { MediaTag } from './const/tagTypes';
+import { Tag } from './tag';
+import { BaseMedia } from './mediaInterface';
 
-export interface IPromo {
-  title: string;
-  mediaItemId: string;
-  duration: number;
-  path: string;
-  type: number;
-  tags: MediaTag[];
+export interface IPromo extends BaseMedia {
+  type: MediaType;
 }
 
 export class Promo {
@@ -15,16 +11,16 @@ export class Promo {
   mediaItemId: string;
   duration: number;
   path: string;
-  type: number;
-  tags: MediaTag[];
+  type: MediaType;
+  tags: Tag[];
 
   constructor(
     title: string,
     mediaItemId: string,
     duration: number,
     path: string,
-    type: number,
-    tags: MediaTag[],
+    type: MediaType,
+    tags: Tag[],
   ) {
     this.title = title;
     this.mediaItemId = mediaItemId;
@@ -36,9 +32,9 @@ export class Promo {
 
   static async fromRequestObject(requestObject: any): Promise<Promo> {
     const { tagRepository } = await import('../repositories/tagsRepository');
-    
+
     // Convert tag names to Tag objects
-    let tags: MediaTag[] = [];
+    let tags: Tag[] = [];
     if (requestObject.tags && Array.isArray(requestObject.tags)) {
       for (const tagName of requestObject.tags) {
         const tag = tagRepository.findByName(tagName);

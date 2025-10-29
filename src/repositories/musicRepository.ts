@@ -1,6 +1,6 @@
 import { getDB } from '../db/sqlite';
 import { Music } from '../models/music';
-import { MediaTag } from '../models/const/tagTypes';
+import { Tag } from '../models/tag';
 import { tagRepository } from './tagsRepository';
 
 export class MusicRepository {
@@ -9,7 +9,7 @@ export class MusicRepository {
   }
 
   // Helper method to insert music tags into junction table
-  private insertMusicTags(mediaItemId: string, tags: MediaTag[]): void {
+  private insertMusicTags(mediaItemId: string, tags: Tag[]): void {
     if (tags.length === 0) return;
 
     const stmt = this.db.prepare(`
@@ -46,7 +46,7 @@ export class MusicRepository {
   }
 
   // Helper method to load music tags from junction table
-  private loadMusicTags(mediaItemId: string): MediaTag[] {
+  private loadMusicTags(mediaItemId: string): Tag[] {
     const stmt = this.db.prepare(`
       SELECT t.*
       FROM tags t
@@ -54,7 +54,7 @@ export class MusicRepository {
       WHERE mt.mediaItemId = ?
     `);
 
-    return stmt.all(mediaItemId) as MediaTag[];
+    return stmt.all(mediaItemId) as Tag[];
   }
 
   // Helper method to delete music tags from junction table
@@ -149,8 +149,8 @@ export class MusicRepository {
     return transaction();
   }
 
-  // Find music by tags using SQL joins (accept MediaTag[] or string[])
-  findByTags(tags: (MediaTag | string)[]): Music[] {
+  // Find music by tags using SQL joins (accept Tag[] or string[])
+  findByTags(tags: (Tag | string)[]): Music[] {
     if (tags.length === 0) return [];
 
     const tagNames = tags.map(t =>
@@ -171,7 +171,7 @@ export class MusicRepository {
   }
 
   // Find music by musical genres specifically
-  findByMusicalGenres(genres: (MediaTag | string)[]): Music[] {
+  findByMusicalGenres(genres: (Tag | string)[]): Music[] {
     if (genres.length === 0) return [];
 
     const genreNames = genres.map(g =>

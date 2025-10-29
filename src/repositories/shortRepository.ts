@@ -1,9 +1,9 @@
 import { getDB } from '../db/sqlite';
 import { Short } from '../models/short';
-import { MediaTag } from '../models/const/tagTypes';
 import { Tag } from '../models/tag';
 import { tagRepository } from './tagsRepository';
 import { tagNamesFrom } from '../prisms/core';
+import { recentlyUsedMediaRepository } from './recentlyUsedMediaRepository';
 
 export class ShortRepository {
   private get db() {
@@ -92,8 +92,8 @@ export class ShortRepository {
     return result.changes > 0;
   }
 
-  // Find shorts by tags (accept MediaTag[] and map to tag names)
-  findByTags(tags: MediaTag[]): Short[] {
+  // Find shorts by tags (accept Tag[] and map to tag names)
+  findByTags(tags: Tag[]): Short[] {
     if (tags.length === 0) return [];
 
     const tagNames = tagNamesFrom(tags);
@@ -147,7 +147,7 @@ export class ShortRepository {
   }
 
   // Helper method to insert short tags
-  private insertShortTags(mediaItemId: string, tags: MediaTag[]): void {
+  private insertShortTags(mediaItemId: string, tags: Tag[]): void {
     if (tags.length === 0) return;
 
     const stmt = this.db.prepare(`
@@ -180,7 +180,7 @@ export class ShortRepository {
   }
 
   // Helper method to load short tags
-  private loadShortTags(mediaItemId: string): MediaTag[] {
+  private loadShortTags(mediaItemId: string): Tag[] {
     const stmt = this.db.prepare(`
       SELECT t.* FROM tags t
       INNER JOIN short_tags st ON t.tagId = st.tagId
@@ -209,6 +209,45 @@ export class ShortRepository {
       DELETE FROM short_tags WHERE mediaItemId = ?
     `);
     stmt.run(mediaItemId);
+  }
+
+  // Find shorts by Genre and Aesthetic tags for buffer selection, excluding recently used shorts
+  findBufferShortsByTags(
+    tags: (Tag | string)[],
+    hoursBack: number = 2,
+  ): Short[] {
+    if (tags.length === 0) return [];
+
+    const tagNames = tags.map(t =>
+      typeof t === 'string' ? t : (t as any).name,
+    );
+    const tagPlaceholders = tagNames.map(() => '?').join(',');
+
+    // Use NOT EXISTS for efficient exclusion of recently used shorts
+    const query = `
+      SELECT DISTINCT s.* FROM shorts s
+      INNER JOIN short_tags st ON s.mediaItemId = st.mediaItemId
+      INNER JOIN tags t ON st.tagId = t.tagId
+      WHERE t.name IN (${tagPlaceholders})
+      AND t.type IN ('Genre', 'Aesthetic')
+      AND NOT EXISTS (
+        SELECT 1 FROM recently_used_shorts rus 
+        WHERE rus.mediaItemId = s.mediaItemId 
+        AND rus.usageContext = 'buffer'
+        AND (rus.expiresAt IS NULL OR rus.expiresAt > datetime('now'))
+        AND rus.usedAt > datetime('now', '-${hoursBack} hours')
+      )
+      ORDER BY RANDOM()
+    `;
+
+    const stmt = this.db.prepare(query);
+    const rows = stmt.all(...tagNames) as any[];
+
+    return rows.map(row => {
+      const short = this.mapRowToShort(row);
+      short.tags = this.loadShortTags(short.mediaItemId);
+      return short;
+    });
   }
 }
 

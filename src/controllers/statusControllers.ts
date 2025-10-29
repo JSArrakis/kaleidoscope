@@ -11,7 +11,9 @@ import { tagRepository } from '../repositories/tagsRepository';
 // Note: mosaicRepository is empty, skip for now
 // import { mosaicRepository } from '../repositories/mosaicRepository';
 import { bumperRepository } from '../repositories/bumperRepository';
+import { TagType } from '../models/const/tagTypes';
 import * as medServ from '../services/mediaService';
+import { getAllHolidays, getCurrentHolidays } from '../services/holidayService';
 import * as conf from '../config/configService';
 import * as streamMan from '../services/streamManager';
 import * as backgroundSrv from '../services/backgroundService';
@@ -219,7 +221,7 @@ export async function testCreateTagHandler(
     const { Tag } = await import('../models/tag');
 
     // Create a simple test tag
-    const testTag = new Tag('test-action', 'Test Action', 'Genre');
+    const testTag = new Tag('test-action', 'Test Action', TagType.Genre);
 
     const result = tagRepository.create(testTag);
 
@@ -307,10 +309,10 @@ export async function streamingStatusHandler(
         onDeck: {
           count: onDeckStream.length,
           items: onDeckStream.map(item => ({
-            title: item.mainBlock?.title || 'Unknown',
+            title: item.featureMedia?.title || 'Unknown',
             startTime: item.startTime,
             startsIn: item.startTime ? item.startTime - currentTime : null,
-            duration: item.mainBlock?.duration || 0,
+            duration: item.featureMedia?.duration || 0,
             bufferCount: item.buffer.length,
             initialBufferCount: item.initialBuffer.length,
           })),
@@ -318,10 +320,10 @@ export async function streamingStatusHandler(
         upcoming: {
           count: upcomingStream.length,
           nextFew: upcomingStream.slice(0, 5).map(item => ({
-            title: item.mainBlock?.title || 'Unknown',
+            title: item.featureMedia?.title || 'Unknown',
             startTime: item.startTime,
             startsIn: item.startTime ? item.startTime - currentTime : null,
-            duration: item.mainBlock?.duration || 0,
+            duration: item.featureMedia?.duration || 0,
           })),
         },
       },
@@ -329,9 +331,9 @@ export async function streamingStatusHandler(
       media: {
         loaded: !!medServ.getMedia(),
         holidays: {
-          total: medServ.getHolidays().length,
-          current: medServ.getCurrentHolidays().length,
-          currentList: medServ.getCurrentHolidays().map(h => ({
+          total: getAllHolidays().length,
+          current: getCurrentHolidays().length,
+          currentList: getCurrentHolidays().map(h => ({
             name: h.name,
             holidayDates: h.holidayDates,
             seasonStart: h.seasonStartDate,
@@ -371,13 +373,13 @@ export async function currentMediaHandler(
       const firstItem = onDeckStream[0];
       if (firstItem.startTime && currentTime >= firstItem.startTime) {
         currentItem = {
-          title: firstItem.mainBlock?.title || 'Unknown',
-          path: firstItem.mainBlock?.path || 'Unknown',
+          title: firstItem.featureMedia?.title || 'Unknown',
+          path: firstItem.featureMedia?.path || 'Unknown',
           startTime: firstItem.startTime,
-          duration: firstItem.mainBlock?.duration || 0,
+          duration: firstItem.featureMedia?.duration || 0,
           elapsedTime: currentTime - firstItem.startTime,
           remainingTime:
-            (firstItem.mainBlock?.duration || 0) -
+            (firstItem.featureMedia?.duration || 0) -
             (currentTime - firstItem.startTime),
         };
       }
@@ -386,10 +388,10 @@ export async function currentMediaHandler(
     if (onDeckStream.length > 1) {
       const secondItem = onDeckStream[1];
       nextItem = {
-        title: secondItem.mainBlock?.title || 'Unknown',
-        path: secondItem.mainBlock?.path || 'Unknown',
+        title: secondItem.featureMedia?.title || 'Unknown',
+        path: secondItem.featureMedia?.path || 'Unknown',
         startTime: secondItem.startTime,
-        duration: secondItem.mainBlock?.duration || 0,
+        duration: secondItem.featureMedia?.duration || 0,
         startsIn: secondItem.startTime
           ? secondItem.startTime - currentTime
           : null,
@@ -429,12 +431,12 @@ export async function streamQueueHandler(
       currentUnixTime: currentTime,
       onDeck: onDeckStream.map((item, index) => ({
         position: index,
-        title: item.mainBlock?.title || 'Unknown',
-        mediaType: item.mainBlock?.constructor.name || 'Unknown',
+        title: item.featureMedia?.title || 'Unknown',
+        mediaType: item.featureMedia?.constructor.name || 'Unknown',
         startTime: item.startTime,
         startsIn: item.startTime ? item.startTime - currentTime : null,
-        duration: item.mainBlock?.duration || 0,
-        path: item.mainBlock?.path || 'Unknown',
+        duration: item.featureMedia?.duration || 0,
+        path: item.featureMedia?.path || 'Unknown',
         buffer: {
           pre: item.initialBuffer.length,
           post: item.buffer.length,
@@ -442,11 +444,11 @@ export async function streamQueueHandler(
       })),
       upcoming: upcomingStream.slice(0, 10).map((item, index) => ({
         position: index,
-        title: item.mainBlock?.title || 'Unknown',
-        mediaType: item.mainBlock?.constructor.name || 'Unknown',
+        title: item.featureMedia?.title || 'Unknown',
+        mediaType: item.featureMedia?.constructor.name || 'Unknown',
         startTime: item.startTime,
         startsIn: item.startTime ? item.startTime - currentTime : null,
-        duration: item.mainBlock?.duration || 0,
+        duration: item.featureMedia?.duration || 0,
       })),
       totals: {
         onDeckCount: onDeckStream.length,

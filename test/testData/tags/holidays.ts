@@ -12,10 +12,10 @@ export const holidayTags = {
     'christmas',
     'Christmas',
     TagType.Holiday,
-    ['2024-12-24','2024-12-25'], // holidayDates
+    ['2024-12-24', '2024-12-25'], // holidayDates
     undefined, // exclusionGenres
-    '2024-12-01', // seasonStartDate
-    '2025-12-31', // seasonEndDate
+    '2024-12-01 00:00:00', // seasonStartDate (DATETIME)
+    '2024-12-31 23:59:59', // seasonEndDate (DATETIME)
   ),
 
   halloween: new Tag(
@@ -24,8 +24,8 @@ export const holidayTags = {
     TagType.Holiday,
     ['2024-10-31'], // holidayDates
     undefined, // exclusionGenres
-    '2024-10-01', // seasonStartDate
-    '2024-11-04', // seasonEndDate
+    '2024-10-01 00:00:00', // seasonStartDate (DATETIME)
+    '2024-11-04 23:59:59', // seasonEndDate (DATETIME)
   ),
 
   valentine: new Tag(

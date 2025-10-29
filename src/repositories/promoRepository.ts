@@ -1,6 +1,5 @@
 import { getDB } from '../db/sqlite';
 import { Promo } from '../models/promo';
-import { MediaTag } from '../models/const/tagTypes';
 import { Tag } from '../models/tag';
 import { tagRepository } from './tagsRepository';
 
@@ -90,8 +89,8 @@ export class PromoRepository {
     return result.changes > 0;
   }
 
-  // Find promos by tags (accept MediaTag[] or string[])
-  findByTags(tags: (MediaTag | string)[]): Promo[] {
+  // Find promos by tags (accept Tag[] or string[])
+  findByTags(tags: (Tag | string)[]): Promo[] {
     if (tags.length === 0) return [];
 
     const tagNames = tags.map(t =>
@@ -147,7 +146,7 @@ export class PromoRepository {
   }
 
   // Helper method to insert promo tags
-  private insertPromoTags(mediaItemId: string, tags: MediaTag[]): void {
+  private insertPromoTags(mediaItemId: string, tags: Tag[]): void {
     if (tags.length === 0) return;
 
     const stmt = this.db.prepare(`
@@ -179,7 +178,7 @@ export class PromoRepository {
   }
 
   // Helper method to load promo tags
-  private loadPromoTags(mediaItemId: string): MediaTag[] {
+  private loadPromoTags(mediaItemId: string): Tag[] {
     const stmt = this.db.prepare(`
       SELECT t.* FROM tags t
       INNER JOIN promo_tags pt ON t.tagId = pt.tagId

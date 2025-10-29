@@ -6,16 +6,16 @@ import { Episode, Show } from '../models/show';
 import { StagedMedia } from '../models/stagedMedia';
 import { StreamType } from '../models/enum/streamTypes';
 import { IStreamRequest } from '../models/streamRequest';
-import { WatchRecord } from '../models/progressionContext';
+import { EpisodeProgression } from '../models/progressionContext';
 import {
   ManageShowProgression,
-  GetShowListWatchRecords,
+  GetShowListProgressions,
 } from './progressionManager';
 import { getTagName } from '../prisms/core';
 
 // Note: procedural engine expects Tag objects (MediaTag[]) in args.Tags and media.*.tags
 
-export function getProceduralBlock(
+export async function getProceduralBlock(
   args: IStreamRequest,
   stagedMedia: StagedMedia,
   media: Media,
@@ -23,7 +23,7 @@ export function getProceduralBlock(
   duration: number,
   latestTimePoint: number,
   streamType: StreamType,
-): SelectedMedia[] {
+): Promise<SelectedMedia[]> {
   let currDur: number = 0;
   let selectedMedia: SelectedMedia[] = [];
   let currentTimePoint = latestTimePoint;
@@ -90,7 +90,7 @@ export function getProceduralBlock(
           currDur = currDur + selectedMovie.durationLimit;
           currentTimePoint = currentTimePoint + selectedMovie.durationLimit;
         } else {
-          let result = getEpisodesUnderDuration(
+          let result = await getEpisodesUnderDuration(
             args,
             media.shows,
             durRemainder,
@@ -113,7 +113,7 @@ export function getProceduralBlock(
         }
       } else {
         //Show
-        let result = getEpisodesUnderDuration(
+        let result = await getEpisodesUnderDuration(
           args,
           media.shows,
           durRemainder,
@@ -166,12 +166,12 @@ export function selectMovieUnderDuration(
   return selectedMovie;
 }
 
-export function getEpisodesUnderDuration(
+export async function getEpisodesUnderDuration(
   args: IStreamRequest,
   shows: Show[],
   duration: number,
   streamType: StreamType,
-): [Episode[], string] {
+): Promise<[Episode[], string]> {
   let episodes: Episode[] = [];
   const argTagNames = (args.Tags || []).map(t => getTagName(t));
   let filteredShows: Show[] = shows.filter(
@@ -186,7 +186,7 @@ export function getEpisodesUnderDuration(
   // duration limit, this value will be used in determining if the show can be selected or not for the selected duration slot.
   // let showProgressions = GetFilteredShowProgressions(filteredShows, streamType);
 
-  let [selectedShow, numberOfEpisodes] = selectShowByDuration(
+  let [selectedShow, numberOfEpisodes] = await selectShowByDuration(
     args,
     duration,
     filteredShows,
@@ -201,7 +201,7 @@ export function getEpisodesUnderDuration(
   // of episodes. This is done by checking the progression of the show and selecting the next episode in the list, which
   // also updates the WatchRecord object for the show in the ProgressionContext object. This is done against a local copy
   // of the progression and the DB is only updated if the media has finished playing in the stream.
-  let episodeIndicies = ManageShowProgression(
+  let episodeIndicies = await ManageShowProgression(
     selectedShow,
     numberOfEpisodes,
     args,
@@ -212,7 +212,9 @@ export function getEpisodesUnderDuration(
     if (selectedShow !== undefined) {
       let episode = selectedShow.episodes[idx - 1];
       //add selectedShow tags to episode tags that dont already exist
-      episode.tags = [...new Set([...selectedShow.tags, ...episode.tags])];
+      episode.tags = Array.from(
+        new Set([...selectedShow.tags, ...episode.tags]),
+      );
       episodes.push(episode);
     }
   });
@@ -227,14 +229,13 @@ export function isMoviePreviouslySelected(
   return prevMovies.some(prevMovie => prevMovie.title === movie.title);
 }
 
-export function selectShowByDuration(
+export async function selectShowByDuration(
   args: IStreamRequest,
   duration: number,
   shows: Show[],
   streamType: StreamType,
-): [Show | undefined, number] {
-  let watchRecords: WatchRecord[] = GetShowListWatchRecords(
-    args,
+): Promise<[Show | undefined, number]> {
+  let progressions: EpisodeProgression[] = await GetShowListProgressions(
     shows,
     streamType,
   );
@@ -244,66 +245,67 @@ export function selectShowByDuration(
   let numberOfEpisodes: number = 0;
 
   if (duration < 3600) {
-    // Find all shows that have a next episode duration limit of 1800 using the watchRecords
-    let minWatchRecords: WatchRecord[] = watchRecords.filter(
-      wr => wr.nextEpisodeDurLimit === 1800,
+    // Find all shows that have a next episode duration limit of 1800 using the progressions
+    let minProgressions: EpisodeProgression[] = progressions.filter(
+      prog => prog.nextEpisodeDurLimit === 1800,
     );
-    minWatchRecords.forEach(wr => {
-      let show = shows.find(s => s.mediaItemId === wr.mediaItemId);
+    minProgressions.forEach(prog => {
+      let show = shows.find(s => s.mediaItemId === prog.showMediaItemId);
       if (show !== undefined) {
         selectedShows.push(show);
       }
     });
     numberOfEpisodes = 1;
   } else {
-    // Find all watch records that have a next episode duration limit of 1800
-    let minWatchRecords: WatchRecord[] = watchRecords.filter(
-      wr => wr.nextEpisodeDurLimit === 1800,
+    // Find all progressions that have a next episode duration limit of 1800
+    let minProgressions: EpisodeProgression[] = progressions.filter(
+      prog => prog.nextEpisodeDurLimit === 1800,
     );
-    // Refine minWatchRecords to only include shows where the next two episodes have a duration limit of 1800
-    minWatchRecords = minWatchRecords.filter(wr => {
-      let show = shows.find(s => s.mediaItemId === wr.mediaItemId);
+    // Refine minProgressions to only include shows where the next two episodes have a duration limit of 1800
+    minProgressions = minProgressions.filter(prog => {
+      let show = shows.find(s => s.mediaItemId === prog.showMediaItemId);
       if (show !== undefined) {
-        let episodeNumber: number = wr.episode + 2;
+        let episodeNumber: number = prog.currentEpisode + 2;
         if (episodeNumber > show.episodeCount) {
           episodeNumber = episodeNumber - show.episodeCount;
         }
-        let nextNextEpisode = show.episodes.find(
+        let nextNextEpisode = show.episodes?.find(
           ep => ep.episodeNumber === episodeNumber,
         );
         if (nextNextEpisode !== undefined) {
-          return nextNextEpisode.durationLimit === 1800;
+          return nextNextEpisode.duration === 1800;
         }
       }
       return false;
     });
 
-    // Find all watch record that have a next episode duration limit under the duration that are not in the minWatchRecords
-    let allWatchRecords: WatchRecord[] = watchRecords.filter(
-      wr => wr.nextEpisodeDurLimit <= duration && wr.nextEpisodeDurLimit > 1800,
+    // Find all progressions that have a next episode duration limit under the duration that are not in the minProgressions
+    let allProgressions: EpisodeProgression[] = progressions.filter(
+      prog =>
+        prog.nextEpisodeDurLimit <= duration && prog.nextEpisodeDurLimit > 1800,
     );
-    let selectedWatchRecords: WatchRecord[] = [];
-    if (allWatchRecords.length > 0 && minWatchRecords.length > 0) {
-      //Flip a coin to determine which set of watch records to use
+    let selectedProgressions: EpisodeProgression[] = [];
+    if (allProgressions.length > 0 && minProgressions.length > 0) {
+      //Flip a coin to determine which set of progressions to use
       if (Math.random() < 0.5) {
-        selectedWatchRecords = minWatchRecords;
+        selectedProgressions = minProgressions;
         numberOfEpisodes = 2;
       } else {
-        selectedWatchRecords = allWatchRecords;
+        selectedProgressions = allProgressions;
         numberOfEpisodes = 1;
       }
-    } else if (allWatchRecords.length === 0 && minWatchRecords.length === 0) {
+    } else if (allProgressions.length === 0 && minProgressions.length === 0) {
       return [undefined, 0];
-    } else if (allWatchRecords.length === 0) {
-      selectedWatchRecords = minWatchRecords;
+    } else if (allProgressions.length === 0) {
+      selectedProgressions = minProgressions;
       numberOfEpisodes = 2;
-    } else if (minWatchRecords.length === 0) {
-      selectedWatchRecords = allWatchRecords;
+    } else if (minProgressions.length === 0) {
+      selectedProgressions = allProgressions;
       numberOfEpisodes = 1;
     }
 
-    selectedWatchRecords.forEach(wr => {
-      let show = shows.find(s => s.mediaItemId === wr.mediaItemId);
+    selectedProgressions.forEach(prog => {
+      let show = shows.find(s => s.mediaItemId === prog.showMediaItemId);
       if (show !== undefined) {
         selectedShows.push(show);
       }

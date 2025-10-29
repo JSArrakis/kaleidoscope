@@ -1,15 +1,14 @@
 import { Bumper } from './bumper';
 import { Promo } from './promo';
 import { Episode } from './show';
-import { MediaTag } from './const/tagTypes';
-
+import { Tag } from './tag';
 export class Block {
   title: string;
   mediaItemId: string;
   type: string;
   duration: number;
   durationLimit: number;
-  tags: MediaTag[];
+  tags: Tag[];
   startBumper: Bumper;
   endBumper: Bumper;
   promos: Promo[];
@@ -22,7 +21,7 @@ export class Block {
     type: string,
     duration: number,
     durationLimit: number,
-    tags: MediaTag[],
+    tags: Tag[],
     startBumper: Bumper,
     endBumper: Bumper,
     promos: Promo[],

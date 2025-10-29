@@ -1,4 +1,5 @@
 import { Movie } from '../../src/models/movie';
+import { MediaType } from '../../src/models/enum/mediaTypes';
 import { ageGroupTags, aestheticTags, eraTags, genreTags } from './tags';
 
 export const inception = new Movie(
@@ -17,6 +18,7 @@ export const inception = new Movie(
   '/path/inception.mp4',
   8880,
   9000,
+  MediaType.Movie,
   [],
 );
 
@@ -36,6 +38,7 @@ export const therock = new Movie(
   '/path/therock.mp4',
   8160,
   9000,
+  MediaType.Movie,
   [],
 );
 
@@ -55,6 +58,7 @@ export const thematrix = new Movie(
   '/path/thematrix.mp4',
   8160,
   9000,
+  MediaType.Movie,
   [],
 );
 
@@ -73,6 +77,7 @@ export const interstellar = new Movie(
   '/path/interstellar.mp4',
   10140,
   10800,
+  MediaType.Movie,
   [],
 );
 
@@ -91,6 +96,7 @@ export const dune = new Movie(
   '/path/dune.mp4',
   9120,
   10800,
+  MediaType.Movie,
   [],
 );
 
@@ -110,6 +116,7 @@ export const terminator2 = new Movie(
   '/path/terminator2.mp4',
   9300,
   10800,
+  MediaType.Movie,
   [],
 );
 
@@ -129,6 +136,7 @@ export const therescuersdownunder = new Movie(
   '/path/therescuersdownunder.mp4',
   4620,
   5400,
+  MediaType.Movie,
   [],
 );
 
@@ -148,6 +156,7 @@ export const agoofymovie = new Movie(
   '/path/agoofymovie.mp4',
   4680,
   5400,
+  MediaType.Movie,
   [],
 );
 

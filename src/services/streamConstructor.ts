@@ -2,255 +2,356 @@ import { Config } from '../models/config';
 import { Media } from '../models/media';
 import { Movie } from '../models/movie';
 import { Block } from '../models/block';
-import moment from 'moment';
+const moment = require('moment');
 import { MediaType } from '../models/enum/mediaTypes';
 import { SelectedMedia } from '../models/selectedMedia';
 import { StagedMedia } from '../models/stagedMedia';
 import { getProceduralBlock } from './proceduralEngine';
-import { Show } from '../models/show';
+import { Show, Episode } from '../models/show';
 import { createBuffer } from './bufferEngine';
 import { MediaBlock } from '../models/mediaBlock';
 import { StreamType } from '../models/enum/streamTypes';
 import { ManageShowProgression } from './progressionManager';
 import { IStreamRequest } from '../models/streamRequest';
-import { Mosaic } from '../models/mosaic';
-import { MediaTag } from '../models/const/tagTypes';
+import { TagType } from '../models/const/tagTypes';
+import { Tag } from '../models/tag';
+import { facetRepository } from '../repositories/facetRepository';
+import { tagRepository } from '../repositories/tagsRepository';
+import {
+  pickFacet,
+  gatherCandidatesForFacet,
+  pickMediaCandidate,
+} from '../prisms/refract';
+import { SegmentedTags } from '../models/segmentedTags';
+import { BaseMedia } from '../models/mediaInterface';
+import { getActiveHolidaysFromDB } from './holidayService';
+import { Holiday } from '../models/holiday';
 
+// Helper functions using existing repository logic
+function selectRandomFacetCombo(): { genre: string; aesthetic: string } | null {
+  // Get all facets from the database (these represent valid genre/aesthetic combinations)
+  const allFacets = facetRepository.findAll();
+  if (allFacets.length === 0) {
+    return null;
+  }
+
+  // Use existing pickFacet function to randomly select one
+  const selectedFacet = pickFacet(allFacets);
+  if (!selectedFacet) {
+    return null;
+  }
+
+  return {
+    genre: selectedFacet.genre.name,
+    aesthetic: selectedFacet.aesthetic.name,
+  };
+}
+
+// Helper function to find media using existing refract logic
+function findMediaWithFacet(facet: { genre: string; aesthetic: string }) {
+  // Use existing gatherCandidatesForFacet function to find matching media
+  const candidates: (Movie | Show)[] = [];
+  gatherCandidatesForFacet(facet).then(media => {
+    candidates.push(...media);
+  });
+  if (candidates.length === 0) {
+    return null;
+  }
+
+  // Use existing pickMediaCandidate function to select one
+  return pickMediaCandidate(candidates);
+}
+
+// Helper function to convert tag names to Tag objects
+function getTagByName(tagName: string): Tag | null {
+  return tagRepository.findByName(tagName);
+}
+
+function getTagsByNames(tagNames: string[]): Tag[] {
+  return tagNames
+    .map(name => getTagByName(name))
+    .filter((tag): tag is Tag => tag !== null);
+}
+
+// MODERNIZED STREAM CONSTRUCTOR
 export function constructStream(
   config: Config,
   args: IStreamRequest,
-  media: Media,
-  mosaics: Mosaic[],
   streamType: StreamType,
-  // sets the time of the stream to the current time if no start time is provided
-  rightNow: number = args.StartTime === undefined
-    ? moment().unix()
-    : args.StartTime,
+  rightNow: number, // Time should always be passed in, no default calculation
+  alignStart: boolean = false,
+  firstMedia?: Episode | Movie, // Optional first media to use instead of selecting via refract
 ): [MediaBlock[], string] {
-  let error: string = '';
-  let streamBlocks: MediaBlock[] = [];
+  // Load current holiday tags from the database
+  const activeHolidayTags = getActiveHolidaysFromDB();
 
-  // Get the media that is scheduled to be played from the api request (movies that are selected to be played at a specific time)
-  // This detects if a movie is scheduled to be played at a specific time and adds it to the stream
-  // The format of the string is "MovieTitle::Time" where time is the unix timestamp of when the movie is scheduled to be played
-  // TODO - Change the format of the scheduled movies request to be an array of objects with a title and time property for easier parsing
-  let [scheduledMedia, selectError] = getScheduledMedia(media, args);
-  if (selectError !== '') {
-    error = selectError;
-    return [[], error];
-  }
-
-  // Get the media that is specifically requested from the incoming http request and the end time of the stream to create a block
-  // of media that is ordered by scheduled time and 'injected' media that is requested by the user
-  // The staged media object is used to determine the order of the stream. The scheduled media will always play at the time it is scheduled
-  // The injected media will fill the gaps between the scheduled media where the duration and time available allows
-  // Any further time that is available after the scheduled media is filled with procedural selected media based on tagging
-  // TODO - injected media for a continuous stream should take better consideration for the "genre walk" we want to create.
-  // Due to the nature of the continuous stream, the injected media can and should be available to be played beyond just "today"
-  // and should be subject to the rules of the genre walk to give a better experience to the viewer, scheduling these movies beyond the initial stream day to allow for a smoother "walk"
-  // We might even want to consider removing the ability to inject media for a continuous stream and rely on the future API endpoints to inject movies manually
-  // Or we could remove Staged Media for a continuous stream entirely and only use tags for the base stream generation
-  let [injectedMovies, injectError] = getInjectedMovies(args, media.movies);
-  if (injectError !== '') {
-    error = injectError;
-    return [[], error];
-  }
-
-  //TODO - If the scheduled media is beyond the end of the day today, set the end time as the end of the day.
-  // We will need to design and construct a feature that handles the scheduling of media beyond the current day
-  // as each day is generated as a new stream construction block. This will allow us to schedule media for specific days of the week.
-
-  let [streamEndTime, evalError] = evaluateStreamEndTime(args, scheduledMedia);
-  if (evalError !== '') {
-    error = evalError;
-    return [[], error];
-  }
-
-  let stagedMedia = new StagedMedia(
-    scheduledMedia,
-    injectedMovies,
-    streamEndTime,
-  );
-
-  // Get genre tag from the media that is scheduled and injected if no tags are selected by the user
-  setProceduralTags(args, stagedMedia);
-
-  // Using the scheduled media and injected media, create a stream of media blocks that will be played in order
-  // The stream is created by filling the time between the scheduled and injected media with procedural media based on the genre tags available
-  // These are only the main media items, the buffer media is added to the stream in the next step
-  let [stagedStream, stagedError] = getStagedStream(
-    rightNow,
-    config,
-    args,
-    stagedMedia,
-    media,
-    streamType,
-  );
-  if (stagedError !== '') {
-    error = stagedError;
-    return [[], error];
-  }
-
-  // An Object that holds previously played media to prevent the same media from being played in the same stream before a certain interval
-  // Each media item in prevBuffer is added or removed based on its own rules. I.E. commercials are added if they are selected for a buffer but will be removed after the next
-  // buffer is created and be replaced by that buffer's commercials. There are exceptions and special circumstances when this is not the case
-  let prevBuffer: Media = new Media([], [], [], [], [], [], [], [], []);
-
-  // Creates the buffer media to fill the time between when the stream is initilized and the first media item being played
-  // The first media item played should be timed to the first 30 minute or hour mark on the clock
-  // This initial buffer is created to ensure that the first media item is played at the correct time
-  // TODO - change initial buffer into an object instead of an array
-  let initialBuffer = createBuffer(
-    stagedStream[0].time - rightNow,
-    args,
-    media,
-    mosaics,
-    [],
-    stagedStream[0].tags,
-    prevBuffer,
-    [],
-  );
-
-  // Boolean to be used later to determine if there is an initial buffer to be added to the stream
-  let hasInitialBuffer = initialBuffer.buffer.length > 0 ? true : false;
-
-  // Adds the initial buffer to the prevBuffer object
-  prevBuffer = initialBuffer.newPrevBuffer;
-
-  // If there is any remaining time the initial buffer did not fill, that remaining time is assigned to the remainder variable
-  // This variable gets passed to the next buffer to correct the schedule and keep things on time
-  let remainder = initialBuffer.remainingDuration;
-
-  // Loops through the staged stream of media items and creates a media block for each item
-  // A media block is an object that holds the main media item and the buffer media that will be played after the main media item
-  stagedStream.forEach((item, index) => {
-    // Boolean to determine if the current media item is the last item in the time frame for this stream (determined by the user or the end of the day)
-    let lastItem = index === stagedStream.length - 1 ? true : false;
-
-    if (item.type == MediaType.Episode || item.type == MediaType.Movie) {
-      let mediaBlock = new MediaBlock([], [], undefined, undefined);
-      // Add main media item to the media block
-      let mediaItem = item.media;
-      mediaBlock.mainBlock = mediaItem;
-      // Adds the assigned start time for the main media item to the media block
-      mediaBlock.startTime = item.time;
-
-      // Get the duration of the buffer media that will be played after the main media item
-      // TODO - this does not take into account OverDuration media items
-      // We will need a way to calculate the duration of the buffer using the length of the media item and when the next media item is scheduled to play or the end of the stream
-      let bufferDuration = mediaItem.durationLimit - mediaItem.duration;
-
-      // Creates the buffer media for this current block
-      // The buffer is selected based on the tags of the current media item and the next media item in the stream
-      // Unless the it is initial buffer or the last buffer of the stream, the buffer is split in half to allow for a smoother transition between media items
-      // The middle of the buffer in these cases will always be the promo item based on the environment of the stream
-      // The first half of the buffer will be themed to the media that aired befor the buffer, and the second half will be themed to the media that will air after the buffer
-      let buffer = createBuffer(
-        bufferDuration + remainder,
-        args,
-        media,
-        mosaics,
-        item.media.tags,
-        lastItem ? [] : stagedStream[index + 1].tags,
-        prevBuffer,
-        [],
+  // Determine construction approach based on stream type
+  switch (streamType) {
+    case StreamType.Cont:
+      return constructContinuousStream(
+        config,
+        rightNow,
+        alignStart,
+        activeHolidayTags,
+        firstMedia,
       );
 
-      // The sum of all selected media items in the buffer is added to the total duration of the Media Block
-      let totalDuration: number = 0;
-      for (const obj of buffer.buffer) {
-        totalDuration += obj.duration;
-      }
-      // Replaces the stored previous buffer with the buffer that was just created to prevent these media items from being played during the next buffer
-      prevBuffer = buffer.newPrevBuffer;
+    // case StreamType.Adhoc:
+    //   return constructAdhocStream(
+    //     config,
+    //     args,
+    //     rightNow,
+    //     alignStart,
+    //     firstMedia,
+    //   );
 
-      // Adds the buffer media to the media block
-      mediaBlock.buffer.push(...buffer.buffer);
-      // resets the remainder varliable to the new remainder from the buffer if any to be used in the next iteration of this loop
-      remainder = buffer.remainingDuration;
-      // If this is the first media item in the stream and there is an initial buffer, add the initial buffer to the media block
-      if (index === 0 && hasInitialBuffer) {
-        mediaBlock.initialBuffer.push(...initialBuffer.buffer);
-        hasInitialBuffer = false;
-      }
-      // Adds the media block to the stream blocks array, order matters here as this is the order the media will be played in
-      // as this array will be used as the upcoming stream variable used by the background service with shift() to add the next media item to the stream
-      streamBlocks.push(mediaBlock);
-    }
-    // TODO - blocks
-  });
-  return [streamBlocks, error];
+    default:
+      return [[], `Unsupported stream type: ${streamType}`];
+  }
 }
 
-// function createblockBlock(
-//     block: block,
-//     progression: MediaProgression[],
-//     options: any,
-//     media: Media,
-//     transaltionTags: TranslationTag[],
-//     prevBuffer: Media): [string[], number] {
-//     /*
-//     -- This logic is to determine if a show should be populated in the stream for a block. If the show
-//     runs longer than the alloted time block for that show, skip the show following it.
-//     Time remaining will be filled with buffer media
-//     */
+// CONTINUOUS STREAM CONSTRUCTOR
+// Handles ongoing 24/7 streams with automatic day transitions
+function constructContinuousStream(
+  config: Config,
+  rightNow: number,
+  alignStart: boolean,
+  activeHolidayTags: Holiday[],
+  firstMedia?: Episode | Movie,
+): [MediaBlock[], string] {
+  // For continuous streams, only password is required from args
+  // All other stream parameters are managed by the system
 
-//     /*
-// -- Author note:: A good example of this is with the summer 2000 broadcast of Toonami with Tenchi Muyo.
-// Tenchi has a few episodes that are weirdly 45 minutes instead of 30 minutes randomly with no real rhyme
-// or reason. To handle this randomness, Toonami in it's original broadcast pulled the episode of Batman the
-// Animated series which usually followed Tenchi for that day only and populated the remainder of the
-// 15 minutes that would have normally been Batman with Power Puff Girl episodes instead. This allowed
-// Toonami to keep the fidelity of a 3 hour block run time and decreasing dead time and keeping interest of the
-// audience while staying within theme (Toonami being a series of mostly violence driven animated shows
-// in which the only Cartoon Network licensed property that fit in the alloted time slot that was also
-// themed correctly was PPG)
-//     */
-//     let remainder = 0;
-//     let stream: string[] = [];
-//     block.Shows.forEach((show, index) => {
-//         let lastShowEpisode = block.Shows[index - 1].Episode;
-//         if (lastShowEpisode) {
-//             if (lastShowEpisode.Duration > lastShowEpisode.DurationLimit) {
-//                 ReduceProgression(block.Title, show.LoadTitle, progression)
-//             } else {
-//                 let episode = show.Episode;
-//                 if (episode) {
-//                     stream.push(episode.Path)
-//                     if (episode.Duration > episode.DurationLimit) {
-//                         let nextShowEpisode = block.Shows[index + 1].Episode;
-//                         if (nextShowEpisode) {
-//                             let overDurationLength = (nextShowEpisode.DurationLimit + episode.DurationLimit) - episode.Duration + remainder;
-//                             let overBuffer = createBuffer(
-//                                 [],
-//                                 overDurationLength,
-//                                 options,
-//                                 media,
-//                                 [block.LoadTitle],
-//                                 [block.LoadTitle],
-//                                 transaltionTags,
-//                                 prevBuffer)
-//                             stream.push(...overBuffer[0].map(obj => obj.Path));
-//                             remainder = overBuffer[1];
-//                         }
-//                     } else {
-//                         let underBuffer = createBuffer(
-//                             [],
-//                             episode.DurationLimit - episode.Duration,
-//                             options,
-//                             media,
-//                             [block.LoadTitle],
-//                             [block.LoadTitle],
-//                             transaltionTags,
-//                             prevBuffer)
-//                         stream.push(...underBuffer[0].map(obj => obj.Path));
-//                         remainder = underBuffer[1];
-//                     }
-//                 }
-//             }
-//         }
+  // If firstMedia is provided, use it. Otherwise, select media via refract system
+  let selectedFirstMedia: Episode | Movie | null;
+  if (firstMedia) {
+    selectedFirstMedia = firstMedia;
+    console.log(
+      `[Continuous Stream] Using provided first media: ${firstMedia.title} (${firstMedia.mediaItemId})`,
+    );
+  } else {
+    // This path is used when called from background service
+    console.log(
+      '[Continuous Stream] No first media provided, selecting via refract system',
+    );
+
+    // Start with a random facet from the facets database
+    const startingFacet = selectRandomFacetCombo();
+    if (!startingFacet) {
+      return [
+        [],
+        'No valid genre/aesthetic combinations found in facets database',
+      ];
+    }
+
+    selectedFirstMedia = findMediaWithFacet(startingFacet);
+    if (!selectedFirstMedia) {
+      return [
+        [],
+        `No media found with genre ${startingFacet.genre} and aesthetic ${startingFacet.aesthetic}`,
+      ];
+    }
+    console.log(
+      `[Continuous Stream] Selected first media: ${selectedFirstMedia.title} (${selectedFirstMedia.mediaItemId})`,
+    );
+  }
+
+  // IMPLEMENT NEW PRISM-BASED STREAM CONSTRUCTION
+  const streamBlocks: MediaBlock[] = [];
+
+  // Calculate the stream end time (until midnight for continuous streams)
+  const endOfDay = moment.unix(rightNow).endOf('day').unix();
+  let currentTime = rightNow;
+
+  // Create first main media block using selected media
+  console.log(
+    `[Continuous Stream] Creating main media block for: ${selectedFirstMedia!.title}`,
+  );
+
+  // Handle different media types for MediaBlock
+  let featureMedia: Episode | Movie;
+  let mediaDuration = 0;
+
+  if (selectedFirstMedia!.type === MediaType.Show) {
+    // It's a Show - select first episode
+    const episodes = (selectedFirstMedia! as Show).episodes;
+    if (episodes && episodes.length > 0) {
+      featureMedia = episodes[0] as Episode;
+      mediaDuration = episodes[0].duration;
+    } else {
+      return [
+        [],
+        `Show ${selectedFirstMedia!.title} has no episodes available`,
+      ];
+    }
+  } else {
+    // It's a Movie (or Episode passed from initializeStream)
+    featureMedia = selectedFirstMedia! as Movie || Episode;
+    mediaDuration = featureMedia!.duration;
+  }
+
+  const firstMediaBlock = new MediaBlock(
+    [], // buffer (no buffer for main media block)
+    featureMedia, // mainBlock
+    currentTime, // startTime
+  );
+
+  streamBlocks.push(firstMediaBlock);
+  currentTime += mediaDuration;
+
+  // Continue building stream until end of day using prism walking
+  // TODO: Implement full prism walking logic here
+  // For now, just return what we have as a basic implementation
+
+  console.log(
+    `[Continuous Stream] Created ${streamBlocks.length} media blocks`,
+  );
+  return [streamBlocks, ''];
+}
+
+// // ADHOC STREAM CONSTRUCTOR
+// // Handles user-configured streams with defined start/end times and custom scheduling
+// function constructAdhocStream(
+//   config: Config,
+//   args: IStreamRequest,
+//   rightNow: number,
+//   alignStart: boolean,
+//   firstMedia?: Episode | Movie,
+// ): [MediaBlock[], string] {
+//   // Adhoc streams have user-defined parameters:
+//   // - Custom movie schedule (args.Movies)
+//   // - Custom environment/tags (args.Tags, args.Env)
+//   // - Defined end time (args.EndTime for AdhocStreamRequest)
+//   // - Custom start time (args.StartTime)
+
+//   // Validate adhoc stream requirements
+//   if (!args.EndTime && args instanceof Object && 'EndTime' in args) {
+//     return [[], 'Adhoc streams must have a defined end time'];
+//   }
+
+//   // NO MORE getMedia() - Use prism/refract system for adhoc streams too
+
+//   // IMPLEMENT NEW PRISM-BASED ADHOC STREAM CONSTRUCTION
+//   const streamBlocks: MediaBlock[] = [];
+
+//   // Get the end time for adhoc stream
+//   const endTime = args.EndTime || rightNow + 2 * 60 * 60; // Default to 2 hours if no end time
+//   let currentTime = rightNow;
+
+//   console.log(
+//     `[Adhoc Stream] Building stream from ${moment.unix(currentTime).format('HH:mm')} to ${moment.unix(endTime).format('HH:mm')}`,
+//   );
+
+//   // Use user-provided tags if available, otherwise select random facet
+//   let workingFacet: { genre: string; aesthetic: string } | null = null;
+
+//   if (args.Tags && args.Tags.length >= 2) {
+//     // Convert MediaTag objects to strings safely
+//     const tagStrings = args.Tags.map(tag => {
+//       if (typeof tag === 'string') return tag;
+//       return (tag as any).name || tag.toString();
 //     });
-//     return [stream, remainder];
+
+//     workingFacet = {
+//       genre:
+//         tagStrings.find(tag => tag.toLowerCase().includes('genre')) ||
+//         tagStrings[0],
+//       aesthetic:
+//         tagStrings.find(tag => tag.toLowerCase().includes('aesthetic')) ||
+//         tagStrings[1],
+//     };
+//     console.log(
+//       `[Adhoc Stream] Using user-provided facet: ${workingFacet.genre}/${workingFacet.aesthetic}`,
+//     );
+//   } else {
+//     // Select random facet like continuous streams
+//     workingFacet = selectRandomFacetCombo();
+//     if (!workingFacet) {
+//       return [
+//         [],
+//         'No valid genre/aesthetic combinations found for adhoc stream',
+//       ];
+//     }
+//     console.log(
+//       `[Adhoc Stream] Selected random facet: ${workingFacet.genre}/${workingFacet.aesthetic}`,
+//     );
+//   }
+
+//   // Should never be null at this point, but check for safety
+//   if (!workingFacet) {
+//     return [[], 'Failed to determine working facet for adhoc stream'];
+//   }
+
+//   // Build stream until end time
+//   let isFirstBlock = true;
+//   while (currentTime < endTime) {
+//     // Find media for current facet (use provided firstMedia for first block if available)
+//     let media: BaseMedia | null;
+//     if (isFirstBlock && firstMedia) {
+//       media = firstMedia;
+//       console.log(
+//         `[Adhoc Stream] Using provided first media: ${firstMedia.title} (${firstMedia.mediaItemId})`,
+//       );
+//     } else {
+//       media = findMediaWithFacet(workingFacet);
+//     }
+
+//     if (!media) {
+//       console.log(
+//         `[Adhoc Stream] No media found for facet ${workingFacet.genre}/${workingFacet.aesthetic}, ending stream`,
+//       );
+//       break;
+//     }
+
+//     isFirstBlock = false;
+
+//     // Handle different media types
+//     let mainBlock: Episode | Movie | Block | undefined;
+//     let mediaDuration = 0;
+
+//     if ('episodes' in media && media.episodes) {
+//       const episodes = (media as any).episodes;
+//       if (episodes && episodes.length > 0) {
+//         mainBlock = episodes[0] as Episode;
+//         mediaDuration = episodes[0].duration;
+//       } else {
+//         continue; // Skip this show if no episodes
+//       }
+//     } else {
+//       mainBlock = media as unknown as Movie | Block;
+//       mediaDuration = media.duration;
+//     }
+
+//     // Check if media fits in remaining time
+//     if (currentTime + mediaDuration > endTime) {
+//       console.log(
+//         `[Adhoc Stream] Media ${media.title} too long for remaining time, ending stream`,
+//       );
+//       break;
+//     }
+
+//     const mediaBlock = new MediaBlock(
+//       [], // buffer (buffers will be added between media)
+//       [], // initialBuffer
+//       mainBlock,
+//       currentTime,
+//     );
+
+//     streamBlocks.push(mediaBlock);
+//     currentTime += mediaDuration;
+
+//     console.log(
+//       `[Adhoc Stream] Added ${media.title}, stream now at ${moment.unix(currentTime).format('HH:mm')}`,
+//     );
+
+//     // TODO: Implement prism walking to next facet
+//     // For now, continue with same facet
+//   }
+
+//   console.log(
+//     `[Adhoc Stream] Created ${streamBlocks.length} media blocks ending at ${moment.unix(currentTime).format('HH:mm')}`,
+//   );
+//   return [streamBlocks, ''];
 // }
 
 export function getInitialProceduralTimepoint(
@@ -313,14 +414,14 @@ export function setInitialBlockDuration(
   return [preMediaDuration, initialProceduralBlockDuration];
 }
 
-export function getStagedStream(
+export async function getStagedStream(
   rightNow: number,
   config: Config,
   args: IStreamRequest,
   stagedMedia: StagedMedia,
   media: Media,
   streamType: StreamType,
-): [selectedMedia: SelectedMedia[], error: string] {
+): Promise<[selectedMedia: SelectedMedia[], error: string]> {
   let error: string = '';
 
   let [firstTimePoint, intialError] = getInitialProceduralTimepoint(
@@ -343,7 +444,7 @@ export function getStagedStream(
   );
 
   if (initialProceduralBlockDuration > 0) {
-    let firstProceduralBlock = getProceduralBlock(
+    let firstProceduralBlock = await getProceduralBlock(
       args,
       stagedMedia,
       media,
@@ -355,7 +456,8 @@ export function getStagedStream(
     selectedMedia.push(...firstProceduralBlock);
   }
 
-  stagedMedia.scheduledMedia.forEach((item, index) => {
+  for (let index = 0; index < stagedMedia.scheduledMedia.length; index++) {
+    const item = stagedMedia.scheduledMedia[index];
     selectedMedia.push(item);
     if (index < stagedMedia.scheduledMedia.length - 1) {
       let procDuration =
@@ -363,7 +465,7 @@ export function getStagedStream(
         stagedMedia.scheduledMedia[index].time -
         stagedMedia.scheduledMedia[index].duration;
       if (procDuration > 0) {
-        let intermediateProcBlock = getProceduralBlock(
+        let intermediateProcBlock = await getProceduralBlock(
           args,
           stagedMedia,
           media,
@@ -376,7 +478,7 @@ export function getStagedStream(
         selectedMedia.push(...intermediateProcBlock);
       }
     }
-  });
+  }
 
   if (stagedMedia.scheduledMedia.length > 0) {
     let lastScheduledMedia =
@@ -385,7 +487,7 @@ export function getStagedStream(
     let endProcDuration =
       scheduledEndTime - lastScheduledMedia.time - lastScheduledMedia.duration;
     if (endProcDuration > 0) {
-      let endProcBlock = getProceduralBlock(
+      let endProcBlock = await getProceduralBlock(
         args,
         stagedMedia,
         media,
@@ -408,10 +510,10 @@ export function setProceduralTags(
   stagedMedia: StagedMedia,
 ): void {
   if (options.MultiTags.length === 0 && options.Tags.length === 0) {
-    let tagList: MediaTag[] = [];
+    let tagList: Tag[] = [];
     stagedMedia.injectedMovies.forEach(inj => tagList.push(...inj.media.tags));
     stagedMedia.scheduledMedia.forEach(sch => tagList.push(...sch.media.tags));
-    let uniquetags: MediaTag[] = [];
+    let uniquetags: Tag[] = [];
     //Filter out duplicate tags
     tagList.forEach(tag => {
       const tagName = typeof tag === 'string' ? tag : tag.name;
@@ -554,7 +656,7 @@ export function getMovie(
   time: number,
 ): [SelectedMedia, string] {
   let selectedMedia: SelectedMedia = new SelectedMedia(
-    new Movie('', '', '', '', [], '', 0, 0, []),
+    new Movie('', '', '', '', [], '', 0, 0, MediaType.Movie, []),
     '',
     MediaType.Movie,
     0,
@@ -590,12 +692,12 @@ export function getMovie(
   return [selectedMedia, ''];
 }
 
-export function getBlock(
+export async function getBlock(
   loadTitle: string,
   media: Media,
   time: number,
   args: IStreamRequest,
-): SelectedMedia {
+): Promise<SelectedMedia> {
   // Check if the block title is empty or undefined as these cannot be searched against the block list
   if (loadTitle === '' || loadTitle === undefined) {
     throw loadTitle + 'Empty block titles are not a valid input';
@@ -613,7 +715,7 @@ export function getBlock(
   }
 
   // If a block has shows assigned to it, assign the episodes to the block shows based on the progression of the shows
-  assignBlockEpisodes(args, selectedBlock, media.shows);
+  await assignBlockEpisodes(args, selectedBlock, media.shows);
 
   return new SelectedMedia(
     selectedBlock,
@@ -625,33 +727,34 @@ export function getBlock(
   );
 }
 
-export function assignBlockEpisodes(
+export async function assignBlockEpisodes(
   args: IStreamRequest,
   block: Block,
   shows: Show[],
-): void {
+): Promise<void> {
   // Assigns the episodes to the block shows based on the progression of the shows
   // TODO - If the same show appears multiple times in a block, we will need to figure out how to represent that in the block
   // so it can be ran through this loop, or we will have to how the loop works to account for that
   // possibly just have the shows in the block show array to have the possibility of multiple entries with their individual sequence numbers
-  block.shows.forEach(blockShow => {
+  for (const blockShow of block.shows) {
     // Find the show that matches the load title of the block show
     let selectedShow = shows.filter(
       item => item.mediaItemId === blockShow.mediaItemId,
     )[0];
     // Get the episode number that the show should be on based on the progression of the show
-    let episodeNum = ManageShowProgression(
+    let episodeNums = await ManageShowProgression(
       selectedShow,
       1,
       args,
       StreamType.Block,
       block.title,
-    )[0];
+    );
+    let episodeNum = episodeNums[0];
     // Get the episode that matches the episode number from the progression
-    blockShow.episode = selectedShow.episodes.filter(
+    blockShow.episode = selectedShow.episodes?.filter(
       ep => ep.episodeNumber === episodeNum,
     )[0];
-  });
+  }
 }
 
 /**

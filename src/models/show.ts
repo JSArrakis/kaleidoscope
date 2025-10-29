@@ -1,6 +1,6 @@
 import { BaseMedia } from './mediaInterface';
 import { Tag } from './tag';
-import { MediaTag } from './const/tagTypes';
+import { MediaType } from './enum/mediaTypes';
 import { tagRepository } from '../repositories/tagsRepository';
 
 export interface IEpisode {
@@ -13,21 +13,20 @@ export interface IEpisode {
   showItemId: string;
   duration: number;
   durationLimit: number;
-  tags: MediaTag[];
+  overDuration: boolean;
+  type: MediaType;
+  tags: Tag[];
 }
 
-export interface IShow extends Document, BaseMedia {
-  title: string;
-  mediaItemId: string;
+export interface IShow extends BaseMedia {
   alias: string;
   imdb: string;
   durationLimit: number;
-  overDuration: boolean;
   firstEpisodeOverDuration: boolean;
-  tags: MediaTag[];
-  secondaryTags: MediaTag[];
+  secondaryTags: Tag[];
   episodeCount: number;
   episodes: IEpisode[];
+  type: MediaType;
 }
 
 export class Episode {
@@ -40,7 +39,9 @@ export class Episode {
   public showItemId: string;
   public duration: number;
   public durationLimit: number;
-  public tags: MediaTag[];
+  public overDuration: boolean;
+  public type: MediaType;
+  public tags: Tag[];
 
   constructor(
     season: string,
@@ -52,7 +53,9 @@ export class Episode {
     showItemId: string,
     duration: number,
     durationLimit: number,
-    tags: MediaTag[],
+    overDuration: boolean,
+    type: MediaType,
+    tags: Tag[],
   ) {
     this.season = season;
     this.episode = episode;
@@ -63,12 +66,14 @@ export class Episode {
     this.showItemId = showItemId;
     this.duration = duration;
     this.durationLimit = durationLimit;
+    this.overDuration = overDuration;
+    this.type = type;
     this.tags = tags;
   }
 
   static fromRequestObject(requestObject: any): Episode {
     // Handle tag names - convert tag names (strings) to Tag objects
-    const tags: MediaTag[] = [];
+    const tags: Tag[] = [];
     for (const tagName of requestObject.tags || []) {
       if (typeof tagName === 'string') {
         // Look up the tag by name in the database (try exact match first, then case-insensitive)
@@ -95,6 +100,8 @@ export class Episode {
       requestObject.showItemId,
       requestObject.duration,
       requestObject.durationLimit,
+      requestObject.overDuration,
+      MediaType.Episode,
       tags,
     );
   }
@@ -106,10 +113,10 @@ export class Show {
   public alias: string;
   public imdb: string;
   public durationLimit: number;
-  public overDuration: boolean;
   public firstEpisodeOverDuration: boolean;
-  public tags: MediaTag[];
-  public secondaryTags: MediaTag[];
+  public tags: Tag[];
+  public secondaryTags: Tag[];
+  public type: MediaType;
   public episodeCount: number;
   public episodes: Episode[];
 
@@ -119,10 +126,10 @@ export class Show {
     alias: string,
     imdb: string,
     durationLimit: number,
-    overDuration: boolean,
     firstEpisodeOverDuration: boolean,
-    tags: MediaTag[],
-    secondaryTags: MediaTag[],
+    tags: Tag[],
+    secondaryTags: Tag[],
+    type: MediaType,
     episodeCount: number,
     episodes: Episode[],
   ) {
@@ -131,17 +138,17 @@ export class Show {
     this.alias = alias;
     this.imdb = imdb;
     this.durationLimit = durationLimit;
-    this.overDuration = overDuration;
     this.firstEpisodeOverDuration = firstEpisodeOverDuration;
     this.tags = tags;
     this.secondaryTags = secondaryTags;
+    this.type = type;
     this.episodeCount = episodeCount;
     this.episodes = episodes;
   }
 
   static fromRequestObject(requestObject: any): Show {
     // Handle tag names - convert tag names (strings) to Tag objects
-    const tags: MediaTag[] = [];
+    const tags: Tag[] = [];
     for (const tagName of requestObject.tags || []) {
       if (typeof tagName === 'string') {
         // Look up the tag by name in the database (try exact match first, then case-insensitive)
@@ -159,7 +166,7 @@ export class Show {
     }
 
     // Handle secondary tags (initially empty, will be populated during transformation)
-    const secondaryTags: MediaTag[] = [];
+    const secondaryTags: Tag[] = [];
 
     return new Show(
       requestObject.title,
@@ -167,10 +174,10 @@ export class Show {
       requestObject.alias,
       requestObject.imdb,
       requestObject.durationLimit,
-      requestObject.overDuration,
       requestObject.firstEpisodeOverDuration,
       tags,
       secondaryTags,
+      MediaType.Show,
       requestObject.episodeCount,
       requestObject.episodes?.map((episode: any) =>
         Episode.fromRequestObject(episode),

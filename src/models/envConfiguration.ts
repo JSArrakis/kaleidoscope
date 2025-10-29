@@ -1,11 +1,12 @@
-import { MediaTag } from './const/tagTypes';
+import { Tag } from "./tag";
+
 
 export interface IEnvConfiguration {
   title: string;
   mediaItemId: string;
   favorites: string[];
   blackList: string[];
-  defaultTags: MediaTag[];
+  defaultTags: Tag[];
   defaultPromo: string;
 }
 export class EnvConfiguration {
@@ -13,7 +14,7 @@ export class EnvConfiguration {
   mediaItemId: string;
   favorites: string[];
   blackList: string[];
-  defaultTags: MediaTag[];
+  defaultTags: Tag[];
   defaultPromo: string;
 
   constructor(
@@ -21,7 +22,7 @@ export class EnvConfiguration {
     mediaItemId: string,
     favorites: string[],
     blackList: string[],
-    defaultTags: MediaTag[],
+    defaultTags: Tag[],
     defaultPromo: string,
   ) {
     this.title = title;

@@ -180,3 +180,220 @@ export function parseMonthDayToCurrentYear(monthDay: string): Date {
     : monthDay;
   return new Date(`${currentYear}-${cleanMonthDay}`);
 }
+
+/**
+ * Format a Date object to ISO datetime string (YYYY-MM-DD HH:MM:SS) in local time
+ */
+export function formatDateToISO(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  const seconds = String(date.getSeconds()).padStart(2, '0');
+
+  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+}
+
+/**
+ * Format a Date object to ISO date string (YYYY-MM-DD) in local time
+ */
+export function formatDateToISODate(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+
+  return `${year}-${month}-${day}`;
+}
+
+/**
+ * Parse various date formats to ISO datetime string
+ * Supports: YYYY-MM-DD, YYYY-MM-DD HH:MM:SS, --MM-DD, MM-DD
+ */
+export function parseToISODateTime(
+  dateString: string,
+  defaultTime: string = '00:00:00',
+): string | null {
+  if (!dateString) return null;
+
+  try {
+    const currentYear = new Date().getFullYear();
+
+    // Handle "--12-25" or "12-25" format (month-day only)
+    if (dateString.startsWith('--') && dateString.length === 7) {
+      const cleanMonthDay = dateString.slice(2);
+      return `${currentYear}-${cleanMonthDay} ${defaultTime}`;
+    }
+    if (dateString.match(/^\d{2}-\d{2}$/) && dateString.length === 5) {
+      return `${currentYear}-${dateString} ${defaultTime}`;
+    }
+
+    // Handle "YYYY-MM-DD" format
+    if (dateString.match(/^\d{4}-\d{2}-\d{2}$/)) {
+      return `${dateString} ${defaultTime}`;
+    }
+
+    // Handle "YYYY-MM-DD HH:MM:SS" format
+    if (dateString.match(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/)) {
+      return dateString;
+    }
+
+    // Try to parse as Date and format
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) {
+      console.warn(`Invalid date format: ${dateString}`);
+      return null;
+    }
+
+    return formatDateToISO(date);
+  } catch (error) {
+    console.warn(`Error parsing date ${dateString}:`, error);
+    return null;
+  }
+}
+
+/**
+ * Check if current date/time is within the specified date range
+ * Supports both date-only and datetime comparisons
+ */
+export function isDateInRange(
+  currentDate: Date,
+  startDate: string | null,
+  endDate: string | null,
+): boolean {
+  if (!startDate || !endDate) return false;
+
+  try {
+    const current = formatDateToISO(currentDate);
+
+    // Handle date-only comparison (compare just the date part)
+    if (startDate.length === 10 && endDate.length === 10) {
+      const currentDateOnly = formatDateToISODate(currentDate);
+      return currentDateOnly >= startDate && currentDateOnly <= endDate;
+    }
+
+    // Handle datetime comparison
+    return current >= startDate && current <= endDate;
+  } catch (error) {
+    console.warn(`Error comparing dates:`, error);
+    return false;
+  }
+}
+
+/**
+ * Check if current date matches any of the holiday dates in the array
+ */
+export function isDateInHolidayDates(
+  currentDate: Date,
+  holidayDates: string[],
+): boolean {
+  if (!holidayDates || holidayDates.length === 0) return false;
+
+  const currentDateStr = formatDateToISODate(currentDate);
+  const currentYear = currentDate.getFullYear();
+
+  return holidayDates.some(holidayDate => {
+    if (!holidayDate) return false;
+
+    // Handle "--MM-DD" format
+    if (holidayDate.startsWith('--') && holidayDate.length === 7) {
+      const cleanMonthDay = holidayDate.slice(2);
+      const fullDate = `${currentYear}-${cleanMonthDay}`;
+      return currentDateStr === fullDate;
+    }
+
+    // Handle "MM-DD" format
+    if (holidayDate.match(/^\d{2}-\d{2}$/) && holidayDate.length === 5) {
+      const fullDate = `${currentYear}-${holidayDate}`;
+      return currentDateStr === fullDate;
+    }
+
+    // Handle "YYYY-MM-DD" format
+    if (holidayDate.match(/^\d{4}-\d{2}-\d{2}$/)) {
+      return currentDateStr === holidayDate;
+    }
+
+    // Handle other formats by parsing and comparing date part
+    try {
+      const parsedDate = new Date(holidayDate);
+      if (!isNaN(parsedDate.getTime())) {
+        return formatDateToISODate(parsedDate) === currentDateStr;
+      }
+    } catch (error) {
+      console.warn(`Error parsing holiday date ${holidayDate}:`, error);
+    }
+
+    return false;
+  });
+}
+
+/**
+ * Convert MM-DD format to DATETIME for storage (using current year)
+ */
+export function convertMMDDToDateTime(mmdd: string): string {
+  if (!mmdd) throw new Error('MM-DD string cannot be empty');
+
+  // Clean the input - remove any leading '--' if present
+  const cleanMMDD = mmdd.startsWith('--') ? mmdd.slice(2) : mmdd;
+
+  // Validate MM-DD format
+  if (!cleanMMDD.match(/^\d{2}-\d{2}$/)) {
+    throw new Error(
+      `Invalid MM-DD format: ${mmdd}. Expected format: MM-DD or --MM-DD`,
+    );
+  }
+
+  const currentYear = new Date().getFullYear();
+  return `${currentYear}-${cleanMMDD} 00:00:00`;
+}
+
+/**
+ * Convert DATETIME back to MM-DD format for API responses
+ */
+export function convertDateTimeToMMDD(datetime: string): string {
+  if (!datetime) throw new Error('DateTime string cannot be empty');
+
+  try {
+    // Extract MM-DD from YYYY-MM-DD HH:MM:SS format
+    const dateMatch = datetime.match(/^\d{4}-(\d{2}-\d{2})/);
+    if (dateMatch) {
+      return dateMatch[1]; // Return just the MM-DD part
+    }
+
+    // Try parsing as Date if the format is different
+    const date = new Date(datetime);
+    if (isNaN(date.getTime())) {
+      throw new Error(`Invalid datetime format: ${datetime}`);
+    }
+
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${month}-${day}`;
+  } catch (error) {
+    throw new Error(
+      `Error converting datetime to MM-DD: ${datetime} - ${error}`,
+    );
+  }
+}
+
+/**
+ * Check if current date matches any of the holiday dates stored as DATETIME
+ */
+export function isDateInHolidayDateTimes(
+  currentDate: Date,
+  holidayDateTimes: string[],
+): boolean {
+  if (!holidayDateTimes || holidayDateTimes.length === 0) return false;
+
+  const currentMMDD = `${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(currentDate.getDate()).padStart(2, '0')}`;
+
+  return holidayDateTimes.some(datetime => {
+    try {
+      const holidayMMDD = convertDateTimeToMMDD(datetime);
+      return currentMMDD === holidayMMDD;
+    } catch (error) {
+      console.warn(`Error converting holiday datetime ${datetime}:`, error);
+      return false;
+    }
+  });
+}

@@ -94,8 +94,8 @@ Occasionally, aesthetics truly merge to create something new:
 
 ### The Key Distinction:
 
-- **Simple layering**: Star Wars has both technology (laser guns, mechanical repairs) AND magic (Force, lightsabers) existing separately
-- **True marriage**: Spelljammer replaces technology entirely with magic - spaceships are living creatures, navigation uses divination, weapons are enchanted
+- **Simple layering**: Star Wars (Space Opera Fantasy) has both technology (laser guns, mechanical repairs) AND magic (Force, lightsabers) existing separately
+- **True marriage**: Krull (Spelljammer) replaces technology entirely with magic - spaceships are living creatures, navigation uses divination, weapons are enchanted or shoot magical beams.
 
 This distinction helps identify when aesthetic combinations create genuinely new presentation frameworks versus simply stacking visual elements.
 

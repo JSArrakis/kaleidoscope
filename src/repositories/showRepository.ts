@@ -1,7 +1,7 @@
 import { getDB } from '../db/sqlite';
 import { Show, Episode } from '../models/show';
 import { Tag } from '../models/tag';
-import { MediaTag } from '../models/const/tagTypes';
+import { MediaType } from '../models/enum/mediaTypes';
 import { tagRepository } from './tagsRepository';
 
 export class ShowRepository {
@@ -14,8 +14,8 @@ export class ShowRepository {
     const transaction = this.db.transaction(() => {
       // Insert show
       const showStmt = this.db.prepare(`
-        INSERT INTO shows (title, mediaItemId, alias, imdb, durationLimit, overDuration, firstEpisodeOverDuration, episodeCount)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO shows (title, mediaItemId, alias, imdb, durationLimit, firstEpisodeOverDuration, episodeCount)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
       `);
 
       const showResult = showStmt.run(
@@ -24,7 +24,6 @@ export class ShowRepository {
         show.alias,
         show.imdb,
         show.durationLimit,
-        show.overDuration ? 1 : 0,
         show.firstEpisodeOverDuration ? 1 : 0,
         show.episodeCount,
       );
@@ -39,8 +38,8 @@ export class ShowRepository {
       // Insert episodes
       if (show.episodes && show.episodes.length > 0) {
         const episodeStmt = this.db.prepare(`
-          INSERT INTO episodes (showId, season, episode, episodeNumber, path, title, mediaItemId, showItemId, duration, durationLimit)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          INSERT INTO episodes (showId, season, episode, episodeNumber, path, title, mediaItemId, showItemId, duration, durationLimit, overDuration, type)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `);
 
         for (const episode of show.episodes) {
@@ -55,6 +54,8 @@ export class ShowRepository {
             showItemId,
             episode.duration,
             episode.durationLimit,
+            episode.overDuration ? 1 : 0,
+            episode.type,
           );
 
           // Insert episode tags
@@ -114,7 +115,7 @@ export class ShowRepository {
       // Update show
       const showStmt = this.db.prepare(`
         UPDATE shows 
-        SET title = ?, alias = ?, imdb = ?, durationLimit = ?, overDuration = ?, firstEpisodeOverDuration = ?, episodeCount = ?, updatedAt = CURRENT_TIMESTAMP
+        SET title = ?, alias = ?, imdb = ?, durationLimit = ?, firstEpisodeOverDuration = ?, episodeCount = ?, updatedAt = CURRENT_TIMESTAMP
         WHERE mediaItemId = ?
       `);
 
@@ -123,7 +124,6 @@ export class ShowRepository {
         show.alias,
         show.imdb,
         show.durationLimit,
-        show.overDuration ? 1 : 0,
         show.firstEpisodeOverDuration ? 1 : 0,
         show.episodeCount,
         mediaItemId,
@@ -165,8 +165,8 @@ export class ShowRepository {
       // Insert new episodes
       if (show.episodes && show.episodes.length > 0) {
         const episodeStmt = this.db.prepare(`
-          INSERT INTO episodes (showId, season, episode, episodeNumber, path, title, mediaItemId, showItemId, duration, durationLimit)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          INSERT INTO episodes (showId, season, episode, episodeNumber, path, title, mediaItemId, showItemId, duration, durationLimit, overDuration, type)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `);
 
         for (const episode of show.episodes) {
@@ -181,6 +181,8 @@ export class ShowRepository {
             showItemId,
             episode.duration,
             episode.durationLimit,
+            episode.overDuration ? 1 : 0,
+            episode.type,
           );
 
           // Insert episode tags
@@ -238,8 +240,8 @@ export class ShowRepository {
     return transaction();
   }
 
-  // Find shows by tags (searches both primary and secondary tags) - accepts MediaTag[] or string[]
-  findByTags(tags: (MediaTag | string)[]): Show[] {
+  // Find shows by tags (searches both primary and secondary tags) - accepts Tag[] or string[]
+  findByTags(tags: (Tag | string)[]): Show[] {
     if (tags.length === 0) return [];
 
     const tagIds: string[] = [];
@@ -277,8 +279,8 @@ export class ShowRepository {
     return shows;
   }
 
-  // Find shows that have episodes with specific tags (secondary tag search) - accepts MediaTag[] or string[]
-  findByEpisodeTags(tags: (MediaTag | string)[]): Show[] {
+  // Find shows that have episodes with specific tags (secondary tag search) - accepts Tag[] or string[]
+  findByEpisodeTags(tags: (Tag | string)[]): Show[] {
     if (tags.length === 0) return [];
 
     const tagIds: string[] = [];
@@ -327,7 +329,7 @@ export class ShowRepository {
   // Helper method to insert show tags
   private insertShowTags(
     mediaItemId: string,
-    tags: MediaTag[],
+    tags: Tag[],
     tagType: 'primary' | 'secondary',
   ): void {
     if (tags.length === 0) return;
@@ -366,7 +368,7 @@ export class ShowRepository {
   }
 
   // Helper method to insert episode tags
-  private insertEpisodeTags(mediaItemId: string, tags: MediaTag[]): void {
+  private insertEpisodeTags(mediaItemId: string, tags: Tag[]): void {
     if (tags.length === 0) return;
 
     const stmt = this.db.prepare(`
@@ -406,7 +408,7 @@ export class ShowRepository {
   private loadShowTags(
     mediaItemId: string,
     tagType: 'primary' | 'secondary',
-  ): MediaTag[] {
+  ): Tag[] {
     const stmt = this.db.prepare(`
       SELECT t.* FROM tags t
       INNER JOIN show_tags st ON t.tagId = st.tagId
@@ -414,7 +416,7 @@ export class ShowRepository {
     `);
 
     const tagRows = stmt.all(mediaItemId, tagType) as any[];
-    const tags: MediaTag[] = [];
+    const tags: Tag[] = [];
 
     for (const tagRow of tagRows) {
       const tag = new Tag(
@@ -434,7 +436,7 @@ export class ShowRepository {
   }
 
   // Helper method to load episode tags
-  private loadEpisodeTags(mediaItemId: string): MediaTag[] {
+  private loadEpisodeTags(mediaItemId: string): Tag[] {
     const stmt = this.db.prepare(`
       SELECT t.* FROM tags t
       INNER JOIN episode_tags et ON t.tagId = et.tagId
@@ -442,7 +444,7 @@ export class ShowRepository {
     `);
 
     const tagRows = stmt.all(mediaItemId) as any[];
-    const tags: MediaTag[] = [];
+    const tags: Tag[] = [];
 
     for (const tagRow of tagRows) {
       const tag = new Tag(
@@ -477,6 +479,8 @@ export class ShowRepository {
         episodeRow.showItemId,
         episodeRow.duration,
         episodeRow.durationLimit,
+        Boolean(episodeRow.overDuration),
+        MediaType.Episode,
         episodeTags,
       );
     });
@@ -487,10 +491,10 @@ export class ShowRepository {
       showRow.alias,
       showRow.imdb,
       showRow.durationLimit,
-      Boolean(showRow.overDuration),
       Boolean(showRow.firstEpisodeOverDuration),
       primaryTags,
       secondaryTags,
+      MediaType.Show,
       showRow.episodeCount,
       episodes,
     );

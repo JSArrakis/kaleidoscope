@@ -1,11 +1,11 @@
 import { keyNormalizer } from '../utils/utilities';
-import { MediaTag } from './const/tagTypes';
+import { Tag } from './tag';
 
 export interface IStreamRequest {
   Title: string;
   Env: string;
   Movies: string[];
-  Tags: MediaTag[];
+  Tags: Tag[];
   MultiTags: string[][];
   Blocks: string[];
   StartTime: number;
@@ -17,7 +17,7 @@ export class ContStreamRequest implements IStreamRequest {
   Title: string;
   Env: string;
   Movies: string[];
-  Tags: MediaTag[];
+  Tags: Tag[];
   MultiTags: string[][];
   Blocks: string[];
   StartTime: number;
@@ -28,7 +28,7 @@ export class ContStreamRequest implements IStreamRequest {
     title: string = 'Default',
     env: string = 'default',
     movies: string[] = [],
-    tags: MediaTag[] = [],
+    tags: Tag[] = [],
     multiTags: string[][] = [],
     blocks: string[] = [],
     startTime: number = 0,
@@ -61,7 +61,7 @@ export class AdhocStreamRequest implements IStreamRequest {
   Title: string;
   Env: string;
   Movies: string[];
-  Tags: MediaTag[];
+  Tags: Tag[];
   MultiTags: string[][];
   Blocks: string[];
   StartTime: number;
@@ -73,7 +73,7 @@ export class AdhocStreamRequest implements IStreamRequest {
     title: string = 'Default',
     env: string = 'default',
     movies: string[] = [],
-    tags: MediaTag[] = [],
+    tags: Tag[] = [],
     multiTags: string[][] = [],
     collections: string[] = [],
     startTime: number = 0,

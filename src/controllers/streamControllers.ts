@@ -10,75 +10,61 @@ import * as envMan from '../services/environmentManager';
 import { AdhocStreamRequest, ContStreamRequest } from '../models/streamRequest';
 import { keyNormalizer } from '../utils/utilities';
 import { getConfig } from '../config/configService';
-import {
-  getMedia,
-  getMosaics,
-  getStreamType,
-  setStreamType,
-} from '../services/mediaService';
+import { getStreamType, setStreamType } from '../services/mediaService';
 import { getEnvConfig } from '../db/envConfig';
 
 export async function continuousStreamHandler(
   req: Request,
   res: Response,
 ): Promise<void> {
-  let streamError: string = '';
-  // Check for errors in request
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    res.status(400).json({ errors: errors.array() });
-    return;
-  }
-
-  //Convert request to ContiniousStreamRequest
-  const contRequest = mapRequestToContinuousStreamRequest(req);
-
-  // Get environment config from DB and set it in the environment manager
-  // For now we only accept a password for the continuous stream. Other fields
-  // (env, movies, tags, etc.) are ignored at this time. Environment config
-  // will be handled later if/when those fields are reintroduced.
-
-  // Check if Continuous stream is already running, if so return error
-  if (streamMan.isContinuousStream()) {
-    res.status(409).json({
-      error:
-        'Continuous stream is already running. Stop the current stream before starting a new one.',
-    });
-    return;
-  }
-
-  setStreamType(StreamType.Cont);
-  streamMan.setContinuousStream(true);
-
-  // Set the continuous stream args to the values from the request
-  // These values are stored in the stream service and used to determine the stream while it is running continuously
-  // TODO - remove endtime from map
-  streamMan.setContinuousStreamArgs(contRequest);
-
-  // Set the VLC client to the client created with the password from the request
-  // If VLC isnt already running, it will start VLC
-  setVLCClient(
-    await createVLCClient(streamMan.getContinuousStreamArgs().Password),
-  );
-
-  // Creates today's span of the stream filling the time until 12:00am using params from config, continuous stream args and available media
-  streamError = streamMan.initializeStream(
-    getConfig(),
-    contRequest,
-    getMedia(),
-    getMosaics(),
-    getStreamType(),
-    true, // alignStart - ensure first main media starts at next :00 or :30
-  );
-  if (streamError !== '') {
-    console.log('Error initializing stream: ' + streamError);
-    // Reset the continuous stream flag since initialization failed
-    streamMan.setContinuousStream(false);
-    res.status(400).json({ message: streamError });
-    return;
-  }
-
   try {
+    let streamError: string = '';
+    // Check for errors in request
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      res.status(400).json({ errors: errors.array() });
+      return;
+    }
+
+    //Convert request to ContiniousStreamRequest
+    const contRequest = mapRequestToContinuousStreamRequest(req);
+
+    // Get environment config from DB and set it in the environment manager
+    // For now we only accept a password for the continuous stream. Other fields
+    // (env, movies, tags, etc.) are ignored at this time. Environment config
+    // will be handled later if/when those fields are reintroduced.
+
+    // Check if Continuous stream is already running, if so return error
+    if (streamMan.isContinuousStream()) {
+      res.status(409).json({
+        error:
+          'Continuous stream is already running. Stop the current stream before starting a new one.',
+      });
+      return;
+    }
+
+    setStreamType(StreamType.Cont);
+    streamMan.setContinuousStream(true);
+
+    // Set the continuous stream args to the values from the request
+    // These values are stored in the stream service and used to determine the stream while it is running continuously
+    streamMan.setContinuousStreamArgs(contRequest);
+
+    // Creates today's span of the stream filling the time until 12:00am using params from config, continuous stream args and available media
+    streamError = await streamMan.initializeStream(
+      getConfig(),
+      contRequest,
+      getStreamType(),
+      true, // alignStart - ensure first main media starts at next :00 or :30
+    );
+    if (streamError !== '') {
+      console.log('Error initializing stream: ' + streamError);
+      // Reset the continuous stream flag since initialization failed
+      streamMan.setContinuousStream(false);
+      res.status(400).json({ message: streamError });
+      return;
+    }
+
     // Pulls the first two items from the initialized stream and adds them to the on deck stream, the on deck stream array is used to load vlc with the next media block
     // This is done to for a future feature which will function in tandem with a user being able to change or rearrange an upcoming stream's media items.
     // To prevent a user from creating an issue which could cause the stream to desync with its original schedule, the schedule of the ondeck stream is locked in place
@@ -135,13 +121,7 @@ export async function adHocStreamHandler(
     await createVLCClient(streamMan.getContinuousStreamArgs().Password),
   );
 
-  streamMan.initializeStream(
-    getConfig(),
-    adhocRequest,
-    getMedia(),
-    getMosaics(),
-    getStreamType(),
-  );
+  await streamMan.initializeStream(getConfig(), adhocRequest, getStreamType());
   streamMan.initializeOnDeckStream();
 
   await streamMan.addInitialMediaBlocks();
@@ -310,9 +290,6 @@ export const adHocStreamValidationRules = [
 ];
 
 function mapRequestToContinuousStreamRequest(req: Request): ContStreamRequest {
-  // For the continuous handler we only set the Password and keep other fields
-  // at their defaults. Downstream code should treat Movies/Tags/etc as optional
-  // and use procedural defaults when empty.
   return new ContStreamRequest(req.body.password);
 }
 

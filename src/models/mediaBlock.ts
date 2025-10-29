@@ -8,19 +8,16 @@ import { Episode } from './show';
 
 export class MediaBlock {
   buffer: (Promo | Music | Commercial | Short)[];
-  mainBlock?: Episode | Movie | Block;
-  initialBuffer: (Promo | Music | Commercial | Short)[];
+  featureMedia?: Episode | Movie;
   startTime?: number;
 
   constructor(
     buffer: (Promo | Music | Commercial | Short)[],
-    initialBuffer: (Promo | Music | Commercial | Short)[],
-    mainBlock?: Episode | Movie | Block,
+    featureMedia?: Episode | Movie,
     startTime?: number,
   ) {
     this.buffer = buffer;
-    this.mainBlock = mainBlock;
-    this.initialBuffer = initialBuffer;
+    this.featureMedia = featureMedia;
     this.startTime = startTime;
   }
 }

@@ -1,18 +1,14 @@
 import { BaseMedia } from './mediaInterface';
 import { Tag } from './tag';
-import { MediaTag } from './const/tagTypes';
+import { MediaType } from './enum/mediaTypes';
 import { tagRepository } from '../repositories/tagsRepository';
 
-export interface IMovie {
-  title: string;
-  mediaItemId: string;
+export interface IMovie extends BaseMedia {
   alias: string;
   imdb: string;
-  tags: MediaTag[];
-  path: string;
-  duration: number;
   durationlimit: number;
   collections: ICollectionReference[];
+  type: MediaType;
 }
 
 export interface ICollectionReference {
@@ -46,10 +42,11 @@ export class Movie {
   mediaItemId: string;
   alias: string;
   imdb: string;
-  tags: MediaTag[];
+  tags: Tag[];
   path: string;
   duration: number;
   durationLimit: number;
+  type: MediaType;
   collections: CollectionReference[];
 
   constructor(
@@ -57,10 +54,11 @@ export class Movie {
     mediaItemId: string,
     alias: string,
     imdb: string,
-    tags: MediaTag[],
+    tags: Tag[],
     path: string,
     duration: number,
     durationLimit: number,
+    type: MediaType,
     collections: CollectionReference[],
   ) {
     this.title = title;
@@ -71,12 +69,13 @@ export class Movie {
     this.path = path;
     this.duration = duration;
     this.durationLimit = durationLimit;
+    this.type = type;
     this.collections = collections;
   }
 
   static fromRequestObject(requestObject: any): Movie {
     // Handle tag names - convert tag names (strings) to Tag objects
-    const tags: MediaTag[] = [];
+    const tags: Tag[] = [];
     for (const tagName of requestObject.tags) {
       if (typeof tagName === 'string') {
         // Look up the tag by name in the database (try exact match first, then case-insensitive)
@@ -102,6 +101,7 @@ export class Movie {
       requestObject.path,
       requestObject.duration,
       requestObject.durationLimit,
+      MediaType.Movie,
       requestObject.collections || [],
     );
   }

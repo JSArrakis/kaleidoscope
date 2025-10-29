@@ -1,21 +1,24 @@
-import { MediaTag } from './const/tagTypes';
+import { Tag } from './tag';
 
 export class SegmentedTags {
-  eraTags: MediaTag[];
-  genreTags: MediaTag[];
-  specialtyTags: MediaTag[];
-  ageGroupTags: MediaTag[];
-  holidayTags: MediaTag[];
+  eraTags: Tag[];
+  genreTags: Tag[];
+  aestheticTags: Tag[];
+  specialtyTags: Tag[];
+  ageGroupTags: Tag[];
+  holidayTags: Tag[];
 
   constructor(
-    eraTags: MediaTag[],
-    genreTags: MediaTag[],
-    specialtyTags: MediaTag[],
-    ageGroupTags: MediaTag[],
-    holidayTags: MediaTag[],
+    eraTags: Tag[],
+    genreTags: Tag[],
+    aestheticTags: Tag[],
+    specialtyTags: Tag[],
+    ageGroupTags: Tag[],
+    holidayTags: Tag[],
   ) {
     this.eraTags = eraTags;
     this.genreTags = genreTags;
+    this.aestheticTags = aestheticTags;
     this.specialtyTags = specialtyTags;
     this.ageGroupTags = ageGroupTags;
     this.holidayTags = holidayTags;

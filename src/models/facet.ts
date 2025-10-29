@@ -1,7 +1,9 @@
+import { Tag } from './tag';
+
 export interface IFacet {
   facetId: string;
-  genre: string;
-  aesthetic: string;
+  genre: Tag;
+  aesthetic: Tag;
   relationships: IFacetRelationship[];
 }
 
@@ -21,13 +23,13 @@ export class FacetRelationship {
 
 export class Facet {
   facetId: string;
-  genre: string;
-  aesthetic: string;
+  genre: Tag;
+  aesthetic: Tag;
   relationships: FacetRelationship[];
   constructor(
     facetId: string,
-    genre: string,
-    aesthetic: string,
+    genre: Tag,
+    aesthetic: Tag,
     relationships: FacetRelationship[],
   ) {
     this.facetId = facetId;
@@ -39,8 +41,8 @@ export class Facet {
   static fromRequestObject(requestObject: any): Facet {
     return new Facet(
       requestObject.facetId,
-      requestObject.genre,
-      requestObject.aesthetic,
+      requestObject.genre, // Expect Tag object from request
+      requestObject.aesthetic, // Expect Tag object from request
       requestObject.relationships.map(
         (rel: any) => new FacetRelationship(rel.facetId, rel.distance),
       ),
@@ -50,8 +52,8 @@ export class Facet {
   static fromDatabaseObject(dbObject: any): Facet {
     return new Facet(
       dbObject.facetId,
-      dbObject.genre,
-      dbObject.aesthetic,
+      dbObject.genre, // Will be Tag object from repository join
+      dbObject.aesthetic, // Will be Tag object from repository join
       dbObject.relationships.map(
         (rel: any) => new FacetRelationship(rel.facetId, rel.distance),
       ),

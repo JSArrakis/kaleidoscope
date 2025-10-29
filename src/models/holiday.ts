@@ -3,31 +3,31 @@ export interface IHoliday {
   tagId: string;
   type: string;
   holidayDates: string[];
-  exclusionGenres: string[];
-  seasonStartDate?: string;
-  seasonEndDate?: string;
+  exclusionTags: string[];
+  seasonStartDate?: string; // ISO datetime string (YYYY-MM-DD HH:MM:SS)
+  seasonEndDate?: string; // ISO datetime string (YYYY-MM-DD HH:MM:SS)
 }
 
 export class Holiday {
   name: string;
   tagId: string;
   holidayDates: string[];
-  exclusionGenres: string[];
-  seasonStartDate?: string;
-  seasonEndDate?: string;
+  exclusionTags: string[];
+  seasonStartDate?: string; // ISO datetime string (YYYY-MM-DD HH:MM:SS)
+  seasonEndDate?: string; // ISO datetime string (YYYY-MM-DD HH:MM:SS)
 
   constructor(
     name: string,
     tagId: string,
     holidayDates: string[],
-    exclusionGenres: string[],
+    exclusionTags: string[],
     seasonStartDate?: string,
     seasonEndDate?: string,
   ) {
     this.name = name;
     this.tagId = tagId;
     this.holidayDates = holidayDates;
-    this.exclusionGenres = exclusionGenres;
+    this.exclusionTags = exclusionTags;
     this.seasonStartDate = seasonStartDate;
     this.seasonEndDate = seasonEndDate;
   }
@@ -37,7 +37,7 @@ export class Holiday {
       requestObject.name,
       requestObject.tagId,
       requestObject.holidayDates,
-      requestObject.exclusionGenres || [],
+      requestObject.exclusionTags || [],
       requestObject.seasonStartDate,
       requestObject.seasonEndDate,
     );

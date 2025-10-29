@@ -1,6 +1,6 @@
 import { getDB } from '../db/sqlite';
 import { Bumper } from '../models/bumper';
-import { MediaTag } from '../models/const/tagTypes';
+import { Tag } from '../models/tag';
 import { tagRepository } from './tagsRepository';
 
 export class BumperRepository {
@@ -9,7 +9,7 @@ export class BumperRepository {
   }
 
   // Helper method to insert bumper tags into junction table
-  private insertBumperTags(mediaItemId: string, tags: MediaTag[]): void {
+  private insertBumperTags(mediaItemId: string, tags: Tag[]): void {
     if (tags.length === 0) return;
 
     const stmt = this.db.prepare(`
@@ -23,8 +23,8 @@ export class BumperRepository {
         if (typeof tag === 'string') {
           const found = tagRepository.findByNameIgnoreCase(tag);
           tagId = found ? found.tagId : undefined;
-        } else if ((tag as any).tagId) {
-          tagId = (tag as any).tagId;
+        } else if (tag.tagId) {
+          tagId = tag.tagId;
         }
 
         if (!tagId) {
@@ -46,7 +46,7 @@ export class BumperRepository {
   }
 
   // Helper method to load bumper tags from junction table
-  private loadBumperTags(mediaItemId: string): MediaTag[] {
+  private loadBumperTags(mediaItemId: string): Tag[] {
     const stmt = this.db.prepare(`
       SELECT t.*
       FROM tags t
@@ -54,7 +54,7 @@ export class BumperRepository {
       WHERE bt.mediaItemId = ?
     `);
 
-    return stmt.all(mediaItemId) as MediaTag[];
+    return stmt.all(mediaItemId) as Tag[];
   }
 
   // Helper method to delete bumper tags from junction table
@@ -196,13 +196,11 @@ export class BumperRepository {
     return transaction();
   }
 
-  // Find bumpers by tags using SQL joins (accept MediaTag[] or string[])
-  findByTags(tags: (MediaTag | string)[]): Bumper[] {
+  // Find bumpers by tags using SQL joins (accept Tag[] or string[])
+  findByTags(tags: (Tag | string)[]): Bumper[] {
     if (tags.length === 0) return [];
 
-    const tagNames = tags.map(t =>
-      typeof t === 'string' ? t : (t as any).name,
-    );
+    const tagNames = tags.map(t => (typeof t === 'string' ? t : t.name));
     const placeholders = tagNames.map(() => '?').join(',');
     const stmt = this.db.prepare(`
       SELECT DISTINCT b.*

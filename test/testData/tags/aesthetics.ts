@@ -26,6 +26,7 @@ export const aestheticTags = {
     'Post-Apocalyptic',
     TagType.Aesthetic,
   ),
+  pulp: new Tag('pulp', 'Pulp', TagType.Aesthetic),
   spaceOpera: new Tag('space-opera', 'Space Opera', TagType.Aesthetic),
   steampunk: new Tag('steampunk', 'Steampunk', TagType.Aesthetic),
   superhero: new Tag('superhero', 'Superhero', TagType.Aesthetic),

@@ -1,4 +1,5 @@
 import { Episode, Show } from '../../src/models/show';
+import { MediaType } from '../../src/models/enum/mediaTypes';
 import { ageGroupTags, aestheticTags, eraTags, genreTags } from './tags';
 
 export const sailormoon = new Show(
@@ -6,9 +7,9 @@ export const sailormoon = new Show(
   'sailormoon',
   'sailormoon',
   'tt0103369',
-  1800,
-  false,
-  false,
+  1800, // duration (total show duration estimate)
+  1800, // durationLimit
+  false, // firstEpisodeOverDuration
   [
     genreTags.action,
     genreTags.romance,
@@ -18,8 +19,9 @@ export const sailormoon = new Show(
     ageGroupTags.family,
     eraTags.nineties,
   ],
-  [],
-  5,
+  [], // secondaryTags
+  MediaType.Show, // type
+  5, // episodeCount
   [
     new Episode(
       '1',
@@ -31,6 +33,8 @@ export const sailormoon = new Show(
       'sailormoon',
       1448,
       1800,
+      false,
+      MediaType.Episode,
       [],
     ),
     new Episode(
@@ -43,6 +47,8 @@ export const sailormoon = new Show(
       'sailormoon',
       1449,
       1800,
+      false,
+      MediaType.Episode,
       [],
     ),
     new Episode(
@@ -55,6 +61,8 @@ export const sailormoon = new Show(
       'sailormoon',
       1448,
       1800,
+      false,
+      MediaType.Episode,
       [],
     ),
     new Episode(
@@ -67,6 +75,8 @@ export const sailormoon = new Show(
       'sailormoon',
       1449,
       1800,
+      false,
+      MediaType.Episode,
       [],
     ),
     new Episode(
@@ -79,6 +89,8 @@ export const sailormoon = new Show(
       'sailormoon',
       1447,
       1800,
+      false,
+      MediaType.Episode,
       [],
     ),
   ],
@@ -89,7 +101,7 @@ export const reboot = new Show(
   'reboot',
   'tt0108903',
   1800,
-  false,
+  1800,
   false,
   [
     genreTags.adventure,
@@ -100,6 +112,7 @@ export const reboot = new Show(
     eraTags.nineties,
   ],
   [],
+  MediaType.Show,
   5,
   [
     new Episode(
@@ -112,6 +125,7 @@ export const reboot = new Show(
       'reboot',
       1353,
       1800,
+      false,
       [],
     ),
     new Episode(
@@ -124,6 +138,7 @@ export const reboot = new Show(
       'reboot',
       1355,
       1800,
+      false,
       [],
     ),
     new Episode(
@@ -136,6 +151,7 @@ export const reboot = new Show(
       'reboot',
       1340,
       1800,
+      false,
       [],
     ),
     new Episode(
@@ -148,6 +164,7 @@ export const reboot = new Show(
       'reboot',
       1354,
       1800,
+      false,
       [],
     ),
     new Episode(
@@ -160,6 +177,7 @@ export const reboot = new Show(
       'reboot',
       1353,
       1800,
+      false,
       [],
     ),
   ],
@@ -170,7 +188,6 @@ export const dragonballz = new Show(
   'dragonballz',
   'tt0214341',
   1800,
-  false,
   false,
   [
     genreTags.action,
@@ -194,6 +211,7 @@ export const dragonballz = new Show(
       'dragonballz',
       1244,
       1800,
+      false,
       [],
     ),
     new Episode(
@@ -206,6 +224,7 @@ export const dragonballz = new Show(
       'dragonballz',
       1165,
       1800,
+      false,
       [],
     ),
     new Episode(
@@ -218,6 +237,7 @@ export const dragonballz = new Show(
       'dragonballz',
       1188,
       1800,
+      false,
       [],
     ),
     new Episode(
@@ -230,6 +250,7 @@ export const dragonballz = new Show(
       'dragonballz',
       1166,
       1800,
+      false,
       [],
     ),
     new Episode(
@@ -242,6 +263,7 @@ export const dragonballz = new Show(
       'dragonballz',
       1189,
       1800,
+      false,
       [],
     ),
   ],
@@ -252,7 +274,6 @@ export const gundamwing = new Show(
   'gundamwing',
   'tt0122816',
   1800,
-  false,
   false,
   [
     genreTags.action,
@@ -277,6 +298,7 @@ export const gundamwing = new Show(
       'gundamwing',
       1437,
       1800,
+      false,
       [],
     ),
     new Episode(
@@ -289,6 +311,7 @@ export const gundamwing = new Show(
       'gundamwing',
       1442,
       1800,
+      false,
       [],
     ),
     new Episode(
@@ -301,6 +324,7 @@ export const gundamwing = new Show(
       'gundamwing',
       1441,
       1800,
+      false,
       [],
     ),
     new Episode(
@@ -313,6 +337,7 @@ export const gundamwing = new Show(
       'gundamwing',
       1442,
       1800,
+      false,
       [],
     ),
     new Episode(
@@ -325,6 +350,7 @@ export const gundamwing = new Show(
       'gundamwing',
       1442,
       1800,
+      false,
       [],
     ),
   ],
@@ -335,7 +361,6 @@ export const tenchimuyo = new Show(
   'tenchimuyo',
   'tt0108921',
   1800,
-  true,
   false,
   [
     genreTags.comedy,
@@ -358,6 +383,7 @@ export const tenchimuyo = new Show(
       'tenchimuyo',
       1778,
       1800,
+      false,
       [],
     ),
     new Episode(
@@ -370,6 +396,7 @@ export const tenchimuyo = new Show(
       'tenchimuyo',
       1779,
       1800,
+      false,
       [],
     ),
     new Episode(
@@ -382,6 +409,7 @@ export const tenchimuyo = new Show(
       'tenchimuyo',
       1750,
       1800,
+      false,
       [],
     ),
     new Episode(
@@ -394,6 +422,7 @@ export const tenchimuyo = new Show(
       'tenchimuyo',
       2590,
       3600,
+      true,
       [],
     ),
     new Episode(
@@ -406,6 +435,7 @@ export const tenchimuyo = new Show(
       'tenchimuyo',
       1721,
       1800,
+      false,
       [],
     ),
   ],
@@ -416,7 +446,6 @@ export const batmantheanimatedseries = new Show(
   'batman',
   'tt0103359',
   1800,
-  false,
   false,
   [
     genreTags.action,
@@ -441,6 +470,7 @@ export const batmantheanimatedseries = new Show(
       'batman',
       1341,
       1800,
+      false,
       [],
     ),
     new Episode(
@@ -453,6 +483,7 @@ export const batmantheanimatedseries = new Show(
       'batman',
       1342,
       1800,
+      false,
       [],
     ),
     new Episode(
@@ -465,6 +496,7 @@ export const batmantheanimatedseries = new Show(
       'batman',
       1345,
       1800,
+      false,
       [],
     ),
     new Episode(
@@ -477,6 +509,7 @@ export const batmantheanimatedseries = new Show(
       'batman',
       1338,
       1800,
+      false,
       [],
     ),
     new Episode(
@@ -489,6 +522,7 @@ export const batmantheanimatedseries = new Show(
       'batman',
       1340,
       1800,
+      false,
       [],
     ),
   ],
@@ -499,7 +533,6 @@ export const startrekthenextgeneration = new Show(
   'startrek',
   'tt0092455',
   3600,
-  true,
   true,
   [
     genreTags.scifi,
@@ -522,6 +555,7 @@ export const startrekthenextgeneration = new Show(
       'startrek',
       5484,
       7200,
+      true,
       [],
     ),
     new Episode(
@@ -534,6 +568,7 @@ export const startrekthenextgeneration = new Show(
       'startrek',
       2763,
       3600,
+      false,
       [],
     ),
     new Episode(
@@ -546,6 +581,7 @@ export const startrekthenextgeneration = new Show(
       'startrek',
       2763,
       3600,
+      false,
       [],
     ),
     new Episode(
@@ -558,6 +594,7 @@ export const startrekthenextgeneration = new Show(
       'startrek',
       2763,
       3600,
+      false,
       [],
     ),
     new Episode(
@@ -570,6 +607,7 @@ export const startrekthenextgeneration = new Show(
       'startrek',
       2756,
       3600,
+      false,
       [],
     ),
   ],
@@ -582,13 +620,11 @@ export const farscape = new Show(
   'tt0187636',
   3600,
   false,
-  false,
   [
     genreTags.scifi,
     genreTags.adventure,
     genreTags.drama,
     aestheticTags.spaceOpera,
-    aestheticTags.fantasy,
     ageGroupTags.youngAdult,
     eraTags.twothousands,
   ],
@@ -605,6 +641,7 @@ export const farscape = new Show(
       'farscape',
       2921,
       3600,
+      false,
       [],
     ),
     new Episode(
@@ -617,6 +654,7 @@ export const farscape = new Show(
       'farscape',
       2887,
       3600,
+      false,
       [],
     ),
     new Episode(
@@ -629,6 +667,7 @@ export const farscape = new Show(
       'farscape',
       2976,
       3600,
+      false,
       [],
     ),
     new Episode(
@@ -641,6 +680,7 @@ export const farscape = new Show(
       'farscape',
       2887,
       3600,
+      false,
       [],
     ),
     new Episode(
@@ -653,6 +693,7 @@ export const farscape = new Show(
       'farscape',
       2888,
       3600,
+      false,
       [],
     ),
   ],
@@ -665,12 +706,11 @@ export const talespin = new Show(
   'tt0096694',
   1800,
   false,
-  false,
   [
     genreTags.adventure,
     genreTags.comedy,
     aestheticTags.animation,
-    aestheticTags.historical,
+    aestheticTags.pulp,
     ageGroupTags.kids,
     eraTags.nineties,
   ],
@@ -687,6 +727,7 @@ export const talespin = new Show(
       'talespin',
       1353,
       1800,
+      false,
       [],
     ),
     new Episode(
@@ -699,6 +740,7 @@ export const talespin = new Show(
       'talespin',
       1355,
       1800,
+      false,
       [],
     ),
     new Episode(
@@ -711,6 +753,7 @@ export const talespin = new Show(
       'talespin',
       1340,
       1800,
+      false,
       [],
     ),
     new Episode(
@@ -723,6 +766,7 @@ export const talespin = new Show(
       'talespin',
       1354,
       1800,
+      false,
       [],
     ),
     new Episode(
@@ -735,6 +779,7 @@ export const talespin = new Show(
       'talespin',
       1353,
       1800,
+      false,
       [],
     ),
   ],
