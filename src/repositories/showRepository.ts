@@ -326,6 +326,25 @@ export class ShowRepository {
     return result.count;
   }
 
+  // Find a random show from the database that has at least one episode
+  findRandomShow(): Show | null {
+    const stmt = this.db.prepare(`
+      SELECT s.* FROM shows s
+      WHERE EXISTS (SELECT 1 FROM episodes e WHERE e.showItemId = s.mediaItemId)
+      ORDER BY RANDOM() LIMIT 1
+    `);
+    const showRow = stmt.get() as any;
+    if (!showRow) return null;
+
+    // Get episodes for this show
+    const episodeStmt = this.db.prepare(`
+      SELECT * FROM episodes WHERE showItemId = ? ORDER BY episodeNumber ASC
+    `);
+    const episodeRows = episodeStmt.all(showRow.mediaItemId) as any[];
+
+    return this.mapRowToShow(showRow, episodeRows);
+  }
+
   // Helper method to insert show tags
   private insertShowTags(
     mediaItemId: string,

@@ -1,13 +1,13 @@
-import { Episode, Show } from '../../src/models/show';
-import { MediaType } from '../../src/models/enum/mediaTypes';
-import { ageGroupTags, aestheticTags, eraTags, genreTags } from './tags';
+
+import { MediaType } from '../../../src/models/enum/mediaTypes';
+import { Episode, Show } from '../../../src/models/show';
+import { ageGroupTags, aestheticTags, eraTags, genreTags } from '../tags';
 
 export const sailormoon = new Show(
   'Sailor Moon',
   'sailormoon',
   'sailormoon',
   'tt0103369',
-  1800, // duration (total show duration estimate)
   1800, // durationLimit
   false, // firstEpisodeOverDuration
   [
@@ -101,7 +101,6 @@ export const reboot = new Show(
   'reboot',
   'tt0108903',
   1800,
-  1800,
   false,
   [
     genreTags.adventure,
@@ -126,6 +125,7 @@ export const reboot = new Show(
       1353,
       1800,
       false,
+      MediaType.Episode,
       [],
     ),
     new Episode(
@@ -139,6 +139,7 @@ export const reboot = new Show(
       1355,
       1800,
       false,
+      MediaType.Episode,
       [],
     ),
     new Episode(
@@ -152,6 +153,7 @@ export const reboot = new Show(
       1340,
       1800,
       false,
+      MediaType.Episode,
       [],
     ),
     new Episode(
@@ -165,6 +167,7 @@ export const reboot = new Show(
       1354,
       1800,
       false,
+      MediaType.Episode,
       [],
     ),
     new Episode(
@@ -178,6 +181,7 @@ export const reboot = new Show(
       1353,
       1800,
       false,
+      MediaType.Episode,
       [],
     ),
   ],
@@ -199,6 +203,7 @@ export const dragonballz = new Show(
     eraTags.nineties,
   ],
   [],
+  MediaType.Show,
   5,
   [
     new Episode(
@@ -212,6 +217,7 @@ export const dragonballz = new Show(
       1244,
       1800,
       false,
+      MediaType.Episode,
       [],
     ),
     new Episode(
@@ -225,6 +231,7 @@ export const dragonballz = new Show(
       1165,
       1800,
       false,
+      MediaType.Episode,
       [],
     ),
     new Episode(
@@ -238,6 +245,7 @@ export const dragonballz = new Show(
       1188,
       1800,
       false,
+      MediaType.Episode,
       [],
     ),
     new Episode(
@@ -251,6 +259,7 @@ export const dragonballz = new Show(
       1166,
       1800,
       false,
+      MediaType.Episode,
       [],
     ),
     new Episode(
@@ -264,6 +273,7 @@ export const dragonballz = new Show(
       1189,
       1800,
       false,
+      MediaType.Episode,
       [],
     ),
   ],
@@ -286,6 +296,7 @@ export const gundamwing = new Show(
     eraTags.nineties,
   ],
   [],
+  MediaType.Show,
   5,
   [
     new Episode(
@@ -299,6 +310,7 @@ export const gundamwing = new Show(
       1437,
       1800,
       false,
+      MediaType.Episode,
       [],
     ),
     new Episode(
@@ -312,6 +324,7 @@ export const gundamwing = new Show(
       1442,
       1800,
       false,
+      MediaType.Episode,
       [],
     ),
     new Episode(
@@ -325,6 +338,7 @@ export const gundamwing = new Show(
       1441,
       1800,
       false,
+      MediaType.Episode,
       [],
     ),
     new Episode(
@@ -338,6 +352,7 @@ export const gundamwing = new Show(
       1442,
       1800,
       false,
+      MediaType.Episode,
       [],
     ),
     new Episode(
@@ -351,6 +366,7 @@ export const gundamwing = new Show(
       1442,
       1800,
       false,
+      MediaType.Episode,
       [],
     ),
   ],
@@ -371,6 +387,7 @@ export const tenchimuyo = new Show(
     eraTags.nineties,
   ],
   [],
+  MediaType.Show,
   5,
   [
     new Episode(
@@ -384,6 +401,7 @@ export const tenchimuyo = new Show(
       1778,
       1800,
       false,
+      MediaType.Episode,
       [],
     ),
     new Episode(
@@ -397,6 +415,7 @@ export const tenchimuyo = new Show(
       1779,
       1800,
       false,
+      MediaType.Episode,
       [],
     ),
     new Episode(
@@ -410,6 +429,7 @@ export const tenchimuyo = new Show(
       1750,
       1800,
       false,
+      MediaType.Episode,
       [],
     ),
     new Episode(
@@ -423,6 +443,7 @@ export const tenchimuyo = new Show(
       2590,
       3600,
       true,
+      MediaType.Episode,
       [],
     ),
     new Episode(
@@ -436,6 +457,7 @@ export const tenchimuyo = new Show(
       1721,
       1800,
       false,
+      MediaType.Episode,
       [],
     ),
   ],
@@ -458,6 +480,7 @@ export const batmantheanimatedseries = new Show(
     eraTags.nineties,
   ],
   [],
+  MediaType.Show,
   5,
   [
     new Episode(
@@ -471,6 +494,7 @@ export const batmantheanimatedseries = new Show(
       1341,
       1800,
       false,
+      MediaType.Episode,
       [],
     ),
     new Episode(
@@ -484,6 +508,7 @@ export const batmantheanimatedseries = new Show(
       1342,
       1800,
       false,
+      MediaType.Episode,
       [],
     ),
     new Episode(
@@ -497,6 +522,7 @@ export const batmantheanimatedseries = new Show(
       1345,
       1800,
       false,
+      MediaType.Episode,
       [],
     ),
     new Episode(
@@ -510,6 +536,7 @@ export const batmantheanimatedseries = new Show(
       1338,
       1800,
       false,
+      MediaType.Episode,
       [],
     ),
     new Episode(
@@ -523,6 +550,7 @@ export const batmantheanimatedseries = new Show(
       1340,
       1800,
       false,
+      MediaType.Episode,
       [],
     ),
   ],
@@ -543,6 +571,7 @@ export const startrekthenextgeneration = new Show(
     eraTags.nineties,
   ],
   [],
+  MediaType.Show,
   5,
   [
     new Episode(
@@ -556,6 +585,7 @@ export const startrekthenextgeneration = new Show(
       5484,
       7200,
       true,
+      MediaType.Episode,
       [],
     ),
     new Episode(
@@ -569,6 +599,7 @@ export const startrekthenextgeneration = new Show(
       2763,
       3600,
       false,
+      MediaType.Episode,
       [],
     ),
     new Episode(
@@ -582,6 +613,7 @@ export const startrekthenextgeneration = new Show(
       2763,
       3600,
       false,
+      MediaType.Episode,
       [],
     ),
     new Episode(
@@ -595,6 +627,7 @@ export const startrekthenextgeneration = new Show(
       2763,
       3600,
       false,
+      MediaType.Episode,
       [],
     ),
     new Episode(
@@ -608,6 +641,7 @@ export const startrekthenextgeneration = new Show(
       2756,
       3600,
       false,
+      MediaType.Episode,
       [],
     ),
   ],
@@ -629,6 +663,7 @@ export const farscape = new Show(
     eraTags.twothousands,
   ],
   [],
+  MediaType.Show,
   5,
   [
     new Episode(
@@ -642,6 +677,7 @@ export const farscape = new Show(
       2921,
       3600,
       false,
+      MediaType.Episode,
       [],
     ),
     new Episode(
@@ -655,6 +691,7 @@ export const farscape = new Show(
       2887,
       3600,
       false,
+      MediaType.Episode,
       [],
     ),
     new Episode(
@@ -668,6 +705,7 @@ export const farscape = new Show(
       2976,
       3600,
       false,
+      MediaType.Episode,
       [],
     ),
     new Episode(
@@ -681,6 +719,7 @@ export const farscape = new Show(
       2887,
       3600,
       false,
+      MediaType.Episode,
       [],
     ),
     new Episode(
@@ -694,6 +733,7 @@ export const farscape = new Show(
       2888,
       3600,
       false,
+      MediaType.Episode,
       [],
     ),
   ],
@@ -715,6 +755,7 @@ export const talespin = new Show(
     eraTags.nineties,
   ],
   [],
+  MediaType.Show,
   5,
   [
     new Episode(
@@ -728,6 +769,7 @@ export const talespin = new Show(
       1353,
       1800,
       false,
+      MediaType.Episode,
       [],
     ),
     new Episode(
@@ -741,6 +783,7 @@ export const talespin = new Show(
       1355,
       1800,
       false,
+      MediaType.Episode,
       [],
     ),
     new Episode(
@@ -754,6 +797,7 @@ export const talespin = new Show(
       1340,
       1800,
       false,
+      MediaType.Episode,
       [],
     ),
     new Episode(
@@ -767,6 +811,7 @@ export const talespin = new Show(
       1354,
       1800,
       false,
+      MediaType.Episode,
       [],
     ),
     new Episode(
@@ -780,6 +825,7 @@ export const talespin = new Show(
       1353,
       1800,
       false,
+      MediaType.Episode,
       [],
     ),
   ],

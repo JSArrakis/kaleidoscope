@@ -1,6 +1,7 @@
-import { Movie } from '../../src/models/movie';
-import { MediaType } from '../../src/models/enum/mediaTypes';
-import { ageGroupTags, aestheticTags, eraTags, genreTags } from './tags';
+
+import { MediaType } from '../../../src/models/enum/mediaTypes';
+import { Movie } from '../../../src/models/movie';
+import { ageGroupTags, aestheticTags, eraTags, genreTags } from '../tags';
 
 export const inception = new Movie(
   'Inception',

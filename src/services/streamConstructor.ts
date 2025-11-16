@@ -75,11 +75,9 @@ function getTagsByNames(tagNames: string[]): Tag[] {
 
 // MODERNIZED STREAM CONSTRUCTOR
 export function constructStream(
-  config: Config,
-  args: IStreamRequest,
   streamType: StreamType,
   rightNow: number, // Time should always be passed in, no default calculation
-  alignStart: boolean = false,
+  cadence: boolean = false,
   firstMedia?: Episode | Movie, // Optional first media to use instead of selecting via refract
 ): [MediaBlock[], string] {
   // Load current holiday tags from the database
@@ -89,9 +87,8 @@ export function constructStream(
   switch (streamType) {
     case StreamType.Cont:
       return constructContinuousStream(
-        config,
         rightNow,
-        alignStart,
+        cadence,
         activeHolidayTags,
         firstMedia,
       );
@@ -113,9 +110,8 @@ export function constructStream(
 // CONTINUOUS STREAM CONSTRUCTOR
 // Handles ongoing 24/7 streams with automatic day transitions
 function constructContinuousStream(
-  config: Config,
   rightNow: number,
-  alignStart: boolean,
+  cadence: boolean,
   activeHolidayTags: Holiday[],
   firstMedia?: Episode | Movie,
 ): [MediaBlock[], string] {
@@ -123,7 +119,7 @@ function constructContinuousStream(
   // All other stream parameters are managed by the system
 
   // If firstMedia is provided, use it. Otherwise, select media via refract system
-  let selectedFirstMedia: Episode | Movie | null;
+  let selectedFirstMedia: Show | Episode | Movie | null;
   if (firstMedia) {
     selectedFirstMedia = firstMedia;
     console.log(

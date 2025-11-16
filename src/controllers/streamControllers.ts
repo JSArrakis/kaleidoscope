@@ -3,8 +3,7 @@
 import { NextFunction, Request, Response } from 'express';
 import { body, validationResult } from 'express-validator';
 import * as streamMan from '../services/streamManager';
-import { createVLCClient } from '../services/vlcClient';
-import { playVLC, setVLCClient } from '../services/backgroundService';
+import * as vlcService from '../services/vlcService';
 import { StreamType } from '../models/enum/streamTypes';
 import * as envMan from '../services/environmentManager';
 import { AdhocStreamRequest, ContStreamRequest } from '../models/streamRequest';
@@ -65,18 +64,7 @@ export async function continuousStreamHandler(
       return;
     }
 
-    // Pulls the first two items from the initialized stream and adds them to the on deck stream, the on deck stream array is used to load vlc with the next media block
-    // This is done to for a future feature which will function in tandem with a user being able to change or rearrange an upcoming stream's media items.
-    // To prevent a user from creating an issue which could cause the stream to desync with its original schedule, the schedule of the ondeck stream is locked in place
-    streamMan.initializeOnDeckStream();
-
-    // Adds the first two media blocks to the VLC client and playlist
-    await streamMan.addInitialMediaBlocks();
-
-    // Starts the VLC client playing the stream
-    await playVLC();
-
-    res.status(200).json({ message: 'Stream Starting' });
+    res.status(200).json({ message: 'Stream Started' });
     return;
   } catch (error) {
     console.error('Error during stream startup:', error);
@@ -117,15 +105,15 @@ export async function adHocStreamHandler(
 
   streamMan.setContinuousStreamArgs(adhocRequest);
 
-  setVLCClient(
-    await createVLCClient(streamMan.getContinuousStreamArgs().Password),
+  await vlcService.initializeVLCService(
+    streamMan.getContinuousStreamArgs().Password,
   );
 
   await streamMan.initializeStream(getConfig(), adhocRequest, getStreamType());
   streamMan.initializeOnDeckStream();
 
   await streamMan.addInitialMediaBlocks();
-  await playVLC();
+  await vlcService.playVLC();
 
   res.status(200).json({ message: 'Stream Starting' });
   return;

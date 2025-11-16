@@ -7,7 +7,6 @@ import { TagType } from '../../../src/models/const/tagTypes';
  */
 
 export const musicalGenreTags = {
-  // Core musical genres
   blues: new Tag('blues', 'Blues', TagType.MusicalGenre),
   classical: new Tag('classical', 'Classical', TagType.MusicalGenre),
   country: new Tag('country', 'Country', TagType.MusicalGenre),
@@ -20,8 +19,6 @@ export const musicalGenreTags = {
   punk: new Tag('punk', 'Punk', TagType.MusicalGenre),
   rnb: new Tag('rnb', 'R&B', TagType.MusicalGenre),
   rock: new Tag('rock', 'Rock', TagType.MusicalGenre),
-
-  // Additional genres for diversity
   alternative: new Tag('alternative', 'Alternative', TagType.MusicalGenre),
   ambient: new Tag('ambient', 'Ambient', TagType.MusicalGenre),
   disco: new Tag('disco', 'Disco', TagType.MusicalGenre),
@@ -32,6 +29,14 @@ export const musicalGenreTags = {
   orchestral: new Tag('orchestral', 'Orchestral', TagType.MusicalGenre),
   reggae: new Tag('reggae', 'Reggae', TagType.MusicalGenre),
   synthwave: new Tag('synthwave', 'Synthwave', TagType.MusicalGenre),
+  darkwave: new Tag('darkwave', 'Darkwave', TagType.MusicalGenre),
+  industrialrock: new Tag('industrialrock', 'Industrial Rock', TagType.MusicalGenre),
+  avantgarde: new Tag('avantgarde', 'Avant-Garde', TagType.MusicalGenre),
+  neoclassical: new Tag('neoclassical', 'Neo-Classical', TagType.MusicalGenre),
+  electronicMinimalist: new Tag('electronicminimalist', 'Electronic Minimalist', TagType.MusicalGenre),
+  postrock: new Tag('postrock', 'Post-Rock', TagType.MusicalGenre),
+  darkambient: new Tag('darkambient', 'Dark Ambient', TagType.MusicalGenre),
+  breakcore: new Tag('breakcore', 'Breakcore', TagType.MusicalGenre),
 };
 
 export const musicalGenreTagsList = Object.values(musicalGenreTags);

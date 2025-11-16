@@ -3,19 +3,19 @@ import * as fs from 'fs';
 import { constructStream } from './streamConstructor';
 import * as streamMan from './streamManager';
 import { MediaBlock } from '../models/mediaBlock';
-import * as VLC from 'vlc-client';
 import { ContStreamRequest } from '../models/streamRequest';
 import { StreamType } from '../models/enum/streamTypes';
 import { getStreamType } from './mediaService';
 import { getConfig } from '../config/configService';
+import * as vlcService from './vlcService';
 
 const intervalInSeconds: number = 300;
-let vlc: VLC.Client;
 let endOfDayMarker: number = 0;
 let tomorrow: number = 0;
 let initialStart: boolean = true;
 let currentHolidays: string[] = []; // This will hold the current holidays, if any
 let cachedTimedMediaItems: TimedMediaItem[] = []; // Global cache of timed media items
+let cycleCheckTimeout: NodeJS.Timeout | null = null; // Store timeout ID to prevent memory leak
 
 function calculateDelayToNextInterval(intervalInSeconds: number): number {
   // Get the current Unix timestamp
@@ -47,67 +47,13 @@ interface TimedMediaItem {
   blockTitle: string;
 }
 
-function rebuildTimedMediaItemsCache(): void {
-  // Clear the existing cache
-  cachedTimedMediaItems = [];
-
-  // Get items from on deck stream to analyze
-  const onDeck: MediaBlock[] = streamMan.getOnDeckStream();
-
-  // Convert MediaBlocks to individual timed media items
-  onDeck.forEach(mediaBlock => {
-    if (!mediaBlock.startTime) return;
-
-    let currentTime = mediaBlock.startTime;
-    const blockTitle = mediaBlock.featureMedia?.title || 'Unknown Block';
-
-    // Add initial buffer items
-    if (mediaBlock.initialBuffer && mediaBlock.initialBuffer.length > 0) {
-      mediaBlock.initialBuffer.forEach(bufferItem => {
-        cachedTimedMediaItems.push({
-          path: bufferItem.path,
-          title: bufferItem.title,
-          startTime: currentTime,
-          mediaType: 'initialBuffer',
-          blockTitle: blockTitle,
-        });
-        currentTime += bufferItem.duration;
-      });
-    }
-
-    // Add main block
-    if (mediaBlock.featureMedia) {
-      cachedTimedMediaItems.push({
-        path: mediaBlock.featureMedia.path,
-        title: mediaBlock.featureMedia.title,
-        startTime: currentTime,
-        mediaType: 'mainBlock',
-        blockTitle: blockTitle,
-      });
-      currentTime += mediaBlock.featureMedia.duration;
-    }
-
-    // Add post buffer items
-    if (mediaBlock.buffer && mediaBlock.buffer.length > 0) {
-      mediaBlock.buffer.forEach(bufferItem => {
-        cachedTimedMediaItems.push({
-          path: bufferItem.path,
-          title: bufferItem.title,
-          startTime: currentTime,
-          mediaType: 'buffer',
-          blockTitle: blockTitle,
-        });
-        currentTime += bufferItem.duration;
-      });
-    }
-  });
-
-  console.log(
-    `[Media Cache] Rebuilt cache with ${cachedTimedMediaItems.length} timed media items`,
-  );
-}
-
 function validateUpcomingMediaFiles(currentUnixTimestamp: number): void {
+  // Clean up old cached items to prevent memory leak
+  // Remove items that have already passed (older than current time)
+  cachedTimedMediaItems = cachedTimedMediaItems.filter(
+    item => item.startTime > currentUnixTimestamp,
+  );
+
   // Get the time window for validation (current time + interval)
   const validationEndTime = currentUnixTimestamp + intervalInSeconds;
 
@@ -155,9 +101,11 @@ function validateUpcomingMediaFiles(currentUnixTimestamp: number): void {
 
 async function cycleCheck() {
   // BACKGROUND SERVICE OPERATIONS:
-  // - Monitors and manages current/ondeck playlists for ALL stream types (continuous, adhoc, block)
-  // - Transitions media blocks at scheduled times for ALL stream types
+  // - Monitors and manages current/ondeck playlists
+  // - Transitions media blocks at scheduled times
   // - Generates next day's stream ONLY for continuous streams (adhoc streams end and stop)
+  // - Adjusts streams for missing media files
+  // - Adjusts streams for time drift off of cadence marks due to processing delays
 
   // Get the current Unix timestamp
   const currentUnixTimestamp = moment().unix();
@@ -189,32 +137,29 @@ async function cycleCheck() {
     // If there is a second item in the on deck stream and the current time is greater than or equal to the start time of the second item
     if (onDeck[1].startTime && currentUnixTimestamp >= onDeck[1].startTime) {
       // Remove the first item from the on deck stream
-      let removed = streamMan.removeFromOnDeckStream();
-      // Logs the item that was removed from the on deck stream
+      let removed = streamMan.removeFirstItemFromOnDeck();
+
       if (removed != null || removed != undefined) {
         console.log(
           'Removing ' +
             removed.featureMedia?.title +
-            ' and post buffer from On Deck Stream',
+            ' and post buffer from On Deck',
         );
       }
-      // Gets amd removes the first item from the upcoming stream
-      let added = streamMan.removeFromUpcomingStream();
+      // Shifts the first item from the upcoming stream
+      let nextMediaBlock = streamMan.removeFirstItemFromUpcoming();
 
       // Logs the item that will be added to the on deck stream
-      if (added != null || added != undefined) {
+      if (nextMediaBlock != null || nextMediaBlock != undefined) {
         console.log(
-          'Adding ' + added.featureMedia?.title + ' to On Deck Stream',
+          'Adding ' + nextMediaBlock.featureMedia?.title + ' to On Deck Stream',
         );
       }
       // If the item is not null or undefined, add it to the on deck stream and the VLC playlist
-      if (added != null || added != undefined) {
-        // The item must be in an array to be added to the on deck stream (to reuse the addToOnDeckStream function)
-        streamMan.addToOnDeckStream([added]);
-        // Rebuild the timed media items cache since the on deck stream changed
-        rebuildTimedMediaItemsCache();
+      if (nextMediaBlock != null || nextMediaBlock != undefined) {
+        streamMan.addItemToOnDeck([nextMediaBlock]);
         // Adds the block (the media item and its buffer) to the VLC playlist
-        await addMediaBlock(added);
+        await vlcService.addMediaBlockToPlaylist(nextMediaBlock);
       }
     }
   }
@@ -245,19 +190,8 @@ async function cycleCheck() {
       let tomorrowsContinuousStreamArgs = new ContStreamRequest(
         continuousStreamArgs.Password,
       );
-      tomorrowsContinuousStreamArgs.Title =
-        continuousStreamArgs.Title || 'Default';
-      tomorrowsContinuousStreamArgs.Env = continuousStreamArgs.Env || 'default';
-      tomorrowsContinuousStreamArgs.Movies = continuousStreamArgs.Movies || [];
-      tomorrowsContinuousStreamArgs.Tags = continuousStreamArgs.Tags || [];
-      tomorrowsContinuousStreamArgs.MultiTags =
-        continuousStreamArgs.MultiTags || [];
-      tomorrowsContinuousStreamArgs.Blocks = continuousStreamArgs.Blocks || [];
-      tomorrowsContinuousStreamArgs.StartTime = tomorrow;
       // Constructs the stream for the next day and adds it to the upcoming stream
       const stream: [MediaBlock[], string] = constructStream(
-        getConfig(),
-        tomorrowsContinuousStreamArgs,
         getStreamType(),
         tomorrow, // Pass the calculated tomorrow time
         false, // No alignment needed for next day's stream
@@ -272,87 +206,32 @@ async function cycleCheck() {
   // Calculate the delay until the next interval mark and set it as the new interval
   // Intervals will always be set to the next 5 minute mark based on the world clock (i.e. 12:00:00, 12:05:00, 12:10:00, etc.)
   const nextDelay = calculateDelayToNextInterval(intervalInSeconds);
-  setTimeout(cycleCheck, nextDelay);
+  // Clear any existing timeout before scheduling a new one to prevent memory leak
+  if (cycleCheckTimeout) clearTimeout(cycleCheckTimeout);
+  cycleCheckTimeout = setTimeout(cycleCheck, nextDelay);
 }
 
 function startBackgroundProcess() {
   console.log('Starting background process');
-  // Initialize the timed media items cache
-  rebuildTimedMediaItemsCache();
   // Start the initial check after a delay
   const initialDelay = calculateDelayToNextInterval(intervalInSeconds);
   setTimeout(cycleCheck, initialDelay);
 }
 
-function setVLCClient(client: VLC.Client) {
-  vlc = client;
-}
-
-async function playVLC() {
-  try {
-    // vlc.next() plays the next item in the playlist, which is the first item in the playlist as it is not already playing
-    await vlc.next();
-  } catch (error) {
-    console.error('An error occurred when playing stream:', error);
-  }
-}
-
-async function addMediaBlock(item: MediaBlock | undefined): Promise<void> {
-  if (item != null || item != undefined) {
-    try {
-      //If item has a initial Buffer (buffer that plays before the media), add it to the playlist
-      // initial buffers are only when launching the stream to make sure the first media item starts at the next 30 minute interval
-
-      // Adds the main media item to the vlc playlist
-      if (
-        item.featureMedia?.path != null ||
-        item.featureMedia?.path != undefined
-      ) {
-        console.log('Adding ' + item.featureMedia.title + ' to playlist');
-        await vlc.addToPlaylist(item.featureMedia.path);
-      }
-
-      //If item has a post Buffer (buffer that plays after the media), add it to the playlist
-      item.buffer.forEach(async element => {
-        await vlc.addToPlaylist(element.path);
-      });
-    } catch (error) {
-      console.error('An error occurred when adding to Playlist:', error);
-    }
-  } else {
-    console.log('Item was null or undefined');
-  }
-}
-
-function getVLCStatus(): any {
-  if (!vlc) {
-    return { connected: false, error: 'VLC client not initialized' };
-  }
-
-  try {
-    return {
-      connected: true,
-      client: !!vlc,
-      error: null,
-    };
-  } catch (error) {
-    return {
-      connected: false,
-      error: error instanceof Error ? error.message : 'Unknown VLC error',
-    };
+function stopBackgroundProcess() {
+  console.log('Stopping background process');
+  if (cycleCheckTimeout) {
+    clearTimeout(cycleCheckTimeout);
+    cycleCheckTimeout = null;
   }
 }
 
 export {
   cycleCheck,
   startBackgroundProcess,
-  setVLCClient,
-  playVLC,
-  addMediaBlock,
+  stopBackgroundProcess,
   calculateDelayToNextInterval,
   setEndOfDayMarker,
   setTomorrow,
-  getVLCStatus,
   validateUpcomingMediaFiles,
-  rebuildTimedMediaItemsCache,
 };

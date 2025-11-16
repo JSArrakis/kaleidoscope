@@ -17,6 +17,7 @@ import { getAllHolidays, getCurrentHolidays } from '../services/holidayService';
 import * as conf from '../config/configService';
 import * as streamMan from '../services/streamManager';
 import * as backgroundSrv from '../services/backgroundService';
+import * as vlcService from '../services/vlcService';
 import moment from 'moment';
 
 export async function systemStatusHandler(
@@ -314,7 +315,7 @@ export async function streamingStatusHandler(
             startsIn: item.startTime ? item.startTime - currentTime : null,
             duration: item.featureMedia?.duration || 0,
             bufferCount: item.buffer.length,
-            initialBufferCount: item.initialBuffer.length,
+            initialBufferCount: 0, // MediaBlock doesn't have initialBuffer property
           })),
         },
         upcoming: {
@@ -341,7 +342,7 @@ export async function streamingStatusHandler(
           })),
         },
       },
-      vlc: backgroundSrv.getVLCStatus(),
+      vlc: vlcService.getVLCStatus(),
     };
 
     res.status(200).json(status);
@@ -438,7 +439,7 @@ export async function streamQueueHandler(
         duration: item.featureMedia?.duration || 0,
         path: item.featureMedia?.path || 'Unknown',
         buffer: {
-          pre: item.initialBuffer.length,
+          pre: 0, // MediaBlock doesn't have initialBuffer property
           post: item.buffer.length,
         },
       })),
@@ -472,7 +473,7 @@ export async function vlcStatusHandler(
   res: Response,
 ): Promise<void> {
   try {
-    const vlcStatus = backgroundSrv.getVLCStatus();
+    const vlcStatus = vlcService.getVLCStatus();
 
     res.status(200).json({
       timestamp: new Date().toISOString(),

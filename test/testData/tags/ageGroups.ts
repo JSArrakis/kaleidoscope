@@ -17,6 +17,7 @@ export const ageGroupTags = {
     undefined, // exclusionGenres
     undefined, // seasonStartDate
     undefined, // seasonEndDate
+    undefined, // explicitlyHoliday
     1, // sequence
   ),
 
@@ -28,6 +29,7 @@ export const ageGroupTags = {
     undefined, // exclusionGenres
     undefined, // seasonStartDate
     undefined, // seasonEndDate
+    undefined, // explicitlyHoliday
     2, // sequence
   ),
 
@@ -39,6 +41,7 @@ export const ageGroupTags = {
     undefined, // exclusionGenres
     undefined, // seasonStartDate
     undefined, // seasonEndDate
+    undefined, // explicitlyHoliday
     3, // sequence
   ),
 
@@ -50,6 +53,7 @@ export const ageGroupTags = {
     undefined, // exclusionGenres
     undefined, // seasonStartDate
     undefined, // seasonEndDate
+    undefined, // explicitlyHoliday
     4, // sequence
   ),
 };

@@ -40,6 +40,8 @@ export const aestheticTags = {
   pirate: new Tag('pirate', 'Pirate', TagType.Aesthetic),
   prehistoric: new Tag('prehistoric', 'Prehistoric', TagType.Aesthetic),
   victorian: new Tag('victorian', 'Victorian', TagType.Aesthetic),
+  sports: new Tag('sports', 'Sports', TagType.Aesthetic),
+  crime: new Tag('crime', 'Crime', TagType.Aesthetic),
 };
 
 export const aestheticTagsList = Object.values(aestheticTags);

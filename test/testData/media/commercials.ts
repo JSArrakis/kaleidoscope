@@ -1,7 +1,13 @@
-import { Commercial } from '../../src/models/commercial';
-import { AgeGroups } from '../../src/models/const/ageGroups';
-import { Eras } from '../../src/models/const/eras';
-import { MediaType } from '../../src/models/enum/mediaTypes';
+import { Commercial } from '../../../src/models/commercial';
+import { MediaType } from '../../../src/models/enum/mediaTypes';
+import {
+  aestheticTags,
+  ageGroupTags,
+  eraTags,
+  genreTags,
+  holidayTags,
+  specialtyTags,
+} from '../tags';
 
 export const jurassicparktoys1 = new Commercial(
   'Jurassic Park Toys 1',
@@ -10,10 +16,10 @@ export const jurassicparktoys1 = new Commercial(
   '/path/jurassicparktoys1.mp4',
   MediaType.Commercial,
   [
-    makeTag('jurassicpark'),
-    makeTag(MainGenres.Action),
-    makeTag(AgeGroups.Kids, 'AgeGroup'),
-    makeTag(Eras.nnineties, 'Era'),
+    specialtyTags.jurassicpark,
+    genreTags.action,
+    ageGroupTags.kids,
+    eraTags.nineties,
   ],
 );
 export const marvelvsstreetfighter98 = new Commercial(
@@ -23,11 +29,11 @@ export const marvelvsstreetfighter98 = new Commercial(
   '/path/98marvelvsstreetfighter.mp4',
   MediaType.Commercial,
   [
-    makeTag('marvel'),
-    makeTag('streetfighter'),
-    makeTag(MainGenres.Action),
-    makeTag(AgeGroups.Kids, 'AgeGroup'),
-    makeTag(Eras.nnineties, 'Era'),
+    specialtyTags.marvel,
+    specialtyTags.streetfighter,
+    genreTags.action,
+    ageGroupTags.kids,
+    eraTags.nineties,
   ],
 );
 export const wildones = new Commercial(
@@ -36,11 +42,7 @@ export const wildones = new Commercial(
   15,
   '/path/wildones.mp4',
   MediaType.Commercial,
-  [
-    makeTag(MainGenres.Action),
-    makeTag(AgeGroups.Kids, 'AgeGroup'),
-    makeTag(Eras.nnineties, 'Era'),
-  ],
+  [genreTags.adventure, ageGroupTags.kids, eraTags.nineties],
 );
 export const dreambuilders = new Commercial(
   'Dream Builders',
@@ -48,7 +50,7 @@ export const dreambuilders = new Commercial(
   15,
   '/path/dreambuilders.mp4',
   MediaType.Commercial,
-  [makeTag(AgeGroups.Kids, 'AgeGroup'), makeTag(Eras.nnineties, 'Era')],
+  [ageGroupTags.kids, eraTags.nineties],
 );
 export const jurassicparktoys2 = new Commercial(
   '93 Jurassic Park Toys 2',
@@ -57,10 +59,10 @@ export const jurassicparktoys2 = new Commercial(
   '/path/jurassicparktoys2.mp4',
   MediaType.Commercial,
   [
-    makeTag('jurassicpark'),
-    makeTag(MainGenres.Action),
-    makeTag(AgeGroups.Kids, 'AgeGroup'),
-    makeTag(Eras.nnineties, 'Era'),
+    specialtyTags.jurassicpark,
+    genreTags.action,
+    ageGroupTags.kids,
+    eraTags.nineties,
   ],
 );
 export const jurassicparktoys3 = new Commercial(
@@ -70,10 +72,10 @@ export const jurassicparktoys3 = new Commercial(
   '/path/jurassicparktoys3.mp4',
   MediaType.Commercial,
   [
-    makeTag('jurassicpark'),
-    makeTag(MainGenres.Action),
-    makeTag(AgeGroups.Kids, 'AgeGroup'),
-    makeTag(Eras.nnineties, 'Era'),
+    specialtyTags.jurassicpark,
+    genreTags.action,
+    ageGroupTags.kids,
+    eraTags.nineties,
   ],
 );
 export const littleoopsiedaisy = new Commercial(
@@ -82,7 +84,7 @@ export const littleoopsiedaisy = new Commercial(
   15,
   '/path/littleoopsiedaisy.mp4',
   MediaType.Commercial,
-  [makeTag(AgeGroups.Kids, 'AgeGroup'), makeTag(Eras.nnineties, 'Era')],
+  [ageGroupTags.kids, eraTags.nineties],
 );
 export const meninblacktoys97 = new Commercial(
   '97 Men in Black Toys',
@@ -91,11 +93,11 @@ export const meninblacktoys97 = new Commercial(
   '/path/97meninblacktoys.mp4',
   MediaType.Commercial,
   [
-    makeTag('meninblack'),
-    makeTag(MainGenres.SciFi),
-    makeTag(MainGenres.Action),
-    makeTag(AgeGroups.Kids, 'AgeGroup'),
-    makeTag(Eras.nnineties, 'Era'),
+    specialtyTags.meninblack,
+    genreTags.scifi,
+    genreTags.action,
+    ageGroupTags.kids,
+    eraTags.nineties,
   ],
 );
 export const monsterfacetoy = new Commercial(
@@ -105,10 +107,10 @@ export const monsterfacetoy = new Commercial(
   '/path/monsterfacetoy.mp4',
   MediaType.Commercial,
   [
-    makeTag('halloween'),
-    makeTag(MainGenres.Horror),
-    makeTag(AgeGroups.Kids, 'AgeGroup'),
-    makeTag(Eras.nnineties, 'Era'),
+    holidayTags.halloween,
+    genreTags.horror,
+    ageGroupTags.kids,
+    eraTags.nineties,
   ],
 );
 export const newbluemms = new Commercial(
@@ -117,7 +119,7 @@ export const newbluemms = new Commercial(
   15,
   '/path/newbluemms.mp4',
   MediaType.Commercial,
-  [makeTag(AgeGroups.AllAges, 'AgeGroup'), makeTag(Eras.nnineties, 'Era')],
+  [eraTags.nineties],
 );
 export const superduperdoublelooper = new Commercial(
   'Super Duper Double Looper',
@@ -125,11 +127,7 @@ export const superduperdoublelooper = new Commercial(
   15,
   '/path/superduperdoublelooper.mp4',
   MediaType.Commercial,
-  [
-    makeTag(MainGenres.Action),
-    makeTag(AgeGroups.Kids, 'AgeGroup'),
-    makeTag(Eras.nnineties, 'Era'),
-  ],
+  [genreTags.action, ageGroupTags.kids, eraTags.nineties],
 );
 export const transformersbeastwarstoys = new Commercial(
   'Transformers Beast Wars Toys',
@@ -138,11 +136,11 @@ export const transformersbeastwarstoys = new Commercial(
   '/path/transformersbeastwarstoys.mp4',
   MediaType.Commercial,
   [
-    makeTag('transformers'),
-    makeTag(MainGenres.SciFi),
-    makeTag(MainGenres.Action),
-    makeTag(AgeGroups.Kids, 'AgeGroup'),
-    makeTag(Eras.nnineties, 'Era'),
+    specialtyTags.transformers,
+    genreTags.action,
+    genreTags.scifi,
+    ageGroupTags.kids,
+    eraTags.nineties,
   ],
 );
 export const gamegear1 = new Commercial(
@@ -151,7 +149,7 @@ export const gamegear1 = new Commercial(
   26,
   '/path/gamegear1.mp4',
   MediaType.Commercial,
-  [makeTag(AgeGroups.Kids, 'AgeGroup'), makeTag(Eras.nnineties, 'Era')],
+  [ageGroupTags.kids, eraTags.nineties],
 );
 export const sonicandknuckles1 = new Commercial(
   'Sonic and Knuckles 1',
@@ -159,7 +157,7 @@ export const sonicandknuckles1 = new Commercial(
   30,
   '/path/sonicandknuckles1.mp4',
   MediaType.Commercial,
-  [makeTag(AgeGroups.Kids, 'AgeGroup'), makeTag(Eras.nnineties, 'Era')],
+  [ageGroupTags.kids, eraTags.nineties],
 );
 export const banjokazooie1 = new Commercial(
   'Banjo Kazooie 1',
@@ -167,7 +165,7 @@ export const banjokazooie1 = new Commercial(
   30,
   '/path/banjokazooie1.mp4',
   MediaType.Commercial,
-  [makeTag(AgeGroups.Kids, 'AgeGroup'), makeTag(Eras.nnineties, 'Era')],
+  [ageGroupTags.kids, eraTags.nineties],
 );
 export const fzero1 = new Commercial(
   'F-Zero 1',
@@ -175,7 +173,7 @@ export const fzero1 = new Commercial(
   30,
   '/path/fzero1.mp4',
   MediaType.Commercial,
-  [makeTag(AgeGroups.Kids, 'AgeGroup'), makeTag(Eras.nnineties, 'Era')],
+  [ageGroupTags.kids, eraTags.nineties],
 );
 export const gauntletlegends1 = new Commercial(
   'Gauntlet Legends 1',
@@ -183,7 +181,7 @@ export const gauntletlegends1 = new Commercial(
   30,
   '/path/gauntletlegends1.mp4',
   MediaType.Commercial,
-  [makeTag(AgeGroups.Kids, 'AgeGroup'), makeTag(Eras.nnineties, 'Era')],
+  [ageGroupTags.kids, eraTags.nineties],
 );
 export const halloween711 = new Commercial(
   'Halloween 7-11',
@@ -191,11 +189,7 @@ export const halloween711 = new Commercial(
   30,
   '/path/halloween711.mp4',
   MediaType.Commercial,
-  [
-    makeTag('halloween'),
-    makeTag(AgeGroups.AllAges, 'AgeGroup'),
-    makeTag(Eras.nnineties, 'Era'),
-  ],
+  [holidayTags.halloween, eraTags.nineties],
 );
 export const alientrailer1 = new Commercial(
   'Alien Trailer 1',
@@ -204,11 +198,11 @@ export const alientrailer1 = new Commercial(
   '/path/alientrailer1.mp4',
   MediaType.Commercial,
   [
-    makeTag('alien'),
-    makeTag(MainGenres.SciFi),
-    makeTag(MainGenres.Horror),
-    makeTag(AgeGroups.Mature, 'AgeGroup'),
-    makeTag(Eras.nseventies, 'Era'),
+    specialtyTags.alien,
+    genreTags.scifi,
+    genreTags.horror,
+    ageGroupTags.mature,
+    eraTags.seventies,
   ],
 );
 export const americanwerewolfinlondontrailer1 = new Commercial(
@@ -217,11 +211,7 @@ export const americanwerewolfinlondontrailer1 = new Commercial(
   30,
   '/path/americanwerewolfinlondontrailer1.mp4',
   MediaType.Commercial,
-  [
-    makeTag(MainGenres.Horror),
-    makeTag(AgeGroups.Mature, 'AgeGroup'),
-    makeTag(Eras.neighties, 'Era'),
-  ],
+  [genreTags.horror, ageGroupTags.mature, eraTags.eighties],
 );
 export const beetlejuicetrailer1 = new Commercial(
   'Beetlejuice Trailer 1',
@@ -230,10 +220,10 @@ export const beetlejuicetrailer1 = new Commercial(
   '/path/beetlejuicetrailer1.mp4',
   MediaType.Commercial,
   [
-    makeTag(MainGenres.Horror),
-    makeTag(MainGenres.Comedy),
-    makeTag(AgeGroups.YoungAdult, 'AgeGroup'),
-    makeTag(Eras.neighties, 'Era'),
+    genreTags.horror,
+    genreTags.comedy,
+    ageGroupTags.youngAdult,
+    eraTags.eighties,
   ],
 );
 export const ocarinaoftimetrailer1 = new Commercial(
@@ -242,7 +232,7 @@ export const ocarinaoftimetrailer1 = new Commercial(
   62,
   '/path/ocarinaoftimetrailer1.mp4',
   MediaType.Commercial,
-  [makeTag(AgeGroups.Kids, 'AgeGroup'), makeTag(Eras.nnineties, 'Era')],
+  [ageGroupTags.kids, eraTags.nineties],
 );
 export const ijustshippedmybed = new Commercial(
   'I Just Shipped My Bed',
@@ -250,11 +240,7 @@ export const ijustshippedmybed = new Commercial(
   69,
   '/path/ijustshippedmybed.mp4',
   MediaType.Commercial,
-  [
-    makeTag(MainGenres.Comedy),
-    makeTag(AgeGroups.AllAges, 'AgeGroup'),
-    makeTag(Eras.ttens, 'Era'),
-  ],
+  [genreTags.comedy, eraTags.twentytens],
 );
 export const cornpopsgolf = new Commercial(
   'Corn Pops Golf',
@@ -262,7 +248,7 @@ export const cornpopsgolf = new Commercial(
   30,
   '/path/cornpopsgolf.mp4',
   MediaType.Commercial,
-  [makeTag(AgeGroups.Kids, 'AgeGroup'), makeTag(Eras.nnineties, 'Era')],
+  [ageGroupTags.family, eraTags.nineties],
 );
 export const blacktronlegomaniac = new Commercial(
   'Blacktron Lego Maniac',
@@ -270,11 +256,7 @@ export const blacktronlegomaniac = new Commercial(
   30,
   '/path/blacktronlegomaniac.mp4',
   MediaType.Commercial,
-  [
-    makeTag('lego'),
-    makeTag(AgeGroups.Kids, 'AgeGroup'),
-    makeTag(Eras.nnineties, 'Era'),
-  ],
+  [specialtyTags.lego, ageGroupTags.kids, eraTags.eighties],
 );
 export const starttrektoys = new Commercial(
   'Star Trek Toys',
@@ -283,10 +265,10 @@ export const starttrektoys = new Commercial(
   '/path/starttrektoys.mp4',
   MediaType.Commercial,
   [
-    makeTag('startrek'),
-    makeTag(MainGenres.SciFi),
-    makeTag(AgeGroups.Kids, 'AgeGroup'),
-    makeTag(Eras.nnineties, 'Era'),
+    specialtyTags.startrek,
+    genreTags.scifi,
+    ageGroupTags.kids,
+    eraTags.nineties,
   ],
 );
 export const sharkbitesfruitsnacks = new Commercial(
@@ -295,7 +277,7 @@ export const sharkbitesfruitsnacks = new Commercial(
   30,
   '/path/sharkbitesfruitsnacks.mp4',
   MediaType.Commercial,
-  [makeTag(AgeGroups.Kids, 'AgeGroup'), makeTag(Eras.nnineties, 'Era')],
+  [ageGroupTags.kids, eraTags.nineties],
 );
 export const ricecrispiescerealtalks = new Commercial(
   'Rice Crispies Cereal Talks',
@@ -303,7 +285,7 @@ export const ricecrispiescerealtalks = new Commercial(
   30,
   '/path/ricecrispiescerealtalks.mp4',
   MediaType.Commercial,
-  [makeTag(AgeGroups.Kids, 'AgeGroup'), makeTag(Eras.nnineties, 'Era')],
+  [ageGroupTags.kids, eraTags.nineties],
 );
 export const pizzahutxmen = new Commercial(
   'Pizza Hut X-Men',
@@ -312,11 +294,11 @@ export const pizzahutxmen = new Commercial(
   '/path/pizzahutxmen.mp4',
   MediaType.Commercial,
   [
-    makeTag('xmen'),
-    makeTag('marvel'),
-    makeTag(MainGenres.Action),
-    makeTag(AgeGroups.Kids, 'AgeGroup'),
-    makeTag(Eras.nnineties, 'Era'),
+    specialtyTags.xmen,
+    specialtyTags.marvel,
+    genreTags.action,
+    ageGroupTags.kids,
+    eraTags.nineties,
   ],
 );
 export const mcdonaldscrush = new Commercial(
@@ -325,7 +307,7 @@ export const mcdonaldscrush = new Commercial(
   30,
   '/path/mcdonaldscrush.mp4',
   MediaType.Commercial,
-  [makeTag(AgeGroups.Kids, 'AgeGroup'), makeTag(Eras.nnineties, 'Era')],
+  [ageGroupTags.kids, eraTags.nineties],
 );
 export const transformers80s1 = new Commercial(
   'Transformers 80s 1',
@@ -334,11 +316,11 @@ export const transformers80s1 = new Commercial(
   '/path/transformers80s1.mp4',
   MediaType.Commercial,
   [
-    makeTag('transformers'),
-    makeTag(MainGenres.Action),
-    makeTag(MainGenres.SciFi),
-    makeTag(AgeGroups.Kids, 'AgeGroup'),
-    makeTag(Eras.neighties, 'Era'),
+    specialtyTags.transformers,
+    genreTags.action,
+    genreTags.scifi,
+    ageGroupTags.kids,
+    eraTags.eighties,
   ],
 );
 export const alienstoys1 = new Commercial(
@@ -348,12 +330,12 @@ export const alienstoys1 = new Commercial(
   '/path/alienstoys1.mp4',
   MediaType.Commercial,
   [
-    makeTag('alien'),
-    makeTag(MainGenres.Horror),
-    makeTag(MainGenres.Action),
-    makeTag(MainGenres.SciFi),
-    makeTag(AgeGroups.Kids, 'AgeGroup'),
-    makeTag(Eras.nnineties, 'Era'),
+    specialtyTags.alien,
+    genreTags.action,
+    genreTags.scifi,
+    genreTags.horror,
+    ageGroupTags.kids,
+    eraTags.nineties,
   ],
 );
 export const jurassicpark3toys = new Commercial(
@@ -363,48 +345,12 @@ export const jurassicpark3toys = new Commercial(
   '/path/jurassicpark3toys.mp4',
   MediaType.Commercial,
   [
-    makeTag('jurassicpark'),
-    makeTag(MainGenres.Action),
-    makeTag(AgeGroups.Kids, 'AgeGroup'),
-    makeTag(Eras.twothousands, 'Era'),
+    specialtyTags.jurassicpark,
+    genreTags.action,
+    ageGroupTags.kids,
+    eraTags.twothousands,
   ],
 );
-
-export const commercials = [
-  jurassicparktoys1,
-  marvelvsstreetfighter98,
-  wildones,
-  dreambuilders,
-  jurassicparktoys2,
-  jurassicparktoys3,
-  littleoopsiedaisy,
-  meninblacktoys97,
-  monsterfacetoy,
-  newbluemms,
-  superduperdoublelooper,
-  transformersbeastwarstoys,
-  gamegear1,
-  sonicandknuckles1,
-  banjokazooie1,
-  fzero1,
-  gauntletlegends1,
-  halloween711,
-  alientrailer1,
-  americanwerewolfinlondontrailer1,
-  beetlejuicetrailer1,
-  ocarinaoftimetrailer1,
-  ijustshippedmybed,
-  cornpopsgolf,
-  blacktronlegomaniac,
-  starttrektoys,
-  sharkbitesfruitsnacks,
-  ricecrispiescerealtalks,
-  pizzahutxmen,
-  mcdonaldscrush,
-  transformers80s1,
-  alienstoys1,
-  jurassicpark3toys,
-];
 
 export const default1 = new Commercial(
   'Default 1',
@@ -412,7 +358,7 @@ export const default1 = new Commercial(
   15,
   '/path/default1.mp4',
   MediaType.Commercial,
-  [makeTag(AgeGroups.AllAges, 'AgeGroup')],
+  [],
 );
 export const default2 = new Commercial(
   'Default 2',
@@ -420,7 +366,7 @@ export const default2 = new Commercial(
   16,
   '/path/default2.mp4',
   MediaType.Commercial,
-  [makeTag(AgeGroups.AllAges, 'AgeGroup')],
+  [],
 );
 export const default3 = new Commercial(
   'Default 3',
@@ -428,7 +374,7 @@ export const default3 = new Commercial(
   17,
   '/path/default3.mp4',
   MediaType.Commercial,
-  [makeTag(AgeGroups.AllAges, 'AgeGroup')],
+  [],
 );
 export const default4 = new Commercial(
   'Default 4',
@@ -436,7 +382,7 @@ export const default4 = new Commercial(
   18,
   '/path/default4.mp4',
   MediaType.Commercial,
-  [makeTag(AgeGroups.AllAges, 'AgeGroup')],
+  [],
 );
 export const default5 = new Commercial(
   'Default 5',
@@ -444,7 +390,7 @@ export const default5 = new Commercial(
   19,
   '/path/default5.mp4',
   MediaType.Commercial,
-  [makeTag(AgeGroups.AllAges, 'AgeGroup')],
+  [],
 );
 export const default6 = new Commercial(
   'Default 6',
@@ -452,7 +398,7 @@ export const default6 = new Commercial(
   20,
   '/path/default6.mp4',
   MediaType.Commercial,
-  [makeTag(AgeGroups.AllAges, 'AgeGroup')],
+  [],
 );
 export const default7 = new Commercial(
   'Default 7',
@@ -460,7 +406,7 @@ export const default7 = new Commercial(
   30,
   '/path/default7.mp4',
   MediaType.Commercial,
-  [makeTag(AgeGroups.AllAges, 'AgeGroup')],
+  [],
 );
 export const default8 = new Commercial(
   'Default 8',
@@ -468,7 +414,7 @@ export const default8 = new Commercial(
   60,
   '/path/default8.mp4',
   MediaType.Commercial,
-  [makeTag(AgeGroups.AllAges, 'AgeGroup')],
+  [],
 );
 export const default9 = new Commercial(
   'Default 9',
@@ -476,7 +422,658 @@ export const default9 = new Commercial(
   120,
   '/path/default9.mp4',
   MediaType.Commercial,
-  [makeTag(AgeGroups.AllAges, 'AgeGroup')],
+  [],
+);
+
+export const starwarstoylightsabers = new Commercial(
+  'Star Wars Toy Lightsabers',
+  'starwarstoylightsabers',
+  30,
+  '/path/starwarstoylightsabers.mp4',
+  MediaType.Commercial,
+  [aestheticTags.spaceOpera, ageGroupTags.family, eraTags.twothousands],
+);
+
+export const nerfblastershowdown = new Commercial(
+  'Nerf Blaster Showdown',
+  'nerfblastershowdown',
+  30,
+  '/path/nerfblastershowdown.mp4',
+  MediaType.Commercial,
+  [genreTags.action, ageGroupTags.family, eraTags.nineties],
+);
+
+export const transformersbeastwars = new Commercial(
+  'Transformers Beast Wars Toys',
+  'transformersbeastwars',
+  30,
+  '/path/transformersbeastwars.mp4',
+  MediaType.Commercial,
+  [genreTags.action, genreTags.scifi, ageGroupTags.family, eraTags.nineties],
+);
+
+export const digimontoys = new Commercial(
+  'Digimon Digital Monsters Action Figures',
+  'digimontoys',
+  30,
+  '/path/digimontoys.mp4',
+  MediaType.Commercial,
+  [
+    genreTags.adventure,
+    aestheticTags.fantasy,
+    ageGroupTags.family,
+    eraTags.nineties,
+  ],
+);
+
+export const yugiohcardgame = new Commercial(
+  'Yu-Gi-Oh! Trading Card Game',
+  'yugiohcardgame',
+  30,
+  '/path/yugiohcardgame.mp4',
+  MediaType.Commercial,
+  [aestheticTags.fantasy, ageGroupTags.family, eraTags.twothousands],
+);
+
+export const hotwheelscrashzone = new Commercial(
+  'Hot Wheels - Crash Zone Track Set',
+  'hotwheelscrashzone',
+  30,
+  '/path/hotwheelscrashzone.mp4',
+  MediaType.Commercial,
+  [genreTags.action, ageGroupTags.family, eraTags.nineties],
+);
+
+export const pokemonredblue = new Commercial(
+  'Pokémon Red & Blue Game Boy',
+  'pokemonredblue',
+  30,
+  '/path/pokemonredblue.mp4',
+  MediaType.Commercial,
+  [
+    genreTags.adventure,
+    aestheticTags.fantasy,
+    ageGroupTags.family,
+    eraTags.nineties,
+  ],
+);
+
+export const jurassicparkinflatabletrex = new Commercial(
+  'Jurassic Park Inflatable T-Rex Toy',
+  'jurassicparkinflatabletrex',
+  30,
+  '/path/jurassicparkinflatabletrex.mp4',
+  MediaType.Commercial,
+  [genreTags.action, ageGroupTags.family, eraTags.nineties],
+);
+
+export const goosebumpsboardgame = new Commercial(
+  'Goosebumps Board Game',
+  'goosebumpsboardgame',
+  30,
+  '/path/goosebumpsboardgame.mp4',
+  MediaType.Commercial,
+  [genreTags.horror, ageGroupTags.family, eraTags.nineties],
+);
+
+export const legoexploriens = new Commercial(
+  'LEGO Exploriens',
+  'legoexploriens',
+  30,
+  '/path/legoexploriens.mp4',
+  MediaType.Commercial,
+  [
+    specialtyTags.lego,
+    genreTags.adventure,
+    genreTags.scifi,
+    genreTags.action,
+    ageGroupTags.family,
+    eraTags.nineties,
+  ],
+);
+
+export const mybuddykidsister = new Commercial(
+  'My Buddy / Kid Sister',
+  'mybuddykidsister',
+  30,
+  '/path/mybuddykidsister.mp4',
+  MediaType.Commercial,
+  [ageGroupTags.kids, eraTags.nineties],
+);
+
+export const teddyruxpinstorybook = new Commercial(
+  'Teddy Ruxpin Storybook',
+  'teddyruxpinstorybook',
+  30,
+  '/path/teddyruxpinstorybook.mp4',
+  MediaType.Commercial,
+  [genreTags.adventure, ageGroupTags.kids, eraTags.nineties],
+);
+
+export const mcdonaldsbatmanforeverhappymeal = new Commercial(
+  'McDonald’s Batman Forever Happy Meal',
+  'mcdonaldsbatmanforeverhappymeal',
+  30,
+  '/path/mcdonaldsbatmanforeverhappymeal.mp4',
+  MediaType.Commercial,
+  [genreTags.action, ageGroupTags.kids, eraTags.nineties],
+);
+
+export const barneydinostoreadventure = new Commercial(
+  'Barney Dinosaur Store Adventure',
+  'barneydinostoreadventure',
+  30,
+  '/path/barneydinostoreadventure.mp4',
+  MediaType.Commercial,
+  [genreTags.adventure, ageGroupTags.kids, eraTags.nineties],
+);
+
+export const fisherpriceadventurepeople = new Commercial(
+  'Fisher-Price Adventure People',
+  'fisherpriceadventurepeople',
+  30,
+  '/path/fisherpriceadventurepeople.mp4',
+  MediaType.Commercial,
+  [genreTags.adventure, ageGroupTags.kids, eraTags.nineties],
+);
+
+export const playdohextrudedinos = new Commercial(
+  'Play-Doh Dinosaur Set',
+  'playdohextrudedinos',
+  30,
+  '/path/playdohextrudedinos.mp4',
+  MediaType.Commercial,
+  [genreTags.action, ageGroupTags.kids, eraTags.nineties],
+);
+
+export const tonkarealsoundsfiretruck = new Commercial(
+  'Tonka Real Sounds Fire Truck',
+  'tonkarealsoundsfiretruck',
+  30,
+  '/path/tonkarealsoundsfiretruck.mp4',
+  MediaType.Commercial,
+  [genreTags.action, ageGroupTags.kids, eraTags.nineties],
+);
+
+export const mcdonaldshappymealspacejam = new Commercial(
+  'McDonald’s Space Jam Happy Meal',
+  'mcdonaldshappymealspacejam',
+  30,
+  '/path/mcdonaldshappymealspacejam.mp4',
+  MediaType.Commercial,
+  [aestheticTags.sports, ageGroupTags.kids, eraTags.nineties],
+);
+
+export const fisherpricewildwesttown = new Commercial(
+  'Fisher-Price Wild West Town',
+  'fisherpricewildwesttown',
+  30,
+  '/path/fisherpricewildwesttown.mp4',
+  MediaType.Commercial,
+  [aestheticTags.western, ageGroupTags.kids, eraTags.nineties],
+);
+
+export const rugratshappymeal = new Commercial(
+  'McDonald’s Rugrats Happy Meal',
+  'rugratshappymeal',
+  30,
+  '/path/rugratshappymeal.mp4',
+  MediaType.Commercial,
+  [genreTags.adventure, ageGroupTags.kids, eraTags.nineties],
+);
+
+export const batmananimatedseriesfigures = new Commercial(
+  'Batman: The Animated Series Action Figures',
+  'batmananimatedseriesfigures',
+  30,
+  '/path/batmananimatedseriesfigures.mp4',
+  MediaType.Commercial,
+  [
+    genreTags.action,
+    aestheticTags.superhero,
+    ageGroupTags.family,
+    eraTags.nineties,
+  ],
+);
+
+export const spidermanactionset = new Commercial(
+  'Spider-Man Web Shooter Action Set',
+  'spidermanactionset',
+  30,
+  '/path/spidermanactionset.mp4',
+  MediaType.Commercial,
+  [
+    genreTags.action,
+    aestheticTags.superhero,
+    ageGroupTags.family,
+    eraTags.nineties,
+  ],
+);
+
+export const legoaquazone = new Commercial(
+  'LEGO Aquazone',
+  'legoaquazone',
+  30,
+  '/path/legoaquazone.mp4',
+  MediaType.Commercial,
+  [
+    specialtyTags.lego,
+    genreTags.action,
+    genreTags.adventure,
+    ageGroupTags.family,
+    eraTags.nineties,
+  ],
+);
+
+export const starwarsactionfleet = new Commercial(
+  'Star Wars Action Fleet Micro Machines',
+  'starwarsactionfleet',
+  30,
+  '/path/starwarsactionfleet.mp4',
+  MediaType.Commercial,
+  [
+    specialtyTags.starwars,
+    aestheticTags.spaceOpera,
+    aestheticTags.fantasy,
+    ageGroupTags.family,
+    eraTags.nineties,
+  ],
+);
+
+export const powerangersmegazord = new Commercial(
+  'Power Rangers Mega Zord Playset',
+  'powerrangersmegazord',
+  30,
+  '/path/powerrangersmegazord.mp4',
+  MediaType.Commercial,
+  [
+    aestheticTags.superhero,
+    aestheticTags.fantasy,
+    ageGroupTags.family,
+    eraTags.nineties,
+  ],
+);
+
+export const tomagotchipet = new Commercial(
+  'Tamagotchi Virtual Pet',
+  'tomagotchipet',
+  30,
+  '/path/tomagotchipet.mp4',
+  MediaType.Commercial,
+  [ageGroupTags.family, eraTags.nineties],
+);
+
+export const bioniclemaskoflight = new Commercial(
+  'Bionicle: Mask of Light',
+  'bioniclemaskoflight',
+  30,
+  '/path/bioniclemaskoflight.mp4',
+  MediaType.Commercial,
+  [
+    genreTags.action,
+    genreTags.adventure,
+    aestheticTags.fantasy,
+    ageGroupTags.family,
+    eraTags.twothousands,
+  ],
+);
+
+export const nintendogameboypokemon = new Commercial(
+  'Nintendo Game Boy: Pokémon Yellow',
+  'nintendogameboypokemon',
+  30,
+  '/path/nintendogameboypokemon.mp4',
+  MediaType.Commercial,
+  [
+    genreTags.adventure,
+    aestheticTags.fantasy,
+    ageGroupTags.family,
+    eraTags.nineties,
+  ],
+);
+
+export const yugiohdueldisk = new Commercial(
+  'Yu-Gi-Oh! Duel Disk Accessory',
+  'yugiohdueldisk',
+  30,
+  '/path/yugiohdueldisk.mp4',
+  MediaType.Commercial,
+  [
+    genreTags.action,
+    aestheticTags.fantasy,
+    ageGroupTags.family,
+    eraTags.twothousands,
+  ],
+);
+
+export const fisherpriceimaginext = new Commercial(
+  'Fisher-Price Imaginext Space Adventures',
+  'fisherpriceimaginext',
+  30,
+  '/path/fisherpriceimaginext.mp4',
+  MediaType.Commercial,
+  [genreTags.adventure, genreTags.scifi, ageGroupTags.kids, eraTags.nineties],
+);
+
+export const rugratsmoviepromotion = new Commercial(
+  'Rugrats Movie Promotion',
+  'rugratsmoviepromotion',
+  30,
+  '/path/rugratsmoviepromotion.mp4',
+  MediaType.Commercial,
+  [genreTags.adventure, ageGroupTags.kids, eraTags.nineties],
+);
+
+export const thomasadventureset = new Commercial(
+  'Thomas the Tank Engine Adventure Set',
+  'thomasadventureset',
+  30,
+  '/path/thomasadventureset.mp4',
+  MediaType.Commercial,
+  [genreTags.adventure, ageGroupTags.kids, eraTags.nineties],
+);
+
+export const littlepeoplepirateship = new Commercial(
+  'Little People Pirate Ship',
+  'littlepeoplepirateship',
+  30,
+  '/path/littlepeoplepirateship.mp4',
+  MediaType.Commercial,
+  [genreTags.action, genreTags.adventure, ageGroupTags.kids, eraTags.nineties],
+);
+
+export const duplomagicalcastle = new Commercial(
+  'Duplo Magical Castle Playset',
+  'duplomagicalcastle',
+  30,
+  '/path/duplomagicalcastle.mp4',
+  MediaType.Commercial,
+  [
+    genreTags.adventure,
+    aestheticTags.fantasy,
+    ageGroupTags.kids,
+    eraTags.nineties,
+  ],
+);
+
+export const mcdonaldsdisneydinos = new Commercial(
+  'McDonald’s Dinosaur Happy Meal (Disney)',
+  'mcdonaldsdisneydinos',
+  30,
+  '/path/mcdonaldsdisneydinos.mp4',
+  MediaType.Commercial,
+  [genreTags.action, genreTags.adventure, ageGroupTags.kids, eraTags.nineties],
+);
+
+export const happymealinspectorgadget = new Commercial(
+  'McDonald’s Inspector Gadget Happy Meal',
+  'happymealinspectorGadget',
+  30,
+  '/path/happymealinspectorGadget.mp4',
+  MediaType.Commercial,
+  [
+    genreTags.action,
+    genreTags.adventure,
+    aestheticTags.crime,
+    ageGroupTags.kids,
+    eraTags.nineties,
+  ],
+);
+
+export const legoduplospaceset = new Commercial(
+  'LEGO Duplo Space Set',
+  'legoduplospaceset',
+  30,
+  '/path/legoduplospaceset.mp4',
+  MediaType.Commercial,
+  [genreTags.adventure, genreTags.scifi, ageGroupTags.kids, eraTags.nineties],
+);
+
+export const fisherpricefirestation = new Commercial(
+  'Fisher-Price Fire Station Rescue Set',
+  'fisherpricefirestation',
+  30,
+  '/path/fisherpricefirestation.mp4',
+  MediaType.Commercial,
+  [genreTags.action, ageGroupTags.kids, eraTags.nineties],
+);
+
+export const mightymaxplayset = new Commercial(
+  'Mighty Max Playset',
+  'mightymaxplayset',
+  30,
+  '/path/mightymaxplayset.mp4',
+  MediaType.Commercial,
+  [
+    genreTags.action,
+    genreTags.adventure,
+    aestheticTags.fantasy,
+    ageGroupTags.kids,
+    eraTags.nineties,
+  ],
+);
+
+export const hotwheelscrashers = new Commercial(
+  'Hot Wheels Crashers',
+  'hotwheelscrashers',
+  30,
+  '/path/hotwheelscrashers.mp4',
+  MediaType.Commercial,
+  [genreTags.action, ageGroupTags.family, eraTags.nineties],
+);
+
+export const nerfballzooka = new Commercial(
+  'Nerf Ballzooka',
+  'nerfballzooka',
+  30,
+  '/path/nerfballzooka.mp4',
+  MediaType.Commercial,
+  [genreTags.action, ageGroupTags.family, eraTags.nineties],
+);
+
+export const beastwarsactionfigures = new Commercial(
+  'Beast Wars Transformers',
+  'beastwarsactionfigures',
+  30,
+  '/path/beastwarsactionfigures.mp4',
+  MediaType.Commercial,
+  [genreTags.action, genreTags.scifi, ageGroupTags.family, eraTags.nineties],
+);
+
+export const digivice = new Commercial(
+  'Digivice Virtual Pet (Digimon)',
+  'digivice',
+  30,
+  '/path/digivice.mp4',
+  MediaType.Commercial,
+  [
+    aestheticTags.fantasy,
+    genreTags.adventure,
+    ageGroupTags.family,
+    eraTags.twothousands,
+  ],
+);
+
+export const legorockraiders = new Commercial(
+  'LEGO Rock Raiders',
+  'legorockraiders',
+  30,
+  '/path/legorockraiders.mp4',
+  MediaType.Commercial,
+  [
+    specialtyTags.lego,
+    genreTags.action,
+    genreTags.adventure,
+    ageGroupTags.family,
+    eraTags.nineties,
+  ],
+);
+
+export const starwarsthephantommenacepromotion = new Commercial(
+  'Star Wars Episode I: The Phantom Menace Promo',
+  'starwarsthephantommenacepromotion',
+  30,
+  '/path/starwarsthephantommenacepromotion.mp4',
+  MediaType.Commercial,
+  [
+    specialtyTags.starwars,
+    aestheticTags.spaceOpera,
+    aestheticTags.fantasy,
+    ageGroupTags.family,
+    eraTags.nineties,
+  ],
+);
+
+export const actionmanspyline = new Commercial(
+  'Action Man: Spy Line',
+  'actionmanspyline',
+  30,
+  '/path/actionmanspyline.mp4',
+  MediaType.Commercial,
+  [genreTags.action, ageGroupTags.family, eraTags.nineties],
+);
+
+export const pokemontcgcommercial = new Commercial(
+  'Pokémon Trading Card Game',
+  'pokemontcgcommercial',
+  30,
+  '/path/pokemontcgcommercial.mp4',
+  MediaType.Commercial,
+  [
+    aestheticTags.fantasy,
+    genreTags.adventure,
+    ageGroupTags.family,
+    eraTags.nineties,
+  ],
+);
+
+export const yugiohpromotion = new Commercial(
+  'Yu-Gi-Oh! TV Show Promo',
+  'yugiohpromotion',
+  30,
+  '/path/yugiohpromotion.mp4',
+  MediaType.Commercial,
+  [
+    genreTags.action,
+    aestheticTags.fantasy,
+    ageGroupTags.family,
+    eraTags.twothousands,
+  ],
+);
+
+export const gijoefighterjets = new Commercial(
+  'G.I. Joe Fighter Jets',
+  'gijoefighterjets',
+  30,
+  '/path/gijoefighterjets.mp4',
+  MediaType.Commercial,
+  [genreTags.action, ageGroupTags.family, eraTags.nineties],
+);
+
+export const tonkamightytrucks = new Commercial(
+  'Tonka Mighty Trucks',
+  'tonkamightytrucks',
+  30,
+  '/path/tonkamightytrucks.mp4',
+  MediaType.Commercial,
+  [genreTags.action, genreTags.adventure, ageGroupTags.kids, eraTags.nineties],
+);
+
+export const fisherpriceadventurecastle = new Commercial(
+  'Fisher-Price Adventure Castle',
+  'fisherpriceadventurecastle',
+  30,
+  '/path/fisherpriceadventurecastle.mp4',
+  MediaType.Commercial,
+  [
+    genreTags.adventure,
+    aestheticTags.fantasy,
+    ageGroupTags.kids,
+    eraTags.nineties,
+  ],
+);
+
+export const playmobilpirates = new Commercial(
+  'Playmobil Pirates',
+  'playmobilpirates',
+  30,
+  '/path/playmobilpirates.mp4',
+  MediaType.Commercial,
+  [
+    genreTags.adventure,
+    aestheticTags.fantasy,
+    ageGroupTags.kids,
+    eraTags.nineties,
+  ],
+);
+
+export const mcdonaldslegoexplorers = new Commercial(
+  'McDonald’s LEGO Explorers Happy Meal',
+  'mcdonaldslegoexplorers',
+  30,
+  '/path/mcdonaldslegoexplorers.mp4',
+  MediaType.Commercial,
+  [
+    specialtyTags.lego,
+    genreTags.action,
+    genreTags.adventure,
+    ageGroupTags.kids,
+    eraTags.nineties,
+  ],
+);
+
+export const bluescluesmailtime = new Commercial(
+  'Blue’s Clues Mail Time Song Promo',
+  'bluescluesmailtime',
+  30,
+  '/path/bluescluesmailtime.mp4',
+  MediaType.Commercial,
+  [genreTags.adventure, ageGroupTags.kids, eraTags.nineties],
+);
+
+export const bobthebuilderpromotion = new Commercial(
+  'Bob the Builder Promo',
+  'bobthebuilderpromotion',
+  30,
+  '/path/bobthebuilderpromotion.mp4',
+  MediaType.Commercial,
+  [genreTags.adventure, ageGroupTags.kids, eraTags.nineties],
+);
+
+export const barneyadventurebus = new Commercial(
+  'Barney’s Adventure Bus VHS Promo',
+  'barneyadventurebus',
+  30,
+  '/path/barneyadventurebus.mp4',
+  MediaType.Commercial,
+  [genreTags.adventure, ageGroupTags.kids, eraTags.nineties],
+);
+
+export const kidospacecenter = new Commercial(
+  'Kido Space Center Playset',
+  'kidospacecenter',
+  30,
+  '/path/kidospacecenter.mp4',
+  MediaType.Commercial,
+  [genreTags.scifi, genreTags.adventure, ageGroupTags.kids, eraTags.nineties],
+);
+
+export const rugratsvhscollection = new Commercial(
+  'Rugrats VHS Collection Promo',
+  'rugratsvhscollection',
+  30,
+  '/path/rugratsvhscollection.mp4',
+  MediaType.Commercial,
+  [genreTags.adventure, ageGroupTags.kids, eraTags.nineties],
+);
+
+export const mcdonaldsdisneytoys = new Commercial(
+  'McDonald’s Disney Toys Happy Meal',
+  'mcdonaldsdisneytoys',
+  30,
+  '/path/mcdonaldsdisneytoys.mp4',
+  MediaType.Commercial,
+  [genreTags.adventure, ageGroupTags.kids, eraTags.nineties],
 );
 
 export const defaultCommercials = [
@@ -491,593 +1088,7 @@ export const defaultCommercials = [
   default9,
 ];
 
-export const starwarstoylightsabers = new Commercial(
-  'Star Wars Toy Lightsabers',
-  'starwarstoylightsabers',
-  30,
-  '/path/starwarstoylightsabers.mp4',
-  MediaType.Commercial,
-  [MainGenres.SpaceOpera, AgeGroups.Family, Eras.twothousands],
-);
-
-export const nerfblastershowdown = new Commercial(
-  'Nerf Blaster Showdown',
-  'nerfblastershowdown',
-  30,
-  '/path/nerfblastershowdown.mp4',
-  MediaType.Commercial,
-  [MainGenres.Action, AgeGroups.Family, Eras.nnineties],
-);
-
-export const transformersbeastwars = new Commercial(
-  'Transformers Beast Wars Toys',
-  'transformersbeastwars',
-  30,
-  '/path/transformersbeastwars.mp4',
-  MediaType.Commercial,
-  [MainGenres.Action, MainGenres.SciFi, AgeGroups.Family, Eras.nnineties],
-);
-
-export const digimontoys = new Commercial(
-  'Digimon Digital Monsters Action Figures',
-  'digimontoys',
-  30,
-  '/path/digimontoys.mp4',
-  MediaType.Commercial,
-  [MainGenres.Adventure, MainGenres.Fantasy, AgeGroups.Family, Eras.nnineties],
-);
-
-export const yugiohcardgame = new Commercial(
-  'Yu-Gi-Oh! Trading Card Game',
-  'yugiohcardgame',
-  30,
-  '/path/yugiohcardgame.mp4',
-  MediaType.Commercial,
-  [MainGenres.Fantasy, AgeGroups.Family, Eras.twothousands],
-);
-
-export const hotwheelscrashzone = new Commercial(
-  'Hot Wheels - Crash Zone Track Set',
-  'hotwheelscrashzone',
-  30,
-  '/path/hotwheelscrashzone.mp4',
-  MediaType.Commercial,
-  [MainGenres.Action, AgeGroups.Family, Eras.nnineties],
-);
-
-export const pokemonredblue = new Commercial(
-  'Pokémon Red & Blue Game Boy',
-  'pokemonredblue',
-  30,
-  '/path/pokemonredblue.mp4',
-  MediaType.Commercial,
-  [MainGenres.Adventure, MainGenres.Fantasy, AgeGroups.Family, Eras.nnineties],
-);
-
-export const jurassicparkinflatabletrex = new Commercial(
-  'Jurassic Park Inflatable T-Rex Toy',
-  'jurassicparkinflatabletrex',
-  30,
-  '/path/jurassicparkinflatabletrex.mp4',
-  MediaType.Commercial,
-  [MainGenres.Action, AgeGroups.Family, Eras.nnineties],
-);
-
-export const goosebumpsboardgame = new Commercial(
-  'Goosebumps Board Game',
-  'goosebumpsboardgame',
-  30,
-  '/path/goosebumpsboardgame.mp4',
-  MediaType.Commercial,
-  [MainGenres.Horror, AgeGroups.Family, Eras.nnineties],
-);
-
-export const legoexploriens = new Commercial(
-  'LEGO Exploriens',
-  'legoexploriens',
-  30,
-  '/path/legoexploriens.mp4',
-  MediaType.Commercial,
-  [
-    MainGenres.Action,
-    MainGenres.SciFi,
-    MainGenres.Adventure,
-    AgeGroups.Family,
-    Eras.nnineties,
-  ],
-);
-
-export const mybuddykidsister = new Commercial(
-  'My Buddy / Kid Sister',
-  'mybuddykidsister',
-  30,
-  '/path/mybuddykidsister.mp4',
-  MediaType.Commercial,
-  [MainGenres.None, AgeGroups.Kids, Eras.nnineties],
-);
-
-export const teddyruxpinstorybook = new Commercial(
-  'Teddy Ruxpin Storybook',
-  'teddyruxpinstorybook',
-  30,
-  '/path/teddyruxpinstorybook.mp4',
-  MediaType.Commercial,
-  [MainGenres.Adventure, AgeGroups.Kids, Eras.nnineties],
-);
-
-export const mcdonaldsbatmanforeverhappymeal = new Commercial(
-  'McDonald’s Batman Forever Happy Meal',
-  'mcdonaldsbatmanforeverhappymeal',
-  30,
-  '/path/mcdonaldsbatmanforeverhappymeal.mp4',
-  MediaType.Commercial,
-  [MainGenres.Action, AgeGroups.Kids, Eras.nnineties],
-);
-
-export const barneydinostoreadventure = new Commercial(
-  'Barney Dinosaur Store Adventure',
-  'barneydinostoreadventure',
-  30,
-  '/path/barneydinostoreadventure.mp4',
-  MediaType.Commercial,
-  [MainGenres.Adventure, AgeGroups.Kids, Eras.nnineties],
-);
-
-export const fisherpriceadventurepeople = new Commercial(
-  'Fisher-Price Adventure People',
-  'fisherpriceadventurepeople',
-  30,
-  '/path/fisherpriceadventurepeople.mp4',
-  MediaType.Commercial,
-  [MainGenres.Adventure, AgeGroups.Kids, Eras.nnineties],
-);
-
-export const playdohextrudedinos = new Commercial(
-  'Play-Doh Dinosaur Set',
-  'playdohextrudedinos',
-  30,
-  '/path/playdohextrudedinos.mp4',
-  MediaType.Commercial,
-  [MainGenres.Action, AgeGroups.Kids, Eras.nnineties],
-);
-
-export const tonkarealsoundsfiretruck = new Commercial(
-  'Tonka Real Sounds Fire Truck',
-  'tonkarealsoundsfiretruck',
-  30,
-  '/path/tonkarealsoundsfiretruck.mp4',
-  MediaType.Commercial,
-  [MainGenres.Action, AgeGroups.Kids, Eras.nnineties],
-);
-
-export const mcdonaldshappymealspacejam = new Commercial(
-  'McDonald’s Space Jam Happy Meal',
-  'mcdonaldshappymealspacejam',
-  30,
-  '/path/mcdonaldshappymealspacejam.mp4',
-  MediaType.Commercial,
-  [MainGenres.Sports, MainGenres.Fantasy, AgeGroups.Kids, Eras.nnineties],
-);
-
-export const fisherpricewildwesttown = new Commercial(
-  'Fisher-Price Wild West Town',
-  'fisherpricewildwesttown',
-  30,
-  '/path/fisherpricewildwesttown.mp4',
-  MediaType.Commercial,
-  [MainGenres.Western, AgeGroups.Kids, Eras.nnineties],
-);
-
-export const rugratshappymeal = new Commercial(
-  'McDonald’s Rugrats Happy Meal',
-  'rugratshappymeal',
-  30,
-  '/path/rugratshappymeal.mp4',
-  MediaType.Commercial,
-  [MainGenres.Adventure, AgeGroups.Kids, Eras.nnineties],
-);
-
-export const batmananimatedseriesfigures = new Commercial(
-  'Batman: The Animated Series Action Figures',
-  'batmananimatedseriesfigures',
-  30,
-  '/path/batmananimatedseriesfigures.mp4',
-  MediaType.Commercial,
-  [MainGenres.Action, MainGenres.SuperHero, AgeGroups.Family, Eras.nnineties],
-);
-
-export const spidermanactionset = new Commercial(
-  'Spider-Man Web Shooter Action Set',
-  'spidermanactionset',
-  30,
-  '/path/spidermanactionset.mp4',
-  MediaType.Commercial,
-  [MainGenres.Action, MainGenres.SuperHero, AgeGroups.Family, Eras.nnineties],
-);
-
-export const legoaquazone = new Commercial(
-  'LEGO Aquazone',
-  'legoaquazone',
-  30,
-  '/path/legoaquazone.mp4',
-  MediaType.Commercial,
-  [MainGenres.Action, MainGenres.Adventure, AgeGroups.Family, Eras.nnineties],
-);
-
-export const starwarsactionfleet = new Commercial(
-  'Star Wars Action Fleet Micro Machines',
-  'starwarsactionfleet',
-  30,
-  '/path/starwarsactionfleet.mp4',
-  MediaType.Commercial,
-  [MainGenres.SpaceOpera, MainGenres.Fantasy, AgeGroups.Family, Eras.nnineties],
-);
-
-export const powerangersmegazord = new Commercial(
-  'Power Rangers Mega Zord Playset',
-  'powerrangersmegazord',
-  30,
-  '/path/powerrangersmegazord.mp4',
-  MediaType.Commercial,
-  [MainGenres.SuperHero, MainGenres.Fantasy, AgeGroups.Family, Eras.nnineties],
-);
-
-export const tomagotchipet = new Commercial(
-  'Tamagotchi Virtual Pet',
-  'tomagotchipet',
-  30,
-  '/path/tomagotchipet.mp4',
-  MediaType.Commercial,
-  [MainGenres.None, AgeGroups.Family, Eras.nnineties],
-);
-
-export const bioniclemaskoflight = new Commercial(
-  'Bionicle: Mask of Light',
-  'bioniclemaskoflight',
-  30,
-  '/path/bioniclemaskoflight.mp4',
-  MediaType.Commercial,
-  [
-    MainGenres.Action,
-    MainGenres.Adventure,
-    MainGenres.Fantasy,
-    AgeGroups.Family,
-    Eras.twothousands,
-  ],
-);
-
-export const nintendogameboypokemon = new Commercial(
-  'Nintendo Game Boy: Pokémon Yellow',
-  'nintendogameboypokemon',
-  30,
-  '/path/nintendogameboypokemon.mp4',
-  MediaType.Commercial,
-  [MainGenres.Adventure, MainGenres.Fantasy, AgeGroups.Family, Eras.nnineties],
-);
-
-export const yugiohdueldisk = new Commercial(
-  'Yu-Gi-Oh! Duel Disk Accessory',
-  'yugiohdueldisk',
-  30,
-  '/path/yugiohdueldisk.mp4',
-  MediaType.Commercial,
-  [MainGenres.Action, MainGenres.Fantasy, AgeGroups.Family, Eras.twothousands],
-);
-
-export const fisherpriceimaginext = new Commercial(
-  'Fisher-Price Imaginext Space Adventures',
-  'fisherpriceimaginext',
-  30,
-  '/path/fisherpriceimaginext.mp4',
-  MediaType.Commercial,
-  [MainGenres.Adventure, MainGenres.SciFi, AgeGroups.Kids, Eras.nnineties],
-);
-
-export const rugratsmoviepromotion = new Commercial(
-  'Rugrats Movie Promotion',
-  'rugratsmoviepromotion',
-  30,
-  '/path/rugratsmoviepromotion.mp4',
-  MediaType.Commercial,
-  [MainGenres.Adventure, AgeGroups.Kids, Eras.nnineties],
-);
-
-export const thomasadventureset = new Commercial(
-  'Thomas the Tank Engine Adventure Set',
-  'thomasadventureset',
-  30,
-  '/path/thomasadventureset.mp4',
-  MediaType.Commercial,
-  [MainGenres.Adventure, AgeGroups.Kids, Eras.nnineties],
-);
-
-export const littlepeoplepirateship = new Commercial(
-  'Little People Pirate Ship',
-  'littlepeoplepirateship',
-  30,
-  '/path/littlepeoplepirateship.mp4',
-  MediaType.Commercial,
-  [MainGenres.Action, MainGenres.Adventure, AgeGroups.Kids, Eras.nnineties],
-);
-
-export const duplomagicalcastle = new Commercial(
-  'Duplo Magical Castle Playset',
-  'duplomagicalcastle',
-  30,
-  '/path/duplomagicalcastle.mp4',
-  MediaType.Commercial,
-  [MainGenres.Adventure, MainGenres.Fantasy, AgeGroups.Kids, Eras.nnineties],
-);
-
-export const mcdonaldsdisneydinos = new Commercial(
-  'McDonald’s Dinosaur Happy Meal (Disney)',
-  'mcdonaldsdisneydinos',
-  30,
-  '/path/mcdonaldsdisneydinos.mp4',
-  MediaType.Commercial,
-  [MainGenres.Action, MainGenres.Adventure, AgeGroups.Kids, Eras.nnineties],
-);
-
-export const happymealinspectorgadget = new Commercial(
-  'McDonald’s Inspector Gadget Happy Meal',
-  'happymealinspectorGadget',
-  30,
-  '/path/happymealinspectorGadget.mp4',
-  MediaType.Commercial,
-  [
-    'gadgets',
-    'food',
-    MainGenres.Action,
-    MainGenres.Adventure,
-    MainGenres.Crime,
-    AgeGroups.Kids,
-    Eras.nnineties,
-  ],
-);
-
-export const legoduplospaceset = new Commercial(
-  'LEGO Duplo Space Set',
-  'legoduplospaceset',
-  30,
-  '/path/legoduplospaceset.mp4',
-  MediaType.Commercial,
-  [MainGenres.Adventure, MainGenres.SciFi, AgeGroups.Kids, Eras.nnineties],
-);
-
-export const fisherpricefirestation = new Commercial(
-  'Fisher-Price Fire Station Rescue Set',
-  'fisherpricefirestation',
-  30,
-  '/path/fisherpricefirestation.mp4',
-  MediaType.Commercial,
-  ['rescue', 'adventure', MainGenres.Action, AgeGroups.Kids, Eras.nnineties],
-);
-
-export const mightymaxplayset = new Commercial(
-  'Mighty Max Playset',
-  'mightymaxplayset',
-  30,
-  '/path/mightymaxplayset.mp4',
-  MediaType.Commercial,
-  [
-    'adventure',
-    'toys',
-    MainGenres.Action,
-    MainGenres.Adventure,
-    MainGenres.Fantasy,
-    AgeGroups.Kids,
-    Eras.nnineties,
-  ],
-);
-
-export const hotwheelscrashers = new Commercial(
-  'Hot Wheels Crashers',
-  'hotwheelscrashers',
-  30,
-  '/path/hotwheelscrashers.mp4',
-  MediaType.Commercial,
-  [MainGenres.Action, AgeGroups.Family, Eras.nnineties],
-);
-
-export const nerfballzooka = new Commercial(
-  'Nerf Ballzooka',
-  'nerfballzooka',
-  30,
-  '/path/nerfballzooka.mp4',
-  MediaType.Commercial,
-  [MainGenres.Action, AgeGroups.Family, Eras.nnineties],
-);
-
-export const beastwarsactionfigures = new Commercial(
-  'Beast Wars Transformers',
-  'beastwarsactionfigures',
-  30,
-  '/path/beastwarsactionfigures.mp4',
-  MediaType.Commercial,
-  [MainGenres.Action, MainGenres.SciFi, AgeGroups.Family, Eras.nnineties],
-);
-
-export const digivice = new Commercial(
-  'Digivice Virtual Pet (Digimon)',
-  'digivice',
-  30,
-  '/path/digivice.mp4',
-  MediaType.Commercial,
-  [
-    MainGenres.Fantasy,
-    MainGenres.Adventure,
-    AgeGroups.Family,
-    Eras.twothousands,
-  ],
-);
-
-export const legorockraiders = new Commercial(
-  'LEGO Rock Raiders',
-  'legorockraiders',
-  30,
-  '/path/legorockraiders.mp4',
-  MediaType.Commercial,
-  [MainGenres.Action, MainGenres.Adventure, AgeGroups.Family, Eras.nnineties],
-);
-
-export const starwarsthephantommenacepromotion = new Commercial(
-  'Star Wars Episode I: The Phantom Menace Promo',
-  'starwarsthephantommenacepromotion',
-  30,
-  '/path/starwarsthephantommenacepromotion.mp4',
-  MediaType.Commercial,
-  [MainGenres.SpaceOpera, MainGenres.Fantasy, AgeGroups.Family, Eras.nnineties],
-);
-
-export const actionmanspyline = new Commercial(
-  'Action Man: Spy Line',
-  'actionmanspyline',
-  30,
-  '/path/actionmanspyline.mp4',
-  MediaType.Commercial,
-  [MainGenres.Action, AgeGroups.Family, Eras.nnineties],
-);
-
-export const pokemontcgcommercial = new Commercial(
-  'Pokémon Trading Card Game',
-  'pokemontcgcommercial',
-  30,
-  '/path/pokemontcgcommercial.mp4',
-  MediaType.Commercial,
-  [MainGenres.Fantasy, MainGenres.Adventure, AgeGroups.Family, Eras.nnineties],
-);
-
-export const yugiohpromotion = new Commercial(
-  'Yu-Gi-Oh! TV Show Promo',
-  'yugiohpromotion',
-  30,
-  '/path/yugiohpromotion.mp4',
-  MediaType.Commercial,
-  [MainGenres.Action, MainGenres.Fantasy, AgeGroups.Family, Eras.twothousands],
-);
-
-export const gijoefighterjets = new Commercial(
-  'G.I. Joe Fighter Jets',
-  'gijoefighterjets',
-  30,
-  '/path/gijoefighterjets.mp4',
-  MediaType.Commercial,
-  [MainGenres.Action, AgeGroups.Family, Eras.nnineties],
-);
-
-export const tonkamightytrucks = new Commercial(
-  'Tonka Mighty Trucks',
-  'tonkamightytrucks',
-  30,
-  '/path/tonkamightytrucks.mp4',
-  MediaType.Commercial,
-  [MainGenres.Action, MainGenres.Adventure, AgeGroups.Kids, Eras.nnineties],
-);
-
-export const fisherpriceadventurecastle = new Commercial(
-  'Fisher-Price Adventure Castle',
-  'fisherpriceadventurecastle',
-  30,
-  '/path/fisherpriceadventurecastle.mp4',
-  MediaType.Commercial,
-  [
-    MainGenres.Action,
-    MainGenres.Adventure,
-    MainGenres.Fantasy,
-    AgeGroups.Kids,
-    Eras.nnineties,
-  ],
-);
-
-export const playmobilpirates = new Commercial(
-  'Playmobil Pirates',
-  'playmobilpirates',
-  30,
-  '/path/playmobilpirates.mp4',
-  MediaType.Commercial,
-  [
-    MainGenres.Action,
-    MainGenres.Adventure,
-    MainGenres.Fantasy,
-    AgeGroups.Kids,
-    Eras.nnineties,
-  ],
-);
-
-export const mcdonaldslegoexplorers = new Commercial(
-  'McDonald’s LEGO Explorers Happy Meal',
-  'mcdonaldslegoexplorers',
-  30,
-  '/path/mcdonaldslegoexplorers.mp4',
-  MediaType.Commercial,
-  [MainGenres.Action, MainGenres.Adventure, AgeGroups.Kids, Eras.nnineties],
-);
-
-export const bluescluesmailtime = new Commercial(
-  'Blue’s Clues Mail Time Song Promo',
-  'bluescluesmailtime',
-  30,
-  '/path/bluescluesmailtime.mp4',
-  MediaType.Commercial,
-  [
-    MainGenres.Adventure,
-    MainGenres.Educational,
-    AgeGroups.Kids,
-    Eras.nnineties,
-  ],
-);
-
-export const bobthebuilderpromotion = new Commercial(
-  'Bob the Builder Promo',
-  'bobthebuilderpromotion',
-  30,
-  '/path/bobthebuilderpromotion.mp4',
-  MediaType.Commercial,
-  [
-    MainGenres.Adventure,
-    MainGenres.Educational,
-    AgeGroups.Kids,
-    Eras.nnineties,
-  ],
-);
-
-export const barneyadventurebus = new Commercial(
-  'Barney’s Adventure Bus VHS Promo',
-  'barneyadventurebus',
-  30,
-  '/path/barneyadventurebus.mp4',
-  MediaType.Commercial,
-  [MainGenres.Adventure, AgeGroups.Kids, Eras.nnineties],
-);
-
-export const kidospacecenter = new Commercial(
-  'Kido Space Center Playset',
-  'kidospacecenter',
-  30,
-  '/path/kidospacecenter.mp4',
-  MediaType.Commercial,
-  [MainGenres.SciFi, MainGenres.Adventure, AgeGroups.Kids, Eras.nnineties],
-);
-
-export const rugratsvhscollection = new Commercial(
-  'Rugrats VHS Collection Promo',
-  'rugratsvhscollection',
-  30,
-  '/path/rugratsvhscollection.mp4',
-  MediaType.Commercial,
-  [MainGenres.Adventure, AgeGroups.Kids, Eras.nnineties],
-);
-
-export const mcdonaldsdisneytoys = new Commercial(
-  'McDonald’s Disney Toys Happy Meal',
-  'mcdonaldsdisneytoys',
-  30,
-  '/path/mcdonaldsdisneytoys.mp4',
-  MediaType.Commercial,
-  [MainGenres.Adventure, AgeGroups.Kids, Eras.nnineties],
-);
-
-export const bufferCommercials = [
+export const commercials = [
   jurassicparktoys1,
   marvelvsstreetfighter98,
   wildones,

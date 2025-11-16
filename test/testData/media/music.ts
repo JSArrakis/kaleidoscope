@@ -1,11 +1,7 @@
-import { AgeGroups } from '../../src/models/const/ageGroups';
-import {
-  MusicGenres,
-  MusicSubGenres,
-} from '../../src/models/const/musicGenres';
-import { MediaType } from '../../src/models/enum/mediaTypes';
-import { Music } from '../../src/models/music';
-import { makeTag } from '../utils/tagFactory';
+import { MusicGenres } from '../../../src/models/const/musicGenres';
+import { MediaType } from '../../../src/models/enum/mediaTypes';
+import { Music } from '../../../src/models/music';
+import { holidayTags, musicalGenreTags, specialtyTags } from '../tags';
 
 export const sweetchildomine = new Music(
   'Sweet Child O Mine',
@@ -14,7 +10,7 @@ export const sweetchildomine = new Music(
   293,
   '/path/sweetchildomine-gunsandroses.mp4',
   MediaType.Music,
-  [makeTag(MusicGenres.Rock), makeTag(AgeGroups.AllAges, 'AgeGroup')],
+  [musicalGenreTags.rock],
 );
 export const hotelcalifornia = new Music(
   'Hotel California',
@@ -23,7 +19,7 @@ export const hotelcalifornia = new Music(
   369,
   '/path/hotelcalifornia-eagles.mp4',
   MediaType.Music,
-  [makeTag(MusicGenres.Rock), makeTag(AgeGroups.AllAges, 'AgeGroup')],
+  [musicalGenreTags.rock],
 );
 export const backinblack = new Music(
   'Back in Black',
@@ -32,12 +28,7 @@ export const backinblack = new Music(
   255,
   '/path/backinblack-acdc.mp4',
   MediaType.Music,
-  [
-    makeTag(MusicGenres.Rock),
-    makeTag(AgeGroups.AllAges, 'AgeGroup'),
-    makeTag('ironman'),
-    makeTag('marvel'),
-  ],
+  [musicalGenreTags.rock, specialtyTags.marvel],
 );
 export const heyjude = new Music(
   'Hey Jude',
@@ -46,7 +37,7 @@ export const heyjude = new Music(
   431,
   '/path/heyjude-thebeatles.mp4',
   MediaType.Music,
-  [makeTag(MusicGenres.Rock), makeTag(AgeGroups.AllAges, 'AgeGroup')],
+  [musicalGenreTags.rock],
 );
 export const alive = new Music(
   'Alive',
@@ -55,7 +46,7 @@ export const alive = new Music(
   312,
   '/path/alive-pearljam.mp4',
   MediaType.Music,
-  [makeTag(MusicGenres.Rock), makeTag(AgeGroups.AllAges, 'AgeGroup')],
+  [musicalGenreTags.rock],
 );
 export const paranoid = new Music(
   'Paranoid',
@@ -64,7 +55,7 @@ export const paranoid = new Music(
   172,
   '/path/paranoid-blacksabbath.mp4',
   MediaType.Music,
-  [makeTag(MusicGenres.Metal), makeTag(AgeGroups.AllAges, 'AgeGroup')],
+  [musicalGenreTags.metal],
 );
 export const one = new Music(
   'One',
@@ -73,7 +64,7 @@ export const one = new Music(
   448,
   '/path/one-metallica.mp4',
   MediaType.Music,
-  [makeTag(MusicGenres.Metal), makeTag(AgeGroups.AllAges, 'AgeGroup')],
+  [musicalGenreTags.metal],
 );
 export const aceofspades = new Music(
   'Ace of Spades',
@@ -82,7 +73,7 @@ export const aceofspades = new Music(
   170,
   '/path/aceofspades-motorhead.mp4',
   MediaType.Music,
-  [makeTag(MusicGenres.Metal), makeTag(AgeGroups.AllAges, 'AgeGroup')],
+  [musicalGenreTags.metal],
 );
 export const holydiver = new Music(
   'Holy Diver',
@@ -91,7 +82,7 @@ export const holydiver = new Music(
   310,
   '/path/holydiver-dio.mp4',
   MediaType.Music,
-  [makeTag(MusicGenres.Metal), makeTag(AgeGroups.AllAges, 'AgeGroup')],
+  [musicalGenreTags.metal],
 );
 export const painkiller = new Music(
   'Painkiller',
@@ -100,7 +91,7 @@ export const painkiller = new Music(
   399,
   '/path/painkiller-judaspriest.mp4',
   MediaType.Music,
-  [makeTag(MusicGenres.Metal), makeTag(AgeGroups.AllAges, 'AgeGroup')],
+  [musicalGenreTags.metal],
 );
 export const rapperdelight = new Music(
   'Rapper Delight',
@@ -109,7 +100,7 @@ export const rapperdelight = new Music(
   900,
   '/path/rapperdelight-sugarhillgang.mp4',
   MediaType.Music,
-  [makeTag(MusicGenres.HipHop), makeTag(AgeGroups.AllAges, 'AgeGroup')],
+  [musicalGenreTags.hiphop],
 );
 export const loseyourself = new Music(
   'Lose Yourself',
@@ -118,7 +109,7 @@ export const loseyourself = new Music(
   366,
   '/path/loseyourself-eminem.mp4',
   MediaType.Music,
-  [makeTag(MusicGenres.HipHop), makeTag(AgeGroups.AllAges, 'AgeGroup')],
+  [musicalGenreTags.hiphop],
 );
 export const nystateofmind = new Music(
   'NY State of Mind',
@@ -127,7 +118,7 @@ export const nystateofmind = new Music(
   241,
   '/path/nystateofmind-nas.mp4',
   MediaType.Music,
-  [makeTag(MusicGenres.HipHop), makeTag(AgeGroups.AllAges, 'AgeGroup')],
+  [musicalGenreTags.hiphop],
 );
 export const blitzkriegbop = new Music(
   'Blitzkrieg Bop',
@@ -136,7 +127,7 @@ export const blitzkriegbop = new Music(
   144,
   '/path/blitzkriegbop-theramones.mp4',
   MediaType.Music,
-  [makeTag(MusicGenres.Punk), makeTag(AgeGroups.AllAges, 'AgeGroup')],
+  [musicalGenreTags.punk],
 );
 export const anarchyintheuk = new Music(
   'Anarchy in the UK',
@@ -145,7 +136,7 @@ export const anarchyintheuk = new Music(
   210,
   '/path/anarchyintheuk-sexpistols.mp4',
   MediaType.Music,
-  [makeTag(MusicGenres.Punk), makeTag(AgeGroups.AllAges, 'AgeGroup')],
+  [musicalGenreTags.punk],
 );
 export const londoncalling = new Music(
   'London Calling',
@@ -154,7 +145,7 @@ export const londoncalling = new Music(
   199,
   '/path/londoncalling-theclash.mp4',
   MediaType.Music,
-  [makeTag(MusicGenres.Punk), makeTag(AgeGroups.AllAges, 'AgeGroup')],
+  [musicalGenreTags.punk],
 );
 export const holidayincambodia = new Music(
   'Holiday in Cambodia',
@@ -163,7 +154,7 @@ export const holidayincambodia = new Music(
   211,
   '/path/holidayincambodia-deadkennedys.mp4',
   MediaType.Music,
-  [makeTag(MusicGenres.Punk), makeTag(AgeGroups.AllAges, 'AgeGroup')],
+  [musicalGenreTags.punk],
 );
 export const louise = new Music(
   'Louise',
@@ -172,7 +163,7 @@ export const louise = new Music(
   292,
   '/path/louise-clanofxymox.mp4',
   MediaType.Music,
-  [makeTag(MusicSubGenres.DarkWave), makeTag(AgeGroups.AllAges, 'AgeGroup')],
+  [musicalGenreTags.darkwave],
 );
 export const hostofseraphim = new Music(
   'Host of Seraphim',
@@ -181,7 +172,7 @@ export const hostofseraphim = new Music(
   366,
   '/path/hostofseraphim-deadcandance.mp4',
   MediaType.Music,
-  [makeTag(MusicSubGenres.DarkWave), makeTag(AgeGroups.AllAges, 'AgeGroup')],
+  [musicalGenreTags.darkwave],
 );
 export const duskislikeadagger = new Music(
   'Dusk is Like a Dagger',
@@ -190,7 +181,7 @@ export const duskislikeadagger = new Music(
   292,
   '/path/duskislikeadagger-attrition.mp4',
   MediaType.Music,
-  [makeTag(MusicSubGenres.DarkWave), makeTag(AgeGroups.AllAges, 'AgeGroup')],
+  [musicalGenreTags.darkwave],
 );
 export const thetimehascomeandgone = new Music(
   'The Time Has Come and Gone',
@@ -199,7 +190,7 @@ export const thetimehascomeandgone = new Music(
   292,
   '/path/thetimehascomeandgone-thefrozenautumn.mp4',
   MediaType.Music,
-  [makeTag(MusicSubGenres.DarkWave), makeTag(AgeGroups.AllAges, 'AgeGroup')],
+  [musicalGenreTags.darkwave],
 );
 export const ritüel = new Music(
   'Ritüel',
@@ -208,7 +199,7 @@ export const ritüel = new Music(
   292,
   '/path/ritüel-shepastaway.mp4',
   MediaType.Music,
-  [makeTag(MusicSubGenres.DarkWave), makeTag(AgeGroups.AllAges, 'AgeGroup')],
+  [musicalGenreTags.darkwave],
 );
 export const headlikeahole = new Music(
   'Head Like a Hole',
@@ -217,10 +208,7 @@ export const headlikeahole = new Music(
   292,
   '/path/headlikeahole-nineinchnails.mp4',
   MediaType.Music,
-  [
-    makeTag(MusicSubGenres.IndustrialRock),
-    makeTag(AgeGroups.AllAges, 'AgeGroup'),
-  ],
+  [musicalGenreTags.industrialrock],
 );
 export const stigmata = new Music(
   'Stigmata',
@@ -229,10 +217,7 @@ export const stigmata = new Music(
   292,
   '/path/stigmata-ministry.mp4',
   MediaType.Music,
-  [
-    makeTag(MusicSubGenres.IndustrialRock),
-    makeTag(AgeGroups.AllAges, 'AgeGroup'),
-  ],
+  [musicalGenreTags.industrialrock],
 );
 export const adrugagainstwar = new Music(
   'A Drug Against War',
@@ -241,10 +226,7 @@ export const adrugagainstwar = new Music(
   292,
   '/path/adrugagainstwar-kmfdm.mp4',
   MediaType.Music,
-  [
-    makeTag(MusicSubGenres.IndustrialRock),
-    makeTag(AgeGroups.AllAges, 'AgeGroup'),
-  ],
+  [musicalGenreTags.industrialrock],
 );
 export const dragula = new Music(
   'Dragula',
@@ -253,10 +235,7 @@ export const dragula = new Music(
   292,
   '/path/dragula-robzombie.mp4',
   MediaType.Music,
-  [
-    makeTag(MusicSubGenres.IndustrialRock),
-    makeTag(AgeGroups.AllAges, 'AgeGroup'),
-  ],
+  [musicalGenreTags.industrialrock],
 );
 export const thebeautifulpeople = new Music(
   'The Beautiful People',
@@ -265,10 +244,7 @@ export const thebeautifulpeople = new Music(
   292,
   '/path/thebeautifulpeople-marilynmanson.mp4',
   MediaType.Music,
-  [
-    makeTag(MusicSubGenres.IndustrialRock),
-    makeTag(AgeGroups.AllAges, 'AgeGroup'),
-  ],
+  [musicalGenreTags.industrialrock],
 );
 export const nightcall = new Music(
   'Nightcall',
@@ -277,7 +253,7 @@ export const nightcall = new Music(
   292,
   '/path/nightcall-kavinsky.mp4',
   MediaType.Music,
-  [makeTag(MusicSubGenres.Synthwave), makeTag(AgeGroups.AllAges, 'AgeGroup')],
+  [musicalGenreTags.synthwave],
 );
 export const neotokyo = new Music(
   'Neotokyo',
@@ -286,7 +262,7 @@ export const neotokyo = new Music(
   292,
   '/path/neotokyo-purturbator.mp4',
   MediaType.Music,
-  [makeTag(MusicSubGenres.Synthwave), makeTag(AgeGroups.AllAges, 'AgeGroup')],
+  [musicalGenreTags.synthwave],
 );
 export const daysofthunder = new Music(
   'Days of Thunder',
@@ -295,7 +271,7 @@ export const daysofthunder = new Music(
   292,
   '/path/daysofthunder-themidnight.mp4',
   MediaType.Music,
-  [makeTag(MusicSubGenres.Synthwave), makeTag(AgeGroups.AllAges, 'AgeGroup')],
+  [musicalGenreTags.synthwave],
 );
 export const turbokiller = new Music(
   'Turbokiller',
@@ -304,7 +280,7 @@ export const turbokiller = new Music(
   292,
   '/path/turbokiller-carpenterbrut.mp4',
   MediaType.Music,
-  [makeTag(MusicSubGenres.Synthwave), makeTag(AgeGroups.AllAges, 'AgeGroup')],
+  [musicalGenreTags.synthwave],
 );
 export const technoir = new Music(
   'Technoir',
@@ -313,7 +289,7 @@ export const technoir = new Music(
   292,
   '/path/technoir-gunship.mp4',
   MediaType.Music,
-  [makeTag(MusicSubGenres.Synthwave), makeTag(AgeGroups.AllAges, 'AgeGroup')],
+  [musicalGenreTags.synthwave],
 );
 export const requiemiikyrie = new Music(
   'Requiem II. Kyrie',
@@ -322,7 +298,7 @@ export const requiemiikyrie = new Music(
   292,
   '/path/requiemiikyrie-gyorgyligeti.mp4',
   MediaType.Music,
-  [makeTag(MusicSubGenres.AvantGarde), makeTag(AgeGroups.AllAges, 'AgeGroup')],
+  [musicalGenreTags.avantgarde],
 );
 export const sonatasandinterludes = new Music(
   'Sonatas and Interludes',
@@ -331,7 +307,7 @@ export const sonatasandinterludes = new Music(
   292,
   '/path/sonatasandinterludes-johncage.mp4',
   MediaType.Music,
-  [makeTag(MusicSubGenres.AvantGarde), makeTag(AgeGroups.AllAges, 'AgeGroup')],
+  [musicalGenreTags.avantgarde],
 );
 export const stimmung = new Music(
   'Stimmung',
@@ -340,7 +316,7 @@ export const stimmung = new Music(
   292,
   '/path/stimmung-karlheinzstockhausen.mp4',
   MediaType.Music,
-  [makeTag(MusicSubGenres.AvantGarde), makeTag(AgeGroups.AllAges, 'AgeGroup')],
+  [musicalGenreTags.avantgarde],
 );
 export const anendingascent = new Music(
   'An Ending, Ascent',
@@ -349,7 +325,7 @@ export const anendingascent = new Music(
   292,
   '/path/anendingascent-brianeno.mp4',
   MediaType.Music,
-  [makeTag(MusicSubGenres.Ambient), makeTag(AgeGroups.AllAges, 'AgeGroup')],
+  [musicalGenreTags.ambient],
 );
 export const no3 = new Music(
   '#3',
@@ -358,7 +334,7 @@ export const no3 = new Music(
   292,
   '/path/no3-aphextwin.mp4',
   MediaType.Music,
-  [makeTag(MusicSubGenres.Ambient), makeTag(AgeGroups.AllAges, 'AgeGroup')],
+  [musicalGenreTags.ambient],
 );
 export const deepstaria = new Music(
   'Deepstaria',
@@ -367,7 +343,7 @@ export const deepstaria = new Music(
   292,
   '/path/deepstaria-hellometeor.mp4',
   MediaType.Music,
-  [makeTag(MusicSubGenres.Ambient), makeTag(AgeGroups.AllAges, 'AgeGroup')],
+  [musicalGenreTags.ambient],
 );
 export const bluemoonstation = new Music(
   'Blue Moon Station',
@@ -376,7 +352,7 @@ export const bluemoonstation = new Music(
   292,
   '/path/bluemoonstation-solarfields.mp4',
   MediaType.Music,
-  [makeTag(MusicSubGenres.Ambient), makeTag(AgeGroups.AllAges, 'AgeGroup')],
+  [musicalGenreTags.ambient],
 );
 export const kobresia = new Music(
   'Kobresia',
@@ -385,7 +361,7 @@ export const kobresia = new Music(
   292,
   '/path/kobresia-biosphere.mp4',
   MediaType.Music,
-  [makeTag(MusicSubGenres.Ambient), makeTag(AgeGroups.AllAges, 'AgeGroup')],
+  [musicalGenreTags.ambient],
 );
 export const onthenatureofdaylight = new Music(
   'On the Nature of Daylight',
@@ -394,7 +370,7 @@ export const onthenatureofdaylight = new Music(
   292,
   '/path/onthenatureofdaylight-maxrichter.mp4',
   MediaType.Music,
-  [MusicSubGenres.NeoClassical, AgeGroups.AllAges],
+  [musicalGenreTags.neoclassical],
 );
 export const re = new Music(
   'Re',
@@ -403,7 +379,7 @@ export const re = new Music(
   292,
   '/path/re-nilfrahm.mp4',
   MediaType.Music,
-  [MusicSubGenres.NeoClassical, AgeGroups.AllAges],
+  [musicalGenreTags.neoclassical],
 );
 export const nuvole = new Music(
   'Nuvole Bianche',
@@ -412,7 +388,7 @@ export const nuvole = new Music(
   292,
   '/path/nuvolebianche-ludovicoeinaudi.mp4',
   MediaType.Music,
-  [MusicSubGenres.NeoClassical, AgeGroups.AllAges],
+  [musicalGenreTags.neoclassical],
 );
 export const saman = new Music(
   'Saman',
@@ -421,7 +397,7 @@ export const saman = new Music(
   292,
   '/path/saman-olafurarnalds.mp4',
   MediaType.Music,
-  [MusicSubGenres.NeoClassical, AgeGroups.AllAges],
+  [musicalGenreTags.neoclassical],
 );
 export const abovo = new Music(
   'Abovo',
@@ -430,7 +406,7 @@ export const abovo = new Music(
   292,
   '/path/abovo-joepbeving.mp4',
   MediaType.Music,
-  [MusicSubGenres.NeoClassical, AgeGroups.AllAges],
+  [musicalGenreTags.neoclassical],
 );
 export const xerroxisola = new Music(
   'Xerrox Isola',
@@ -439,10 +415,7 @@ export const xerroxisola = new Music(
   292,
   '/path/xerroxisola-alvanoto.mp4',
   MediaType.Music,
-  [
-    makeTag(MusicSubGenres.ElectronicMinimalist),
-    makeTag(AgeGroups.AllAges, 'AgeGroup'),
-  ],
+  [musicalGenreTags.electronicMinimalist],
 );
 export const dexter = new Music(
   'Dexter',
@@ -451,10 +424,7 @@ export const dexter = new Music(
   292,
   '/path/dexter-ricardovillalobos.mp4',
   MediaType.Music,
-  [
-    makeTag(MusicSubGenres.ElectronicMinimalist),
-    makeTag(AgeGroups.AllAges, 'AgeGroup'),
-  ],
+  [musicalGenreTags.electronicMinimalist],
 );
 export const sticktomyside = new Music(
   'Stick to My Side',
@@ -463,10 +433,7 @@ export const sticktomyside = new Music(
   292,
   '/path/sticktomyside-panthaduprince.mp4',
   MediaType.Music,
-  [
-    makeTag(MusicSubGenres.ElectronicMinimalist),
-    makeTag(AgeGroups.AllAges, 'AgeGroup'),
-  ],
+  [musicalGenreTags.electronicMinimalist],
 );
 export const camino = new Music(
   'Camino',
@@ -475,10 +442,7 @@ export const camino = new Music(
   292,
   '/path/camino-murcof.mp4',
   MediaType.Music,
-  [
-    makeTag(MusicSubGenres.ElectronicMinimalist),
-    makeTag(AgeGroups.AllAges, 'AgeGroup'),
-  ],
+  [musicalGenreTags.electronicMinimalist],
 );
 export const easthastings = new Music(
   'East Hastings',
@@ -487,7 +451,7 @@ export const easthastings = new Music(
   292,
   '/path/easthastings-godspeedyoublackemperor.mp4',
   MediaType.Music,
-  [makeTag(MusicSubGenres.PostRock), makeTag(AgeGroups.AllAges, 'AgeGroup')],
+  [musicalGenreTags.postrock],
 );
 export const yourhandinmine = new Music(
   'Your Hand in Mine',
@@ -496,7 +460,7 @@ export const yourhandinmine = new Music(
   292,
   '/path/yourhandinmine-explosionsinthesky.mp4',
   MediaType.Music,
-  [makeTag(MusicSubGenres.PostRock), makeTag(AgeGroups.AllAges, 'AgeGroup')],
+  [musicalGenreTags.postrock],
 );
 export const mogwaifearsatan = new Music(
   'Mogwai Fear Satan',
@@ -505,7 +469,7 @@ export const mogwaifearsatan = new Music(
   292,
   '/path/mogwaifearsatan-mogwai.mp4',
   MediaType.Music,
-  [makeTag(MusicSubGenres.PostRock), makeTag(AgeGroups.AllAges, 'AgeGroup')],
+  [musicalGenreTags.postrock],
 );
 export const untitledno3 = new Music(
   'Untitled #3',
@@ -514,7 +478,7 @@ export const untitledno3 = new Music(
   292,
   '/path/untitledno3-sigurros.mp4',
   MediaType.Music,
-  [makeTag(MusicSubGenres.PostRock), makeTag(AgeGroups.AllAges, 'AgeGroup')],
+  [musicalGenreTags.postrock],
 );
 export const ashesinthesnow = new Music(
   'Ashes in the Snow',
@@ -523,7 +487,7 @@ export const ashesinthesnow = new Music(
   292,
   '/path/ashesinthesnow-mono.mp4',
   MediaType.Music,
-  [makeTag(MusicSubGenres.PostRock), makeTag(AgeGroups.AllAges, 'AgeGroup')],
+  [musicalGenreTags.postrock],
 );
 export const thedarkplacesoftheearth = new Music(
   'The Dark Places of the Earth',
@@ -532,7 +496,7 @@ export const thedarkplacesoftheearth = new Music(
   292,
   '/path/thedarkplacesoftheearth-lustmord.mp4',
   MediaType.Music,
-  [makeTag(MusicSubGenres.DarkAmbient), makeTag(AgeGroups.AllAges, 'AgeGroup')],
+  [musicalGenreTags.darkambient],
 );
 export const endtitles = new Music(
   'End Titles',
@@ -541,7 +505,7 @@ export const endtitles = new Music(
   292,
   '/path/endtitles-atriumcarceri.mp4',
   MediaType.Music,
-  [makeTag(MusicSubGenres.DarkAmbient), makeTag(AgeGroups.AllAges, 'AgeGroup')],
+  [musicalGenreTags.darkambient],
 );
 export const reflectinginshadows = new Music(
   'Reflecting in Shadows',
@@ -550,7 +514,7 @@ export const reflectinginshadows = new Music(
   292,
   '/path/reflectinginshadows-kammarheit.mp4',
   MediaType.Music,
-  [makeTag(MusicSubGenres.DarkAmbient), makeTag(AgeGroups.AllAges, 'AgeGroup')],
+  [musicalGenreTags.darkambient],
 );
 export const hypnagogic = new Music(
   'Hypnagogic',
@@ -559,7 +523,7 @@ export const hypnagogic = new Music(
   292,
   '/path/hypnagogic-kammarheit.mp4',
   MediaType.Music,
-  [makeTag(MusicSubGenres.DarkAmbient), makeTag(AgeGroups.AllAges, 'AgeGroup')],
+  [musicalGenreTags.darkambient],
 );
 export const twoonefourfive = new Music(
   '2145',
@@ -568,7 +532,7 @@ export const twoonefourfive = new Music(
   292,
   '/path/2145-sabledsun.mp4',
   MediaType.Music,
-  [makeTag(MusicSubGenres.DarkAmbient), makeTag(AgeGroups.AllAges, 'AgeGroup')],
+  [musicalGenreTags.darkambient],
 );
 export const hajnal = new Music(
   'Hajnal',
@@ -577,7 +541,7 @@ export const hajnal = new Music(
   292,
   '/path/hajnal-venetiansnares.mp4',
   MediaType.Music,
-  [makeTag(MusicSubGenres.Breakcore), makeTag(AgeGroups.AllAges, 'AgeGroup')],
+  [musicalGenreTags.breakcore],
 );
 export const nostep = new Music(
   'No Step',
@@ -586,7 +550,7 @@ export const nostep = new Music(
   292,
   '/path/nostep-bongra.mp4',
   MediaType.Music,
-  [makeTag(MusicSubGenres.Breakcore), makeTag(AgeGroups.AllAges, 'AgeGroup')],
+  [musicalGenreTags.breakcore],
 );
 export const thesoundoftheunderground = new Music(
   'The Sound of the Underground',
@@ -595,7 +559,7 @@ export const thesoundoftheunderground = new Music(
   292,
   '/path/thesoundoftheunderground-shitmat.mp4',
   MediaType.Music,
-  [makeTag(MusicSubGenres.Breakcore), makeTag(AgeGroups.AllAges, 'AgeGroup')],
+  [musicalGenreTags.breakcore],
 );
 export const manicpanic = new Music(
   'Manic Panic',
@@ -604,7 +568,7 @@ export const manicpanic = new Music(
   292,
   '/path/manicpanic-ottovonschirach.mp4',
   MediaType.Music,
-  [makeTag(MusicSubGenres.Breakcore), makeTag(AgeGroups.AllAges, 'AgeGroup')],
+  [musicalGenreTags.breakcore],
 );
 export const blackacid = new Music(
   'Black Acid',
@@ -613,7 +577,7 @@ export const blackacid = new Music(
   292,
   '/path/blackacid-enduser.mp4',
   MediaType.Music,
-  [makeTag(MusicSubGenres.Breakcore), makeTag(AgeGroups.AllAges, 'AgeGroup')],
+  [musicalGenreTags.breakcore],
 );
 export const hereitschristmastime = new Music(
   "Here It's Christmas Time",
@@ -623,10 +587,9 @@ export const hereitschristmastime = new Music(
   '/path/hereitschristmastime-kevinbacon.mp4',
   MediaType.Music,
   [
-    makeTag(MusicGenres.Pop),
-    makeTag(AgeGroups.AllAges, 'AgeGroup'),
-    makeTag('christmas'),
-    makeTag('marvel'),
+    musicalGenreTags.pop,
+    holidayTags.christmas,
+    specialtyTags.marvel,
   ],
 );
 export const allIwantforchristmasisyou = new Music(
@@ -637,9 +600,8 @@ export const allIwantforchristmasisyou = new Music(
   '/path/alliwantforchristmasisyou-mariahcarey.mp4',
   MediaType.Music,
   [
-    makeTag(MusicGenres.Pop),
-    makeTag(AgeGroups.AllAges, 'AgeGroup'),
-    makeTag('christmas'),
+    musicalGenreTags.pop,
+    holidayTags.christmas,
   ],
 );
 export const kidnapthesandyclaws = new Music(
@@ -650,10 +612,9 @@ export const kidnapthesandyclaws = new Music(
   '/path/kidnapthesandyclaws-korn.mp4',
   MediaType.Music,
   [
-    makeTag(MusicGenres.Metal),
-    makeTag(AgeGroups.AllAges, 'AgeGroup'),
-    makeTag('christmas'),
-    makeTag('halloween'),
+    musicalGenreTags.metal,
+    holidayTags.christmas,
+    holidayTags.halloween,
   ],
 );
 export const monstermash = new Music(
@@ -664,9 +625,8 @@ export const monstermash = new Music(
   '/path/monstermash-bobbypickett.mp4',
   MediaType.Music,
   [
-    makeTag(MusicGenres.Pop),
-    makeTag(AgeGroups.AllAges, 'AgeGroup'),
-    makeTag('halloween'),
+    musicalGenreTags.pop,
+    holidayTags.halloween,
   ],
 );
 export const comeandgetyourlove = new Music(
@@ -677,10 +637,8 @@ export const comeandgetyourlove = new Music(
   '/path/comeandgetyourlove-redbone.mp4',
   MediaType.Music,
   [
-    makeTag(MusicGenres.Rock),
-    makeTag(AgeGroups.AllAges, 'AgeGroup'),
-    makeTag('guardiansofthegalaxy'),
-    makeTag('marvel'),
+    musicalGenreTags.rock,
+    specialtyTags.marvel,
   ],
 );
 export const ohhchild = new Music(
@@ -691,10 +649,8 @@ export const ohhchild = new Music(
   '/path/ohhchild-thefivestairsteps.mp4',
   MediaType.Music,
   [
-    makeTag(MusicGenres.RnB),
-    makeTag(AgeGroups.AllAges, 'AgeGroup'),
-    makeTag('guardiansofthegalaxy'),
-    makeTag('marvel'),
+    musicalGenreTags.rnb,
+    specialtyTags.marvel,
   ],
 );
 

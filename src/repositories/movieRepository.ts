@@ -151,6 +151,16 @@ export class MovieRepository {
     return result.count;
   }
 
+  // Find a random movie from the database
+  findRandomMovie(): Movie | null {
+    const stmt = this.db.prepare(`
+      SELECT * FROM movies ORDER BY RANDOM() LIMIT 1
+    `);
+    const row = stmt.get() as any;
+    if (!row) return null;
+    return this.mapRowToMovie(row);
+  }
+
   // Helper method to insert media tags
   private insertMediaTags(mediaItemId: string, tags: Tag[]): void {
     if (tags.length === 0) return;
