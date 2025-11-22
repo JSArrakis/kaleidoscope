@@ -1,0 +1,39 @@
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(2px);
+}
+
+.overlayParent {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(2px);
+}
+
+.modal {
+  background: linear-gradient(
+    0deg,
+    #1c272d -29.09%,
+    #202e36 81.77%,
+    #344651 129.35%
+  );
+  padding: 20px;
+  border-radius: 5px;
+  position: relative;
+  max-width: 500px;
+  width: 100%;
+}

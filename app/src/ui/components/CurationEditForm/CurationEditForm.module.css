@@ -1,0 +1,141 @@
+.curationEditContainer {
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+  background: #1c272d;
+  border-radius: 5px;
+  color: white;
+  justify-content: space-between;
+  box-sizing: border-box;
+  min-width: 680px;
+}
+
+.editModalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 5px;
+}
+
+.editModalCardTitle {
+  font-weight: bold;
+}
+
+.closeEdit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  background: linear-gradient(330deg, #8000ff, #ff00b3);
+  height: 24px;
+  width: 24px;
+  border-radius: 5px;
+}
+
+.closeEdit:hover {
+  background: deepskyblue;
+}
+
+.title {
+  margin-left: 5px;
+  margin-bottom: 7px;
+  font-weight: bold;
+}
+
+.titleInput,
+.itemSearch {
+  width: 50%;
+  height: 26px;
+  background: #2e3b44;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 0 5px;
+  margin-top: 7px;
+  margin-bottom: 7px;
+}
+
+.titleInput::placeholder,
+.itemSearch::placeholder {
+  color: white;
+  opacity: 1;
+  text-align: center;
+}
+
+.titleInput:focus,
+.itemSearch:focus {
+  outline: none;
+}
+
+.titleInput:focus::placeholder,
+.itemSearch:focus::placeholder {
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
+}
+
+.candidateMedia,
+.curationMedia {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+  background: #2e3b44;
+  width: 100%;
+  height: 150px;
+  border-radius: 5px;
+  overflow-y: auto;
+}
+
+.candidateMedia::-webkit-scrollbar,
+.curationMedia::-webkit-scrollbar {
+  width: 12px;
+}
+
+.candidateMedia::-webkit-scrollbar-track,
+.curationMedia::-webkit-scrollbar-track {
+  background: #2e3b44;
+  border-radius: 5px;
+}
+
+.candidateMedia::-webkit-scrollbar-thumb,
+.curationMedia::-webkit-scrollbar-thumb {
+  background: #5d00ff;
+  border-radius: 5px;
+}
+
+.candidateMedia::-webkit-scrollbar-thumb:hover,
+.curationMedia::-webkit-scrollbar-thumb:hover {
+  background: deepskyblue;
+}
+.controlsRow {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.saveButton {
+  background: linear-gradient(330deg, #8000ff, #ff00b3);
+  color: white;
+  font-weight: bold;
+  border: none;
+  border-radius: 5px;
+  padding: 4px 25px;
+  margin: 5px;
+  cursor: pointer;
+}
+
+.warningModal {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: linear-gradient(330deg, #8000ff, #ff00b3);
+  color: white;
+  padding: 20px;
+  border-radius: 10px;
+  font-weight: bold;
+  text-align: center;
+  z-index: 1000;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}

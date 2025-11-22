@@ -1,0 +1,189 @@
+.tagItem {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  background: linear-gradient(90deg, #c52afe, #8000ff);
+  margin: 3px;
+  border-radius: 5px;
+  box-sizing: border-box;
+  padding: 5px;
+  color: white;
+  overflow: hidden;
+  max-width: 100%;
+  height: 30px;
+}
+
+.confirmRemove,
+.closeRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  background: linear-gradient(330deg, #2ab7fe, #582afe);
+  /* background: linear-gradient(330deg, #ff9d00, #b0261c); */
+  height: 24px;
+  width: 24px;
+  border-radius: 5px;
+  margin: 0 5px;
+  margin-left: 0px;
+}
+
+.closeRow {
+  margin-right: 34px;
+}
+
+.confirmRemove {
+  background: linear-gradient(330deg, #fe542a, #fe2a71);
+  animation: oscillate 0.5s infinite alternate;
+  transition: background 0.1s ease-in-out;
+}
+
+@keyframes oscillate {
+  0% {
+    background: linear-gradient(330deg, #2ab7fe, #582afe);
+  }
+  10% {
+    background: linear-gradient(330deg, #55afff, #8511f0);
+  }
+  20% {
+    background: linear-gradient(330deg, #7da4ff, #a400e2);
+  }
+  30% {
+    background: linear-gradient(330deg, #a496ff, #ba00d0);
+  }
+  40% {
+    background: linear-gradient(330deg, #c685fb, #ca00be);
+  }
+  50% {
+    background: linear-gradient(330deg, #e472e5, #d700af);
+  }
+  60% {
+    background: linear-gradient(330deg, #fb5ec8, #e300a1);
+  }
+  70% {
+    background: linear-gradient(330deg, #ff4ca5, #ee0095);
+  }
+  80% {
+    background: linear-gradient(330deg, #ff4c81, #f80088);
+  }
+  90% {
+    background: linear-gradient(330deg, #ff4858, #fc007c);
+  }
+  100% {
+    background: linear-gradient(330deg, #fe542a, #fe2a71);
+  }
+}
+
+.undoRemove,
+.saveRow,
+.editRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  background: linear-gradient(330deg, #2ab7fe, #582afe);
+  /* background: linear-gradient(330deg, #ff9d00, #b0261c); */
+  height: 24px;
+  width: 24px;
+  border-radius: 5px;
+  margin: 0 5px;
+}
+
+.undoRemove {
+  margin-left: 0px;
+}
+
+.undoRemove:hover,
+.pinRow:hover,
+.saveRow:hover,
+.editRow:hover {
+  background: deepskyblue;
+}
+
+.closeRow:hover {
+  background: rgb(255, 42, 0);
+}
+
+.actionsRow {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-end;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+.removeRow {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+.itemContent {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  flex-grow: 1;
+  overflow: hidden;
+  white-space: nowrap; /* Prevent text from wrapping */
+  text-overflow: ellipsis; /* Add ellipsis if text overflows */
+  margin-right: 34px;
+}
+
+.itemTitle {
+  font-size: 1em;
+  font-weight: bold;
+  white-space: nowrap; /* Prevent text from wrapping */
+  overflow: hidden; /* Hide overflowing text */
+  text-overflow: ellipsis; /* Add ellipsis for overflowing text */
+  width: 100%; /* Ensure it takes up available space */
+}
+
+.titleInput {
+  background: #1c272d;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  width: 300px;
+  min-width: 300px;
+  max-width: 300px;
+  height: 20px;
+  padding: 3px;
+  text-align: center;
+}
+
+.titleInput::placeholder {
+  color: white;
+  opacity: 1;
+  text-align: center;
+}
+
+.itemTitle:hover {
+  animation: scroll 10s linear infinite;
+}
+
+@keyframes scroll {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+@keyframes flashRed {
+  0%,
+  100% {
+    background-color: #1c272d;
+  }
+  50% {
+    background-color: red;
+  }
+}
+
+.flashRed {
+  animation: flashRed 0.5s ease-in-out 2;
+}

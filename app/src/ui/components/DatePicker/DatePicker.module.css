@@ -1,0 +1,65 @@
+.datePickerContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px;
+  background: #1c272d;
+  border-radius: 5px;
+  color: white;
+  box-sizing: border-box;
+  width: 130px;
+}
+
+.arrowButton {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 5px;
+  transition: color 0.3s;
+}
+
+.arrowButton:hover {
+  color: #00bcd4;
+}
+
+.monthCarousel {
+  display: flex;
+  flex-direction: column;
+  overflow-y: hidden; /* Hide the scrollbar */
+  height: 250px; /* Show 5 items (5 * 50px) */
+  width: 100%;
+  position: relative;
+  scroll-behavior: smooth; /* Smooth scrolling */
+}
+
+.monthItem {
+  text-align: center;
+  height: 50px;
+  background: #1c272d;
+  transition: background 0.3s, opacity 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 1; /* Default visibility */
+}
+
+/* Apply specific visibility for each month */
+.monthItem:nth-child(1),
+.monthItem:nth-child(5) {
+  opacity: 0.1; /* 10% visibility */
+}
+
+.monthItem:nth-child(2),
+.monthItem:nth-child(4) {
+  opacity: 0.3; /* 30% visibility */
+}
+
+.monthItem:nth-child(3) {
+  opacity: 1; /* Fully visible */
+}
+
+.monthItem:hover {
+  background: #2a3942;
+}

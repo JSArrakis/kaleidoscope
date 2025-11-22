@@ -1,0 +1,35 @@
+{
+  "appId": "com.jsarrakis.kaleidoscope",
+  "productName": "Kaleidoscope",
+  "files": ["dist-electron", "dist-react", "dist-backend", "node_modules"],
+  "extraMetadata": {
+    "main": "dist-electron/main.js"
+  },
+  "extraResources": [
+    {
+      "from": "dist-backend",
+      "to": "backend",
+      "filter": ["!*.ts", "!*.map"]
+    },
+    {
+      "from": ".",
+      "to": ".",
+      "filter": ["config.json"]
+    }
+  ],
+  "icon": "./desktopIcon.png",
+  "mac": {
+    "target": "dmg"
+  },
+  "linux": {
+    "target": "AppImage",
+    "category": "Utility"
+  },
+  "win": {
+    "target": ["portable", "nsis"],
+    "certificateFile": null,
+    "certificatePassword": null,
+    "signingHashAlgorithms": ["sha256"],
+    "sign": null
+  }
+}
