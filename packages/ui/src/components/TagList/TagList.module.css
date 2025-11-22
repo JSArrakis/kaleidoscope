@@ -1,0 +1,144 @@
+.itemContainer {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+  width: 100%;
+  height: 100%;
+  align-items: stretch;
+  border-radius: 5px;
+}
+
+.mediaList {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+  background: linear-gradient(
+    200.96deg,
+    #090c0e -29.09%,
+    #1c272d 81.77%,
+    #202e36 129.35%
+  );
+  flex-grow: 1;
+  max-width: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  box-sizing: border-box;
+  border-radius: 5px;
+}
+
+.mediaList::-webkit-scrollbar {
+  width: 12px;
+}
+
+.mediaList::-webkit-scrollbar-track {
+  background: #121517;
+  border-radius: 5px;
+}
+
+.mediaList::-webkit-scrollbar-thumb {
+  background: #5d00ff;
+  border-radius: 5px;
+}
+
+.mediaList::-webkit-scrollbar-thumb:hover {
+  background: deepskyblue;
+}
+
+.searchContainer {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  align-items: center;
+  width: 100%;
+  padding: 5px;
+  box-sizing: border-box;
+}
+
+.addItem {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-self: center;
+  cursor: pointer;
+  background: linear-gradient(330deg, #bb00ff, #8000ff, #5d00ff);
+  height: 24px;
+  width: 24px;
+  border-radius: 5px;
+  margin-right: 10px;
+  margin-left: 6px;
+}
+
+.searchButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-self: center;
+  cursor: pointer;
+  background: linear-gradient(330deg, #ff00b3, #8000ff, #5d00ff);
+  height: 24px;
+  width: 24px;
+  border-radius: 5px;
+  margin-right: 10px;
+  margin-left: 5px;
+}
+
+.searchButton:hover {
+  background: deepskyblue;
+}
+
+.addItem:hover {
+  background: deepskyblue;
+}
+
+.itemHeader {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(90deg, #5500aa, #8000ff);
+  color: white;
+  border-radius: 5px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.itemSearch {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+  color: white;
+  border-radius: 5px;
+}
+
+.searchField {
+  margin-right: 2px;
+}
+
+.searchInput {
+  background: #1c272d;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  height: 20px;
+  width: 300px;
+  padding: 3px;
+  text-align: left;
+}
+
+.searchInput::placeholder {
+  color: white;
+  opacity: 1;
+  text-align: center;
+}
+
+.searchInput:focus {
+  outline: none;
+}
+
+.searchInput:focus::placeholder {
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
+}

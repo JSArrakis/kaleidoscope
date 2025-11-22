@@ -1,0 +1,9 @@
+{
+  "name": "@kaleidoscope/electron",
+  "version": "1.0.0",
+  "private": true,
+  "devDependencies": {
+    "@types/node": "^18.17.17",
+    "typescript": "~5.7.2"
+  }
+}

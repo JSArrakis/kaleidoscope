@@ -1,0 +1,416 @@
+.editEpisodeModal {
+  top: 50%;
+  left: 50%;
+  background: #1c272d;
+  width: 500px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+}
+
+.editModalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 5px;
+}
+
+.editModalCardTitle {
+  font-weight: bold;
+}
+
+.closeEdit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  background: linear-gradient(330deg, #8000ff, #ff00b3);
+  height: 24px;
+  width: 24px;
+  border-radius: 5px;
+}
+
+.closeEdit:hover {
+  background: red;
+}
+
+.fileContainer {
+  display: flex;
+  flex-direction: row;
+}
+
+.fileNameContainer {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  flex-grow: 1;
+  overflow: hidden;
+  margin-left: 5px;
+  margin-bottom: 7px;
+}
+
+.fileNameContainer::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 50px;
+  height: 100%;
+  background: linear-gradient(to left, #1c272d, transparent);
+  pointer-events: none;
+  z-index: 999;
+}
+
+.fileName {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  white-space: nowrap;
+  box-sizing: border-box;
+  font-size: 1em;
+}
+
+.fileName:hover {
+  animation: scroll 10s linear infinite;
+}
+
+.fileLabel {
+  width: 50px;
+  min-width: 50px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.editModalTitle {
+  margin-bottom: 7px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.editInputField {
+  width: 100%;
+  height: 25px;
+  background: #2e3b44;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 0 5px;
+}
+
+.editInputField:focus {
+  outline: none;
+}
+
+.editInputField:focus::placeholder {
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
+}
+
+.editInputField::placeholder {
+  text-align: center;
+}
+
+.orderContainer {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 7px;
+}
+
+.sequenceContainer,
+.episodeContainer,
+.seasonContainer {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sequenceContainer,
+.episodeContainer {
+  margin-left: 10px;
+}
+
+.seasonLabel,
+.episodeLabel,
+.sequenceLabel {
+  font-size: 14px;
+  font-weight: 600;
+  margin-right: 5px;
+}
+
+.sequenceInput,
+.episodeInput,
+.seasonInput {
+  width: 40px;
+  height: 25px;
+  border-radius: 5px;
+  border: none;
+  background: #2e3b44;
+  color: white;
+  font-size: 12px;
+  font-weight: bold;
+  text-align: center;
+}
+
+.seasonInput {
+  width: 18px;
+}
+
+.episodeInput {
+  width: 25px;
+  margin-right: 5px;
+}
+
+.sequenceInput {
+  width: 40px;
+}
+
+.addEpisode,
+.removeEpisode {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  background: linear-gradient(330deg, #8000ff, #ff00b3);
+  height: 25px;
+  width: 25px;
+  border-radius: 5px;
+}
+
+.addEpisode:hover {
+  background: deepskyblue;
+}
+
+.removeEpisode:hover {
+  background: red;
+}
+
+.tagListHeader {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.dropdown {
+  width: 120px;
+  height: 25px;
+  background: #2e3b44;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  margin-right: 5px;
+}
+
+.tagListSearchInput {
+  width: 100%;
+  height: 25px;
+  background: #2e3b44;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 0 5px;
+}
+
+.tagListSearchInput::placeholder {
+  text-align: center;
+}
+
+.sequenceInput:focus,
+.episodeInput:focus,
+.seasonInput:focus,
+.tagListSearchInput:focus {
+  outline: none;
+}
+
+.tagListContainer {
+  margin-top: 7px;
+  display: flex;
+  flex-direction: row;
+}
+
+.tagList {
+  width: 200px;
+  min-width: 200px;
+  height: 120px;
+  margin-right: 7px;
+  background: #2e3b44;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 5px;
+  overflow-y: auto;
+}
+
+.tagList:focus {
+  outline: none;
+  border: none;
+}
+
+.tagList::-webkit-scrollbar {
+  width: 12px;
+}
+
+.tagList::-webkit-scrollbar-track {
+  background: #2e3b44;
+  border-radius: 5px;
+}
+
+.tagList::-webkit-scrollbar-thumb {
+  background: #5d00ff;
+  border-radius: 5px;
+}
+
+.tagList::-webkit-scrollbar-thumb:hover {
+  background: deepskyblue;
+}
+
+.addChipButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 110px;
+  width: 32px;
+  min-width: 32px;
+  margin-right: 7px;
+  cursor: pointer;
+  background: linear-gradient(330deg, #8000ff, #aa00aa);
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 5px;
+  overflow-y: auto;
+}
+
+.addChipButton:hover {
+  background: deepskyblue;
+}
+
+.tagChipList {
+  height: 110px;
+  width: 100%;
+  background: #2e3b44;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 5px;
+  overflow-y: auto;
+}
+
+.tagChip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #5d00ff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 2px;
+  padding-left: 10px;
+  margin: 2px;
+  font-size: 0.85em;
+}
+
+.tagChip .closeButton {
+  margin-left: 2px;
+  cursor: pointer;
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.3em;
+}
+
+.mediaIdContainer {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  flex-grow: 1;
+  margin-right: 10px;
+  overflow: hidden;
+}
+
+.idLabel {
+  width: 25px;
+  min-width: 25px;
+  color: white;
+  border: none;
+  text-align: center;
+}
+.footer {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  margin-top: 7px;
+  justify-content: space-between;
+}
+
+.idValueContainer {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  flex-grow: 1;
+  overflow: hidden;
+  margin-left: 5px;
+}
+
+.idValueContainer::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 50px;
+  height: 100%;
+  background: linear-gradient(to left, #1c272d, transparent);
+  pointer-events: none;
+  z-index: 999;
+}
+
+.idValue {
+  font-size: 1em;
+  color: white;
+  white-space: nowrap;
+  margin-left: 5px;
+  display: inline-block;
+}
+
+.idValue:hover {
+  animation: scroll 10s linear infinite;
+}
+
+.saveButton {
+  flex-shrink: 0;
+  background: linear-gradient(330deg, #8000ff, #aa00aa);
+  color: white;
+  font-weight: bold;
+  border: none;
+  border-radius: 5px;
+  margin: 0;
+  width: 80px;
+  height: 25px;
+  cursor: pointer;
+  text-align: center;
+  align-content: center;
+  font-size: 14px;
+}
+
+.saveButton:hover {
+  background: deepskyblue;
+}
+
+@keyframes scroll {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}

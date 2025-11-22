@@ -1,12 +1,20 @@
 {
-  "name": "streamassistant",
+  "name": "kaleidoscope",
   "version": "1.0.0",
-  "description": "Stream creation and shuffler assistant",
-  "main": "src/app.ts",
+  "description": "Kaleidoscope - Media streaming and programming assistant",
+  "private": true,
+  "workspaces": [
+    "packages/*",
+    "app"
+  ],
   "scripts": {
+    "dev": "cd app && npm run dev",
+    "build": "cd app && npm run build",
+    "dist:win": "cd app && npm run dist:win",
+    "dist:mac": "cd app && npm run dist:mac",
+    "dist:linux": "cd app && npm run dist:linux",
     "test": "jest",
     "test:verbose": "jest --verbose --runInBand --silent=false",
-    "start": "ts-node-dev --respawn --transpile-only src/app.ts",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },
