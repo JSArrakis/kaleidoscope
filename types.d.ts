@@ -1,17 +1,45 @@
-type PrismCurationObj = {
-  mediaItemId: string;
-  title: string;
-  description: string;
-  items: PrismCurationItem[];
-};
+// ============================================================================
+// ENUMS
+// ============================================================================
 
-type PrismCurationItem = {
+enum StreamType {
+  Cont = "Cont", // Continuous 24/7 stream
+  Block = "Block", // Scheduled programming blocks
+  Adhoc = "Adhoc", // One-off user-configured streams
+}
+
+// ============================================================================
+// TAG AND RELATED TYPES
+// ============================================================================
+
+type Tag = {
+  tagId: string;
+  name: string;
+  type:
+    | "Aesthetic"
+    | "Era"
+    | "Genre"
+    | "Specialty"
+    | "Holiday"
+    | "AgeGroup"
+    | "MusicGenre";
+  seasonStartDate?: string;
+  seasonEndDate?: string;
+  explicitlyHoliday?: boolean;
   sequence?: number;
-  mediaItemTitle: string;
-  mediaItemId: string;
+  holidayDates?: string[];
+  exclusionTagIds?: string[];
 };
 
-// New backend-integrated media types
+type Subgenre = {
+  tagId: string;
+  name: string;
+};
+
+// ============================================================================
+// MEDIA TYPES (Repository-based interfaces)
+// ============================================================================
+
 type Movie = {
   mediaItemId: string;
   title: string;
@@ -19,7 +47,38 @@ type Movie = {
   imdb?: string;
   path: string;
   duration?: number;
+  durationLimit?: number;
   tags: Tag[];
+  createdAt?: string;
+  updatedAt?: string;
+};
+
+type Episode = {
+  mediaItemId: string;
+  showItemId: string;
+  season?: string;
+  episode?: string;
+  episodeNumber?: number;
+  title: string;
+  path: string;
+  duration?: number;
+  durationLimit?: number;
+  overDuration?: boolean;
+  tags: Tag[];
+  createdAt?: string;
+  updatedAt?: string;
+};
+
+type Show = {
+  mediaItemId: string;
+  title: string;
+  alias?: string;
+  imdb?: string;
+  durationLimit?: number;
+  firstEpisodeOverDuration?: boolean;
+  episodeCount: number;
+  tags: Tag[];
+  episodes: Episode[];
   createdAt?: string;
   updatedAt?: string;
 };
@@ -75,34 +134,74 @@ type Bumper = {
   updatedAt?: string;
 };
 
-type Show = {
-  mediaItemId: string;
+// ============================================================================
+// COLLECTION TYPES
+// ============================================================================
+
+type Collection = {
+  collectionId: string;
   title: string;
-  alias?: string;
-  imdb?: string;
-  durationLimit?: number;
-  firstEpisodeOverDuration?: boolean;
-  episodeCount: number;
-  tags: Tag[];
-  episodes: Episode[];
+  description?: string;
+  itemCount: number;
+  items: CollectionItem[];
   createdAt?: string;
   updatedAt?: string;
 };
 
-type Episode = {
+type CollectionItem = {
+  collectionItemId: string;
+  collectionId: string;
   mediaItemId: string;
-  showItemId: string;
-  season?: string;
-  episode?: string;
-  episodeNumber?: number;
-  title: string;
-  path: string;
+  sequence: number;
+  title?: string;
+  path?: string;
   duration?: number;
-  durationLimit?: number;
-  overDuration?: boolean;
-  tags: Tag[];
+  tags?: Tag[];
   createdAt?: string;
   updatedAt?: string;
+};
+
+// ============================================================================
+// MOSAIC TYPES
+// ============================================================================
+
+type Mosaic = {
+  mosaicId: string;
+  facetId: string;
+  musicalGenres: string[];
+  name?: string;
+  description?: string;
+  createdAt?: string;
+  updatedAt?: string;
+};
+
+// Interface for mosaic selection options
+interface MosaicSelectionOptions {
+  maxCandidates?: number; // Maximum number of mosaics to consider
+  preferredGenres?: string[]; // Preferred musical genres to bias selection toward
+  excludeGenres?: string[]; // Musical genres to exclude
+  requireAllGenres?: boolean; // Whether selected mosaic must contain ALL preferred genres
+}
+
+// Result of mosaic selection with reasoning
+interface MosaicSelectionResult {
+  mosaic: Mosaic | null;
+  selectedGenres: string[]; // Which musical genres were ultimately selected
+  selectionReason: string; // Why this mosaic was chosen
+  candidateCount: number; // How many mosaics were considered
+}
+
+type PrismCurationObj = {
+  mediaItemId: string;
+  title: string;
+  description: string;
+  items: PrismCurationItem[];
+};
+
+type PrismCurationItem = {
+  sequence?: number;
+  mediaItemTitle: string;
+  mediaItemId: string;
 };
 
 type PrismCurationReference = {
@@ -110,6 +209,31 @@ type PrismCurationReference = {
   title: string;
   sequence: number;
 };
+
+// ============================================================================
+// MEDIA BLOCK AND STREAM TYPES
+// ============================================================================
+
+interface MediaBlockData {
+  buffer: any[]; // Array of buffer/filler media
+  mainBlock?: Movie | Episode; // Primary media content
+  startTime: number; // Unix timestamp when block starts
+}
+
+interface IStreamRequest {
+  Title?: string;
+  Env?: string;
+  Password?: string;
+  Tags?: string[] | any[];
+  MultiTags?: string[] | any[];
+  Movies?: string[];
+  EndTime?: number;
+  StartTime?: number;
+}
+
+// ============================================================================
+// SEGMENTED TAGS
+// ============================================================================
 
 type PrismSegmentedTags = {
   EraTags: Tag[];
@@ -120,29 +244,9 @@ type PrismSegmentedTags = {
   HolidayTags: Tag[];
 };
 
-type Tag = {
-  tagId: string;
-  name: string;
-  type:
-    | "Aesthetic"
-    | "Era"
-    | "Genre"
-    | "Specialty"
-    | "Holiday"
-    | "AgeGroup"
-    | "MusicGenre";
-  seasonStartDate?: string;
-  seasonEndDate?: string;
-  explicitlyHoliday?: boolean;
-  sequence?: number;
-  holidayDates?: string[];
-  exclusionTagIds?: string[];
-};
-
-type Subgenre = {
-  tagId: string;
-  name: string;
-};
+// ============================================================================
+// IPC EVENT PAYLOAD MAPPINGS
+// ============================================================================
 
 type EventPayloadMapping = {
   openFileDialog: Promise<string[]>;

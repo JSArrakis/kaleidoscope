@@ -1,0 +1,60 @@
+import { Tag, TagType } from "../../../types/index.js";
+
+/**
+ * Age Group test tags for Kaleidoscope testing
+ * Based on docs/taxonomies/age-groups/index.md
+ *
+ * Sequence: Kids (1), Family (2), Young Adult (3), Mature (4)
+ */
+
+export const ageGroupTags = {
+  kids: new Tag(
+    "kids",
+    "Kids",
+    TagType.AgeGroup,
+    undefined, // holidayDates
+    undefined, // exclusionGenres
+    undefined, // seasonStartDate
+    undefined, // seasonEndDate
+    undefined, // explicitlyHoliday
+    1 // sequence
+  ),
+
+  family: new Tag(
+    "family",
+    "Family",
+    TagType.AgeGroup,
+    undefined, // holidayDates
+    undefined, // exclusionGenres
+    undefined, // seasonStartDate
+    undefined, // seasonEndDate
+    undefined, // explicitlyHoliday
+    2 // sequence
+  ),
+
+  youngAdult: new Tag(
+    "young-adult",
+    "Young Adult",
+    TagType.AgeGroup,
+    undefined, // holidayDates
+    undefined, // exclusionGenres
+    undefined, // seasonStartDate
+    undefined, // seasonEndDate
+    undefined, // explicitlyHoliday
+    3 // sequence
+  ),
+
+  mature: new Tag(
+    "mature",
+    "Mature",
+    TagType.AgeGroup,
+    undefined, // holidayDates
+    undefined, // exclusionGenres
+    undefined, // seasonStartDate
+    undefined, // seasonEndDate
+    undefined, // explicitlyHoliday
+    4 // sequence
+  ),
+};
+
+export const ageGroupTagsList = Object.values(ageGroupTags);

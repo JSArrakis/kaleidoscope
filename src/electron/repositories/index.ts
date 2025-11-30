@@ -46,6 +46,11 @@ export {
   type Facet,
 } from "./facetRepository.js";
 export {
+  MosaicRepository,
+  mosaicRepository,
+  type Mosaic,
+} from "./mosaicRepository.js";
+export {
   CollectionRepository,
   collectionRepository,
   type Collection,
