@@ -1,0 +1,38 @@
+.button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: default;
+  transition: background-color 0.3s ease;
+}
+
+.button:hover {
+  background-color: #ddd;
+}
+
+.blueButton {
+  background-color: blue;
+  color: white;
+}
+
+.blueButton:hover {
+  background-color: darkblue;
+}
+
+.lightBlueButton {
+  background-color: lightblue;
+  color: black;
+}
+
+.lightBlueButton:hover {
+  background-color: deepskyblue;
+}
+
+.greenButton {
+  background-color: green;
+  color: white;
+}
+
+.greenButton:hover {
+  background-color: darkgreen;
+}

@@ -1,0 +1,41 @@
+.screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex-grow: 1;
+  background: linear-gradient(
+    200.96deg,
+    #fedc2a -29.09%,
+    #dd5789 51.77%,
+    #7a2c9e 129.35%
+  );
+  box-sizing: border-box;
+}
+
+.logo {
+  width: 256px;
+  height: 256px;
+}
+
+.loaderIconContainer {
+  flex-direction: row;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+.iconContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 5px;
+  margin-right: 5px;
+  opacity: 0.3;
+  transition: opacity 1s ease-in-out;
+}
+
+.loadedIconContainer {
+  opacity: 1;
+}

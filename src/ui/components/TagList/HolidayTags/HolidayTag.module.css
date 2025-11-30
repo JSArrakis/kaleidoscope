@@ -1,0 +1,321 @@
+.mediaItem {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  width: calc(100% - 6px);
+  background: linear-gradient(90deg, #c52afe, #8000ff);
+  margin: 3px;
+  height: 34px;
+  min-height: 34px;
+  max-height: 34px;
+  margin-bottom: 0px;
+  border-radius: 5px;
+  box-sizing: border-box;
+  padding: 5px;
+  color: white;
+  overflow: hidden;
+  justify-content: space-between;
+}
+
+.mainContainer {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.secondaryContainer {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  margin-left: 13px;
+}
+
+.confirmRemove,
+.closeRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  background: linear-gradient(330deg, #2ab7fe, #582afe);
+  height: 24px;
+  width: 24px;
+  border-radius: 5px;
+  margin: 0 5px;
+  margin-left: 0px;
+}
+
+.confirmRemove {
+  background: linear-gradient(330deg, #fe542a, #fe2a71);
+  animation: oscillate 0.5s infinite alternate;
+  transition: background 0.1s ease-in-out;
+}
+
+@keyframes oscillate {
+  0% {
+    background: linear-gradient(330deg, #2ab7fe, #582afe);
+  }
+  10% {
+    background: linear-gradient(330deg, #55afff, #8511f0);
+  }
+  20% {
+    background: linear-gradient(330deg, #7da4ff, #a400e2);
+  }
+  30% {
+    background: linear-gradient(330deg, #a496ff, #ba00d0);
+  }
+  40% {
+    background: linear-gradient(330deg, #c685fb, #ca00be);
+  }
+  50% {
+    background: linear-gradient(330deg, #e472e5, #d700af);
+  }
+  60% {
+    background: linear-gradient(330deg, #fb5ec8, #e300a1);
+  }
+  70% {
+    background: linear-gradient(330deg, #ff4ca5, #ee0095);
+  }
+  80% {
+    background: linear-gradient(330deg, #ff4c81, #f80088);
+  }
+  90% {
+    background: linear-gradient(330deg, #ff4858, #fc007c);
+  }
+  100% {
+    background: linear-gradient(330deg, #fe542a, #fe2a71);
+  }
+}
+
+.undoRemove,
+.saveRow,
+.editRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  background: linear-gradient(330deg, #2ab7fe, #582afe);
+  height: 24px;
+  width: 24px;
+  border-radius: 5px;
+  margin: 0 5px;
+}
+
+.undoRemove {
+  margin-left: 0px;
+}
+
+.date:hover,
+.undoRemove:hover,
+.pinRow:hover,
+.saveRow:hover,
+.editRow:hover {
+  background: deepskyblue;
+}
+
+.closeRow:hover {
+  background: rgb(255, 42, 0);
+}
+
+.actionsRow {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-end;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+.removeRow {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+.itemContent {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  flex-grow: 1;
+  overflow: hidden;
+}
+
+.titleInputContainer,
+.itemTitleContainer {
+  position: relative;
+  width: 325px;
+  min-width: 325px;
+  max-width: 325px;
+  overflow: hidden;
+}
+
+.itemTitle {
+  font-size: 1em;
+  font-weight: bold;
+  white-space: nowrap;
+  padding-left: 3px;
+  padding-right: 3px;
+}
+
+.itemTitleContainer::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 50px;
+  height: 100%;
+  background: linear-gradient(to left, #a92afe, transparent);
+  pointer-events: none;
+}
+
+.titleInput {
+  background: #1c272d;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  width: 98%;
+  height: 20px;
+  padding: 3px;
+  text-align: left;
+}
+
+.titleInput::placeholder {
+  color: white;
+  opacity: 1;
+  text-align: center;
+}
+
+.titleInput:focus {
+  outline: none;
+}
+
+.titleInput:focus::placeholder {
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
+}
+
+.itemTitle:hover {
+  animation: scroll 10s linear infinite;
+}
+
+@keyframes scroll {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+.itemPathContainer {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  flex-grow: 1;
+  overflow: hidden;
+  margin-left: 5px;
+}
+
+.itemPath {
+  font-size: 1em;
+  font-weight: bold;
+  color: white;
+  white-space: nowrap;
+  margin-left: 5px;
+  display: inline-block;
+  transition: transform 10s linear;
+}
+
+.itemPathContainer:hover .itemPath {
+  transform: translateX(-100%);
+}
+
+.itemPathContainer::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 50px;
+  height: 100%;
+  background: linear-gradient(to left, #8000ff, transparent);
+  pointer-events: none;
+}
+
+@keyframes flashRed {
+  0%,
+  100% {
+    background-color: #1c272d;
+  }
+  50% {
+    background-color: red;
+  }
+}
+
+.flashRed {
+  animation: flashRed 0.5s ease-in-out 2;
+}
+
+.sequenceContainer {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  box-sizing: border-box;
+  margin-left: 5px;
+}
+
+.date {
+  display: flex;
+  justify-content: center;
+  height: 26px;
+  width: 70px;
+  background: #1c272d;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 0;
+  text-align: center;
+  align-items: center;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.sequenceInput::placeholder {
+  color: white;
+  opacity: 1;
+  text-align: center;
+}
+
+.sequenceInput:focus {
+  outline: none;
+}
+
+.sequenceInput:focus::placeholder {
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
+}
+
+.dateLabel {
+  font-size: 14px;
+  font-weight: bold;
+  color: white;
+  margin: 0 10px 0 0;
+}
+
+.editModalOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(2px);
+  z-index: 1000;
+}

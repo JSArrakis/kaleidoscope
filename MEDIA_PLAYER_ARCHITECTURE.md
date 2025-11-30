@@ -17,7 +17,7 @@ This architecture provides a modularized, abstraction-based approach to media st
 │  - Creates & manages player instances                        │
 │  - Handles backend switching                                 │
 │  - Provides singleton access                                 │
-└──────────────────────────┬──────────────────────────────────┘
+└──────────────────────────┬───────────────────────────────────┘
                            │ Creates
                    ┌───────┴────────┐
                    ▼                ▼

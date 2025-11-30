@@ -1,0 +1,255 @@
+.episode {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  width: calc(100% - 6px);
+  height: 26px;
+  background: linear-gradient(90deg, #8800ff, #e22afe);
+  margin: 3px;
+  margin-bottom: 0px;
+  border-radius: 5px;
+  box-sizing: border-box;
+  color: white;
+  padding: 0 3px;
+  flex: 1;
+}
+
+.closeRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  background: linear-gradient(330deg, #2ab7fe, #582afe);
+  height: 18px;
+  width: 18px;
+  border-radius: 5px;
+  margin: 0 5px;
+  margin-left: 0px;
+}
+
+.closeRow:hover {
+  background: rgb(255, 42, 0);
+}
+
+.collectionList.has-scrollbar .collectionListItem {
+  width: calc(100% - 12px);
+}
+
+.dataContainer {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  flex-grow: 1;
+  flex-shrink: 1;
+  width: 100%;
+  overflow: hidden;
+}
+
+.titleContainer {
+  display: flex;
+  position: relative;
+  overflow: hidden;
+  margin-right: 5px;
+  flex: 1;
+}
+
+.titleContainer::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 50px;
+  height: 100%;
+  background: linear-gradient(to left, #a92afe, transparent);
+  pointer-events: none;
+}
+
+.titleContainer:hover .title {
+  transform: translateX(-100%);
+}
+
+.title {
+  white-space: nowrap;
+  padding-left: 3px;
+  padding-right: 3px;
+  color: white;
+  font-size: 14px;
+  font-weight: bold;
+  transition: transform 10s linear;
+}
+
+.itemPathContainer {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  flex-grow: 1;
+  overflow: hidden;
+  flex: 1;
+}
+
+.itemPath {
+  font-size: 1em;
+  font-weight: bold;
+  color: white;
+  white-space: nowrap;
+  margin-left: 5px;
+  display: inline-block;
+  font-size: 14px;
+  font-weight: bold;
+  transition: transform 10s linear;
+}
+
+.itemPathContainer:hover .itemPath {
+  transform: translateX(-100%);
+}
+
+.itemPathContainer::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 50px;
+  height: 100%;
+  background: linear-gradient(to left, #e22afe, transparent);
+  pointer-events: none;
+}
+
+.sequenceContainer {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  width: 95px;
+  min-width: 95px;
+  margin-left: 5px;
+}
+
+.editCollectionRowButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  height: 20px;
+  width: 20px;
+  border-radius: 5px;
+}
+
+.saveCollectionRowButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  height: 20px;
+  width: 20px;
+  border-radius: 5px;
+}
+
+.removeCollectionRowButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  height: 20px;
+  width: 20px;
+  border-radius: 5px;
+  margin-right: 5px;
+}
+
+.editCollectionRowButton:hover,
+.removeCollectionRowButton:hover,
+.saveCollectionRowButton:hover {
+  background: deepskyblue;
+}
+
+.orderContainer {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: left;
+  width: 160px;
+  min-width: 160px;
+  max-width: 160px;
+  height: 100%;
+  font-size: 13px;
+  font-weight: bold;
+}
+
+.orderLabel {
+  margin-right: 3px;
+  text-align: center;
+}
+
+.seasonNumber {
+  margin-right: 6px;
+  text-align: center;
+  min-width: 15px;
+}
+
+.episdoeNumber {
+  margin-right: 6px;
+  text-align: center;
+  min-width: 20px;
+}
+
+.seperator {
+  width: 2px;
+  height: 50%;
+  background-color: white;
+  margin-right: 6px;
+}
+
+.sequenceNumber {
+  width: 40px;
+  min-width: 30px;
+  margin-right: 5px;
+  color: white;
+  font-size: 13px;
+  font-weight: bold;
+}
+
+.sequenceLabel {
+  width: auto;
+  margin-right: 5px;
+  color: white;
+  font-size: 13px;
+  font-weight: bold;
+}
+
+.sequenceInput {
+  width: 40px;
+  height: 15px;
+  border-radius: 5px;
+  border: none;
+  background: #1c272d;
+  color: white;
+  font-size: 12px;
+  font-weight: bold;
+  text-align: center;
+  margin-right: 5px;
+}
+
+.sequenceInput:focus {
+  outline: none;
+}
+
+.hidePlaceholder::placeholder {
+  color: transparent;
+}
+
+.editRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  background: linear-gradient(330deg, #2ab7fe, #582afe);
+  height: 18px;
+  width: 18px;
+  border-radius: 5px;
+  margin-right: 5px;
+}
+
+.editRow:hover {
+  background: deepskyblue;
+}

@@ -1,0 +1,690 @@
+.simpleItemEditContainer {
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+  background: #1c272d;
+  border-radius: 5px;
+  color: white;
+  justify-content: space-between;
+  box-sizing: border-box;
+  min-width: 680px;
+}
+
+.editModalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 5px;
+}
+
+.editModalCardTitle {
+  font-weight: bold;
+}
+
+.closeEdit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  background: linear-gradient(330deg, #8000ff, #ff00b3);
+  height: 24px;
+  width: 24px;
+  border-radius: 5px;
+}
+
+.closeEdit:hover {
+  background: deepskyblue;
+}
+
+.fileNameContainer {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  flex-grow: 1;
+  overflow: hidden;
+  margin-left: 5px;
+}
+
+.fileName {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  white-space: nowrap;
+  box-sizing: border-box;
+}
+
+.fileName:hover {
+  animation: scroll 10s linear infinite;
+}
+
+.fileNameContainer::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 50px;
+  height: 100%;
+  background: linear-gradient(to left, #1c272d, transparent);
+  pointer-events: none;
+}
+
+.fileLabel {
+  width: 50px;
+  min-width: 50px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.titleContainer {
+  height: 25px;
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  flex-grow: 1;
+  overflow: hidden;
+}
+
+.editInputField {
+  width: 100%;
+  height: 25px;
+  background: #2e3b44;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 0 5px;
+}
+
+.editInputField:focus {
+  outline: none;
+}
+
+.editInputField:focus::placeholder {
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
+}
+
+.editInputField::placeholder {
+  text-align: left;
+}
+
+.fileContainer {
+  display: flex;
+  flex-direction: row;
+}
+
+.topContainer {
+  display: flex;
+  flex-direction: row;
+}
+
+.editModalTitle,
+.editModalAlias,
+.editModalImdb {
+  margin-top: 7px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.mediaLabels {
+  width: calc(48% - 4px);
+  min-width: 250px;
+  display: flex;
+  flex-direction: column;
+  margin-right: 4px;
+}
+
+.curationContainer {
+  flex-grow: 1;
+  flex-shrink: 1;
+  display: flex;
+  flex-direction: row;
+  margin-left: 3px;
+  box-sizing: border-box;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.curationLabel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 80px;
+  width: 25px;
+  min-width: 25px;
+  margin-right: 5px;
+  margin-top: 7px;
+  background: linear-gradient(330deg, #793f79, #583f79);
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 5px;
+  overflow-y: auto;
+  transform: rotate(180deg);
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  user-select: none;
+}
+
+.collectionSavedSwitch:hover {
+  background: deepskyblue;
+}
+
+.folderSymbol {
+  transform: rotate(90deg);
+  font-size: 5px;
+}
+
+.collectionLabel {
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.blockLabel {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.collectionSearchSwitch {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 84px;
+  width: 28px;
+  min-width: 25px;
+  margin-right: 5px;
+  margin-top: 7px;
+  cursor: pointer;
+  background: linear-gradient(330deg, #8800ff, #e22afe);
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 5px;
+  overflow-y: auto;
+  transform: rotate(180deg);
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+}
+
+.collectionSearchSwitch:hover {
+  background: deepskyblue;
+}
+
+.searchSymbol {
+  transform: rotate(90deg);
+}
+
+.collectionSearchSwitchLabel {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.curationListContainer {
+  display: flex;
+  flex-direction: column;
+  width: calc(100% - 23px);
+}
+
+.collectionHeader {
+  margin-top: 7px;
+  display: flex;
+  flex-direction: row;
+}
+
+.collectionLabel {
+  padding-right: 5px;
+}
+
+.collectionSearch {
+  width: 100%;
+  height: 18px;
+  background: #2e3b44;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 0 5px;
+}
+
+.curationList {
+  margin-top: 7px;
+  height: 89px;
+  width: 100%;
+  background: #2e3b44;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 5px;
+  overflow-y: auto;
+  box-sizing: border-box;
+  padding: 2px;
+}
+
+.curationList::-webkit-scrollbar {
+  width: 12px;
+}
+
+.curationList::-webkit-scrollbar-track {
+  background: #2e3b44;
+  border-radius: 5px;
+}
+
+.curationList::-webkit-scrollbar-thumb {
+  background: #5d00ff;
+  border-radius: 5px;
+}
+
+.curationList::-webkit-scrollbar-thumb:hover {
+  background: deepskyblue;
+}
+
+.bottomContainer {
+  display: flex;
+  flex-direction: column;
+  margin-top: 7px;
+}
+
+.tagListHeader {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.tagListContainer {
+  margin-top: 7px;
+  display: flex;
+  flex-direction: row;
+}
+
+.tagsLabel {
+  width: 50px;
+  min-width: 50px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.dropdown {
+  width: 120px;
+  height: 25px;
+  background: #2e3b44;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  margin-right: 5px;
+}
+
+.tagListSearchInput {
+  width: 300px;
+  height: 25px;
+  background: #2e3b44;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 0 5px;
+}
+
+.tagListSearchInput::placeholder {
+  text-align: left;
+}
+
+.tagList {
+  width: 200px;
+  min-width: 200px;
+  height: 120px;
+  margin-right: 7px;
+  background: #2e3b44;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 5px;
+  overflow-y: auto;
+}
+
+.addChipButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 110px;
+  width: 32px;
+  min-width: 32px;
+  margin-right: 7px;
+  cursor: pointer;
+  background: linear-gradient(330deg, #8000ff, #aa00aa);
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 5px;
+  overflow-y: auto;
+}
+
+.addChipButton:hover {
+  background: deepskyblue;
+}
+
+.tagChipList {
+  height: 110px;
+  width: 100%;
+  background: #2e3b44;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 5px;
+  overflow-y: auto;
+}
+
+.tagChip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #5d00ff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 2px;
+  padding-left: 10px;
+  margin: 2px;
+  font-size: 0.85em;
+}
+
+.tagChip .closeButton {
+  margin-left: 2px;
+  cursor: pointer;
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.3em;
+}
+
+.tagList:focus {
+  outline: none;
+  border: none;
+}
+
+.tagList::-webkit-scrollbar {
+  width: 12px;
+}
+
+.tagList::-webkit-scrollbar-track {
+  background: #2e3b44;
+  border-radius: 5px;
+}
+
+.tagList::-webkit-scrollbar-thumb {
+  background: #5d00ff;
+  border-radius: 5px;
+}
+
+.tagList::-webkit-scrollbar-thumb:hover {
+  background: deepskyblue;
+}
+
+.editModalId {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding-top: 10px;
+  box-sizing: border-box;
+}
+
+.mediaIdContainer {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  flex-grow: 1;
+  margin-right: 10px;
+  overflow: hidden;
+}
+
+.idLabel {
+  width: 25px;
+  min-width: 25px;
+  color: white;
+  border: none;
+  text-align: center;
+}
+
+.idValue {
+  font-size: 1em;
+  color: white;
+  white-space: nowrap;
+  margin-left: 5px;
+  display: inline-block;
+}
+
+.idValue:hover {
+  animation: scroll 10s linear infinite;
+}
+
+.idValueContainer {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  flex-grow: 1;
+  overflow: hidden;
+  margin-left: 5px;
+}
+
+.titleContainer::after,
+.idValueContainer::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 50px;
+  height: 100%;
+  background: linear-gradient(to left, #1c272d, transparent);
+  pointer-events: none;
+  z-index: 999;
+}
+
+.collectionSearch:focus,
+.editInputField:focus,
+.dropdown:focus,
+.tagListSearchInput:focus {
+  outline: none;
+}
+
+.hidePlaceholder::placeholder {
+  color: transparent;
+}
+
+.toggleButton,
+.saveButton {
+  flex-shrink: 0;
+  background: linear-gradient(330deg, #8000ff, #aa00aa);
+  color: white;
+  font-weight: bold;
+  border: none;
+  border-radius: 5px;
+  margin: 0;
+  width: 80px;
+  height: 25px;
+  cursor: pointer;
+  text-align: center;
+  align-content: center;
+  font-size: 14px;
+}
+
+.toggleButton {
+  width: 100px;
+  margin-right: 7px;
+}
+
+.toggleButton:hover,
+.saveButton:hover {
+  background: deepskyblue;
+}
+
+.disabledButton {
+  flex-shrink: 0;
+  background: linear-gradient(330deg, #793f79, #583f79);
+  color: white;
+  font-weight: bold;
+  border: none;
+  border-radius: 5px;
+  margin-right: 7px;
+  width: 100px;
+  height: 25px;
+  text-align: center;
+  align-content: center;
+  font-size: 14px;
+}
+
+@keyframes scroll {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+@keyframes flashRed {
+  0%,
+  100% {
+    background-color: #1c272d;
+  }
+  50% {
+    background-color: red;
+  }
+}
+
+.flashRed {
+  animation: flashRed 0.5s ease-in-out 2;
+}
+
+.episodesContainer {
+  display: flex;
+  flex-direction: column;
+}
+
+.episodesHeader {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.episodeList {
+  height: 120px;
+  width: 100%;
+  background: #2e3b44;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 5px;
+  overflow-y: auto;
+  box-sizing: border-box;
+  margin-top: 7px;
+}
+
+.episodeList::-webkit-scrollbar {
+  width: 12px;
+}
+
+.episodeList::-webkit-scrollbar-track {
+  background: #2e3b44;
+  border-radius: 5px;
+}
+
+.episodeList::-webkit-scrollbar-thumb {
+  background: #5d00ff;
+  border-radius: 5px;
+}
+
+.episodeList::-webkit-scrollbar-thumb:hover {
+  background: deepskyblue;
+}
+
+.addEpisodeContainer {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: start;
+}
+
+.addItem {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-self: center;
+  cursor: pointer;
+  background: linear-gradient(330deg, #bb00ff, #8000ff, #5d00ff);
+  height: 24px;
+  width: 24px;
+  border-radius: 5px;
+}
+
+.addItem:hover {
+  background: deepskyblue;
+}
+
+.searchEpisodesContainer {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: end;
+}
+
+.searchEpisodeInput {
+  width: 300px;
+  height: 25px;
+  background: #2e3b44;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 0 5px;
+}
+
+.searchEpisodeInput::placeholder {
+  opacity: 1;
+  text-align: center;
+}
+
+.searchEpisodeInput:focus {
+  outline: none;
+}
+
+.searchEpisodeInput:focus::placeholder {
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
+}
+
+.warningModal {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: linear-gradient(330deg, #8000ff, #ff00b3);
+  color: white;
+  padding: 20px;
+  border-radius: 10px;
+  font-weight: bold;
+  text-align: center;
+  z-index: 1000;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.editModalOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(2px);
+  z-index: 1000;
+}

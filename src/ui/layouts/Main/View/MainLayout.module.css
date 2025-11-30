@@ -1,0 +1,161 @@
+.container {
+  display: flex;
+  height: 100vh;
+  cursor: default;
+}
+
+.sidebar {
+  width: 175px;
+  min-width: 175px;
+  height: 100vh;
+  min-height: 538px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+  background: linear-gradient(
+    0deg,
+    #1c272d -29.09%,
+    #202e36 81.77%,
+    #344651 129.35%
+  );
+}
+
+.sidebarTop {
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebarContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.sidebarBottom {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+}
+
+.sidebarContent button,
+.sidebarBottom button {
+  width: 100%;
+}
+
+.subButtons {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease-out;
+}
+
+.subButtons.expanded {
+  max-height: 600px;
+}
+
+.versionText {
+  font-size: 10px;
+  margin: 2px 0;
+  padding: 0;
+}
+
+.mainContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 600px;
+}
+
+.buttonContainer {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.mediaButton {
+  background: linear-gradient(90deg, #5500aa, #8000ff);
+  color: white;
+  border-radius: 0;
+  width: 100%;
+  margin: 0px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.mediaButton:hover {
+  background: darkblue;
+}
+
+.subButton {
+  background: linear-gradient(90deg, #8000ff, #ff00b3);
+  color: white;
+  border-radius: 0;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.subButton:hover {
+  background: deepskyblue;
+  color: black;
+}
+
+.collectionButton {
+  background: linear-gradient(90deg, #5500aa, #8000ff);
+  color: white;
+  width: 100%;
+  margin: 0px;
+  border-radius: 0;
+}
+
+.collectionButton:hover {
+  background: deepskyblue;
+  color: black;
+}
+
+.closeTutorialButton {
+  background: linear-gradient(90deg, #8000ff, #ff00b3);
+  color: white;
+  font-size: 14px;
+}
+
+.guidedTourButton {
+  background: linear-gradient(90deg, #ff00b3, #fe9f2a);
+  color: white;
+  font-size: 14px;
+}
+
+.mediaButton:focus,
+.subButton:focus,
+.collectionButton:focus,
+.closeTutorialButton:focus,
+.guidedTourButton:focus {
+  outline: none;
+  border: none;
+}
+
+.logoContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: default;
+  font-size: 32px;
+  font-weight: bold;
+  padding-top: 16px;
+  padding-bottom: 16px;
+}
+
+.guideModalTitle {
+  font-size: 32px;
+  font-weight: bold;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.guideModalText {
+  font-size: 16px;
+  line-height: 20px;
+}
