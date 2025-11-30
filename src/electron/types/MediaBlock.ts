@@ -1,5 +1,5 @@
-import { Movie } from "../repositories/movieRepository.js";
-import { Episode } from "../repositories/showRepository.js";
+// Movie and Episode types are defined globally in types.d.ts
+// Movie and Episode types are defined globally in types.d.ts
 
 export interface MediaBlockData {
   buffer: any[]; // Array of buffer/filler media

@@ -1,18 +1,5 @@
 import { getDB } from "../db/sqlite.js";
-import { tagRepository, Tag } from "./tagsRepository.js";
-
-export interface Movie {
-  mediaItemId: string;
-  title: string;
-  alias?: string;
-  imdb?: string;
-  path: string;
-  duration?: number;
-  durationLimit?: number;
-  tags: Tag[];
-  createdAt?: string;
-  updatedAt?: string;
-}
+import { tagRepository } from "./tagsRepository.js";
 
 export class MovieRepository {
   private get db() {

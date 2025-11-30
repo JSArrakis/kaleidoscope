@@ -162,8 +162,35 @@ type CollectionItem = {
 };
 
 // ============================================================================
-// MOSAIC TYPES
+// FACET TYPES
 // ============================================================================
+
+type Facet = {
+  facetId: string;
+  genreTagId?: string;
+  aestheticTagId?: string;
+  genre?: Tag;
+  aesthetic?: Tag;
+  distanceFromGenre?: number;
+  distanceFromAesthetic?: number;
+  createdAt?: string;
+  updatedAt?: string;
+};
+
+// ============================================================================
+// RECENTLY USED MEDIA TYPES
+// ============================================================================
+
+type RecentlyUsedMedia = {
+  recentlyUsedMediaId: string;
+  mediaItemId: string;
+  mediaType: string;
+  lastUsedDate: string;
+  usageCount: number;
+  expirationDate?: string;
+  createdAt?: string;
+  updatedAt?: string;
+};
 
 type Mosaic = {
   mosaicId: string;
@@ -171,6 +198,21 @@ type Mosaic = {
   musicalGenres: string[];
   name?: string;
   description?: string;
+  createdAt?: string;
+  updatedAt?: string;
+};
+
+// ============================================================================
+// EPISODE PROGRESSION TYPES
+// ============================================================================
+
+type EpisodeProgression = {
+  episodeProgressionId: string;
+  showItemId: string;
+  streamType: string;
+  currentEpisodeNumber?: number;
+  totalEpisodes?: number;
+  lastPlayedDate?: string;
   createdAt?: string;
   updatedAt?: string;
 };

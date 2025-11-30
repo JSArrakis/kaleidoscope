@@ -1,16 +1,5 @@
 import { getDB } from "../db/sqlite.js";
 
-export interface RecentlyUsedMedia {
-  recentlyUsedMediaId: string;
-  mediaItemId: string;
-  mediaType: string;
-  lastUsedDate: string;
-  usageCount: number;
-  expirationDate?: string;
-  createdAt?: string;
-  updatedAt?: string;
-}
-
 export class RecentlyUsedMediaRepository {
   private get db() {
     return getDB();

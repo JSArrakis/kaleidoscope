@@ -1,4 +1,4 @@
-import { Music, musicRepository } from "../repositories/musicRepository.js";
+import { musicRepository } from "../repositories/musicRepository.js";
 
 export async function createMusic(
   music: Music

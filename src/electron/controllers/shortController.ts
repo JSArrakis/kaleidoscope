@@ -1,4 +1,4 @@
-import { Short, shortRepository } from "../repositories/shortRepository.js";
+import { shortRepository } from "../repositories/shortRepository.js";
 
 export async function createShort(
   short: Short

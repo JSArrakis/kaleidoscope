@@ -1,4 +1,4 @@
-import { Show, showRepository } from "../repositories/showRepository.js";
+import { showRepository } from "../repositories/showRepository.js";
 
 export async function createShow(
   show: Show

@@ -1,7 +1,4 @@
-import {
-  Collection,
-  collectionRepository,
-} from "../repositories/collectionRepository.js";
+import { collectionRepository } from "../repositories/collectionRepository.js";
 
 /**
  * Create a new collection

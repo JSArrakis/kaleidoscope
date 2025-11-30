@@ -1,16 +1,4 @@
 import { getDB } from "../db/sqlite.js";
-import { Tag } from "./tagsRepository.js";
-
-export interface Music {
-  mediaItemId: string;
-  title: string;
-  artist?: string;
-  path: string;
-  duration?: number;
-  tags: Tag[];
-  createdAt?: string;
-  updatedAt?: string;
-}
 
 export class MusicRepository {
   private get db() {

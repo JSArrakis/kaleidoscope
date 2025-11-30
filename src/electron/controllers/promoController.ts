@@ -1,4 +1,4 @@
-import { Promo, promoRepository } from "../repositories/promoRepository.js";
+import { promoRepository } from "../repositories/promoRepository.js";
 
 export async function createPromo(
   promo: Promo

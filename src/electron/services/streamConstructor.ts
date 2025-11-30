@@ -1,15 +1,11 @@
 import { MediaBlock } from "../types/MediaBlock.js";
 import { StreamType } from "../types/StreamType.js";
 import moment from "moment";
-import { Movie, movieRepository } from "../repositories/movieRepository.js";
-import {
-  Show,
-  Episode,
-  showRepository,
-} from "../repositories/showRepository.js";
-import { facetRepository } from "../repositories/facetRepository.js";
-import { tagRepository, Tag } from "../repositories/tagsRepository.js";
+import { movieRepository } from "../repositories/movieRepository.js";
+import { showRepository } from "../repositories/showRepository.js";
+import { tagRepository } from "../repositories/tagsRepository.js";
 import { episodeProgressionRepository } from "../repositories/episodeProgressionRepository.js";
+import { facetRepository } from "../repositories/facetRepository.js";
 
 /**
  * Main stream constructor entry point

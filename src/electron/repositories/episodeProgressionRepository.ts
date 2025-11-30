@@ -1,17 +1,5 @@
 import { getDB } from "../db/sqlite.js";
 
-export interface EpisodeProgression {
-  episodeProgressionId: string;
-  showItemId: string;
-  showTitle?: string;
-  streamType: string;
-  currentEpisodeNumber?: number;
-  totalEpisodes?: number;
-  lastPlayedDate?: string;
-  createdAt?: string;
-  updatedAt?: string;
-}
-
 export class EpisodeProgressionRepository {
   private get db() {
     return getDB();

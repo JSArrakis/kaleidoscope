@@ -1,35 +1,4 @@
 import { getDB } from "../db/sqlite.js";
-import { Tag } from "./tagsRepository.js";
-
-export interface Episode {
-  mediaItemId: string;
-  showItemId: string;
-  season?: string;
-  episode?: string;
-  episodeNumber?: number;
-  title: string;
-  path: string;
-  duration?: number;
-  durationLimit?: number;
-  overDuration?: boolean;
-  tags: Tag[];
-  createdAt?: string;
-  updatedAt?: string;
-}
-
-export interface Show {
-  mediaItemId: string;
-  title: string;
-  alias?: string;
-  imdb?: string;
-  durationLimit?: number;
-  firstEpisodeOverDuration?: boolean;
-  episodeCount: number;
-  tags: Tag[];
-  episodes: Episode[];
-  createdAt?: string;
-  updatedAt?: string;
-}
 
 export class ShowRepository {
   private get db() {

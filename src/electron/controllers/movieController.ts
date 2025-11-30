@@ -1,5 +1,4 @@
-import { Movie, movieRepository } from "../repositories/movieRepository.js";
-import { Tag } from "../repositories/tagsRepository.js";
+import { movieRepository } from "../repositories/movieRepository.js";
 
 /**
  * Create a new movie

@@ -1,24 +1,5 @@
 import { getDB } from "../db/sqlite.js";
 
-export interface Tag {
-  tagId: string;
-  name: string;
-  type:
-    | "Aesthetic"
-    | "Era"
-    | "Genre"
-    | "Specialty"
-    | "Holiday"
-    | "AgeGroup"
-    | "MusicGenre";
-  seasonStartDate?: string;
-  seasonEndDate?: string;
-  explicitlyHoliday?: boolean;
-  sequence?: number;
-  holidayDates?: string[];
-  exclusionTagIds?: string[];
-}
-
 export class TagRepository {
   private get db() {
     return getDB();

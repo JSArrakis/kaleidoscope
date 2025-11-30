@@ -1,15 +1,4 @@
 import { getDB } from "../db/sqlite.js";
-import { Tag } from "./tagsRepository.js";
-
-export interface Bumper {
-  mediaItemId: string;
-  title: string;
-  path: string;
-  duration?: number;
-  tags: Tag[];
-  createdAt?: string;
-  updatedAt?: string;
-}
 
 export class BumperRepository {
   private get db() {

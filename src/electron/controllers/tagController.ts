@@ -1,4 +1,4 @@
-import { Tag, tagRepository } from "../repositories/tagsRepository.js";
+import { tagRepository } from "../repositories/tagsRepository.js";
 
 /**
  * Create a new tag

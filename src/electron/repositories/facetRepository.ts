@@ -1,17 +1,4 @@
 import { getDB } from "../db/sqlite.js";
-import { Tag } from "./tagsRepository.js";
-
-export interface Facet {
-  facetId: string;
-  genreTagId?: string;
-  aestheticTagId?: string;
-  genre?: Tag;
-  aesthetic?: Tag;
-  distanceFromGenre?: number;
-  distanceFromAesthetic?: number;
-  createdAt?: string;
-  updatedAt?: string;
-}
 
 export class FacetRepository {
   private get db() {

@@ -1,4 +1,4 @@
-import { Bumper, bumperRepository } from "../repositories/bumperRepository.js";
+import { bumperRepository } from "../repositories/bumperRepository.js";
 
 export async function createBumper(
   bumper: Bumper

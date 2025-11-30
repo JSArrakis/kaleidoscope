@@ -1,28 +1,4 @@
 import { getDB } from "../db/sqlite.js";
-import { Tag } from "./tagsRepository.js";
-
-export interface CollectionItem {
-  collectionItemId: string;
-  collectionId: string;
-  mediaItemId: string;
-  sequence: number;
-  title?: string;
-  path?: string;
-  duration?: number;
-  tags?: Tag[];
-  createdAt?: string;
-  updatedAt?: string;
-}
-
-export interface Collection {
-  collectionId: string;
-  title: string;
-  description?: string;
-  itemCount: number;
-  items: CollectionItem[];
-  createdAt?: string;
-  updatedAt?: string;
-}
 
 export class CollectionRepository {
   private get db() {

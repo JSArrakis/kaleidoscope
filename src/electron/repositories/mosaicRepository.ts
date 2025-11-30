@@ -1,15 +1,5 @@
 import { getDB } from "../db/sqlite.js";
 
-export interface Mosaic {
-  mosaicId: string;
-  facetId: string;
-  musicalGenres: string[];
-  name?: string;
-  description?: string;
-  createdAt?: string;
-  updatedAt?: string;
-}
-
 export class MosaicRepository {
   private get db() {
     return getDB();
