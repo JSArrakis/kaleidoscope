@@ -1,11 +1,11 @@
-import Database from 'better-sqlite3';
-import { app } from 'electron';
-import * as fs from 'fs';
-import * as path from 'path';
+import Database from "better-sqlite3";
+import { app } from "electron";
+import * as fs from "fs";
+import * as path from "path";
 
 function getDatabasePath(): string {
-  const userDataPath = app.getPath('userData');
-  const dbPath = path.join(userDataPath, 'kaleidoscope.db');
+  const userDataPath = app.getPath("userData");
+  const dbPath = path.join(userDataPath, "kaleidoscope.db");
   return dbPath;
 }
 
@@ -15,7 +15,7 @@ class SQLiteService {
 
   constructor() {
     this.dbPath = getDatabasePath();
-    
+
     // Ensure the directory exists
     const dbDir = path.dirname(this.dbPath);
     if (!fs.existsSync(dbDir)) {
@@ -26,19 +26,19 @@ class SQLiteService {
   public connect(): void {
     try {
       this.db = new Database(this.dbPath);
-      this.db.pragma('journal_mode = WAL');
-      this.db.pragma('foreign_keys = ON');
+      this.db.pragma("journal_mode = WAL");
+      this.db.pragma("foreign_keys = ON");
       console.log(`SQLite connected at: ${this.dbPath}`);
       this.initializeDatabase();
     } catch (error) {
-      console.error('Error connecting to SQLite:', error);
+      console.error("Error connecting to SQLite:", error);
       throw error;
     }
   }
 
   public getDatabase(): Database.Database {
     if (!this.db) {
-      throw new Error('Database not connected. Call connect() first.');
+      throw new Error("Database not connected. Call connect() first.");
     }
     return this.db;
   }
@@ -47,14 +47,14 @@ class SQLiteService {
     if (this.db) {
       this.db.close();
       this.db = null;
-      console.log('SQLite connection closed');
+      console.log("SQLite connection closed");
     }
   }
 
   private initializeDatabase(): void {
     if (!this.db) return;
     this.createTables();
-    console.log('Database tables initialized');
+    console.log("Database tables initialized");
   }
 
   private createTables(): void {
@@ -363,7 +363,6 @@ class SQLiteService {
         type TEXT NOT NULL,
         seasonStartDate DATETIME,
         seasonEndDate DATETIME,
-        explicitlyHoliday BOOLEAN DEFAULT FALSE,
         sequence INTEGER,
         createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
         updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP

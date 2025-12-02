@@ -7,12 +7,11 @@ export function createTag(
   name?: string,
   tagId?: string,
   type?: TagType,
-  seasonStartDate?: string,
-  seasonEndDate?: string,
-  explicitlyHoliday?: boolean,
   sequence?: number,
   holidayDates?: string[],
-  exclusionTagIds?: string[]
+  exclusionTagIds?: string[],
+  seasonStartDate?: string,
+  seasonEndDate?: string
 ): Tag {
   const id = tagId ?? randomUUID();
   return {
@@ -21,7 +20,6 @@ export function createTag(
     type: type ?? TagType.Genre,
     seasonStartDate,
     seasonEndDate,
-    explicitlyHoliday: explicitlyHoliday ?? false,
     sequence,
     holidayDates,
     exclusionTagIds,

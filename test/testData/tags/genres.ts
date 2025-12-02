@@ -1,4 +1,4 @@
-import { Tag, TagType } from "../../../types/index.js";
+import { createTag } from "../../../factories/tag.factory";
 
 /**
  * Genre test tags for Kaleidoscope testing
@@ -7,19 +7,19 @@ import { Tag, TagType } from "../../../types/index.js";
 
 export const genreTags = {
   // Core genres from documentation
-  action: new Tag("action", "Action", TagType.Genre),
-  adventure: new Tag("adventure", "Adventure", TagType.Genre),
-  comedy: new Tag("comedy", "Comedy", TagType.Genre),
-  crime: new Tag("crime", "Crime", TagType.Genre),
-  drama: new Tag("drama", "Drama", TagType.Genre),
-  horror: new Tag("horror", "Horror", TagType.Genre),
-  mystery: new Tag("mystery", "Mystery", TagType.Genre),
-  romance: new Tag("romance", "Romance", TagType.Genre),
-  scifi: new Tag("scifi", "Science Fiction", TagType.Genre),
-  thriller: new Tag("thriller", "Thriller", TagType.Genre),
+  action: createTag("Action", "action", TagType.Genre),
+  adventure: createTag("Adventure", "adventure", TagType.Genre),
+  comedy: createTag("Comedy", "comedy", TagType.Genre),
+  crime: createTag("Crime", "crime", TagType.Genre),
+  drama: createTag("Drama", "drama", TagType.Genre),
+  horror: createTag("Horror", "horror", TagType.Genre),
+  mystery: createTag("Mystery", "mystery", TagType.Genre),
+  romance: createTag("Romance", "romance", TagType.Genre),
+  scifi: createTag("Science Fiction", "scifi", TagType.Genre),
+  thriller: createTag("Thriller", "thriller", TagType.Genre),
 
   // Additional genres seen in code
-  educational: new Tag("educational", "Educational", TagType.Genre),
+  educational: createTag("Educational", "educational", TagType.Genre),
 };
 
 export const genreTagsList = Object.values(genreTags);

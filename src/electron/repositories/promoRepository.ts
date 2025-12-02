@@ -121,7 +121,6 @@ export class PromoRepository {
       type: tagRow.type,
       seasonStartDate: tagRow.seasonStartDate,
       seasonEndDate: tagRow.seasonEndDate,
-      explicitlyHoliday: tagRow.explicitlyHoliday === 1,
       sequence: tagRow.sequence,
     }));
 

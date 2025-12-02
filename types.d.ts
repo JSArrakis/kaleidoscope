@@ -26,7 +26,7 @@ enum TagType {
   Specialty = "Specialty",
   Holiday = "Holiday",
   AgeGroup = "AgeGroup",
-  MusicGenre = "MusicGenre",
+  MusicalGenre = "MusicalGenre",
 }
 
 // ============================================================================
@@ -39,7 +39,6 @@ type Tag = {
   type: TagType;
   seasonStartDate?: string;
   seasonEndDate?: string;
-  explicitlyHoliday?: boolean;
   sequence?: number;
   holidayDates?: string[];
   exclusionTagIds?: string[];

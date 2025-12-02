@@ -11,6 +11,7 @@ export const holidayTags = {
     "christmas",
     "Christmas",
     TagType.Holiday,
+    undefined,
     ["2024-12-24", "2024-12-25"], // holidayDates
     undefined, // exclusionGenres
     "2024-12-01 00:00:00", // seasonStartDate (DATETIME)
@@ -21,6 +22,7 @@ export const holidayTags = {
     "halloween",
     "Halloween",
     TagType.Holiday,
+    undefined,
     ["2024-10-31"], // holidayDates
     undefined, // exclusionGenres
     "2024-10-01 00:00:00", // seasonStartDate (DATETIME)
@@ -31,6 +33,7 @@ export const holidayTags = {
     "valentine",
     "Valentine's Day",
     TagType.Holiday,
+    undefined,
     ["2024-02-14"], // holidayDates
     undefined, // exclusionGenres
     undefined, // seasonStartDate
@@ -41,6 +44,7 @@ export const holidayTags = {
     "summer",
     "Independence Day",
     TagType.Holiday,
+    undefined,
     ["2024-07-04"], // holidayDates (US Independence Day example)
     undefined, // exclusionGenres
     undefined, // seasonStartDate
@@ -51,10 +55,11 @@ export const holidayTags = {
     "new-year",
     "New Year",
     TagType.Holiday,
+    undefined,
     ["2024-01-01"], // holidayDates
     undefined, // exclusionGenres
-    "2023-12-28", // seasonStartDate
-    "2024-01-07" // seasonEndDate
+    undefined, // seasonStartDate
+    undefined // seasonEndDate
   ),
 };
 

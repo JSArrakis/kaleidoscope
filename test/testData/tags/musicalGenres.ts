@@ -1,4 +1,4 @@
-import { Tag, TagType } from "../../../types/index.js";
+import { createTag } from "../../../factories/tag.factory";
 
 /**
  * Musical Genre test tags for Kaleidoscope testing
@@ -6,44 +6,44 @@ import { Tag, TagType } from "../../../types/index.js";
  */
 
 export const musicalGenreTags = {
-  blues: new Tag("blues", "Blues", TagType.MusicalGenre),
-  classical: new Tag("classical", "Classical", TagType.MusicalGenre),
-  country: new Tag("country", "Country", TagType.MusicalGenre),
-  electronic: new Tag("electronic", "Electronic", TagType.MusicalGenre),
-  folk: new Tag("folk", "Folk", TagType.MusicalGenre),
-  hiphop: new Tag("hiphop", "Hip Hop", TagType.MusicalGenre),
-  jazz: new Tag("jazz", "Jazz", TagType.MusicalGenre),
-  metal: new Tag("metal", "Metal", TagType.MusicalGenre),
-  pop: new Tag("pop", "Pop", TagType.MusicalGenre),
-  punk: new Tag("punk", "Punk", TagType.MusicalGenre),
-  rnb: new Tag("rnb", "R&B", TagType.MusicalGenre),
-  rock: new Tag("rock", "Rock", TagType.MusicalGenre),
-  alternative: new Tag("alternative", "Alternative", TagType.MusicalGenre),
-  ambient: new Tag("ambient", "Ambient", TagType.MusicalGenre),
-  disco: new Tag("disco", "Disco", TagType.MusicalGenre),
-  funk: new Tag("funk", "Funk", TagType.MusicalGenre),
-  gospel: new Tag("gospel", "Gospel", TagType.MusicalGenre),
-  grunge: new Tag("grunge", "Grunge", TagType.MusicalGenre),
-  indie: new Tag("indie", "Indie", TagType.MusicalGenre),
-  orchestral: new Tag("orchestral", "Orchestral", TagType.MusicalGenre),
-  reggae: new Tag("reggae", "Reggae", TagType.MusicalGenre),
-  synthwave: new Tag("synthwave", "Synthwave", TagType.MusicalGenre),
-  darkwave: new Tag("darkwave", "Darkwave", TagType.MusicalGenre),
-  industrialrock: new Tag(
+  blues: createTag("blues", "Blues", TagType.MusicalGenre),
+  classical: createTag("classical", "Classical", TagType.MusicalGenre),
+  country: createTag("country", "Country", TagType.MusicalGenre),
+  electronic: createTag("electronic", "Electronic", TagType.MusicalGenre),
+  folk: createTag("folk", "Folk", TagType.MusicalGenre),
+  hiphop: createTag("hiphop", "Hip Hop", TagType.MusicalGenre),
+  jazz: createTag("jazz", "Jazz", TagType.MusicalGenre),
+  metal: createTag("metal", "Metal", TagType.MusicalGenre),
+  pop: createTag("pop", "Pop", TagType.MusicalGenre),
+  punk: createTag("punk", "Punk", TagType.MusicalGenre),
+  rnb: createTag("rnb", "R&B", TagType.MusicalGenre),
+  rock: createTag("rock", "Rock", TagType.MusicalGenre),
+  alternative: createTag("alternative", "Alternative", TagType.MusicalGenre),
+  ambient: createTag("ambient", "Ambient", TagType.MusicalGenre),
+  disco: createTag("disco", "Disco", TagType.MusicalGenre),
+  funk: createTag("funk", "Funk", TagType.MusicalGenre),
+  gospel: createTag("gospel", "Gospel", TagType.MusicalGenre),
+  grunge: createTag("grunge", "Grunge", TagType.MusicalGenre),
+  indie: createTag("indie", "Indie", TagType.MusicalGenre),
+  orchestral: createTag("orchestral", "Orchestral", TagType.MusicalGenre),
+  reggae: createTag("reggae", "Reggae", TagType.MusicalGenre),
+  synthwave: createTag("synthwave", "Synthwave", TagType.MusicalGenre),
+  darkwave: createTag("darkwave", "Darkwave", TagType.MusicalGenre),
+  industrialrock: createTag(
     "industrialrock",
     "Industrial Rock",
     TagType.MusicalGenre
   ),
-  avantgarde: new Tag("avantgarde", "Avant-Garde", TagType.MusicalGenre),
-  neoclassical: new Tag("neoclassical", "Neo-Classical", TagType.MusicalGenre),
-  electronicMinimalist: new Tag(
+  avantgarde: createTag("avantgarde", "Avant-Garde", TagType.MusicalGenre),
+  neoclassical: createTag("neoclassical", "Neo-Classical", TagType.MusicalGenre),
+  electronicMinimalist: createTag(
     "electronicminimalist",
     "Electronic Minimalist",
     TagType.MusicalGenre
   ),
-  postrock: new Tag("postrock", "Post-Rock", TagType.MusicalGenre),
-  darkambient: new Tag("darkambient", "Dark Ambient", TagType.MusicalGenre),
-  breakcore: new Tag("breakcore", "Breakcore", TagType.MusicalGenre),
+  postrock: createTag("postrock", "Post-Rock", TagType.MusicalGenre),
+  darkambient: createTag("darkambient", "Dark Ambient", TagType.MusicalGenre),
+  breakcore: createTag("breakcore", "Breakcore", TagType.MusicalGenre),
 };
 
 export const musicalGenreTagsList = Object.values(musicalGenreTags);

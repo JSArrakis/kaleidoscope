@@ -115,7 +115,6 @@ export class FacetRepository {
           type: genreRow.type,
           seasonStartDate: genreRow.seasonStartDate,
           seasonEndDate: genreRow.seasonEndDate,
-          explicitlyHoliday: genreRow.explicitlyHoliday === 1,
           sequence: genreRow.sequence,
         };
       }
@@ -133,7 +132,6 @@ export class FacetRepository {
           type: aestheticRow.type,
           seasonStartDate: aestheticRow.seasonStartDate,
           seasonEndDate: aestheticRow.seasonEndDate,
-          explicitlyHoliday: aestheticRow.explicitlyHoliday === 1,
           sequence: aestheticRow.sequence,
         };
       }

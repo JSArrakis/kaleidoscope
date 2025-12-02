@@ -14,8 +14,8 @@ export class TagRepository {
     }
 
     const insertTagStmt = this.db.prepare(`
-      INSERT INTO tags (tagId, name, type, seasonStartDate, seasonEndDate, explicitlyHoliday, sequence)
-      VALUES (?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO tags (tagId, name, type, seasonStartDate, seasonEndDate, sequence)
+      VALUES (?, ?, ?, ?, ?, ?)
     `);
 
     const insertHolidayDateStmt = this.db.prepare(`
@@ -36,7 +36,6 @@ export class TagRepository {
           tag.type,
           tag.seasonStartDate || null,
           tag.seasonEndDate || null,
-          tag.explicitlyHoliday ? 1 : 0,
           tag.sequence || null
         );
 
@@ -156,7 +155,7 @@ export class TagRepository {
       const stmt = this.db.prepare(`
         UPDATE tags 
         SET name = ?, type = ?, seasonStartDate = ?, seasonEndDate = ?, 
-            explicitlyHoliday = ?, sequence = ?, updatedAt = CURRENT_TIMESTAMP
+            sequence = ?, updatedAt = CURRENT_TIMESTAMP
         WHERE tagId = ?
       `);
 
@@ -165,7 +164,6 @@ export class TagRepository {
         tag.type,
         tag.seasonStartDate || null,
         tag.seasonEndDate || null,
-        tag.explicitlyHoliday ? 1 : 0,
         tag.sequence || null,
         tagId
       );
@@ -246,7 +244,6 @@ export class TagRepository {
       type: row.type,
       seasonStartDate: row.seasonStartDate,
       seasonEndDate: row.seasonEndDate,
-      explicitlyHoliday: row.explicitlyHoliday === 1,
       sequence: row.sequence,
     };
 
