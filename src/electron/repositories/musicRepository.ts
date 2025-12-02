@@ -133,6 +133,7 @@ export class MusicRepository {
       artist: row.artist,
       path: row.path,
       duration: row.duration,
+      type: MediaType.Music,
       tags,
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,

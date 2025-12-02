@@ -1,6 +1,6 @@
-import { MediaType, Promo } from "../../../types/index.js";
+import { createPromo } from "../../../factories/promo.factory";
 
-export const promo1 = new Promo(
+export const promo1 = createPromo(
   "Promo 1",
   "promo1",
   15,
@@ -9,7 +9,7 @@ export const promo1 = new Promo(
   []
 );
 
-export const defaultPromo = new Promo(
+export const defaultPromo = createPromo(
   "Default Promo",
   "defaultpromo",
   15,

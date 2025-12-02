@@ -130,6 +130,7 @@ export class ShortRepository {
       title: row.title,
       path: row.path,
       duration: row.duration,
+      type: MediaType.Short,
       tags,
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,

@@ -30,6 +30,9 @@ export class ShowRepository {
       // Insert show tags
       this.insertShowTags(show.mediaItemId, show.tags);
 
+      // Insert show secondary tags
+      this.insertShowSecondaryTags(show.mediaItemId, show.secondaryTags);
+
       // Insert episodes
       if (show.episodes && show.episodes.length > 0) {
         const episodeStmt = this.db.prepare(`
@@ -170,6 +173,12 @@ export class ShowRepository {
         .prepare("DELETE FROM show_tags WHERE mediaItemId = ?")
         .run(mediaItemId);
       this.insertShowTags(mediaItemId, show.tags);
+
+      // Delete and re-insert secondary tags
+      this.db
+        .prepare("DELETE FROM show_secondary_tags WHERE mediaItemId = ?")
+        .run(mediaItemId);
+      this.insertShowSecondaryTags(mediaItemId, show.secondaryTags);
     });
 
     transaction();
@@ -223,6 +232,25 @@ export class ShowRepository {
   }
 
   /**
+   * Insert secondary tags for a show
+   */
+  private insertShowSecondaryTags(
+    mediaItemId: string,
+    secondaryTags: Tag[]
+  ): void {
+    if (secondaryTags.length === 0) return;
+
+    const stmt = this.db.prepare(`
+      INSERT INTO show_secondary_tags (mediaItemId, tagId, tagType)
+      VALUES (?, ?, ?)
+    `);
+
+    for (const tag of secondaryTags) {
+      stmt.run(mediaItemId, tag.tagId, tag.type);
+    }
+  }
+
+  /**
    * Insert tags for an episode
    */
   private insertEpisodeTags(episodeMediaItemId: string, tags: Tag[]): void {
@@ -271,6 +299,7 @@ export class ShowRepository {
       duration: row.duration,
       durationLimit: row.durationLimit,
       overDuration: row.overDuration === 1,
+      type: MediaType.Episode,
       tags,
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
@@ -299,6 +328,26 @@ export class ShowRepository {
       sequence: tagRow.sequence,
     }));
 
+    const secondaryTagsStmt = this.db.prepare(`
+      SELECT t.* FROM tags t
+      JOIN show_secondary_tags sst ON t.tagId = sst.tagId
+      WHERE sst.mediaItemId = ?
+      ORDER BY t.name
+    `);
+
+    const secondaryTagRows = secondaryTagsStmt.all(
+      showRow.mediaItemId
+    ) as any[];
+    const secondaryTags = secondaryTagRows.map((tagRow) => ({
+      tagId: tagRow.tagId,
+      name: tagRow.name,
+      type: tagRow.type,
+      seasonStartDate: tagRow.seasonStartDate,
+      seasonEndDate: tagRow.seasonEndDate,
+      explicitlyHoliday: tagRow.explicitlyHoliday === 1,
+      sequence: tagRow.sequence,
+    }));
+
     const episodes = episodeRows.map((row) => this.mapRowToEpisode(row));
 
     return {
@@ -309,7 +358,9 @@ export class ShowRepository {
       durationLimit: showRow.durationLimit,
       firstEpisodeOverDuration: showRow.firstEpisodeOverDuration === 1,
       episodeCount: showRow.episodeCount,
+      type: MediaType.Show,
       tags,
+      secondaryTags,
       episodes,
       createdAt: showRow.createdAt,
       updatedAt: showRow.updatedAt,

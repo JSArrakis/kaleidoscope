@@ -130,6 +130,7 @@ export class BumperRepository {
       title: row.title,
       path: row.path,
       duration: row.duration,
+      type: MediaType.Bumper,
       tags,
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,

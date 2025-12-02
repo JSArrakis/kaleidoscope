@@ -130,6 +130,7 @@ export class PromoRepository {
       title: row.title,
       path: row.path,
       duration: row.duration,
+      type: MediaType.Promo,
       tags,
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,

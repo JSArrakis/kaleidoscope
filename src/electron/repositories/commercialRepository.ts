@@ -134,6 +134,7 @@ export class CommercialRepository {
       title: row.title,
       path: row.path,
       duration: row.duration,
+      type: MediaType.Commercial,
       tags,
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,

@@ -8,6 +8,27 @@ enum StreamType {
   Adhoc = "Adhoc", // One-off user-configured streams
 }
 
+enum MediaType {
+  Show = "Show",
+  Episode = "Episode",
+  Movie = "Movie",
+  Short = "Short",
+  Music = "Music",
+  Commercial = "Commercial",
+  Promo = "Promo",
+  Bumper = "Bumper",
+}
+
+enum TagType {
+  Aesthetic = "Aesthetic",
+  Era = "Era",
+  Genre = "Genre",
+  Specialty = "Specialty",
+  Holiday = "Holiday",
+  AgeGroup = "AgeGroup",
+  MusicGenre = "MusicGenre",
+}
+
 // ============================================================================
 // TAG AND RELATED TYPES
 // ============================================================================
@@ -15,14 +36,7 @@ enum StreamType {
 type Tag = {
   tagId: string;
   name: string;
-  type:
-    | "Aesthetic"
-    | "Era"
-    | "Genre"
-    | "Specialty"
-    | "Holiday"
-    | "AgeGroup"
-    | "MusicGenre";
+  type: TagType;
   seasonStartDate?: string;
   seasonEndDate?: string;
   explicitlyHoliday?: boolean;
@@ -48,6 +62,7 @@ type Movie = {
   path: string;
   duration?: number;
   durationLimit?: number;
+  type: MediaType;
   tags: Tag[];
   createdAt?: string;
   updatedAt?: string;
@@ -64,6 +79,7 @@ type Episode = {
   duration?: number;
   durationLimit?: number;
   overDuration?: boolean;
+  type: MediaType;
   tags: Tag[];
   createdAt?: string;
   updatedAt?: string;
@@ -77,7 +93,9 @@ type Show = {
   durationLimit?: number;
   firstEpisodeOverDuration?: boolean;
   episodeCount: number;
+  type: MediaType;
   tags: Tag[];
+  secondaryTags: Tag[];
   episodes: Episode[];
   createdAt?: string;
   updatedAt?: string;
@@ -88,6 +106,7 @@ type Commercial = {
   title: string;
   path: string;
   duration?: number;
+  type: MediaType;
   tags: Tag[];
   createdAt?: string;
   updatedAt?: string;
@@ -98,6 +117,7 @@ type Short = {
   title: string;
   path: string;
   duration?: number;
+  type: MediaType;
   tags: Tag[];
   createdAt?: string;
   updatedAt?: string;
@@ -109,6 +129,7 @@ type Music = {
   artist?: string;
   path: string;
   duration?: number;
+  type: MediaType;
   tags: Tag[];
   createdAt?: string;
   updatedAt?: string;
@@ -119,6 +140,7 @@ type Promo = {
   title: string;
   path: string;
   duration?: number;
+  type: MediaType;
   tags: Tag[];
   createdAt?: string;
   updatedAt?: string;
@@ -129,6 +151,7 @@ type Bumper = {
   title: string;
   path: string;
   duration?: number;
+  type: MediaType;
   tags: Tag[];
   createdAt?: string;
   updatedAt?: string;

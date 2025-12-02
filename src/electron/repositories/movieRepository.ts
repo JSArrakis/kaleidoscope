@@ -199,6 +199,7 @@ export class MovieRepository {
       path: row.path,
       duration: row.duration,
       durationLimit: row.durationLimit,
+      type: MediaType.Movie,
       tags,
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,

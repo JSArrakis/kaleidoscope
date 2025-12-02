@@ -1,7 +1,7 @@
-import { MediaType, Short } from "../../../types/index.js";
+import { createShort } from "../../../factories/short.factory";
 import { ageGroupTags, eraTags, genreTags } from "../tags";
 
-export const code8 = new Short(
+export const code8 = createShort(
   "Code 8",
   "code8",
   600,
@@ -14,7 +14,7 @@ export const code8 = new Short(
     eraTags.twothousands,
   ]
 );
-export const lightsout = new Short(
+export const lightsout = createShort(
   "Lights Out",
   "lightsout",
   180,
@@ -22,7 +22,7 @@ export const lightsout = new Short(
   MediaType.Short,
   [genreTags.horror, ageGroupTags.mature, eraTags.twothousands]
 );
-export const rakka = new Short(
+export const rakka = createShort(
   "Rakka",
   "rakka",
   480,
@@ -30,7 +30,7 @@ export const rakka = new Short(
   MediaType.Short,
   [genreTags.scifi, ageGroupTags.mature, eraTags.twothousands]
 );
-export const theblackhole = new Short(
+export const theblackhole = createShort(
   "The Black Hole",
   "theblackhole",
   180,
@@ -43,7 +43,7 @@ export const theblackhole = new Short(
     eraTags.twothousands,
   ]
 );
-export const cargo = new Short(
+export const cargo = createShort(
   "Cargo",
   "cargo",
   420,
@@ -51,7 +51,7 @@ export const cargo = new Short(
   MediaType.Short,
   [genreTags.horror, ageGroupTags.mature, eraTags.twothousands]
 );
-export const dust = new Short(
+export const dust = createShort(
   "Dust",
   "dust",
   600,
@@ -64,7 +64,7 @@ export const dust = new Short(
     eraTags.twothousands,
   ]
 );
-export const portal = new Short(
+export const portal = createShort(
   "Portal",
   "portal",
   480,
@@ -77,7 +77,7 @@ export const portal = new Short(
     eraTags.twothousands,
   ]
 );
-export const thegate = new Short(
+export const thegate = createShort(
   "The Gate",
   "thegate",
   360,
@@ -90,7 +90,7 @@ export const thegate = new Short(
     eraTags.twothousands,
   ]
 );
-export const alienharvest = new Short(
+export const alienharvest = createShort(
   "Alien: Harvest",
   "alienharvest",
   540,
@@ -98,7 +98,7 @@ export const alienharvest = new Short(
   MediaType.Short,
   [genreTags.scifi, genreTags.horror, ageGroupTags.mature, eraTags.twothousands]
 );
-export const adam = new Short(
+export const adam = createShort(
   "Adam",
   "adam",
   540,
@@ -107,7 +107,7 @@ export const adam = new Short(
   [genreTags.scifi, ageGroupTags.youngAdult, eraTags.twothousands]
 );
 
-export const gopherBroke = new Short(
+export const gopherBroke = createShort(
   "Gopher Broke",
   "gopherbroke",
   300,
@@ -116,7 +116,7 @@ export const gopherBroke = new Short(
   [genreTags.adventure, ageGroupTags.family, eraTags.twothousands]
 );
 
-export const forTheBirds = new Short(
+export const forTheBirds = createShort(
   "For the Birds",
   "forthebirds",
   240,
@@ -125,7 +125,7 @@ export const forTheBirds = new Short(
   [genreTags.adventure, ageGroupTags.family, eraTags.nineties]
 );
 
-export const boundin = new Short(
+export const boundin = createShort(
   "Boundin’",
   "boundin",
   300,
@@ -134,7 +134,7 @@ export const boundin = new Short(
   [genreTags.adventure, ageGroupTags.family, eraTags.twothousands]
 );
 
-export const tinToy = new Short(
+export const tinToy = createShort(
   "Tin Toy",
   "tintoy",
   300,
@@ -143,7 +143,7 @@ export const tinToy = new Short(
   [genreTags.adventure, genreTags.scifi, ageGroupTags.kids, eraTags.nineties]
 );
 
-export const theAdventuresOfAndreAndWallyB = new Short(
+export const theAdventuresOfAndreAndWallyB = createShort(
   "The Adventures of André and Wally B.",
   "andreandwallyb",
   120,
@@ -152,7 +152,7 @@ export const theAdventuresOfAndreAndWallyB = new Short(
   [genreTags.adventure, genreTags.scifi, ageGroupTags.kids, eraTags.nineties]
 );
 
-export const luxoJunior = new Short(
+export const luxoJunior = createShort(
   "Luxo Jr.",
   "luxojunior",
   120,
@@ -161,7 +161,7 @@ export const luxoJunior = new Short(
   [genreTags.adventure, ageGroupTags.kids, eraTags.nineties]
 );
 
-export const oneManBand = new Short(
+export const oneManBand = createShort(
   "One Man Band",
   "onemanband",
   300,
@@ -170,7 +170,7 @@ export const oneManBand = new Short(
   [genreTags.adventure, ageGroupTags.family, eraTags.twothousands]
 );
 
-export const lifted = new Short(
+export const lifted = createShort(
   "Lifted",
   "lifted",
   300,
@@ -179,7 +179,7 @@ export const lifted = new Short(
   [genreTags.scifi, ageGroupTags.kids, eraTags.twothousands]
 );
 
-export const knickknack = new Short(
+export const knickknack = createShort(
   "Knick Knack",
   "knickknack",
   240,
@@ -188,7 +188,7 @@ export const knickknack = new Short(
   [genreTags.adventure, ageGroupTags.kids, eraTags.nineties]
 );
 
-export const partlyCloudy = new Short(
+export const partlyCloudy = createShort(
   "Partly Cloudy",
   "partlycloudy",
   300,
@@ -197,7 +197,7 @@ export const partlyCloudy = new Short(
   [genreTags.adventure, ageGroupTags.family, eraTags.twothousands]
 );
 
-export const presto = new Short(
+export const presto = createShort(
   "Presto",
   "presto",
   300,
@@ -206,7 +206,7 @@ export const presto = new Short(
   [genreTags.adventure, ageGroupTags.kids, eraTags.twothousands]
 );
 
-export const gerisGame = new Short(
+export const gerisGame = createShort(
   "Geri’s Game",
   "gerisgame",
   240,

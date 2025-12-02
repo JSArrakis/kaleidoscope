@@ -1,7 +1,7 @@
-import { MediaType, Music } from "../../../types/index.js";
+import { createMusic } from "../../../factories/music.factory";
 import { holidayTags, musicalGenreTags, specialtyTags } from "../tags";
 
-export const sweetchildomine = new Music(
+export const sweetchildomine = createMusic(
   "Sweet Child O Mine",
   "Guns and Roses",
   "sweetchildomine-gunsandroses",
@@ -10,7 +10,7 @@ export const sweetchildomine = new Music(
   MediaType.Music,
   [musicalGenreTags.rock]
 );
-export const hotelcalifornia = new Music(
+export const hotelcalifornia = createMusic(
   "Hotel California",
   "Eagles",
   "hotelcalifornia-eagles",
@@ -19,7 +19,7 @@ export const hotelcalifornia = new Music(
   MediaType.Music,
   [musicalGenreTags.rock]
 );
-export const backinblack = new Music(
+export const backinblack = createMusic(
   "Back in Black",
   "ACDC",
   "backinblack-acdc",
@@ -28,7 +28,7 @@ export const backinblack = new Music(
   MediaType.Music,
   [musicalGenreTags.rock, specialtyTags.marvel]
 );
-export const heyjude = new Music(
+export const heyjude = createMusic(
   "Hey Jude",
   "The Beatles",
   "heyjude-thebeatles",
@@ -37,7 +37,7 @@ export const heyjude = new Music(
   MediaType.Music,
   [musicalGenreTags.rock]
 );
-export const alive = new Music(
+export const alive = createMusic(
   "Alive",
   "Pearl Jam",
   "alive-pearljam",
@@ -46,7 +46,7 @@ export const alive = new Music(
   MediaType.Music,
   [musicalGenreTags.rock]
 );
-export const paranoid = new Music(
+export const paranoid = createMusic(
   "Paranoid",
   "Black Sabbath",
   "paranoid-blacksabbath",
@@ -55,7 +55,7 @@ export const paranoid = new Music(
   MediaType.Music,
   [musicalGenreTags.metal]
 );
-export const one = new Music(
+export const one = createMusic(
   "One",
   "Metallica",
   "one-metallica",
@@ -64,7 +64,7 @@ export const one = new Music(
   MediaType.Music,
   [musicalGenreTags.metal]
 );
-export const aceofspades = new Music(
+export const aceofspades = createMusic(
   "Ace of Spades",
   "Motorhead",
   "aceofspades-motorhead",
@@ -73,7 +73,7 @@ export const aceofspades = new Music(
   MediaType.Music,
   [musicalGenreTags.metal]
 );
-export const holydiver = new Music(
+export const holydiver = createMusic(
   "Holy Diver",
   "Dio",
   "holydiver-dio",
@@ -82,7 +82,7 @@ export const holydiver = new Music(
   MediaType.Music,
   [musicalGenreTags.metal]
 );
-export const painkiller = new Music(
+export const painkiller = createMusic(
   "Painkiller",
   "Judas Priest",
   "painkiller-judaspriest",
@@ -91,7 +91,7 @@ export const painkiller = new Music(
   MediaType.Music,
   [musicalGenreTags.metal]
 );
-export const rapperdelight = new Music(
+export const rapperdelight = createMusic(
   "Rapper Delight",
   "Sugarhill Gang",
   "rapperdelight-sugarhillgang",
@@ -100,7 +100,7 @@ export const rapperdelight = new Music(
   MediaType.Music,
   [musicalGenreTags.hiphop]
 );
-export const loseyourself = new Music(
+export const loseyourself = createMusic(
   "Lose Yourself",
   "Eminem",
   "loseyourself-eminem",
@@ -109,7 +109,7 @@ export const loseyourself = new Music(
   MediaType.Music,
   [musicalGenreTags.hiphop]
 );
-export const nystateofmind = new Music(
+export const nystateofmind = createMusic(
   "NY State of Mind",
   "Nas",
   "nystateofmind-nas",
@@ -118,7 +118,7 @@ export const nystateofmind = new Music(
   MediaType.Music,
   [musicalGenreTags.hiphop]
 );
-export const blitzkriegbop = new Music(
+export const blitzkriegbop = createMusic(
   "Blitzkrieg Bop",
   "The Ramones",
   "blitzkriegbop-theramones",
@@ -127,7 +127,7 @@ export const blitzkriegbop = new Music(
   MediaType.Music,
   [musicalGenreTags.punk]
 );
-export const anarchyintheuk = new Music(
+export const anarchyintheuk = createMusic(
   "Anarchy in the UK",
   "Sex Pistols",
   "anarchyintheuk-sexpistols",
@@ -136,7 +136,7 @@ export const anarchyintheuk = new Music(
   MediaType.Music,
   [musicalGenreTags.punk]
 );
-export const londoncalling = new Music(
+export const londoncalling = createMusic(
   "London Calling",
   "The Clash",
   "londoncalling-theclash",
@@ -145,7 +145,7 @@ export const londoncalling = new Music(
   MediaType.Music,
   [musicalGenreTags.punk]
 );
-export const holidayincambodia = new Music(
+export const holidayincambodia = createMusic(
   "Holiday in Cambodia",
   "Dead Kennedys",
   "holidayincambodia-deadkennedys",
@@ -154,7 +154,7 @@ export const holidayincambodia = new Music(
   MediaType.Music,
   [musicalGenreTags.punk]
 );
-export const louise = new Music(
+export const louise = createMusic(
   "Louise",
   "Clan of Xymox",
   "louise-clanofxymox",
@@ -163,7 +163,7 @@ export const louise = new Music(
   MediaType.Music,
   [musicalGenreTags.darkwave]
 );
-export const hostofseraphim = new Music(
+export const hostofseraphim = createMusic(
   "Host of Seraphim",
   "Dead Can Dance",
   "hostofseraphim-deadcandance",
@@ -172,7 +172,7 @@ export const hostofseraphim = new Music(
   MediaType.Music,
   [musicalGenreTags.darkwave]
 );
-export const duskislikeadagger = new Music(
+export const duskislikeadagger = createMusic(
   "Dusk is Like a Dagger",
   "Attrition",
   "duskislikeadagger-attrition",
@@ -181,7 +181,7 @@ export const duskislikeadagger = new Music(
   MediaType.Music,
   [musicalGenreTags.darkwave]
 );
-export const thetimehascomeandgone = new Music(
+export const thetimehascomeandgone = createMusic(
   "The Time Has Come and Gone",
   "The Frozen Autumn",
   "thetimehascomeandgone-thefrozenautumn",
@@ -190,7 +190,7 @@ export const thetimehascomeandgone = new Music(
   MediaType.Music,
   [musicalGenreTags.darkwave]
 );
-export const ritüel = new Music(
+export const ritüel = createMusic(
   "Ritüel",
   "She Past Away",
   "ritüel-shepastaway",
@@ -199,7 +199,7 @@ export const ritüel = new Music(
   MediaType.Music,
   [musicalGenreTags.darkwave]
 );
-export const headlikeahole = new Music(
+export const headlikeahole = createMusic(
   "Head Like a Hole",
   "Nine Inch Nails",
   "headlikeahole-nineinchnails",
@@ -208,7 +208,7 @@ export const headlikeahole = new Music(
   MediaType.Music,
   [musicalGenreTags.industrialrock]
 );
-export const stigmata = new Music(
+export const stigmata = createMusic(
   "Stigmata",
   "Ministry",
   "stigmata-ministry",
@@ -217,7 +217,7 @@ export const stigmata = new Music(
   MediaType.Music,
   [musicalGenreTags.industrialrock]
 );
-export const adrugagainstwar = new Music(
+export const adrugagainstwar = createMusic(
   "A Drug Against War",
   "KMFDM",
   "adrugagainstwar-kmfdm",
@@ -226,7 +226,7 @@ export const adrugagainstwar = new Music(
   MediaType.Music,
   [musicalGenreTags.industrialrock]
 );
-export const dragula = new Music(
+export const dragula = createMusic(
   "Dragula",
   "Rob Zombie",
   "dragula-robzombie",
@@ -235,7 +235,7 @@ export const dragula = new Music(
   MediaType.Music,
   [musicalGenreTags.industrialrock]
 );
-export const thebeautifulpeople = new Music(
+export const thebeautifulpeople = createMusic(
   "The Beautiful People",
   "Marilyn Manson",
   "thebeautifulpeople-marilynmanson",
@@ -244,7 +244,7 @@ export const thebeautifulpeople = new Music(
   MediaType.Music,
   [musicalGenreTags.industrialrock]
 );
-export const nightcall = new Music(
+export const nightcall = createMusic(
   "Nightcall",
   "Kavinsky",
   "nightcall-kavinsky",
@@ -253,7 +253,7 @@ export const nightcall = new Music(
   MediaType.Music,
   [musicalGenreTags.synthwave]
 );
-export const neotokyo = new Music(
+export const neotokyo = createMusic(
   "Neotokyo",
   "Purturbator",
   "neotokyo-purturbator",
@@ -262,7 +262,7 @@ export const neotokyo = new Music(
   MediaType.Music,
   [musicalGenreTags.synthwave]
 );
-export const daysofthunder = new Music(
+export const daysofthunder = createMusic(
   "Days of Thunder",
   "The Midnight",
   "daysofthunder-themidnight",
@@ -271,7 +271,7 @@ export const daysofthunder = new Music(
   MediaType.Music,
   [musicalGenreTags.synthwave]
 );
-export const turbokiller = new Music(
+export const turbokiller = createMusic(
   "Turbokiller",
   "Carpenter Brut",
   "turbokiller-carpenterbrut",
@@ -280,7 +280,7 @@ export const turbokiller = new Music(
   MediaType.Music,
   [musicalGenreTags.synthwave]
 );
-export const technoir = new Music(
+export const technoir = createMusic(
   "Technoir",
   "Gunship",
   "technoir-gunship",
@@ -289,7 +289,7 @@ export const technoir = new Music(
   MediaType.Music,
   [musicalGenreTags.synthwave]
 );
-export const requiemiikyrie = new Music(
+export const requiemiikyrie = createMusic(
   "Requiem II. Kyrie",
   "György Ligeti",
   "requiemiikyrie-gyorgyligeti",
@@ -298,7 +298,7 @@ export const requiemiikyrie = new Music(
   MediaType.Music,
   [musicalGenreTags.avantgarde]
 );
-export const sonatasandinterludes = new Music(
+export const sonatasandinterludes = createMusic(
   "Sonatas and Interludes",
   "John Cage",
   "sonatasandinterludes-johncage",
@@ -307,7 +307,7 @@ export const sonatasandinterludes = new Music(
   MediaType.Music,
   [musicalGenreTags.avantgarde]
 );
-export const stimmung = new Music(
+export const stimmung = createMusic(
   "Stimmung",
   "Karlheinz Stockhausen",
   "stimmung-karlheinzstockhausen",
@@ -316,7 +316,7 @@ export const stimmung = new Music(
   MediaType.Music,
   [musicalGenreTags.avantgarde]
 );
-export const anendingascent = new Music(
+export const anendingascent = createMusic(
   "An Ending, Ascent",
   "Brian Eno",
   "anendingascent-brianeno",
@@ -325,7 +325,7 @@ export const anendingascent = new Music(
   MediaType.Music,
   [musicalGenreTags.ambient]
 );
-export const no3 = new Music(
+export const no3 = createMusic(
   "#3",
   "Aphex Twin",
   "no3-aphextwin",
@@ -334,7 +334,7 @@ export const no3 = new Music(
   MediaType.Music,
   [musicalGenreTags.ambient]
 );
-export const deepstaria = new Music(
+export const deepstaria = createMusic(
   "Deepstaria",
   "Hello Meteor",
   "deepstaria-hellometeor",
@@ -343,7 +343,7 @@ export const deepstaria = new Music(
   MediaType.Music,
   [musicalGenreTags.ambient]
 );
-export const bluemoonstation = new Music(
+export const bluemoonstation = createMusic(
   "Blue Moon Station",
   "Solar Fields",
   "bluemoonstation-solarfields",
@@ -352,7 +352,7 @@ export const bluemoonstation = new Music(
   MediaType.Music,
   [musicalGenreTags.ambient]
 );
-export const kobresia = new Music(
+export const kobresia = createMusic(
   "Kobresia",
   "Biosphere",
   "kobresia-biosphere",
@@ -361,7 +361,7 @@ export const kobresia = new Music(
   MediaType.Music,
   [musicalGenreTags.ambient]
 );
-export const onthenatureofdaylight = new Music(
+export const onthenatureofdaylight = createMusic(
   "On the Nature of Daylight",
   "Max Richter",
   "onthenatureofdaylight-maxrichter",
@@ -370,7 +370,7 @@ export const onthenatureofdaylight = new Music(
   MediaType.Music,
   [musicalGenreTags.neoclassical]
 );
-export const re = new Music(
+export const re = createMusic(
   "Re",
   "Nil Frahm",
   "re-nilfrahm",
@@ -379,7 +379,7 @@ export const re = new Music(
   MediaType.Music,
   [musicalGenreTags.neoclassical]
 );
-export const nuvole = new Music(
+export const nuvole = createMusic(
   "Nuvole Bianche",
   "Ludovico Einaudi",
   "nuvolebianche-ludovicoeinaudi",
@@ -388,7 +388,7 @@ export const nuvole = new Music(
   MediaType.Music,
   [musicalGenreTags.neoclassical]
 );
-export const saman = new Music(
+export const saman = createMusic(
   "Saman",
   "Ólafur Arnalds",
   "saman-olafurarnalds",
@@ -397,7 +397,7 @@ export const saman = new Music(
   MediaType.Music,
   [musicalGenreTags.neoclassical]
 );
-export const abovo = new Music(
+export const abovo = createMusic(
   "Abovo",
   "Joep Beving",
   "abovo-joepbeving",
@@ -406,7 +406,7 @@ export const abovo = new Music(
   MediaType.Music,
   [musicalGenreTags.neoclassical]
 );
-export const xerroxisola = new Music(
+export const xerroxisola = createMusic(
   "Xerrox Isola",
   "Alva Noto",
   "xerroxisola-alvanoto",
@@ -415,7 +415,7 @@ export const xerroxisola = new Music(
   MediaType.Music,
   [musicalGenreTags.electronicMinimalist]
 );
-export const dexter = new Music(
+export const dexter = createMusic(
   "Dexter",
   "Ricardo Villalobos",
   "dexter-ricardovillalobos",
@@ -424,7 +424,7 @@ export const dexter = new Music(
   MediaType.Music,
   [musicalGenreTags.electronicMinimalist]
 );
-export const sticktomyside = new Music(
+export const sticktomyside = createMusic(
   "Stick to My Side",
   "Pantha du Prince",
   "sticktomyside-panthaduprince",
@@ -433,7 +433,7 @@ export const sticktomyside = new Music(
   MediaType.Music,
   [musicalGenreTags.electronicMinimalist]
 );
-export const camino = new Music(
+export const camino = createMusic(
   "Camino",
   "Murcof",
   "camino-murcof",
@@ -442,7 +442,7 @@ export const camino = new Music(
   MediaType.Music,
   [musicalGenreTags.electronicMinimalist]
 );
-export const easthastings = new Music(
+export const easthastings = createMusic(
   "East Hastings",
   "Godspeed You! Black Emperor",
   "easthastings-godspeedyoublackemperor",
@@ -451,7 +451,7 @@ export const easthastings = new Music(
   MediaType.Music,
   [musicalGenreTags.postrock]
 );
-export const yourhandinmine = new Music(
+export const yourhandinmine = createMusic(
   "Your Hand in Mine",
   "Explosions in the Sky",
   "yourhandinmine-explosionsinthesky",
@@ -460,7 +460,7 @@ export const yourhandinmine = new Music(
   MediaType.Music,
   [musicalGenreTags.postrock]
 );
-export const mogwaifearsatan = new Music(
+export const mogwaifearsatan = createMusic(
   "Mogwai Fear Satan",
   "Mogwai",
   "mogwaifearsatan-mogwai",
@@ -469,7 +469,7 @@ export const mogwaifearsatan = new Music(
   MediaType.Music,
   [musicalGenreTags.postrock]
 );
-export const untitledno3 = new Music(
+export const untitledno3 = createMusic(
   "Untitled #3",
   "Sigur Rós",
   "untitledno3-sigurros",
@@ -478,7 +478,7 @@ export const untitledno3 = new Music(
   MediaType.Music,
   [musicalGenreTags.postrock]
 );
-export const ashesinthesnow = new Music(
+export const ashesinthesnow = createMusic(
   "Ashes in the Snow",
   "Mono",
   "ashesinthesnow-mono",
@@ -487,7 +487,7 @@ export const ashesinthesnow = new Music(
   MediaType.Music,
   [musicalGenreTags.postrock]
 );
-export const thedarkplacesoftheearth = new Music(
+export const thedarkplacesoftheearth = createMusic(
   "The Dark Places of the Earth",
   "Lustmord",
   "thedarkplacesoftheearth-lustmord",
@@ -496,7 +496,7 @@ export const thedarkplacesoftheearth = new Music(
   MediaType.Music,
   [musicalGenreTags.darkambient]
 );
-export const endtitles = new Music(
+export const endtitles = createMusic(
   "End Titles",
   "Atrium Carceri",
   "endtitles-atriumcarceri",
@@ -505,7 +505,7 @@ export const endtitles = new Music(
   MediaType.Music,
   [musicalGenreTags.darkambient]
 );
-export const reflectinginshadows = new Music(
+export const reflectinginshadows = createMusic(
   "Reflecting in Shadows",
   "Kammarheit",
   "reflectinginshadows-kammarheit",
@@ -514,7 +514,7 @@ export const reflectinginshadows = new Music(
   MediaType.Music,
   [musicalGenreTags.darkambient]
 );
-export const hypnagogic = new Music(
+export const hypnagogic = createMusic(
   "Hypnagogic",
   "Kammarheit",
   "hypnagogic-kammarheit",
@@ -523,7 +523,7 @@ export const hypnagogic = new Music(
   MediaType.Music,
   [musicalGenreTags.darkambient]
 );
-export const twoonefourfive = new Music(
+export const twoonefourfive = createMusic(
   "2145",
   "Sabled Sun",
   "2145-sabledsun",
@@ -532,7 +532,7 @@ export const twoonefourfive = new Music(
   MediaType.Music,
   [musicalGenreTags.darkambient]
 );
-export const hajnal = new Music(
+export const hajnal = createMusic(
   "Hajnal",
   "Venetian Snares",
   "hajnal-venetiansnares",
@@ -541,7 +541,7 @@ export const hajnal = new Music(
   MediaType.Music,
   [musicalGenreTags.breakcore]
 );
-export const nostep = new Music(
+export const nostep = createMusic(
   "No Step",
   "Bong-Ra",
   "nostep-bongra",
@@ -550,7 +550,7 @@ export const nostep = new Music(
   MediaType.Music,
   [musicalGenreTags.breakcore]
 );
-export const thesoundoftheunderground = new Music(
+export const thesoundoftheunderground = createMusic(
   "The Sound of the Underground",
   "Shitmat",
   "thesoundoftheunderground-shitmat",
@@ -559,7 +559,7 @@ export const thesoundoftheunderground = new Music(
   MediaType.Music,
   [musicalGenreTags.breakcore]
 );
-export const manicpanic = new Music(
+export const manicpanic = createMusic(
   "Manic Panic",
   "Otto Von Schirach",
   "manicpanic-ottovonschirach",
@@ -568,7 +568,7 @@ export const manicpanic = new Music(
   MediaType.Music,
   [musicalGenreTags.breakcore]
 );
-export const blackacid = new Music(
+export const blackacid = createMusic(
   "Black Acid",
   "Enduser",
   "blackacid-enduser",
@@ -577,7 +577,7 @@ export const blackacid = new Music(
   MediaType.Music,
   [musicalGenreTags.breakcore]
 );
-export const hereitschristmastime = new Music(
+export const hereitschristmastime = createMusic(
   "Here It's Christmas Time",
   "Kevin Bacon",
   "hereitschristmastime-kevinbacon",
@@ -586,7 +586,7 @@ export const hereitschristmastime = new Music(
   MediaType.Music,
   [musicalGenreTags.pop, holidayTags.christmas, specialtyTags.marvel]
 );
-export const allIwantforchristmasisyou = new Music(
+export const allIwantforchristmasisyou = createMusic(
   "All I Want for Christmas is You",
   "Mariah Carey",
   "alliwantforchristmasisyou-mariahcarey",
@@ -595,7 +595,7 @@ export const allIwantforchristmasisyou = new Music(
   MediaType.Music,
   [musicalGenreTags.pop, holidayTags.christmas]
 );
-export const kidnapthesandyclaws = new Music(
+export const kidnapthesandyclaws = createMusic(
   "Kidnap the Sandy Claws",
   "Korn",
   "kidnapthesandyclaws-korn",
@@ -604,7 +604,7 @@ export const kidnapthesandyclaws = new Music(
   MediaType.Music,
   [musicalGenreTags.metal, holidayTags.christmas, holidayTags.halloween]
 );
-export const monstermash = new Music(
+export const monstermash = createMusic(
   "Monster Mash",
   "Bobby Pickett",
   "monstermash-bobbypickett",
@@ -613,7 +613,7 @@ export const monstermash = new Music(
   MediaType.Music,
   [musicalGenreTags.pop, holidayTags.halloween]
 );
-export const comeandgetyourlove = new Music(
+export const comeandgetyourlove = createMusic(
   "Come and Get Your Love",
   "Redbone",
   "comeandgetyourlove-redbone",
@@ -622,7 +622,7 @@ export const comeandgetyourlove = new Music(
   MediaType.Music,
   [musicalGenreTags.rock, specialtyTags.marvel]
 );
-export const ohhchild = new Music(
+export const ohhchild = createMusic(
   "Ohh Child",
   "The Five Stairsteps",
   "ohhchild-thefivestairsteps",

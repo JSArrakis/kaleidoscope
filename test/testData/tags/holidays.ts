@@ -1,4 +1,4 @@
-import { Tag, TagType } from "../../../types/index.js";
+import { createTag } from "../../../factories/tag.factory";
 
 /**
  * Holiday test tags for Kaleidoscope testing
@@ -7,7 +7,7 @@ import { Tag, TagType } from "../../../types/index.js";
 
 export const holidayTags = {
   // Major Western holidays with seasonal periods
-  christmas: new Tag(
+  christmas: createTag(
     "christmas",
     "Christmas",
     TagType.Holiday,
@@ -17,7 +17,7 @@ export const holidayTags = {
     "2024-12-31 23:59:59" // seasonEndDate (DATETIME)
   ),
 
-  halloween: new Tag(
+  halloween: createTag(
     "halloween",
     "Halloween",
     TagType.Holiday,
@@ -27,7 +27,7 @@ export const holidayTags = {
     "2024-11-04 23:59:59" // seasonEndDate (DATETIME)
   ),
 
-  valentine: new Tag(
+  valentine: createTag(
     "valentine",
     "Valentine's Day",
     TagType.Holiday,
@@ -37,7 +37,7 @@ export const holidayTags = {
     undefined // seasonEndDate
   ),
 
-  summer: new Tag(
+  summer: createTag(
     "summer",
     "Independence Day",
     TagType.Holiday,
@@ -47,7 +47,7 @@ export const holidayTags = {
     undefined // seasonEndDate
   ),
 
-  newYear: new Tag(
+  newYear: createTag(
     "new-year",
     "New Year",
     TagType.Holiday,

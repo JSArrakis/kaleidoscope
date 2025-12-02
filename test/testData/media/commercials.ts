@@ -1,4 +1,4 @@
-import { Commercial, Tag, MediaType } from "../../../types/index.js";
+import { createCommercial } from "../../../factories/commercial.factory";
 import {
   aestheticTags,
   ageGroupTags,
@@ -8,7 +8,7 @@ import {
   specialtyTags,
 } from "../tags";
 
-export const jurassicparktoys1 = new Commercial(
+export const jurassicparktoys1 = createCommercial(
   "Jurassic Park Toys 1",
   "jurassicparktoys1",
   10,
@@ -21,7 +21,7 @@ export const jurassicparktoys1 = new Commercial(
     eraTags.nineties,
   ]
 );
-export const marvelvsstreetfighter98 = new Commercial(
+export const marvelvsstreetfighter98 = createCommercial(
   "98 Marvel vs StreetFighter",
   "98marvelvsstreetfighter",
   15,
@@ -35,7 +35,7 @@ export const marvelvsstreetfighter98 = new Commercial(
     eraTags.nineties,
   ]
 );
-export const wildones = new Commercial(
+export const wildones = createCommercial(
   "Wild Ones",
   "wildones",
   15,
@@ -43,7 +43,7 @@ export const wildones = new Commercial(
   MediaType.Commercial,
   [genreTags.adventure, ageGroupTags.kids, eraTags.nineties]
 );
-export const dreambuilders = new Commercial(
+export const dreambuilders = createCommercial(
   "Dream Builders",
   "dreambuilders",
   15,
@@ -51,7 +51,7 @@ export const dreambuilders = new Commercial(
   MediaType.Commercial,
   [ageGroupTags.kids, eraTags.nineties]
 );
-export const jurassicparktoys2 = new Commercial(
+export const jurassicparktoys2 = createCommercial(
   "93 Jurassic Park Toys 2",
   "93 jurassicparktoys2",
   15,
@@ -64,7 +64,7 @@ export const jurassicparktoys2 = new Commercial(
     eraTags.nineties,
   ]
 );
-export const jurassicparktoys3 = new Commercial(
+export const jurassicparktoys3 = createCommercial(
   "93 Jurassic Park Toys 3",
   "93 jurassicparktoys3",
   15,
@@ -77,7 +77,7 @@ export const jurassicparktoys3 = new Commercial(
     eraTags.nineties,
   ]
 );
-export const littleoopsiedaisy = new Commercial(
+export const littleoopsiedaisy = createCommercial(
   "Little Oopsie Daisy",
   "littleoopsiedaisy",
   15,
@@ -85,7 +85,7 @@ export const littleoopsiedaisy = new Commercial(
   MediaType.Commercial,
   [ageGroupTags.kids, eraTags.nineties]
 );
-export const meninblacktoys97 = new Commercial(
+export const meninblacktoys97 = createCommercial(
   "97 Men in Black Toys",
   "97meninblacktoys",
   15,
@@ -99,7 +99,7 @@ export const meninblacktoys97 = new Commercial(
     eraTags.nineties,
   ]
 );
-export const monsterfacetoy = new Commercial(
+export const monsterfacetoy = createCommercial(
   "Monster Face Toy",
   "monsterfacetoy",
   15,
@@ -107,7 +107,7 @@ export const monsterfacetoy = new Commercial(
   MediaType.Commercial,
   [holidayTags.halloween, genreTags.horror, ageGroupTags.kids, eraTags.nineties]
 );
-export const newbluemms = new Commercial(
+export const newbluemms = createCommercial(
   "New Blue M&Ms",
   "newbluemms",
   15,
@@ -115,7 +115,7 @@ export const newbluemms = new Commercial(
   MediaType.Commercial,
   [eraTags.nineties]
 );
-export const superduperdoublelooper = new Commercial(
+export const superduperdoublelooper = createCommercial(
   "Super Duper Double Looper",
   "superduperdoublelooper",
   15,
@@ -123,7 +123,7 @@ export const superduperdoublelooper = new Commercial(
   MediaType.Commercial,
   [genreTags.action, ageGroupTags.kids, eraTags.nineties]
 );
-export const transformersbeastwarstoys = new Commercial(
+export const transformersbeastwarstoys = createCommercial(
   "Transformers Beast Wars Toys",
   "transformersbeastwarstoys",
   15,
@@ -137,7 +137,7 @@ export const transformersbeastwarstoys = new Commercial(
     eraTags.nineties,
   ]
 );
-export const gamegear1 = new Commercial(
+export const gamegear1 = createCommercial(
   "Game Gear 1",
   "gamegear1",
   26,
@@ -145,7 +145,7 @@ export const gamegear1 = new Commercial(
   MediaType.Commercial,
   [ageGroupTags.kids, eraTags.nineties]
 );
-export const sonicandknuckles1 = new Commercial(
+export const sonicandknuckles1 = createCommercial(
   "Sonic and Knuckles 1",
   "sonicandknuckles1",
   30,
@@ -153,7 +153,7 @@ export const sonicandknuckles1 = new Commercial(
   MediaType.Commercial,
   [ageGroupTags.kids, eraTags.nineties]
 );
-export const banjokazooie1 = new Commercial(
+export const banjokazooie1 = createCommercial(
   "Banjo Kazooie 1",
   "banjokazooie1",
   30,
@@ -161,7 +161,7 @@ export const banjokazooie1 = new Commercial(
   MediaType.Commercial,
   [ageGroupTags.kids, eraTags.nineties]
 );
-export const fzero1 = new Commercial(
+export const fzero1 = createCommercial(
   "F-Zero 1",
   "fzero1",
   30,
@@ -169,7 +169,7 @@ export const fzero1 = new Commercial(
   MediaType.Commercial,
   [ageGroupTags.kids, eraTags.nineties]
 );
-export const gauntletlegends1 = new Commercial(
+export const gauntletlegends1 = createCommercial(
   "Gauntlet Legends 1",
   "gauntletlegends1",
   30,
@@ -177,7 +177,7 @@ export const gauntletlegends1 = new Commercial(
   MediaType.Commercial,
   [ageGroupTags.kids, eraTags.nineties]
 );
-export const halloween711 = new Commercial(
+export const halloween711 = createCommercial(
   "Halloween 7-11",
   "halloween711",
   30,
@@ -185,7 +185,7 @@ export const halloween711 = new Commercial(
   MediaType.Commercial,
   [holidayTags.halloween, eraTags.nineties]
 );
-export const alientrailer1 = new Commercial(
+export const alientrailer1 = createCommercial(
   "Alien Trailer 1",
   "alientrailer1",
   30,
@@ -199,7 +199,7 @@ export const alientrailer1 = new Commercial(
     eraTags.seventies,
   ]
 );
-export const americanwerewolfinlondontrailer1 = new Commercial(
+export const americanwerewolfinlondontrailer1 = createCommercial(
   "American Werewolf in London Trailer 1",
   "americanwerewolfinlondontrailer1",
   30,
@@ -207,7 +207,7 @@ export const americanwerewolfinlondontrailer1 = new Commercial(
   MediaType.Commercial,
   [genreTags.horror, ageGroupTags.mature, eraTags.eighties]
 );
-export const beetlejuicetrailer1 = new Commercial(
+export const beetlejuicetrailer1 = createCommercial(
   "Beetlejuice Trailer 1",
   "beetlejuicetrailer1",
   30,
@@ -220,7 +220,7 @@ export const beetlejuicetrailer1 = new Commercial(
     eraTags.eighties,
   ]
 );
-export const ocarinaoftimetrailer1 = new Commercial(
+export const ocarinaoftimetrailer1 = createCommercial(
   "Ocarina of Time Trailer 1",
   "ocarinaoftimetrailer1",
   62,
@@ -228,7 +228,7 @@ export const ocarinaoftimetrailer1 = new Commercial(
   MediaType.Commercial,
   [ageGroupTags.kids, eraTags.nineties]
 );
-export const ijustshippedmybed = new Commercial(
+export const ijustshippedmybed = createCommercial(
   "I Just Shipped My Bed",
   "ijustshippedmybed",
   69,
@@ -236,7 +236,7 @@ export const ijustshippedmybed = new Commercial(
   MediaType.Commercial,
   [genreTags.comedy, eraTags.twentytens]
 );
-export const cornpopsgolf = new Commercial(
+export const cornpopsgolf = createCommercial(
   "Corn Pops Golf",
   "cornpopsgolf",
   30,
@@ -244,7 +244,7 @@ export const cornpopsgolf = new Commercial(
   MediaType.Commercial,
   [ageGroupTags.family, eraTags.nineties]
 );
-export const blacktronlegomaniac = new Commercial(
+export const blacktronlegomaniac = createCommercial(
   "Blacktron Lego Maniac",
   "blacktronlegomaniac",
   30,
@@ -252,7 +252,7 @@ export const blacktronlegomaniac = new Commercial(
   MediaType.Commercial,
   [specialtyTags.lego, ageGroupTags.kids, eraTags.eighties]
 );
-export const starttrektoys = new Commercial(
+export const starttrektoys = createCommercial(
   "Star Trek Toys",
   "starttrektoys",
   30,
@@ -260,7 +260,7 @@ export const starttrektoys = new Commercial(
   MediaType.Commercial,
   [specialtyTags.startrek, genreTags.scifi, ageGroupTags.kids, eraTags.nineties]
 );
-export const sharkbitesfruitsnacks = new Commercial(
+export const sharkbitesfruitsnacks = createCommercial(
   "Shark Bites Fruit Snacks",
   "sharkbitesfruitsnacks",
   30,
@@ -268,7 +268,7 @@ export const sharkbitesfruitsnacks = new Commercial(
   MediaType.Commercial,
   [ageGroupTags.kids, eraTags.nineties]
 );
-export const ricecrispiescerealtalks = new Commercial(
+export const ricecrispiescerealtalks = createCommercial(
   "Rice Crispies Cereal Talks",
   "ricecrispiescerealtalks",
   30,
@@ -276,7 +276,7 @@ export const ricecrispiescerealtalks = new Commercial(
   MediaType.Commercial,
   [ageGroupTags.kids, eraTags.nineties]
 );
-export const pizzahutxmen = new Commercial(
+export const pizzahutxmen = createCommercial(
   "Pizza Hut X-Men",
   "pizzahutxmen",
   30,
@@ -290,7 +290,7 @@ export const pizzahutxmen = new Commercial(
     eraTags.nineties,
   ]
 );
-export const mcdonaldscrush = new Commercial(
+export const mcdonaldscrush = createCommercial(
   "McDonalds Crush",
   "mcdonaldscrush",
   30,
@@ -298,7 +298,7 @@ export const mcdonaldscrush = new Commercial(
   MediaType.Commercial,
   [ageGroupTags.kids, eraTags.nineties]
 );
-export const transformers80s1 = new Commercial(
+export const transformers80s1 = createCommercial(
   "Transformers 80s 1",
   "transformers80s1",
   30,
@@ -312,7 +312,7 @@ export const transformers80s1 = new Commercial(
     eraTags.eighties,
   ]
 );
-export const alienstoys1 = new Commercial(
+export const alienstoys1 = createCommercial(
   "Aliens Toys 1",
   "alienstoys1",
   30,
@@ -327,7 +327,7 @@ export const alienstoys1 = new Commercial(
     eraTags.nineties,
   ]
 );
-export const jurassicpark3toys = new Commercial(
+export const jurassicpark3toys = createCommercial(
   "Jurassic Park 3 Toys",
   "jurassicpark3toys",
   30,
@@ -341,7 +341,7 @@ export const jurassicpark3toys = new Commercial(
   ]
 );
 
-export const default1 = new Commercial(
+export const default1 = createCommercial(
   "Default 1",
   "default1",
   15,
@@ -349,7 +349,7 @@ export const default1 = new Commercial(
   MediaType.Commercial,
   []
 );
-export const default2 = new Commercial(
+export const default2 = createCommercial(
   "Default 2",
   "default2",
   16,
@@ -357,7 +357,7 @@ export const default2 = new Commercial(
   MediaType.Commercial,
   []
 );
-export const default3 = new Commercial(
+export const default3 = createCommercial(
   "Default 3",
   "default3",
   17,
@@ -365,7 +365,7 @@ export const default3 = new Commercial(
   MediaType.Commercial,
   []
 );
-export const default4 = new Commercial(
+export const default4 = createCommercial(
   "Default 4",
   "default4",
   18,
@@ -373,7 +373,7 @@ export const default4 = new Commercial(
   MediaType.Commercial,
   []
 );
-export const default5 = new Commercial(
+export const default5 = createCommercial(
   "Default 5",
   "default5",
   19,
@@ -381,7 +381,7 @@ export const default5 = new Commercial(
   MediaType.Commercial,
   []
 );
-export const default6 = new Commercial(
+export const default6 = createCommercial(
   "Default 6",
   "default6",
   20,
@@ -389,7 +389,7 @@ export const default6 = new Commercial(
   MediaType.Commercial,
   []
 );
-export const default7 = new Commercial(
+export const default7 = createCommercial(
   "Default 7",
   "default7",
   30,
@@ -397,7 +397,7 @@ export const default7 = new Commercial(
   MediaType.Commercial,
   []
 );
-export const default8 = new Commercial(
+export const default8 = createCommercial(
   "Default 8",
   "default8",
   60,
@@ -405,7 +405,7 @@ export const default8 = new Commercial(
   MediaType.Commercial,
   []
 );
-export const default9 = new Commercial(
+export const default9 = createCommercial(
   "Default 9",
   "default9",
   120,
@@ -414,7 +414,7 @@ export const default9 = new Commercial(
   []
 );
 
-export const starwarstoylightsabers = new Commercial(
+export const starwarstoylightsabers = createCommercial(
   "Star Wars Toy Lightsabers",
   "starwarstoylightsabers",
   30,
@@ -423,7 +423,7 @@ export const starwarstoylightsabers = new Commercial(
   [aestheticTags.spaceOpera, ageGroupTags.family, eraTags.twothousands]
 );
 
-export const nerfblastershowdown = new Commercial(
+export const nerfblastershowdown = createCommercial(
   "Nerf Blaster Showdown",
   "nerfblastershowdown",
   30,
@@ -432,7 +432,7 @@ export const nerfblastershowdown = new Commercial(
   [genreTags.action, ageGroupTags.family, eraTags.nineties]
 );
 
-export const transformersbeastwars = new Commercial(
+export const transformersbeastwars = createCommercial(
   "Transformers Beast Wars Toys",
   "transformersbeastwars",
   30,
@@ -441,7 +441,7 @@ export const transformersbeastwars = new Commercial(
   [genreTags.action, genreTags.scifi, ageGroupTags.family, eraTags.nineties]
 );
 
-export const digimontoys = new Commercial(
+export const digimontoys = createCommercial(
   "Digimon Digital Monsters Action Figures",
   "digimontoys",
   30,
@@ -455,7 +455,7 @@ export const digimontoys = new Commercial(
   ]
 );
 
-export const yugiohcardgame = new Commercial(
+export const yugiohcardgame = createCommercial(
   "Yu-Gi-Oh! Trading Card Game",
   "yugiohcardgame",
   30,
@@ -464,7 +464,7 @@ export const yugiohcardgame = new Commercial(
   [aestheticTags.fantasy, ageGroupTags.family, eraTags.twothousands]
 );
 
-export const hotwheelscrashzone = new Commercial(
+export const hotwheelscrashzone = createCommercial(
   "Hot Wheels - Crash Zone Track Set",
   "hotwheelscrashzone",
   30,
@@ -473,7 +473,7 @@ export const hotwheelscrashzone = new Commercial(
   [genreTags.action, ageGroupTags.family, eraTags.nineties]
 );
 
-export const pokemonredblue = new Commercial(
+export const pokemonredblue = createCommercial(
   "Pokémon Red & Blue Game Boy",
   "pokemonredblue",
   30,
@@ -487,7 +487,7 @@ export const pokemonredblue = new Commercial(
   ]
 );
 
-export const jurassicparkinflatabletrex = new Commercial(
+export const jurassicparkinflatabletrex = createCommercial(
   "Jurassic Park Inflatable T-Rex Toy",
   "jurassicparkinflatabletrex",
   30,
@@ -496,7 +496,7 @@ export const jurassicparkinflatabletrex = new Commercial(
   [genreTags.action, ageGroupTags.family, eraTags.nineties]
 );
 
-export const goosebumpsboardgame = new Commercial(
+export const goosebumpsboardgame = createCommercial(
   "Goosebumps Board Game",
   "goosebumpsboardgame",
   30,
@@ -505,7 +505,7 @@ export const goosebumpsboardgame = new Commercial(
   [genreTags.horror, ageGroupTags.family, eraTags.nineties]
 );
 
-export const legoexploriens = new Commercial(
+export const legoexploriens = createCommercial(
   "LEGO Exploriens",
   "legoexploriens",
   30,
@@ -521,7 +521,7 @@ export const legoexploriens = new Commercial(
   ]
 );
 
-export const mybuddykidsister = new Commercial(
+export const mybuddykidsister = createCommercial(
   "My Buddy / Kid Sister",
   "mybuddykidsister",
   30,
@@ -530,7 +530,7 @@ export const mybuddykidsister = new Commercial(
   [ageGroupTags.kids, eraTags.nineties]
 );
 
-export const teddyruxpinstorybook = new Commercial(
+export const teddyruxpinstorybook = createCommercial(
   "Teddy Ruxpin Storybook",
   "teddyruxpinstorybook",
   30,
@@ -539,7 +539,7 @@ export const teddyruxpinstorybook = new Commercial(
   [genreTags.adventure, ageGroupTags.kids, eraTags.nineties]
 );
 
-export const mcdonaldsbatmanforeverhappymeal = new Commercial(
+export const mcdonaldsbatmanforeverhappymeal = createCommercial(
   "McDonald’s Batman Forever Happy Meal",
   "mcdonaldsbatmanforeverhappymeal",
   30,
@@ -548,7 +548,7 @@ export const mcdonaldsbatmanforeverhappymeal = new Commercial(
   [genreTags.action, ageGroupTags.kids, eraTags.nineties]
 );
 
-export const barneydinostoreadventure = new Commercial(
+export const barneydinostoreadventure = createCommercial(
   "Barney Dinosaur Store Adventure",
   "barneydinostoreadventure",
   30,
@@ -557,7 +557,7 @@ export const barneydinostoreadventure = new Commercial(
   [genreTags.adventure, ageGroupTags.kids, eraTags.nineties]
 );
 
-export const fisherpriceadventurepeople = new Commercial(
+export const fisherpriceadventurepeople = createCommercial(
   "Fisher-Price Adventure People",
   "fisherpriceadventurepeople",
   30,
@@ -566,7 +566,7 @@ export const fisherpriceadventurepeople = new Commercial(
   [genreTags.adventure, ageGroupTags.kids, eraTags.nineties]
 );
 
-export const playdohextrudedinos = new Commercial(
+export const playdohextrudedinos = createCommercial(
   "Play-Doh Dinosaur Set",
   "playdohextrudedinos",
   30,
@@ -575,7 +575,7 @@ export const playdohextrudedinos = new Commercial(
   [genreTags.action, ageGroupTags.kids, eraTags.nineties]
 );
 
-export const tonkarealsoundsfiretruck = new Commercial(
+export const tonkarealsoundsfiretruck = createCommercial(
   "Tonka Real Sounds Fire Truck",
   "tonkarealsoundsfiretruck",
   30,
@@ -584,7 +584,7 @@ export const tonkarealsoundsfiretruck = new Commercial(
   [genreTags.action, ageGroupTags.kids, eraTags.nineties]
 );
 
-export const mcdonaldshappymealspacejam = new Commercial(
+export const mcdonaldshappymealspacejam = createCommercial(
   "McDonald’s Space Jam Happy Meal",
   "mcdonaldshappymealspacejam",
   30,
@@ -593,7 +593,7 @@ export const mcdonaldshappymealspacejam = new Commercial(
   [aestheticTags.sports, ageGroupTags.kids, eraTags.nineties]
 );
 
-export const fisherpricewildwesttown = new Commercial(
+export const fisherpricewildwesttown = createCommercial(
   "Fisher-Price Wild West Town",
   "fisherpricewildwesttown",
   30,
@@ -602,7 +602,7 @@ export const fisherpricewildwesttown = new Commercial(
   [aestheticTags.western, ageGroupTags.kids, eraTags.nineties]
 );
 
-export const rugratshappymeal = new Commercial(
+export const rugratshappymeal = createCommercial(
   "McDonald’s Rugrats Happy Meal",
   "rugratshappymeal",
   30,
@@ -611,7 +611,7 @@ export const rugratshappymeal = new Commercial(
   [genreTags.adventure, ageGroupTags.kids, eraTags.nineties]
 );
 
-export const batmananimatedseriesfigures = new Commercial(
+export const batmananimatedseriesfigures = createCommercial(
   "Batman: The Animated Series Action Figures",
   "batmananimatedseriesfigures",
   30,
@@ -625,7 +625,7 @@ export const batmananimatedseriesfigures = new Commercial(
   ]
 );
 
-export const spidermanactionset = new Commercial(
+export const spidermanactionset = createCommercial(
   "Spider-Man Web Shooter Action Set",
   "spidermanactionset",
   30,
@@ -639,7 +639,7 @@ export const spidermanactionset = new Commercial(
   ]
 );
 
-export const legoaquazone = new Commercial(
+export const legoaquazone = createCommercial(
   "LEGO Aquazone",
   "legoaquazone",
   30,
@@ -654,7 +654,7 @@ export const legoaquazone = new Commercial(
   ]
 );
 
-export const starwarsactionfleet = new Commercial(
+export const starwarsactionfleet = createCommercial(
   "Star Wars Action Fleet Micro Machines",
   "starwarsactionfleet",
   30,
@@ -669,7 +669,7 @@ export const starwarsactionfleet = new Commercial(
   ]
 );
 
-export const powerangersmegazord = new Commercial(
+export const powerangersmegazord = createCommercial(
   "Power Rangers Mega Zord Playset",
   "powerrangersmegazord",
   30,
@@ -683,7 +683,7 @@ export const powerangersmegazord = new Commercial(
   ]
 );
 
-export const tomagotchipet = new Commercial(
+export const tomagotchipet = createCommercial(
   "Tamagotchi Virtual Pet",
   "tomagotchipet",
   30,
@@ -692,7 +692,7 @@ export const tomagotchipet = new Commercial(
   [ageGroupTags.family, eraTags.nineties]
 );
 
-export const bioniclemaskoflight = new Commercial(
+export const bioniclemaskoflight = createCommercial(
   "Bionicle: Mask of Light",
   "bioniclemaskoflight",
   30,
@@ -707,7 +707,7 @@ export const bioniclemaskoflight = new Commercial(
   ]
 );
 
-export const nintendogameboypokemon = new Commercial(
+export const nintendogameboypokemon = createCommercial(
   "Nintendo Game Boy: Pokémon Yellow",
   "nintendogameboypokemon",
   30,
@@ -721,7 +721,7 @@ export const nintendogameboypokemon = new Commercial(
   ]
 );
 
-export const yugiohdueldisk = new Commercial(
+export const yugiohdueldisk = createCommercial(
   "Yu-Gi-Oh! Duel Disk Accessory",
   "yugiohdueldisk",
   30,
@@ -735,7 +735,7 @@ export const yugiohdueldisk = new Commercial(
   ]
 );
 
-export const fisherpriceimaginext = new Commercial(
+export const fisherpriceimaginext = createCommercial(
   "Fisher-Price Imaginext Space Adventures",
   "fisherpriceimaginext",
   30,
@@ -744,7 +744,7 @@ export const fisherpriceimaginext = new Commercial(
   [genreTags.adventure, genreTags.scifi, ageGroupTags.kids, eraTags.nineties]
 );
 
-export const rugratsmoviepromotion = new Commercial(
+export const rugratsmoviepromotion = createCommercial(
   "Rugrats Movie Promotion",
   "rugratsmoviepromotion",
   30,
@@ -753,7 +753,7 @@ export const rugratsmoviepromotion = new Commercial(
   [genreTags.adventure, ageGroupTags.kids, eraTags.nineties]
 );
 
-export const thomasadventureset = new Commercial(
+export const thomasadventureset = createCommercial(
   "Thomas the Tank Engine Adventure Set",
   "thomasadventureset",
   30,
@@ -762,7 +762,7 @@ export const thomasadventureset = new Commercial(
   [genreTags.adventure, ageGroupTags.kids, eraTags.nineties]
 );
 
-export const littlepeoplepirateship = new Commercial(
+export const littlepeoplepirateship = createCommercial(
   "Little People Pirate Ship",
   "littlepeoplepirateship",
   30,
@@ -771,7 +771,7 @@ export const littlepeoplepirateship = new Commercial(
   [genreTags.action, genreTags.adventure, ageGroupTags.kids, eraTags.nineties]
 );
 
-export const duplomagicalcastle = new Commercial(
+export const duplomagicalcastle = createCommercial(
   "Duplo Magical Castle Playset",
   "duplomagicalcastle",
   30,
@@ -785,7 +785,7 @@ export const duplomagicalcastle = new Commercial(
   ]
 );
 
-export const mcdonaldsdisneydinos = new Commercial(
+export const mcdonaldsdisneydinos = createCommercial(
   "McDonald’s Dinosaur Happy Meal (Disney)",
   "mcdonaldsdisneydinos",
   30,
@@ -794,7 +794,7 @@ export const mcdonaldsdisneydinos = new Commercial(
   [genreTags.action, genreTags.adventure, ageGroupTags.kids, eraTags.nineties]
 );
 
-export const happymealinspectorgadget = new Commercial(
+export const happymealinspectorgadget = createCommercial(
   "McDonald’s Inspector Gadget Happy Meal",
   "happymealinspectorGadget",
   30,
@@ -809,7 +809,7 @@ export const happymealinspectorgadget = new Commercial(
   ]
 );
 
-export const legoduplospaceset = new Commercial(
+export const legoduplospaceset = createCommercial(
   "LEGO Duplo Space Set",
   "legoduplospaceset",
   30,
@@ -818,7 +818,7 @@ export const legoduplospaceset = new Commercial(
   [genreTags.adventure, genreTags.scifi, ageGroupTags.kids, eraTags.nineties]
 );
 
-export const fisherpricefirestation = new Commercial(
+export const fisherpricefirestation = createCommercial(
   "Fisher-Price Fire Station Rescue Set",
   "fisherpricefirestation",
   30,
@@ -827,7 +827,7 @@ export const fisherpricefirestation = new Commercial(
   [genreTags.action, ageGroupTags.kids, eraTags.nineties]
 );
 
-export const mightymaxplayset = new Commercial(
+export const mightymaxplayset = createCommercial(
   "Mighty Max Playset",
   "mightymaxplayset",
   30,
@@ -842,7 +842,7 @@ export const mightymaxplayset = new Commercial(
   ]
 );
 
-export const hotwheelscrashers = new Commercial(
+export const hotwheelscrashers = createCommercial(
   "Hot Wheels Crashers",
   "hotwheelscrashers",
   30,
@@ -851,7 +851,7 @@ export const hotwheelscrashers = new Commercial(
   [genreTags.action, ageGroupTags.family, eraTags.nineties]
 );
 
-export const nerfballzooka = new Commercial(
+export const nerfballzooka = createCommercial(
   "Nerf Ballzooka",
   "nerfballzooka",
   30,
@@ -860,7 +860,7 @@ export const nerfballzooka = new Commercial(
   [genreTags.action, ageGroupTags.family, eraTags.nineties]
 );
 
-export const beastwarsactionfigures = new Commercial(
+export const beastwarsactionfigures = createCommercial(
   "Beast Wars Transformers",
   "beastwarsactionfigures",
   30,
@@ -869,7 +869,7 @@ export const beastwarsactionfigures = new Commercial(
   [genreTags.action, genreTags.scifi, ageGroupTags.family, eraTags.nineties]
 );
 
-export const digivice = new Commercial(
+export const digivice = createCommercial(
   "Digivice Virtual Pet (Digimon)",
   "digivice",
   30,
@@ -883,7 +883,7 @@ export const digivice = new Commercial(
   ]
 );
 
-export const legorockraiders = new Commercial(
+export const legorockraiders = createCommercial(
   "LEGO Rock Raiders",
   "legorockraiders",
   30,
@@ -898,7 +898,7 @@ export const legorockraiders = new Commercial(
   ]
 );
 
-export const starwarsthephantommenacepromotion = new Commercial(
+export const starwarsthephantommenacepromotion = createCommercial(
   "Star Wars Episode I: The Phantom Menace Promo",
   "starwarsthephantommenacepromotion",
   30,
@@ -913,7 +913,7 @@ export const starwarsthephantommenacepromotion = new Commercial(
   ]
 );
 
-export const actionmanspyline = new Commercial(
+export const actionmanspyline = createCommercial(
   "Action Man: Spy Line",
   "actionmanspyline",
   30,
@@ -922,7 +922,7 @@ export const actionmanspyline = new Commercial(
   [genreTags.action, ageGroupTags.family, eraTags.nineties]
 );
 
-export const pokemontcgcommercial = new Commercial(
+export const pokemontcgcommercial = createCommercial(
   "Pokémon Trading Card Game",
   "pokemontcgcommercial",
   30,
@@ -936,7 +936,7 @@ export const pokemontcgcommercial = new Commercial(
   ]
 );
 
-export const yugiohpromotion = new Commercial(
+export const yugiohpromotion = createCommercial(
   "Yu-Gi-Oh! TV Show Promo",
   "yugiohpromotion",
   30,
@@ -950,7 +950,7 @@ export const yugiohpromotion = new Commercial(
   ]
 );
 
-export const gijoefighterjets = new Commercial(
+export const gijoefighterjets = createCommercial(
   "G.I. Joe Fighter Jets",
   "gijoefighterjets",
   30,
@@ -959,7 +959,7 @@ export const gijoefighterjets = new Commercial(
   [genreTags.action, ageGroupTags.family, eraTags.nineties]
 );
 
-export const tonkamightytrucks = new Commercial(
+export const tonkamightytrucks = createCommercial(
   "Tonka Mighty Trucks",
   "tonkamightytrucks",
   30,
@@ -968,7 +968,7 @@ export const tonkamightytrucks = new Commercial(
   [genreTags.action, genreTags.adventure, ageGroupTags.kids, eraTags.nineties]
 );
 
-export const fisherpriceadventurecastle = new Commercial(
+export const fisherpriceadventurecastle = createCommercial(
   "Fisher-Price Adventure Castle",
   "fisherpriceadventurecastle",
   30,
@@ -982,7 +982,7 @@ export const fisherpriceadventurecastle = new Commercial(
   ]
 );
 
-export const playmobilpirates = new Commercial(
+export const playmobilpirates = createCommercial(
   "Playmobil Pirates",
   "playmobilpirates",
   30,
@@ -996,7 +996,7 @@ export const playmobilpirates = new Commercial(
   ]
 );
 
-export const mcdonaldslegoexplorers = new Commercial(
+export const mcdonaldslegoexplorers = createCommercial(
   "McDonald’s LEGO Explorers Happy Meal",
   "mcdonaldslegoexplorers",
   30,
@@ -1011,7 +1011,7 @@ export const mcdonaldslegoexplorers = new Commercial(
   ]
 );
 
-export const bluescluesmailtime = new Commercial(
+export const bluescluesmailtime = createCommercial(
   "Blue’s Clues Mail Time Song Promo",
   "bluescluesmailtime",
   30,
@@ -1020,7 +1020,7 @@ export const bluescluesmailtime = new Commercial(
   [genreTags.adventure, ageGroupTags.kids, eraTags.nineties]
 );
 
-export const bobthebuilderpromotion = new Commercial(
+export const bobthebuilderpromotion = createCommercial(
   "Bob the Builder Promo",
   "bobthebuilderpromotion",
   30,
@@ -1029,7 +1029,7 @@ export const bobthebuilderpromotion = new Commercial(
   [genreTags.adventure, ageGroupTags.kids, eraTags.nineties]
 );
 
-export const barneyadventurebus = new Commercial(
+export const barneyadventurebus = createCommercial(
   "Barney’s Adventure Bus VHS Promo",
   "barneyadventurebus",
   30,
@@ -1038,7 +1038,7 @@ export const barneyadventurebus = new Commercial(
   [genreTags.adventure, ageGroupTags.kids, eraTags.nineties]
 );
 
-export const kidospacecenter = new Commercial(
+export const kidospacecenter = createCommercial(
   "Kido Space Center Playset",
   "kidospacecenter",
   30,
@@ -1047,7 +1047,7 @@ export const kidospacecenter = new Commercial(
   [genreTags.scifi, genreTags.adventure, ageGroupTags.kids, eraTags.nineties]
 );
 
-export const rugratsvhscollection = new Commercial(
+export const rugratsvhscollection = createCommercial(
   "Rugrats VHS Collection Promo",
   "rugratsvhscollection",
   30,
@@ -1056,7 +1056,7 @@ export const rugratsvhscollection = new Commercial(
   [genreTags.adventure, ageGroupTags.kids, eraTags.nineties]
 );
 
-export const mcdonaldsdisneytoys = new Commercial(
+export const mcdonaldsdisneytoys = createCommercial(
   "McDonald’s Disney Toys Happy Meal",
   "mcdonaldsdisneytoys",
   30,

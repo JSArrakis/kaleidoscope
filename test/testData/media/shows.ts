@@ -1,7 +1,8 @@
-import { MediaType, Episode, Show } from "../../../types/index.js";
+import { createShow } from "../../../factories/show.factory";
+import { createEpisode } from "../../../factories/episode.factory";
 import { ageGroupTags, aestheticTags, eraTags, genreTags } from "../tags";
 
-export const sailormoon = new Show(
+export const sailormoon = createShow(
   "Sailor Moon",
   "sailormoon",
   "sailormoon",
@@ -21,7 +22,7 @@ export const sailormoon = new Show(
   MediaType.Show, // type
   5, // episodeCount
   [
-    new Episode(
+    createEpisode(
       "1",
       "1",
       1,
@@ -35,7 +36,7 @@ export const sailormoon = new Show(
       MediaType.Episode,
       []
     ),
-    new Episode(
+    createEpisode(
       "1",
       "2",
       2,
@@ -49,7 +50,7 @@ export const sailormoon = new Show(
       MediaType.Episode,
       []
     ),
-    new Episode(
+    createEpisode(
       "1",
       "3",
       3,
@@ -63,7 +64,7 @@ export const sailormoon = new Show(
       MediaType.Episode,
       []
     ),
-    new Episode(
+    createEpisode(
       "1",
       "4",
       4,
@@ -77,7 +78,7 @@ export const sailormoon = new Show(
       MediaType.Episode,
       []
     ),
-    new Episode(
+    createEpisode(
       "1",
       "5",
       5,
@@ -93,7 +94,7 @@ export const sailormoon = new Show(
     ),
   ]
 );
-export const reboot = new Show(
+export const reboot = createShow(
   "Reboot",
   "reboot",
   "reboot",
@@ -112,7 +113,7 @@ export const reboot = new Show(
   MediaType.Show,
   5,
   [
-    new Episode(
+    createEpisode(
       "1",
       "1",
       1,
@@ -126,7 +127,7 @@ export const reboot = new Show(
       MediaType.Episode,
       []
     ),
-    new Episode(
+    createEpisode(
       "1",
       "2",
       2,
@@ -140,7 +141,7 @@ export const reboot = new Show(
       MediaType.Episode,
       []
     ),
-    new Episode(
+    createEpisode(
       "1",
       "3",
       3,
@@ -154,7 +155,7 @@ export const reboot = new Show(
       MediaType.Episode,
       []
     ),
-    new Episode(
+    createEpisode(
       "1",
       "4",
       4,
@@ -168,7 +169,7 @@ export const reboot = new Show(
       MediaType.Episode,
       []
     ),
-    new Episode(
+    createEpisode(
       "1",
       "5",
       5,
@@ -184,7 +185,7 @@ export const reboot = new Show(
     ),
   ]
 );
-export const dragonballz = new Show(
+export const dragonballz = createShow(
   "Dragon Ball Z",
   "dragonballz",
   "dragonballz",
@@ -204,7 +205,7 @@ export const dragonballz = new Show(
   MediaType.Show,
   5,
   [
-    new Episode(
+    createEpisode(
       "1",
       "1",
       1,
@@ -218,7 +219,7 @@ export const dragonballz = new Show(
       MediaType.Episode,
       []
     ),
-    new Episode(
+    createEpisode(
       "1",
       "2",
       2,
@@ -232,7 +233,7 @@ export const dragonballz = new Show(
       MediaType.Episode,
       []
     ),
-    new Episode(
+    createEpisode(
       "1",
       "3",
       3,
@@ -246,7 +247,7 @@ export const dragonballz = new Show(
       MediaType.Episode,
       []
     ),
-    new Episode(
+    createEpisode(
       "1",
       "4",
       4,
@@ -260,7 +261,7 @@ export const dragonballz = new Show(
       MediaType.Episode,
       []
     ),
-    new Episode(
+    createEpisode(
       "1",
       "5",
       5,
@@ -276,7 +277,7 @@ export const dragonballz = new Show(
     ),
   ]
 );
-export const gundamwing = new Show(
+export const gundamwing = createShow(
   "Gundam Wing",
   "gundamwing",
   "gundamwing",
@@ -297,7 +298,7 @@ export const gundamwing = new Show(
   MediaType.Show,
   5,
   [
-    new Episode(
+    createEpisode(
       "1",
       "1",
       1,
@@ -311,7 +312,7 @@ export const gundamwing = new Show(
       MediaType.Episode,
       []
     ),
-    new Episode(
+    createEpisode(
       "1",
       "2",
       2,
@@ -325,7 +326,7 @@ export const gundamwing = new Show(
       MediaType.Episode,
       []
     ),
-    new Episode(
+    createEpisode(
       "1",
       "3",
       3,
@@ -339,7 +340,7 @@ export const gundamwing = new Show(
       MediaType.Episode,
       []
     ),
-    new Episode(
+    createEpisode(
       "1",
       "4",
       4,
@@ -353,7 +354,7 @@ export const gundamwing = new Show(
       MediaType.Episode,
       []
     ),
-    new Episode(
+    createEpisode(
       "1",
       "5",
       5,
@@ -369,7 +370,7 @@ export const gundamwing = new Show(
     ),
   ]
 );
-export const tenchimuyo = new Show(
+export const tenchimuyo = createShow(
   "Tenchi Muyo",
   "tenchimuyo",
   "tenchimuyo",
@@ -388,7 +389,7 @@ export const tenchimuyo = new Show(
   MediaType.Show,
   5,
   [
-    new Episode(
+    createEpisode(
       "1",
       "4",
       1,
@@ -402,7 +403,7 @@ export const tenchimuyo = new Show(
       MediaType.Episode,
       []
     ),
-    new Episode(
+    createEpisode(
       "1",
       "5",
       2,
@@ -416,7 +417,7 @@ export const tenchimuyo = new Show(
       MediaType.Episode,
       []
     ),
-    new Episode(
+    createEpisode(
       "1",
       "6",
       3,
@@ -430,7 +431,7 @@ export const tenchimuyo = new Show(
       MediaType.Episode,
       []
     ),
-    new Episode(
+    createEpisode(
       "1",
       "7",
       4,
@@ -444,7 +445,7 @@ export const tenchimuyo = new Show(
       MediaType.Episode,
       []
     ),
-    new Episode(
+    createEpisode(
       "2",
       "1",
       5,
@@ -460,7 +461,7 @@ export const tenchimuyo = new Show(
     ),
   ]
 );
-export const batmantheanimatedseries = new Show(
+export const batmantheanimatedseries = createShow(
   "Batman: The Animated Series",
   "batmantheanimatedseries",
   "batman",
@@ -481,7 +482,7 @@ export const batmantheanimatedseries = new Show(
   MediaType.Show,
   5,
   [
-    new Episode(
+    createEpisode(
       "1",
       "1",
       1,
@@ -495,7 +496,7 @@ export const batmantheanimatedseries = new Show(
       MediaType.Episode,
       []
     ),
-    new Episode(
+    createEpisode(
       "1",
       "2",
       2,
@@ -509,7 +510,7 @@ export const batmantheanimatedseries = new Show(
       MediaType.Episode,
       []
     ),
-    new Episode(
+    createEpisode(
       "1",
       "3",
       3,
@@ -523,7 +524,7 @@ export const batmantheanimatedseries = new Show(
       MediaType.Episode,
       []
     ),
-    new Episode(
+    createEpisode(
       "1",
       "4",
       4,
@@ -537,7 +538,7 @@ export const batmantheanimatedseries = new Show(
       MediaType.Episode,
       []
     ),
-    new Episode(
+    createEpisode(
       "1",
       "5",
       5,
@@ -553,7 +554,7 @@ export const batmantheanimatedseries = new Show(
     ),
   ]
 );
-export const startrekthenextgeneration = new Show(
+export const startrekthenextgeneration = createShow(
   "Star Trek: The Next Generation",
   "startrekthenextgeneration",
   "startrek",
@@ -572,7 +573,7 @@ export const startrekthenextgeneration = new Show(
   MediaType.Show,
   5,
   [
-    new Episode(
+    createEpisode(
       "1",
       "1",
       1,
@@ -586,7 +587,7 @@ export const startrekthenextgeneration = new Show(
       MediaType.Episode,
       []
     ),
-    new Episode(
+    createEpisode(
       "1",
       "2",
       2,
@@ -600,7 +601,7 @@ export const startrekthenextgeneration = new Show(
       MediaType.Episode,
       []
     ),
-    new Episode(
+    createEpisode(
       "1",
       "3",
       3,
@@ -614,7 +615,7 @@ export const startrekthenextgeneration = new Show(
       MediaType.Episode,
       []
     ),
-    new Episode(
+    createEpisode(
       "1",
       "4",
       4,
@@ -628,7 +629,7 @@ export const startrekthenextgeneration = new Show(
       MediaType.Episode,
       []
     ),
-    new Episode(
+    createEpisode(
       "1",
       "5",
       5,
@@ -645,7 +646,7 @@ export const startrekthenextgeneration = new Show(
   ]
 );
 
-export const farscape = new Show(
+export const farscape = createShow(
   "Farscape",
   "farscape",
   "farscape",
@@ -664,7 +665,7 @@ export const farscape = new Show(
   MediaType.Show,
   5,
   [
-    new Episode(
+    createEpisode(
       "1",
       "1",
       1,
@@ -678,7 +679,7 @@ export const farscape = new Show(
       MediaType.Episode,
       []
     ),
-    new Episode(
+    createEpisode(
       "1",
       "2",
       2,
@@ -692,7 +693,7 @@ export const farscape = new Show(
       MediaType.Episode,
       []
     ),
-    new Episode(
+    createEpisode(
       "1",
       "3",
       3,
@@ -706,7 +707,7 @@ export const farscape = new Show(
       MediaType.Episode,
       []
     ),
-    new Episode(
+    createEpisode(
       "1",
       "4",
       4,
@@ -720,7 +721,7 @@ export const farscape = new Show(
       MediaType.Episode,
       []
     ),
-    new Episode(
+    createEpisode(
       "1",
       "5",
       5,
@@ -737,7 +738,7 @@ export const farscape = new Show(
   ]
 );
 
-export const talespin = new Show(
+export const talespin = createShow(
   "TaleSpin",
   "talespin",
   "talespin",
@@ -756,7 +757,7 @@ export const talespin = new Show(
   MediaType.Show,
   5,
   [
-    new Episode(
+    createEpisode(
       "1",
       "1",
       1,
@@ -770,7 +771,7 @@ export const talespin = new Show(
       MediaType.Episode,
       []
     ),
-    new Episode(
+    createEpisode(
       "1",
       "2",
       2,
@@ -784,7 +785,7 @@ export const talespin = new Show(
       MediaType.Episode,
       []
     ),
-    new Episode(
+    createEpisode(
       "1",
       "3",
       3,
@@ -798,7 +799,7 @@ export const talespin = new Show(
       MediaType.Episode,
       []
     ),
-    new Episode(
+    createEpisode(
       "1",
       "4",
       4,
@@ -812,7 +813,7 @@ export const talespin = new Show(
       MediaType.Episode,
       []
     ),
-    new Episode(
+    createEpisode(
       "1",
       "5",
       5,
