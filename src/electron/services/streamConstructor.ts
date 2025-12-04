@@ -1,11 +1,11 @@
 import { MediaBlock } from "../types/MediaBlock.js";
 import { StreamType } from "../types/StreamType.js";
-import moment from "moment";
+import { endOfDay } from "date-fns";
 import { movieRepository } from "../repositories/movieRepository.js";
 import { showRepository } from "../repositories/showRepository.js";
-import { tagRepository } from "../repositories/tagsRepository.js";
 import { episodeProgressionRepository } from "../repositories/episodeProgressionRepository.js";
 import { facetRepository } from "../repositories/facetRepository.js";
+import { findNextCadenceTime } from "../utils/common.js";
 
 /**
  * Main stream constructor entry point
@@ -20,9 +20,6 @@ export function constructStream(
   switch (streamType) {
     case StreamType.Cont:
       return constructContinuousStream(rightNow, cadence, firstMedia);
-    case StreamType.Block:
-      // TODO: Implement block stream construction
-      return [[], "Block streams not yet implemented"];
     case StreamType.Adhoc:
       // TODO: Implement adhoc stream construction
       return [[], "Adhoc streams not yet implemented"];
@@ -51,21 +48,44 @@ function constructContinuousStream(
     }
 
     // Calculate end of day
-    const endOfDay = moment.unix(rightNow).endOf("day").unix();
+    const endOfDayDate = endOfDay(new Date(rightNow * 1000));
+    const endOfDayUnix = Math.floor(endOfDayDate.getTime() / 1000);
     let currentTime = rightNow;
 
-    // Create first media block
-    const firstBlock = new MediaBlock(
-      [], // No buffer for first block
-      selectedFirstMedia as Movie | Episode,
-      currentTime
-    );
+    let firstBlock: MediaBlock;
 
-    streamBlocks.push(firstBlock);
-    currentTime += firstBlock.duration;
+    if (cadence) {
+      // Check if there is any time between current time and next cadence point
+      const nextCadenceTime = findNextCadenceTime(currentTime);
+      if (nextCadenceTime > currentTime) {
+        // Create a filler block to align to cadence
+        const fillerDuration = nextCadenceTime - currentTime;
+        firstBlock = new MediaBlock([], undefined, currentTime);
+        streamBlocks.push(firstBlock);
+        currentTime += fillerDuration;
+      } else {
+        // Already at cadence, use selected first media
+        firstBlock = new MediaBlock(
+          [],
+          selectedFirstMedia as Movie | Episode,
+          currentTime
+        );
+        streamBlocks.push(firstBlock);
+        currentTime += firstBlock.duration;
+      }
+    } else {
+      firstBlock = new MediaBlock(
+        [],
+        selectedFirstMedia as Movie | Episode,
+        currentTime
+      );
+      streamBlocks.push(firstBlock);
+      currentTime += firstBlock.duration;
+      
+    }
 
     // Continue filling stream until end of day
-    while (currentTime < endOfDay) {
+    while (currentTime < endOfDayUnix) {
       const nextMedia = selectRandomMediaForStream();
       if (!nextMedia) {
         // No more media available, stop here
@@ -73,7 +93,7 @@ function constructContinuousStream(
       }
 
       // Skip if media would extend past end of day
-      if (currentTime + (nextMedia.duration || 0) > endOfDay) {
+      if (currentTime + (nextMedia.duration || 0) > endOfDayUnix) {
         break;
       }
 

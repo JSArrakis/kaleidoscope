@@ -148,6 +148,18 @@ export class TagRepository {
   }
 
   /**
+   * Find an AgeGroup tag by sequence number
+   */
+  findAgeGroupBySequence(sequence: number): Tag | null {
+    const stmt = this.db.prepare(
+      `SELECT * FROM tags WHERE type = ? AND sequence = ?`
+    );
+    const row = stmt.get("AgeGroup", sequence) as any;
+    if (!row) return null;
+    return this.mapRowToTag(row);
+  }
+
+  /**
    * Update tag
    */
   update(tagId: string, tag: Tag): Tag | null {

@@ -2,8 +2,11 @@ import { MediaBlock } from "../types/MediaBlock.js";
 import { constructStream } from "./streamConstructor.js";
 import { StreamType } from "../types/StreamType.js";
 import { IStreamRequest } from "../types/StreamRequest.js";
-import moment from "moment";
+import {
+  getUnixTime
+} from "date-fns";
 import * as VLCService from "./vlcService.js"; // TODO: Implement or replace with Electron player
+import { findNextCadenceTime } from "../utils/common.js";
 
 let upcoming: MediaBlock[] = [];
 let onDeck: MediaBlock[] = [];
@@ -35,7 +38,7 @@ export async function initializeStream(
     setContinuousStreamArgs(streamArgs);
     setContinuousStream(true);
 
-    const now = moment().unix();
+    const now = getUnixTime(new Date());
     const alignedTime = findNextCadenceTime(now);
 
     // TODO: Implement firstMedia selection via refract system
@@ -170,27 +173,4 @@ export async function addInitialMediaBlocks(): Promise<void> {
   // for (const item of onDeck) {
   //   await VLCService.addMediaBlockToPlaylist(item);
   // }
-}
-
-/**
- * Finds the next cadence time (00:00 or 30:00 of each minute)
- * Used for aligning media blocks to consistent time boundaries
- */
-function findNextCadenceTime(now: number): number {
-  const nowMoment = moment.unix(now);
-  const minutes = nowMoment.minute();
-  const seconds = nowMoment.second();
-
-  // If we're already past :30, next cadence is at :00 of next minute
-  if (minutes % 1 === 0 && seconds >= 30) {
-    return nowMoment.clone().add(1, "minute").startOf("minute").unix();
-  }
-
-  // If we're before :30, next cadence is at :30 of current minute
-  if (seconds < 30) {
-    return nowMoment.clone().minute(minutes).second(30).unix();
-  }
-
-  // Otherwise next cadence is at :00 of next minute
-  return nowMoment.clone().add(1, "minute").startOf("minute").unix();
 }

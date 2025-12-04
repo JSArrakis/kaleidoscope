@@ -58,6 +58,102 @@ export class ShortRepository {
     return rows.map((row) => this.mapRowToShort(row));
   }
 
+  findHolidayShorts(
+    ageGroupTags: Tag[],
+    holidayTags: Tag[],
+    maxDuration: number
+  ): Short[] {
+    if (holidayTags.length === 0) {
+      return [];
+    }
+
+    const holidayTagIds: string[] = holidayTags.map((tag) => tag.tagId);
+    const ageGroupTagIds: string[] =
+      ageGroupTags.length > 0 ? ageGroupTags.map((tag) => tag.tagId) : [];
+
+    const shortMap = new Map<string, Short>();
+
+    // Query 1: Shorts with holiday tag AND NO age group tag
+    const holidayPlaceholders = holidayTagIds
+      .map((_, i) => `:holiday${i}`)
+      .join(",");
+    const query1 = `
+      SELECT DISTINCT s.* FROM shorts s
+      JOIN short_tags st ON s.mediaItemId = st.mediaItemId
+      WHERE s.duration IS NOT NULL
+        AND s.duration <= :maxDuration
+        AND st.tagId IN (${holidayPlaceholders})
+        AND NOT EXISTS (
+          SELECT 1 FROM short_tags st2
+          JOIN tags t ON st2.tagId = t.tagId
+          WHERE st2.mediaItemId = s.mediaItemId
+            AND t.type = 'AgeGroup'
+        )
+        AND NOT EXISTS (
+          SELECT 1 FROM recently_used_media
+          WHERE mediaItemId = s.mediaItemId
+            AND mediaType = 'Short'
+        )
+      ORDER BY s.title
+    `;
+
+    const queryParams1: Record<string, any> = {
+      maxDuration,
+      ...Object.fromEntries(holidayTagIds.map((id, i) => [`:holiday${i}`, id])),
+    };
+
+    const stmt1 = this.db.prepare(query1);
+    const rows1 = stmt1.all(queryParams1) as any[];
+    rows1.forEach((row) => {
+      const short = this.mapRowToShort(row);
+      shortMap.set(short.mediaItemId, short);
+    });
+
+    // Query 2: Shorts with holiday tag AND age group tag (if age groups provided)
+    if (ageGroupTagIds.length > 0) {
+      const ageGroupPlaceholders = ageGroupTagIds
+        .map((_, i) => `:ageGroup${i}`)
+        .join(",");
+      const query2 = `
+        SELECT DISTINCT s.* FROM shorts s
+        JOIN short_tags st ON s.mediaItemId = st.mediaItemId
+        WHERE s.duration IS NOT NULL
+          AND s.duration <= :maxDuration
+          AND st.tagId IN (${holidayPlaceholders})
+          AND EXISTS (
+            SELECT 1 FROM short_tags st2
+            WHERE st2.mediaItemId = s.mediaItemId
+              AND st2.tagId IN (${ageGroupPlaceholders})
+          )
+          AND NOT EXISTS (
+            SELECT 1 FROM recently_used_media
+            WHERE mediaItemId = s.mediaItemId
+              AND mediaType = 'Short'
+          )
+        ORDER BY s.title
+      `;
+
+      const queryParams2: Record<string, any> = {
+        maxDuration,
+        ...Object.fromEntries(
+          holidayTagIds.map((id, i) => [`:holiday${i}`, id])
+        ),
+        ...Object.fromEntries(
+          ageGroupTagIds.map((id, i) => [`:ageGroup${i}`, id])
+        ),
+      };
+
+      const stmt2 = this.db.prepare(query2);
+      const rows2 = stmt2.all(queryParams2) as any[];
+      rows2.forEach((row) => {
+        const short = this.mapRowToShort(row);
+        shortMap.set(short.mediaItemId, short);
+      });
+    }
+
+    return Array.from(shortMap.values());
+  }
+
   update(mediaItemId: string, short: Short): Short | null {
     const transaction = this.db.transaction(() => {
       const stmt = this.db.prepare(`

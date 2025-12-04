@@ -60,6 +60,102 @@ export class CommercialRepository {
     return rows.map((row) => this.mapRowToCommercial(row));
   }
 
+  findHolidayCommercials(
+    ageGroupTags: Tag[],
+    holidayTags: Tag[],
+    maxDuration: number
+  ): Commercial[] {
+    if (holidayTags.length === 0) {
+      return [];
+    }
+
+    const holidayTagIds: string[] = holidayTags.map((tag) => tag.tagId);
+    const ageGroupTagIds: string[] =
+      ageGroupTags.length > 0 ? ageGroupTags.map((tag) => tag.tagId) : [];
+
+    const commercialMap = new Map<string, Commercial>();
+
+    // Query 1: Commercials with holiday tag AND NO age group tag
+    const holidayPlaceholders = holidayTagIds
+      .map((_, i) => `:holiday${i}`)
+      .join(",");
+    const query1 = `
+      SELECT DISTINCT c.* FROM commercials c
+      JOIN commercial_tags ct ON c.mediaItemId = ct.mediaItemId
+      WHERE c.duration IS NOT NULL
+        AND c.duration <= :maxDuration
+        AND ct.tagId IN (${holidayPlaceholders})
+        AND NOT EXISTS (
+          SELECT 1 FROM commercial_tags ct2
+          JOIN tags t ON ct2.tagId = t.tagId
+          WHERE ct2.mediaItemId = c.mediaItemId
+            AND t.type = 'AgeGroup'
+        )
+        AND NOT EXISTS (
+          SELECT 1 FROM recently_used_media
+          WHERE mediaItemId = c.mediaItemId
+            AND mediaType = 'Commercial'
+        )
+      ORDER BY c.title
+    `;
+
+    const queryParams1: Record<string, any> = {
+      maxDuration,
+      ...Object.fromEntries(holidayTagIds.map((id, i) => [`:holiday${i}`, id])),
+    };
+
+    const stmt1 = this.db.prepare(query1);
+    const rows1 = stmt1.all(queryParams1) as any[];
+    rows1.forEach((row) => {
+      const commercial = this.mapRowToCommercial(row);
+      commercialMap.set(commercial.mediaItemId, commercial);
+    });
+
+    // Query 2: Commercials with holiday tag AND age group tag (if age groups provided)
+    if (ageGroupTagIds.length > 0) {
+      const ageGroupPlaceholders = ageGroupTagIds
+        .map((_, i) => `:ageGroup${i}`)
+        .join(",");
+      const query2 = `
+        SELECT DISTINCT c.* FROM commercials c
+        JOIN commercial_tags ct ON c.mediaItemId = ct.mediaItemId
+        WHERE c.duration IS NOT NULL
+          AND c.duration <= :maxDuration
+          AND ct.tagId IN (${holidayPlaceholders})
+          AND EXISTS (
+            SELECT 1 FROM commercial_tags ct2
+            WHERE ct2.mediaItemId = c.mediaItemId
+              AND ct2.tagId IN (${ageGroupPlaceholders})
+          )
+          AND NOT EXISTS (
+            SELECT 1 FROM recently_used_media
+            WHERE mediaItemId = c.mediaItemId
+              AND mediaType = 'Commercial'
+          )
+        ORDER BY c.title
+      `;
+
+      const queryParams2: Record<string, any> = {
+        maxDuration,
+        ...Object.fromEntries(
+          holidayTagIds.map((id, i) => [`:holiday${i}`, id])
+        ),
+        ...Object.fromEntries(
+          ageGroupTagIds.map((id, i) => [`:ageGroup${i}`, id])
+        ),
+      };
+
+      const stmt2 = this.db.prepare(query2);
+      const rows2 = stmt2.all(queryParams2) as any[];
+      rows2.forEach((row) => {
+        const commercial = this.mapRowToCommercial(row);
+        commercialMap.set(commercial.mediaItemId, commercial);
+      });
+    }
+
+    return Array.from(commercialMap.values());
+  }
+
   update(mediaItemId: string, commercial: Commercial): Commercial | null {
     const transaction = this.db.transaction(() => {
       const stmt = this.db.prepare(`

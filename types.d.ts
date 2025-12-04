@@ -44,6 +44,13 @@ type Tag = {
   exclusionTagIds?: string[];
 };
 
+type SegmentedTags = {
+  genreTags: Tag[];
+  aestheticTags: Tag[];
+  eraTags: Tag[];
+  specialtyTags: Tag[];
+};
+
 type Subgenre = {
   tagId: string;
   name: string;
@@ -154,6 +161,12 @@ type Bumper = {
   tags: Tag[];
   createdAt?: string;
   updatedAt?: string;
+};
+
+type BufferMedia = {
+  commercials: Commercial[];
+  shorts: Short[];
+  music: Music[];
 };
 
 // ============================================================================
@@ -294,19 +307,6 @@ interface IStreamRequest {
   EndTime?: number;
   StartTime?: number;
 }
-
-// ============================================================================
-// SEGMENTED TAGS
-// ============================================================================
-
-type PrismSegmentedTags = {
-  EraTags: Tag[];
-  GenreTags: Tag[];
-  AestheticTags: Tag[];
-  SpecialtyTags: Tag[];
-  AgeGroupTags: Tag[];
-  HolidayTags: Tag[];
-};
 
 // ============================================================================
 // IPC EVENT PAYLOAD MAPPINGS
