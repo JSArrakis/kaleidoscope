@@ -7,6 +7,46 @@ import { commercialRepository } from "../repositories/commercialRepository.js";
 const COMMERCIALS_ONLY_THRESHOLD = 420; // 7 minutes in seconds
 const MEDIUM_BUFFER_THRESHOLD = 900; // 15 minutes in seconds
 
+// Reusage window durations
+const COMMERCIAL_REUSAGE_WINDOW = 2 * 60 * 60; // 2 hours in seconds
+const SHORTS_MUSIC_REUSAGE_WINDOW = 4 * 60 * 60; // 4 hours in seconds
+
+type BufferStrategy = "short" | "medium" | "large";
+
+function determineBufferStrategy(duration: number): BufferStrategy {
+  if (duration <= COMMERCIALS_ONLY_THRESHOLD) {
+    return "short";
+  } else if (duration <= MEDIUM_BUFFER_THRESHOLD) {
+    return "medium";
+  } else {
+    return "large";
+  }
+}
+
+function randomizeShortsMusicCount(strategy: BufferStrategy): number {
+  switch (strategy) {
+    case "short":
+      return 0; // Commercials only
+    case "medium":
+      return Math.floor(Math.random() * 3); // 0-2
+    case "large":
+      return Math.floor(Math.random() * 3) + 1; // 1-3
+  }
+}
+
+function splitCountBetweenHalves(totalCount: number): {
+  halfA: number;
+  halfB: number;
+} {
+  if (totalCount === 0) {
+    return { halfA: 0, halfB: 0 };
+  }
+  // Randomly decide how to split (could be 50/50, 60/40, etc.)
+  const halfACount = Math.floor(Math.random() * (totalCount + 1));
+  const halfBCount = totalCount - halfACount;
+  return { halfA: halfACount, halfB: halfBCount };
+}
+
 export function createBuffer(
   duration: number,
   halfATags: Tag[],
@@ -77,11 +117,24 @@ export function createBuffer(
     };
   }
 
+  // Determine buffer strategy and randomize shorts/music count
+  const strategy = determineBufferStrategy(remDur);
+  const shortsMusicsCount = randomizeShortsMusicCount(strategy);
+  const { halfA: halfAShortsMusics, halfB: halfBShortsMusics } =
+    splitCountBetweenHalves(shortsMusicsCount);
+
   if (halfADuration === 0) {
     // Get list of commercials, music, and shorts that match the tags of the
     // subsequent show or movie and also gets the remaining duration of the
     // buffer after selecting the media to pass to the next buffer selection
-    let selectedB = constructBufferHalf(halfBTags, activeHolidayTags, remDur);
+    let selectedB = constructBufferHalf(
+      halfBTags,
+      activeHolidayTags,
+      remDur,
+      strategy,
+      halfBShortsMusics,
+      timepoint
+    );
     // Add the selected media to the buffer
     buffer.push(...selectedB.selectedMedia);
     // Add the promo to the buffer (if available)
@@ -97,7 +150,14 @@ export function createBuffer(
     // Get list of commercials, music, and shorts that match the tags of the
     // preceding show or movie and also gets the remaining duration of the
     // buffer after selecting the media to pass to the next buffer selection
-    let selectedA = constructBufferHalf(halfATags, activeHolidayTags, remDur);
+    let selectedA = constructBufferHalf(
+      halfATags,
+      activeHolidayTags,
+      remDur,
+      strategy,
+      halfAShortsMusics,
+      timepoint
+    );
     // Add the promo to the buffer (if available)
     if (promo) {
       buffer.push(promo);
@@ -115,7 +175,10 @@ export function createBuffer(
     let selectedA = constructBufferHalf(
       halfATags,
       activeHolidayTags,
-      halfADuration
+      halfADuration,
+      strategy,
+      halfAShortsMusics,
+      timepoint
     );
     // Add the selected media to the buffer
     buffer.push(...selectedA.selectedMedia);
@@ -128,7 +191,10 @@ export function createBuffer(
     let selectedB = constructBufferHalf(
       halfBTags,
       activeHolidayTags,
-      halfBDuration + selectedA.remainingDuration
+      halfBDuration + selectedA.remainingDuration,
+      strategy,
+      halfBShortsMusics,
+      timepoint
     );
     // Add the selected media to the buffer
     buffer.push(...selectedB.selectedMedia);
@@ -144,12 +210,16 @@ export function createBuffer(
 export function constructBufferHalf(
   tags: Tag[],
   activeHolidayTags: Tag[],
-  duration: number
+  duration: number,
+  strategy: BufferStrategy,
+  targetShortsMusicCount: number,
+  timepoint: number
 ): {
   selectedMedia: (Commercial | Short | Music)[];
   remainingDuration: number;
 } {
   let selectedMedia: (Commercial | Short | Music)[] = [];
+  let remainingDuration = duration;
 
   // Segment Tags for spectrum processing and buffer creation
   const segmentedTags = segmentTags(tags);
@@ -169,47 +239,95 @@ export function constructBufferHalf(
   let usedShorts: Short[] = [];
   let usedMusic: Music[] = [];
 
-  if (duration <= COMMERCIALS_ONLY_THRESHOLD) {
-    usedCommercials = onlyCommercials(
+  if (strategy === "short") {
+    const result = selectCommercials(
       activeHolidayTags,
       segmentedTags.eraTags,
       spectrumResult.commercials,
       defaultCommercials,
       duration
-    ).selectedCommercials;
-  } else if (duration <= MEDIUM_BUFFER_THRESHOLD) {
-    // TODO: Commercials/Shorts/Music mix strategy for medium buffers
+    );
+    usedCommercials = result.selectedCommercials;
+    selectedMedia.push(...result.selectedCommercials);
+    remainingDuration = result.remainingDuration;
+  } else if (strategy === "medium") {
+    // combine music videos and shorts, shuffle them, and then select 0-2 at random from the list
+    const selectedShortsOrMusic = selectShortsAndMusic(
+      spectrumResult.music,
+      spectrumResult.shorts,
+      targetShortsMusicCount,
+      duration
+    );
+    usedShorts = selectedShortsOrMusic.selectedShorts;
+    usedMusic = selectedShortsOrMusic.selectedMusic;
+    selectedMedia.push(...selectedShortsOrMusic.selected);
+    // Fill the remaining duration with commercials
+    const commercialsSelection = selectCommercials(
+      activeHolidayTags,
+      segmentedTags.eraTags,
+      spectrumResult.commercials,
+      defaultCommercials,
+      selectedShortsOrMusic.remainingDuration
+    );
+    usedCommercials = commercialsSelection.selectedCommercials;
+    selectedMedia.push(...usedCommercials);
   } else {
-    // TODO: Commercials/Shorts/Music mix strategy for large buffers
+    // strategy === "large"
+    const selectedShortsOrMusic = selectShortsAndMusic(
+      spectrumResult.music,
+      spectrumResult.shorts,
+      targetShortsMusicCount,
+      duration
+    );
+    usedShorts = selectedShortsOrMusic.selectedShorts;
+    usedMusic = selectedShortsOrMusic.selectedMusic;
+    selectedMedia.push(...selectedShortsOrMusic.selected);
+    // Fill the remaining duration with commercials
+    const commercialsSelection = selectCommercials(
+      activeHolidayTags,
+      segmentedTags.eraTags,
+      spectrumResult.commercials,
+      defaultCommercials,
+      selectedShortsOrMusic.remainingDuration
+    );
+    usedCommercials = commercialsSelection.selectedCommercials;
+    selectedMedia.push(...usedCommercials);
   }
 
   // Record usage of all selected buffer media to prevent repetition
-  const mediaUsageRecords = [
-    ...usedCommercials.map((c: Commercial) => ({
-      mediaItemId: c.mediaItemId,
-      mediaType: "commercial" as const,
-      usageContext: "buffer" as const,
-    })),
-    ...usedShorts.map((s: Short) => ({
-      mediaItemId: s.mediaItemId,
-      mediaType: "short" as const,
-      usageContext: "buffer" as const,
-    })),
-    ...usedMusic.map((m: Music) => ({
-      mediaItemId: m.mediaItemId,
-      mediaType: "music" as const,
-      usageContext: "buffer" as const,
-    })),
-  ];
+  const commercialExpirationTime = new Date(
+    (timepoint + COMMERCIAL_REUSAGE_WINDOW) * 1000
+  ).toISOString();
+  const shortsMusicsExpirationTime = new Date(
+    (timepoint + SHORTS_MUSIC_REUSAGE_WINDOW) * 1000
+  ).toISOString();
 
-  if (mediaUsageRecords.length > 0) {
-    recentlyUsedMediaRepository.recordBatchUsage(mediaUsageRecords);
-
-    // Log buffer creation summary
-    console.log(
-      `[Buffer Engine] Created buffer with ${spectrumResult.commercials.length} commercials, ${spectrumResult.shorts.length} shorts, ${spectrumResult.music.length} music tracks`
+  for (const commercial of usedCommercials) {
+    recentlyUsedMediaRepository.recordUsage(
+      commercial.mediaItemId,
+      "commercial",
+      commercialExpirationTime
     );
   }
+
+  for (const short of usedShorts) {
+    recentlyUsedMediaRepository.recordUsage(
+      short.mediaItemId,
+      "short",
+      shortsMusicsExpirationTime
+    );
+  }
+
+  for (const music of usedMusic) {
+    recentlyUsedMediaRepository.recordUsage(
+      music.mediaItemId,
+      "music",
+      shortsMusicsExpirationTime
+    );
+  }
+
+  // Shuffle selectedMedia before returning
+  selectedMedia = selectedMedia.sort(() => 0.5 - Math.random());
 
   return {
     selectedMedia,
@@ -217,7 +335,7 @@ export function constructBufferHalf(
   };
 }
 
-export function onlyCommercials(
+export function selectCommercials(
   activeHolidayTags: Tag[],
   eraTags: Tag[],
   commercials: Commercial[],
@@ -375,5 +493,54 @@ export function onlyCommercials(
   return {
     selectedCommercials,
     remainingDuration,
+  };
+}
+
+export function selectShortsAndMusic(
+  music: Music[],
+  shorts: Short[],
+  targetCount: number,
+  maxDuration: number
+): {
+  selected: (Music | Short)[];
+  selectedShorts: Short[];
+  selectedMusic: Music[];
+  remainingDuration: number;
+} {
+  // Combine and shuffle shorts and music
+  const combined: (Music | Short)[] = [...shorts, ...music];
+  const shuffled = combined.sort(() => 0.5 - Math.random());
+
+  let selected: (Music | Short)[] = [];
+  let selectedShorts: Short[] = [];
+  let selectedMusic: Music[] = [];
+  let totalDuration = 0;
+
+  // Try to select the target amount while staying under maxDuration
+  for (const item of shuffled) {
+    if (selected.length >= targetCount) {
+      break;
+    }
+
+    const itemDuration = item.duration || 0;
+    if (totalDuration + itemDuration <= maxDuration) {
+      selected.push(item);
+      totalDuration += itemDuration;
+
+      // Track which type it is by checking if it exists in shorts array
+      const isShort = shorts.some((s) => s.mediaItemId === item.mediaItemId);
+      if (isShort) {
+        selectedShorts.push(item as Short);
+      } else {
+        selectedMusic.push(item as Music);
+      }
+    }
+  }
+
+  return {
+    selected,
+    selectedShorts,
+    selectedMusic,
+    remainingDuration: maxDuration - totalDuration,
   };
 }

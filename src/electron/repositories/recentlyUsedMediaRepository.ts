@@ -8,8 +8,8 @@ export class RecentlyUsedMediaRepository {
   create(media: RecentlyUsedMedia): RecentlyUsedMedia {
     const transaction = this.db.transaction(() => {
       const stmt = this.db.prepare(`
-        INSERT INTO recently_used_media (recentlyUsedMediaId, mediaItemId, mediaType, lastUsedDate, usageCount, expirationDate)
-        VALUES (?, ?, ?, ?, ?, ?)
+        INSERT INTO recently_used_media (recentlyUsedMediaId, mediaItemId, mediaType, lastUsedDate, expirationDate)
+        VALUES (?, ?, ?, ?, ?)
       `);
 
       stmt.run(
@@ -17,7 +17,6 @@ export class RecentlyUsedMediaRepository {
         media.mediaItemId,
         media.mediaType,
         media.lastUsedDate,
-        media.usageCount,
         media.expirationDate || null
       );
     });
@@ -83,7 +82,7 @@ export class RecentlyUsedMediaRepository {
   incrementUsage(recentlyUsedMediaId: string): RecentlyUsedMedia | null {
     const stmt = this.db.prepare(`
       UPDATE recently_used_media 
-      SET usageCount = usageCount + 1, lastUsedDate = CURRENT_TIMESTAMP, updatedAt = CURRENT_TIMESTAMP
+      SET lastUsedDate = CURRENT_TIMESTAMP, updatedAt = CURRENT_TIMESTAMP
       WHERE recentlyUsedMediaId = ?
     `);
 
@@ -104,8 +103,7 @@ export class RecentlyUsedMediaRepository {
       // Update existing record
       const stmt = this.db.prepare(`
         UPDATE recently_used_media 
-        SET usageCount = usageCount + 1, lastUsedDate = CURRENT_TIMESTAMP, 
-            expirationDate = ?, updatedAt = CURRENT_TIMESTAMP
+        SET lastUsedDate = CURRENT_TIMESTAMP, expirationDate = ?, updatedAt = CURRENT_TIMESTAMP
         WHERE recentlyUsedMediaId = ?
       `);
 
@@ -119,7 +117,6 @@ export class RecentlyUsedMediaRepository {
         mediaItemId,
         mediaType,
         lastUsedDate: new Date().toISOString(),
-        usageCount: 1,
         expirationDate: expirationDate || undefined,
       });
     }
@@ -196,7 +193,6 @@ export class RecentlyUsedMediaRepository {
       mediaItemId: row.mediaItemId,
       mediaType: row.mediaType,
       lastUsedDate: row.lastUsedDate,
-      usageCount: row.usageCount,
       expirationDate: row.expirationDate,
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,

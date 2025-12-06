@@ -222,7 +222,6 @@ type RecentlyUsedMedia = {
   mediaItemId: string;
   mediaType: string;
   lastUsedDate: string;
-  usageCount: number;
   expirationDate?: string;
   createdAt?: string;
   updatedAt?: string;
