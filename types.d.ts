@@ -49,6 +49,7 @@ type SegmentedTags = {
   aestheticTags: Tag[];
   eraTags: Tag[];
   specialtyTags: Tag[];
+  ageGroupTags: Tag[];
 };
 
 type Subgenre = {

@@ -162,12 +162,23 @@ export class RecentlyUsedMediaRepository {
     return result.changes > 0;
   }
 
-  deleteExpired(): number {
+  deleteExpired(referenceUnixTimeSeconds?: number): number {
+    let comparisonTime: string;
+
+    if (referenceUnixTimeSeconds !== undefined) {
+      // Convert unix timestamp (seconds) to ISO string
+      const referenceDate = new Date(referenceUnixTimeSeconds * 1000);
+      comparisonTime = referenceDate.toISOString();
+    } else {
+      // Use current timestamp
+      comparisonTime = new Date().toISOString();
+    }
+
     const stmt = this.db.prepare(`
       DELETE FROM recently_used_media 
-      WHERE expirationDate IS NOT NULL AND expirationDate <= CURRENT_TIMESTAMP
+      WHERE expirationDate IS NOT NULL AND expirationDate <= ?
     `);
-    const result = stmt.run();
+    const result = stmt.run(comparisonTime);
     return result.changes;
   }
 
