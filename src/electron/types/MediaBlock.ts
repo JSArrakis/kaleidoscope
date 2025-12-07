@@ -8,13 +8,13 @@ export interface MediaBlockData {
 }
 
 export class MediaBlock implements MediaBlockData {
-  buffer: any[];
+  buffer: (Promo | Music | Short | Commercial | Bumper)[];
   mainBlock?: Movie | Episode;
   startTime: number;
   duration: number; // Calculated duration in seconds
 
   constructor(
-    buffer: any[],
+    buffer: (Promo | Music | Short | Commercial | Bumper)[],
     mainBlock: Movie | Episode | undefined,
     startTime: number
   ) {

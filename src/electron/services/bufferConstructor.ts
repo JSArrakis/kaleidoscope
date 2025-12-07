@@ -232,7 +232,8 @@ export function constructBufferHalf(
   const spectrumResult = selectBufferMedia(
     segmentedTags,
     activeHolidayTags,
-    duration
+    duration,
+    targetShortsMusicCount
   );
 
   let usedCommercials: Commercial[] = [];

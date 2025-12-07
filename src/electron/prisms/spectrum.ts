@@ -91,9 +91,9 @@ export function isBufferMediaPoolValid(
 export function selectBufferMedia(
   segmentedTags: SegmentedTags,
   activeHolidayTags: Tag[],
-  duration: number
+  duration: number,
+  shortOrMusicNumber: number
 ): BufferMediaSelectionResult {
-
   const ageAdjacencyTags = getAgeGroups(segmentedTags.ageGroupTags);
 
   // Start with empty results
@@ -215,6 +215,21 @@ export function selectBufferMedia(
   selectedShorts.push(...untaggedResults.shorts);
   selectedMusic.push(...untaggedResults.music);
 
+  if (
+    segmentedTags.ageGroupTags.length === 0 &&
+    segmentedTags.specialtyTags.length === 0 &&
+    segmentedTags.genreTags.length === 0 &&
+    segmentedTags.aestheticTags.length === 0
+  ) {
+    const randomBufferMedia = getRandomBufferMedia(
+      duration,
+      shortOrMusicNumber
+    );
+    selectedCommercials.push(...randomBufferMedia.commercials);
+    selectedShorts.push(...randomBufferMedia.shorts);
+    selectedMusic.push(...randomBufferMedia.music);
+  }
+  
   const isValid = isBufferMediaPoolValid(
     selectedCommercials,
     selectedShorts,
@@ -282,7 +297,7 @@ export function segmentTags(tags: Tag[]): SegmentedTags {
     aestheticTags,
     eraTags,
     specialtyTags,
-    ageGroupTags
+    ageGroupTags,
   };
 }
 
@@ -394,5 +409,28 @@ export function getUntaggedBufferMedia(duration: number): BufferMedia {
     commercials,
     shorts,
     music,
+  };
+}
+
+export function getRandomBufferMedia(
+  duration: number,
+  shortOrMusicNumber: number
+): BufferMedia {
+  // Get up to 2 hours of random commercials under the passed duration
+  const commercials =
+    commercialRepository.findRandomCommercialsByPoolDuration(duration);
+
+  // Get random shorts and music videos with coin-flip distribution
+  // Limited by count and total duration
+  const shortsAndMusic = shortRepository.findRandomShortsAndMusicByCount(
+    shortOrMusicNumber,
+    duration,
+    duration
+  );
+
+  return {
+    commercials,
+    shorts: shortsAndMusic.shorts,
+    music: shortsAndMusic.music,
   };
 }

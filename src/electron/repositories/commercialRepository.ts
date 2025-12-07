@@ -543,6 +543,40 @@ export class CommercialRepository {
     }
   }
 
+  /**
+   * Finds random commercials that total at least 2 hours (7200 seconds)
+   * All returned commercials must be under the passed duration limit
+   * Uses SQL window functions to accumulate durations efficiently
+   * Total duration may exceed 2 hours as it includes the commercial that crosses the threshold
+   */
+  findRandomCommercialsByPoolDuration(
+    maxDurationPerItem: number
+  ): Commercial[] {
+    const TWO_HOUR_POOL_SECONDS = 7200;
+
+    // Use a CTE to accumulate durations in random order
+    // Include all commercials up to and including the one that crosses 2 hours
+    const stmt = this.db.prepare(`
+      WITH randomized AS (
+        SELECT 
+          *,
+          SUM(COALESCE(duration, 0)) OVER (ORDER BY RANDOM()) as running_total
+        FROM commercials
+        WHERE duration <= ?
+      )
+      SELECT * FROM randomized
+      WHERE running_total <= (? + (SELECT COALESCE(MAX(duration), 0) FROM commercials WHERE duration <= ?))
+      ORDER BY running_total
+    `);
+
+    const rows = stmt.all(
+      maxDurationPerItem,
+      TWO_HOUR_POOL_SECONDS,
+      maxDurationPerItem
+    ) as any[];
+    return rows.map((row) => this.mapRowToCommercial(row));
+  }
+
   private mapRowToCommercial(row: any): Commercial {
     const tagsStmt = this.db.prepare(`
       SELECT t.* FROM tags t

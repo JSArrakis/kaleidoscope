@@ -7,4 +7,6 @@ export interface IStreamRequest {
   Movies?: string[];
   EndTime?: number;
   StartTime?: number;
+  Cadence?: boolean;
+  Themed?: boolean;
 }

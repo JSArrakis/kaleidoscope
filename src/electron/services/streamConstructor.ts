@@ -5,21 +5,95 @@ import { movieRepository } from "../repositories/movieRepository.js";
 import { showRepository } from "../repositories/showRepository.js";
 import { episodeProgressionRepository } from "../repositories/episodeProgressionRepository.js";
 import { facetRepository } from "../repositories/facetRepository.js";
+import { recentlyUsedMediaRepository } from "../repositories/recentlyUsedMediaRepository.js";
 import { findNextCadenceTime } from "../utils/common.js";
+import { createBuffer } from "./bufferConstructor.js";
+import { tagRepository } from "../repositories/tagsRepository.js";
+import * as playerManager from "./playerManager.js";
+
+/**
+ * Constructs remaining media blocks until end of day
+ * Helper function to reduce duplication across stream construction paths
+ */
+function constructRemainingStream(
+  startTime: number,
+  endOfDayUnix: number,
+  firstMediaTags: Tag[],
+  activeHolidayTags: Tag[],
+  streamConstructionOptions: StreamConstructionOptions
+): MediaBlock[] {
+  const remainingStreamBlocks: MediaBlock[] = [];
+  let timepoint = startTime;
+
+  while (timepoint < endOfDayUnix) {
+    const nextMedia = streamConstructionOptions.Themed
+      ? selectedFacetsMedia(firstMediaTags, activeHolidayTags, timepoint)
+      : selectRandomMediaForStream(timepoint);
+    if (!nextMedia) {
+      break;
+    }
+
+    if (timepoint + (nextMedia.duration || 0) > endOfDayUnix) {
+      break;
+    }
+
+    const block = new MediaBlock([], nextMedia as Movie | Episode, timepoint);
+    remainingStreamBlocks.push(block);
+    timepoint += block.duration;
+  }
+
+  return remainingStreamBlocks;
+}
+
+/**
+ * Creates and pushes a backfill buffer between two media blocks
+ * Helper function to reduce duplication
+ */
+async function createAndPushBackfillBuffer(
+  mediaBlockA: MediaBlock,
+  mediaBlockB: MediaBlock,
+  activeHolidayTags: Tag[]
+): Promise<void> {
+  const backfillStart = mediaBlockA.getEndTime();
+  const backfillEnd = mediaBlockB.startTime;
+  const backfillDuration = Math.max(0, backfillEnd - backfillStart);
+
+  if (backfillDuration > 0) {
+    const tagsA = mediaBlockA.mainBlock?.tags || [];
+    const tagsB = mediaBlockB.mainBlock?.tags || [];
+    const backfillBuffer = createBuffer(
+      backfillDuration,
+      tagsA,
+      tagsB,
+      activeHolidayTags,
+      backfillStart
+    );
+    const backfillBlock = new MediaBlock(
+      backfillBuffer.buffer,
+      undefined,
+      backfillStart
+    );
+    await playerManager.addMediaBlockToPlayer(backfillBlock);
+  }
+}
 
 /**
  * Main stream constructor entry point
  * Determines construction approach based on stream type
  */
-export function constructStream(
+export async function constructStream(
   streamType: StreamType,
+  streamConstructionOptions: StreamConstructionOptions,
   rightNow: number,
-  cadence: boolean = false,
-  firstMedia?: Episode | Movie
-): [MediaBlock[], string] {
+  previousTags?: Tag[]
+): Promise<[MediaBlock[], string]> {
   switch (streamType) {
     case StreamType.Cont:
-      return constructContinuousStream(rightNow, cadence, firstMedia);
+      return constructContinuousStream(
+        streamConstructionOptions,
+        rightNow,
+        previousTags
+      );
     case StreamType.Adhoc:
       // TODO: Implement adhoc stream construction
       return [[], "Adhoc streams not yet implemented"];
@@ -32,79 +106,168 @@ export function constructStream(
  * Constructs a continuous 24/7 stream
  * Fills time from now until end of day with media
  */
-function constructContinuousStream(
-  rightNow: number,
-  cadence: boolean = false,
-  firstMedia?: Episode | Movie
-): [MediaBlock[], string] {
+async function constructContinuousStream(
+  streamConstructionOptions: StreamConstructionOptions,
+  timepoint: number,
+  previousTags?: Tag[]
+): Promise<[MediaBlock[], string]> {
   const streamBlocks: MediaBlock[] = [];
+  const constructionStartTime = Date.now(); // Capture start time for deviation tracking
 
   try {
+    //Get active holiday tags
+    const dateString = new Date(timepoint * 1000).toISOString();
+    const activeHolidayTags =
+      tagRepository.findActiveHolidaysByDate(dateString);
+
     // Select first media if not provided
-    let selectedFirstMedia = firstMedia || selectRandomMediaForStream();
+    let selectedFirstMedia = selectRandomMediaForStream(timepoint);
 
     if (!selectedFirstMedia) {
       return [[], "No movies or shows found in database"];
     }
 
     // Calculate end of day
-    const endOfDayDate = endOfDay(new Date(rightNow * 1000));
+    const endOfDayDate = endOfDay(new Date(timepoint * 1000));
     const endOfDayUnix = Math.floor(endOfDayDate.getTime() / 1000);
-    let currentTime = rightNow;
+    let currentTime = timepoint;
 
     let firstBlock: MediaBlock;
 
-    if (cadence) {
+    if (streamConstructionOptions.Cadence) {
       // Check if there is any time between current time and next cadence point
       const nextCadenceTime = findNextCadenceTime(currentTime);
       if (nextCadenceTime > currentTime) {
-        // Create a filler block to align to cadence
+        // CADENCE WITH FILLER: Create initial buffer to align to cadence
         const fillerDuration = nextCadenceTime - currentTime;
-        firstBlock = new MediaBlock([], undefined, currentTime);
+        const initialBuffer = createBuffer(
+          fillerDuration,
+          [],
+          previousTags || selectedFirstMedia.tags || [],
+          activeHolidayTags,
+          currentTime
+        );
+        firstBlock = new MediaBlock(
+          initialBuffer.buffer,
+          undefined,
+          currentTime
+        );
+        // Push initial filler buffer to player immediately
+        let timeDeltaMs = Date.now() - constructionStartTime;
+        await playerManager.addMediaBlockToPlayer(firstBlock);
+        await playerManager.play({ timeDeltaMs });
+
+        // While buffer plays, immediately push the selectedFirstMedia block
+        // This extends the time available for rest of stream construction
+        const mediaBlock = new MediaBlock(
+          [],
+          selectedFirstMedia as Movie | Episode,
+          nextCadenceTime
+        );
+        await playerManager.addMediaBlockToPlayer(mediaBlock);
+
+        currentTime = nextCadenceTime + mediaBlock.duration;
+
+        // Construct remaining stream blocks
+        const remainingStreamBlocks = constructRemainingStream(
+          currentTime,
+          endOfDayUnix,
+          selectedFirstMedia.tags || [],
+          activeHolidayTags,
+          streamConstructionOptions
+        );
+
+        // Create backfill buffer between selectedFirstMedia and first remaining block
+        if (remainingStreamBlocks.length > 0) {
+          await createAndPushBackfillBuffer(
+            mediaBlock,
+            remainingStreamBlocks[0],
+            activeHolidayTags
+          );
+        }
+
+        // Add initial blocks to streamBlocks
         streamBlocks.push(firstBlock);
-        currentTime += fillerDuration;
+        streamBlocks.push(mediaBlock);
+
+        // Add remaining stream blocks to streamBlocks
+        streamBlocks.push(...remainingStreamBlocks);
       } else {
-        // Already at cadence, use selected first media
+        // CADENCE WITHOUT FILLER: Already at cadence, media starts immediately
         firstBlock = new MediaBlock(
           [],
           selectedFirstMedia as Movie | Episode,
           currentTime
         );
+        // Push firstBlock immediately to player
+        const timeDeltaMs = Date.now() - constructionStartTime;
+        await playerManager.addMediaBlockToPlayer(firstBlock);
+        await playerManager.play({ timeDeltaMs });
+
         streamBlocks.push(firstBlock);
         currentTime += firstBlock.duration;
+
+        // Construct remaining stream blocks
+        const remainingStreamBlocks = constructRemainingStream(
+          currentTime,
+          endOfDayUnix,
+          selectedFirstMedia.tags || [],
+          activeHolidayTags,
+          streamConstructionOptions
+        );
+
+        // Create backfill buffer between firstBlock and first remaining block
+        if (remainingStreamBlocks.length > 0) {
+          await createAndPushBackfillBuffer(
+            firstBlock,
+            remainingStreamBlocks[0],
+            activeHolidayTags
+          );
+        }
+
+        // Add remaining stream blocks to streamBlocks
+        streamBlocks.push(...remainingStreamBlocks);
       }
     } else {
+      // NON-CADENCE: First media plays immediately
       firstBlock = new MediaBlock(
         [],
         selectedFirstMedia as Movie | Episode,
         currentTime
       );
+      // Push firstBlock immediately to player
+      const timeDeltaMs = Date.now() - constructionStartTime;
+      await playerManager.addMediaBlockToPlayer(firstBlock);
+      await playerManager.play({ timeDeltaMs });
+
       streamBlocks.push(firstBlock);
       currentTime += firstBlock.duration;
-      
-    }
 
-    // Continue filling stream until end of day
-    while (currentTime < endOfDayUnix) {
-      const nextMedia = selectRandomMediaForStream();
-      if (!nextMedia) {
-        // No more media available, stop here
-        break;
-      }
-
-      // Skip if media would extend past end of day
-      if (currentTime + (nextMedia.duration || 0) > endOfDayUnix) {
-        break;
-      }
-
-      const mediaBlock = new MediaBlock(
-        [],
-        nextMedia as Movie | Episode,
-        currentTime
+      // Construct remaining stream blocks
+      const remainingStreamBlocks = constructRemainingStream(
+        currentTime,
+        endOfDayUnix,
+        selectedFirstMedia.tags || [],
+        activeHolidayTags,
+        streamConstructionOptions
       );
-      streamBlocks.push(mediaBlock);
-      currentTime += mediaBlock.duration;
+
+      // Create backfill buffer between firstBlock and first remaining block
+      if (remainingStreamBlocks.length > 0) {
+        await createAndPushBackfillBuffer(
+          firstBlock,
+          remainingStreamBlocks[0],
+          activeHolidayTags
+        );
+      }
+
+      // Add remaining stream blocks to streamBlocks
+      streamBlocks.push(...remainingStreamBlocks);
     }
+
+    // NOTE: Remaining stream blocks are now in streamBlocks array
+    // They should be managed by streamManager for upcoming/onDeck processing
+    // NOT pushed directly to player
 
     console.log(
       `[StreamConstructor] Created ${streamBlocks.length} media blocks for continuous stream`
@@ -120,8 +283,13 @@ function constructContinuousStream(
 /**
  * Selects a random media item for stream construction
  * Randomly chooses between shows and movies, respecting episode progression for shows
+ * Cleans up expired recently-used media records before selection
  */
-function selectRandomMediaForStream(): Movie | Episode | null {
+function selectRandomMediaForStream(timepoint: number): Movie | Episode | null {
+  // Clean up expired media records first
+  const unixSeconds = Math.floor(timepoint);
+  recentlyUsedMediaRepository.deleteExpired(unixSeconds);
+
   const showCount = showRepository.count();
   const movieCount = movieRepository.count();
 

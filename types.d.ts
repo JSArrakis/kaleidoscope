@@ -308,6 +308,11 @@ interface IStreamRequest {
   StartTime?: number;
 }
 
+interface StreamConstructionOptions {
+  Cadence: boolean;
+  Themed: boolean;
+}
+
 // ============================================================================
 // IPC EVENT PAYLOAD MAPPINGS
 // ============================================================================

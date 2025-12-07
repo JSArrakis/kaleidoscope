@@ -538,6 +538,118 @@ export class ShortRepository {
       updatedAt: row.updatedAt,
     };
   }
+
+  /**
+   * Finds a random set of shorts and music videos matching the requested count combined
+   * Uses a single query with two CTEs that randomly alternates between shorts and music
+   * Each iteration randomly chooses from either shorts or music pool
+   * Selects items while ensuring total combined duration does not exceed the duration limit
+   * Each item must be individually under maxDuration
+   */
+  findRandomShortsAndMusicByCount(
+    count: number,
+    maxDuration: number,
+    duration: number
+  ): { shorts: Short[]; music: Music[] } {
+    // Single query with two CTEs for shorts and music
+    // Randomly chooses from either CTE and accumulates duration
+    const stmt = this.db.prepare(`
+      WITH shorts_pool AS (
+        SELECT 
+          'short' as type,
+          mediaItemId,
+          title,
+          path,
+          duration,
+          createdAt,
+          updatedAt,
+          ROW_NUMBER() OVER (ORDER BY RANDOM()) as row_num
+        FROM shorts
+        WHERE duration <= ?
+      ),
+      music_pool AS (
+        SELECT 
+          'music' as type,
+          mediaItemId,
+          title,
+          path,
+          duration,
+          createdAt,
+          updatedAt,
+          ROW_NUMBER() OVER (ORDER BY RANDOM()) as row_num
+        FROM music
+        WHERE duration <= ?
+      ),
+      combined AS (
+        SELECT * FROM shorts_pool
+        UNION ALL
+        SELECT * FROM music_pool
+      ),
+      randomized AS (
+        SELECT 
+          type,
+          mediaItemId,
+          title,
+          path,
+          duration,
+          createdAt,
+          updatedAt,
+          row_num,
+          SUM(duration) OVER (ORDER BY RANDOM()) as running_total,
+          ROW_NUMBER() OVER (ORDER BY RANDOM()) as pick_order
+        FROM combined
+      )
+      SELECT * FROM randomized
+      WHERE running_total - duration <= ?
+      LIMIT ?
+      ORDER BY type, row_num
+    `);
+
+    const rows = stmt.all(maxDuration, maxDuration, duration, count) as any[];
+
+    const shorts: Short[] = [];
+    const music: Music[] = [];
+
+    for (const row of rows) {
+      if (row.type === "short") {
+        shorts.push(this.mapRowToShort(row));
+      } else {
+        music.push(this.mapRowToMusic(row));
+      }
+    }
+
+    return { shorts, music };
+  }
+
+  private mapRowToMusic(row: any): Music {
+    const tagsStmt = this.db.prepare(`
+      SELECT t.* FROM tags t
+      JOIN music_tags mt ON t.tagId = mt.tagId
+      WHERE mt.mediaItemId = ?
+      ORDER BY t.name
+    `);
+
+    const tagRows = tagsStmt.all(row.mediaItemId) as any[];
+    const tags = tagRows.map((tagRow) => ({
+      tagId: tagRow.tagId,
+      name: tagRow.name,
+      type: tagRow.type,
+      seasonStartDate: tagRow.seasonStartDate,
+      seasonEndDate: tagRow.seasonEndDate,
+      sequence: tagRow.sequence,
+    }));
+
+    return {
+      mediaItemId: row.mediaItemId,
+      title: row.title,
+      path: row.path,
+      duration: row.duration,
+      type: MediaType.Music,
+      tags,
+      createdAt: row.createdAt,
+      updatedAt: row.updatedAt,
+    };
+  }
 }
 
 export const shortRepository = new ShortRepository();

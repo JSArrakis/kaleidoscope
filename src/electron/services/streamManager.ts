@@ -2,9 +2,7 @@ import { MediaBlock } from "../types/MediaBlock.js";
 import { constructStream } from "./streamConstructor.js";
 import { StreamType } from "../types/StreamType.js";
 import { IStreamRequest } from "../types/StreamRequest.js";
-import {
-  getUnixTime
-} from "date-fns";
+import { getUnixTime } from "date-fns";
 import * as VLCService from "./vlcService.js"; // TODO: Implement or replace with Electron player
 import { findNextCadenceTime } from "../utils/common.js";
 
@@ -31,8 +29,7 @@ export interface StreamStatus {
  */
 export async function initializeStream(
   streamArgs: IStreamRequest,
-  streamType: StreamType = StreamType.Cont,
-  cadence: boolean = false
+  streamType: StreamType = StreamType.Cont
 ): Promise<string> {
   try {
     setContinuousStreamArgs(streamArgs);
@@ -43,10 +40,13 @@ export async function initializeStream(
 
     // TODO: Implement firstMedia selection via refract system
     // For now, pass undefined and let stream constructor handle it
-    const [constructedBlocks, error] = constructStream(
+    const [constructedBlocks, error] = await constructStream(
       streamType,
-      alignedTime > now ? alignedTime : now,
-      cadence
+      {
+        Cadence: streamArgs.Cadence || false,
+        Themed: streamArgs.Themed || false,
+      },
+      alignedTime > now ? alignedTime : now
     );
 
     if (error) {

@@ -238,6 +238,37 @@ export class TagRepository {
   }
 
   /**
+   * Find all active holiday tags for a given date
+   * Matches holidays where:
+   * - The date matches an exact holiday date, OR
+   * - The date falls within the seasonStartDate and seasonEndDate range
+   */
+  findActiveHolidaysByDate(date: string): Tag[] {
+    const stmt = this.db.prepare(`
+      SELECT DISTINCT t.* FROM tags t
+      WHERE t.type = 'Holiday'
+        AND (
+          -- Match exact holiday dates
+          EXISTS (
+            SELECT 1 FROM holiday_dates hd
+            WHERE hd.tagId = t.tagId
+              AND DATE(hd.holidayDate) = DATE(?)
+          )
+          OR
+          -- Match season date range
+          (
+            t.seasonStartDate IS NOT NULL
+            AND t.seasonEndDate IS NOT NULL
+            AND DATE(?) BETWEEN DATE(t.seasonStartDate) AND DATE(t.seasonEndDate)
+          )
+        )
+      ORDER BY t.name
+    `);
+    const rows = stmt.all(date, date) as any[];
+    return rows.map((row) => this.mapRowToTag(row));
+  }
+
+  /**
    * Count total tags
    */
   count(): number {
