@@ -12,7 +12,7 @@ export const commercial15s_1 = createCommercial(
   "commercial15s_1",
   15,
   "/path/commercial15s_1.mp4",
-  MediaType.Commercial,
+  "Commercial" as MediaType,
   [genericGenreTags.genre1, genericAgeGroupTags.ageGroup1]
 );
 
@@ -21,7 +21,7 @@ export const commercial15s_2 = createCommercial(
   "commercial15s_2",
   15,
   "/path/commercial15s_2.mp4",
-  MediaType.Commercial,
+  "Commercial" as MediaType,
   [genericGenreTags.genre1, genericAgeGroupTags.ageGroup1]
 );
 
@@ -30,7 +30,7 @@ export const commercial15s_3 = createCommercial(
   "commercial15s_3",
   15,
   "/path/commercial15s_3.mp4",
-  MediaType.Commercial,
+  "Commercial" as MediaType,
   [genericGenreTags.genre1, genericAgeGroupTags.ageGroup1]
 );
 
@@ -39,7 +39,7 @@ export const commercial15s_4 = createCommercial(
   "commercial15s_4",
   15,
   "/path/commercial15s_4.mp4",
-  MediaType.Commercial,
+  "Commercial" as MediaType,
   [genericGenreTags.genre1, genericAgeGroupTags.ageGroup1]
 );
 
@@ -49,7 +49,7 @@ export const commercial30s_1 = createCommercial(
   "commercial30s_1",
   30,
   "/path/commercial30s_1.mp4",
-  MediaType.Commercial,
+  "Commercial" as MediaType,
   [genericGenreTags.genre1, genericAgeGroupTags.ageGroup1]
 );
 
@@ -58,7 +58,7 @@ export const commercial30s_2 = createCommercial(
   "commercial30s_2",
   30,
   "/path/commercial30s_2.mp4",
-  MediaType.Commercial,
+  "Commercial" as MediaType,
   [genericGenreTags.genre1, genericAgeGroupTags.ageGroup1]
 );
 
@@ -67,7 +67,7 @@ export const commercial30s_3 = createCommercial(
   "commercial30s_3",
   30,
   "/path/commercial30s_3.mp4",
-  MediaType.Commercial,
+  "Commercial" as MediaType,
   [genericGenreTags.genre1, genericAgeGroupTags.ageGroup1]
 );
 
@@ -77,7 +77,7 @@ export const commercial60s_1 = createCommercial(
   "commercial60s_1",
   60,
   "/path/commercial60s_1.mp4",
-  MediaType.Commercial,
+  "Commercial" as MediaType,
   [genericGenreTags.genre1, genericAgeGroupTags.ageGroup1]
 );
 
@@ -86,7 +86,7 @@ export const commercial60s_2 = createCommercial(
   "commercial60s_2",
   60,
   "/path/commercial60s_2.mp4",
-  MediaType.Commercial,
+  "Commercial" as MediaType,
   [genericGenreTags.genre1, genericAgeGroupTags.ageGroup1]
 );
 
@@ -96,7 +96,7 @@ export const commercial120s = createCommercial(
   "commercial120s",
   120,
   "/path/commercial120s.mp4",
-  MediaType.Commercial,
+  "Commercial" as MediaType,
   [genericGenreTags.genre1, genericAgeGroupTags.ageGroup1]
 );
 
@@ -106,7 +106,7 @@ export const commercialGenre2 = createCommercial(
   "commercialGenre2",
   15,
   "/path/commercialGenre2.mp4",
-  MediaType.Commercial,
+  "Commercial" as MediaType,
   [genericGenreTags.genre2, genericAgeGroupTags.ageGroup2]
 );
 
@@ -115,7 +115,7 @@ export const commercialGenre3 = createCommercial(
   "commercialGenre3",
   30,
   "/path/commercialGenre3.mp4",
-  MediaType.Commercial,
+  "Commercial" as MediaType,
   [genericGenreTags.genre3, genericAgeGroupTags.ageGroup3]
 );
 

@@ -8,7 +8,7 @@ export default {
   moduleNameMapper: {
     "^(\\.{1,2}/.*)\\.js$": "$1",
   },
-  setupFilesAfterEnv: ["<rootDir>/test/setup.ts"],
+  setupFilesAfterEnv: ["<rootDir>/test/jestSetup.ts"],
   transform: {
     "^.+\\.tsx?$": [
       "ts-jest",

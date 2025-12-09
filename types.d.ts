@@ -57,6 +57,18 @@ type Subgenre = {
   name: string;
 };
 
+type HolidayIntent = {
+  holidayTagId: string;
+  totalAvailableMinutes: number; // Total runtime of all holiday content
+  threeDayDistribution: [number, number, number]; // [day1, day2, day3] minutes to spread content
+  currentRotationDay: 1 | 2 | 3; // Which day of the 3-day cycle we're on
+  lastRotationDate: string; // ISO date when rotation was last calculated
+  selectedMinutesToday: number; // Tracks how much we've selected for today
+  lastResetDate: string; // ISO date when selectedMinutesToday was last reset
+  calculatedAt: number; // Unix timestamp when intent was calculated
+  stale: boolean; // Marked true on invalidation, recalculated on next access
+};
+
 // ============================================================================
 // MEDIA TYPES (Repository-based interfaces)
 // ============================================================================
@@ -203,14 +215,18 @@ type CollectionItem = {
 
 type Facet = {
   facetId: string;
-  genreTagId?: string;
-  aestheticTagId?: string;
-  genre?: Tag;
-  aesthetic?: Tag;
-  distanceFromGenre?: number;
-  distanceFromAesthetic?: number;
+  genre: Tag | null;
+  aesthetic: Tag | null;
+  facetRelationships: FacetRelationshipItem[];
   createdAt?: string;
   updatedAt?: string;
+};
+
+type FacetRelationshipItem = {
+  facetId: string;
+  genre: Tag | null;
+  aesthetic: Tag | null;
+  distance: number;
 };
 
 // ============================================================================
@@ -296,6 +312,13 @@ interface MediaBlockData {
   mainBlock?: Movie | Episode; // Primary media content
   startTime: number; // Unix timestamp when block starts
 }
+
+type MediaBlock = {
+  buffer: (Promo | Music | Short | Commercial | Bumper)[];
+  mainBlock?: Movie | Episode;
+  startTime: number;
+  duration: number; // Calculated duration in seconds
+};
 
 interface IStreamRequest {
   Title?: string;

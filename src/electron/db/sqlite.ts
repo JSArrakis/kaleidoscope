@@ -43,6 +43,14 @@ class SQLiteService {
     return this.db;
   }
 
+  /**
+   * For testing: inject a test database instance
+   * Used by tests to use a temporary database instead of the real one
+   */
+  public setDatabase(testDb: Database.Database): void {
+    this.db = testDb;
+  }
+
   public close(): void {
     if (this.db) {
       this.db.close();
@@ -83,7 +91,6 @@ class SQLiteService {
         facetId TEXT UNIQUE NOT NULL,
         genreId TEXT NOT NULL,
         aestheticId TEXT NOT NULL,
-        relationships TEXT,
         createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
         updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (genreId) REFERENCES tags (tagId),
@@ -103,20 +110,6 @@ class SQLiteService {
         FOREIGN KEY (sourceFacetId) REFERENCES facets (facetId) ON DELETE CASCADE,
         FOREIGN KEY (targetFacetId) REFERENCES facets (facetId) ON DELETE CASCADE,
         UNIQUE(sourceFacetId, targetFacetId)
-      )
-    `);
-
-    // Facet Tags junction table
-    this.db.exec(`
-      CREATE TABLE IF NOT EXISTS facet_tags (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        facetId TEXT NOT NULL,
-        tagId TEXT NOT NULL,
-        tagType TEXT NOT NULL,
-        createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (facetId) REFERENCES facets (facetId) ON DELETE CASCADE,
-        FOREIGN KEY (tagId) REFERENCES tags (tagId) ON DELETE CASCADE,
-        UNIQUE(facetId, tagType)
       )
     `);
 

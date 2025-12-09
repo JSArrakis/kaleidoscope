@@ -1,5 +1,3 @@
-import { MediaBlock } from "../types/MediaBlock.js";
-
 type PlayerType = "vlc" | "electron" | "web";
 
 let currentPlayerType: PlayerType = "electron"; // Default to electron player

@@ -13,7 +13,7 @@ export const short5min_1 = createShort(
   "short5min_1",
   300, // 5 minutes
   "/path/short5min_1.mp4",
-  MediaType.Short,
+  "Short" as MediaType,
   [genericGenreTags.genre1, genericAgeGroupTags.ageGroup1]
 );
 
@@ -22,7 +22,7 @@ export const short5min_2 = createShort(
   "short5min_2",
   300,
   "/path/short5min_2.mp4",
-  MediaType.Short,
+  "Short" as MediaType,
   [genericGenreTags.genre1, genericAgeGroupTags.ageGroup1]
 );
 
@@ -31,7 +31,7 @@ export const short5min_3 = createShort(
   "short5min_3",
   300,
   "/path/short5min_3.mp4",
-  MediaType.Short,
+  "Short" as MediaType,
   [genericGenreTags.genre1, genericAgeGroupTags.ageGroup1]
 );
 
@@ -41,7 +41,7 @@ export const short10min_1 = createShort(
   "short10min_1",
   600, // 10 minutes
   "/path/short10min_1.mp4",
-  MediaType.Short,
+  "Short" as MediaType,
   [genericGenreTags.genre1, genericAgeGroupTags.ageGroup1]
 );
 
@@ -50,7 +50,7 @@ export const short10min_2 = createShort(
   "short10min_2",
   600,
   "/path/short10min_2.mp4",
-  MediaType.Short,
+  "Short" as MediaType,
   [genericGenreTags.genre1, genericAgeGroupTags.ageGroup1]
 );
 
@@ -59,7 +59,7 @@ export const short10min_3 = createShort(
   "short10min_3",
   600,
   "/path/short10min_3.mp4",
-  MediaType.Short,
+  "Short" as MediaType,
   [genericGenreTags.genre1, genericAgeGroupTags.ageGroup1]
 );
 
@@ -68,7 +68,7 @@ export const short10min_4 = createShort(
   "short10min_4",
   600,
   "/path/short10min_4.mp4",
-  MediaType.Short,
+  "Short" as MediaType,
   [genericGenreTags.genre1, genericAgeGroupTags.ageGroup1]
 );
 
@@ -78,7 +78,7 @@ export const short15min_1 = createShort(
   "short15min_1",
   900, // 15 minutes
   "/path/short15min_1.mp4",
-  MediaType.Short,
+  "Short" as MediaType,
   [genericGenreTags.genre1, genericAgeGroupTags.ageGroup1]
 );
 
@@ -87,7 +87,7 @@ export const short15min_2 = createShort(
   "short15min_2",
   900,
   "/path/short15min_2.mp4",
-  MediaType.Short,
+  "Short" as MediaType,
   [genericGenreTags.genre1, genericAgeGroupTags.ageGroup1]
 );
 
@@ -97,7 +97,7 @@ export const short20min = createShort(
   "short20min",
   1200, // 20 minutes
   "/path/short20min.mp4",
-  MediaType.Short,
+  "Short" as MediaType,
   [genericGenreTags.genre2, genericAgeGroupTags.ageGroup2]
 );
 
@@ -107,7 +107,7 @@ export const short25min = createShort(
   "short25min",
   1500, // 25 minutes
   "/path/short25min.mp4",
-  MediaType.Short,
+  "Short" as MediaType,
   [genericGenreTags.genre3, genericAgeGroupTags.ageGroup3]
 );
 

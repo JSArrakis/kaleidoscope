@@ -204,6 +204,26 @@ export class ShowRepository {
   }
 
   /**
+   * Get total minutes of holiday episodes from shows
+   * Searches for episodes tagged with the holiday tag
+   * Duration in database is stored in seconds, converts to minutes
+   * @param holidayTagId The holiday tag ID
+   * @returns Total minutes of all episodes with this holiday tag
+   */
+  getTotalMinutesByHolidayTag(holidayTagId: string): number {
+    const stmt = this.db.prepare(`
+      SELECT COALESCE(SUM(e.duration), 0) as totalSeconds
+      FROM episodes e
+      INNER JOIN episode_tags et ON e.mediaItemId = et.mediaItemId
+      WHERE et.tagId = ?
+    `);
+
+    const result = stmt.get(holidayTagId) as any;
+    const totalSeconds = result.totalSeconds || 0;
+    return Math.floor(totalSeconds / 60); // Convert seconds to minutes
+  }
+
+  /**
    * Get episode by mediaItemId
    */
   getEpisode(episodeMediaItemId: string): Episode | null {
@@ -362,6 +382,36 @@ export class ShowRepository {
       createdAt: showRow.createdAt,
       updatedAt: showRow.updatedAt,
     };
+  }
+
+  /**
+   * Find shows that have episodes tagged with any of the given tag IDs
+   */
+  findByEpisodeTags(tagIds: string[]): Show[] {
+    if (tagIds.length === 0) return [];
+
+    const placeholders = tagIds.map(() => "?").join(",");
+    const showStmt = this.db.prepare(`
+      SELECT DISTINCT s.* FROM shows s
+      WHERE s.id IN (
+        SELECT DISTINCT e.showId FROM episodes e
+        WHERE e.mediaItemId IN (
+          SELECT mediaItemId FROM episode_tags 
+          WHERE tagId IN (${placeholders})
+        )
+      )
+      ORDER BY s.title
+    `);
+
+    const showRows = showStmt.all(...tagIds) as any[];
+
+    return showRows.map((showRow) => {
+      const episodeStmt = this.db.prepare(`
+        SELECT * FROM episodes WHERE showId = ?
+      `);
+      const episodeRows = episodeStmt.all(showRow.id) as any[];
+      return this.mapRowToShow(showRow, episodeRows);
+    });
   }
 }
 

@@ -102,6 +102,25 @@ export class MovieRepository {
   }
 
   /**
+   * Get total minutes of movies tagged with a specific holiday tag
+   * Duration in database is stored in seconds, converts to minutes
+   * @param holidayTagId The holiday tag ID
+   * @returns Total minutes of all movies with this holiday tag
+   */
+  getTotalMinutesByHolidayTag(holidayTagId: string): number {
+    const stmt = this.db.prepare(`
+      SELECT COALESCE(SUM(m.duration), 0) as totalSeconds
+      FROM movies m
+      INNER JOIN media_tags mt ON m.mediaItemId = mt.mediaItemId
+      WHERE mt.tagId = ?
+    `);
+
+    const result = stmt.get(holidayTagId) as any;
+    const totalSeconds = result.totalSeconds || 0;
+    return Math.floor(totalSeconds / 60); // Convert seconds to minutes
+  }
+
+  /**
    * Update movie
    */
   update(mediaItemId: string, movie: Movie): Movie | null {

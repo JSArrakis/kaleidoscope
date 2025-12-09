@@ -13,7 +13,7 @@ export const music3min_1 = createMusic(
   "music3min_1",
   180, // 3 minutes
   "/path/music3min_1.mp4",
-  MediaType.Music,
+  "Music" as MediaType,
   [genericGenreTags.genre1, genericAgeGroupTags.ageGroup1]
 );
 
@@ -22,7 +22,7 @@ export const music3min_2 = createMusic(
   "music3min_2",
   180,
   "/path/music3min_2.mp4",
-  MediaType.Music,
+  "Music" as MediaType,
   [genericGenreTags.genre1, genericAgeGroupTags.ageGroup1]
 );
 
@@ -31,7 +31,7 @@ export const music3min_3 = createMusic(
   "music3min_3",
   180,
   "/path/music3min_3.mp4",
-  MediaType.Music,
+  "Music" as MediaType,
   [genericGenreTags.genre1, genericAgeGroupTags.ageGroup1]
 );
 
@@ -40,7 +40,7 @@ export const music3min_4 = createMusic(
   "music3min_4",
   180,
   "/path/music3min_4.mp4",
-  MediaType.Music,
+  "Music" as MediaType,
   [genericGenreTags.genre1, genericAgeGroupTags.ageGroup1]
 );
 
@@ -50,7 +50,7 @@ export const music5min_1 = createMusic(
   "music5min_1",
   300, // 5 minutes
   "/path/music5min_1.mp4",
-  MediaType.Music,
+  "Music" as MediaType,
   [genericGenreTags.genre1, genericAgeGroupTags.ageGroup1]
 );
 
@@ -59,7 +59,7 @@ export const music5min_2 = createMusic(
   "music5min_2",
   300,
   "/path/music5min_2.mp4",
-  MediaType.Music,
+  "Music" as MediaType,
   [genericGenreTags.genre1, genericAgeGroupTags.ageGroup1]
 );
 
@@ -68,7 +68,7 @@ export const music5min_3 = createMusic(
   "music5min_3",
   300,
   "/path/music5min_3.mp4",
-  MediaType.Music,
+  "Music" as MediaType,
   [genericGenreTags.genre1, genericAgeGroupTags.ageGroup1]
 );
 
@@ -78,7 +78,7 @@ export const music7min_1 = createMusic(
   "music7min_1",
   420, // 7 minutes
   "/path/music7min_1.mp4",
-  MediaType.Music,
+  "Music" as MediaType,
   [genericGenreTags.genre2, genericAgeGroupTags.ageGroup2]
 );
 
@@ -87,7 +87,7 @@ export const music7min_2 = createMusic(
   "music7min_2",
   420,
   "/path/music7min_2.mp4",
-  MediaType.Music,
+  "Music" as MediaType,
   [genericGenreTags.genre2, genericAgeGroupTags.ageGroup2]
 );
 
@@ -97,7 +97,7 @@ export const music10min_1 = createMusic(
   "music10min_1",
   600, // 10 minutes
   "/path/music10min_1.mp4",
-  MediaType.Music,
+  "Music" as MediaType,
   [genericGenreTags.genre3, genericAgeGroupTags.ageGroup3]
 );
 
@@ -106,7 +106,7 @@ export const music10min_2 = createMusic(
   "music10min_2",
   600,
   "/path/music10min_2.mp4",
-  MediaType.Music,
+  "Music" as MediaType,
   [genericGenreTags.genre3, genericAgeGroupTags.ageGroup3]
 );
 
@@ -116,7 +116,7 @@ export const music12min = createMusic(
   "music12min",
   720, // 12 minutes
   "/path/music12min.mp4",
-  MediaType.Music,
+  "Music" as MediaType,
   [genericGenreTags.genre3, genericAgeGroupTags.ageGroup3]
 );
 
