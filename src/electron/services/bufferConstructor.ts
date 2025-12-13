@@ -1,7 +1,8 @@
 import { recentlyUsedMediaRepository } from "../repositories/recentlyUsedMediaRepository.js";
 import { promoRepository } from "../repositories/promoRepository.js";
-import { segmentTags, selectBufferMedia } from "../prisms/spectrum.js";
+import { selectBufferMedia } from "../prisms/spectrum.js";
 import { commercialRepository } from "../repositories/commercialRepository.js";
+import { segmentTags } from "../utils/common.js";
 
 // Buffer duration thresholds for media selection strategy
 const COMMERCIALS_ONLY_THRESHOLD = 420; // 7 minutes in seconds

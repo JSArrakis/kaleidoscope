@@ -3,12 +3,13 @@ import { movieRepository } from "../repositories/movieRepository.js";
 import { showRepository } from "../repositories/showRepository.js";
 import { episodeProgressionRepository } from "../repositories/episodeProgressionRepository.js";
 import { recentlyUsedMediaRepository } from "../repositories/recentlyUsedMediaRepository.js";
-import { findNextCadenceTime } from "../utils/common.js";
+import { findNextCadenceTime, segmentTags } from "../utils/common.js";
 import { createBuffer } from "./bufferConstructor.js";
 import { tagRepository } from "../repositories/tagsRepository.js";
 import * as playerManager from "./playerManager.js";
 import { createMediaBlock } from "../../../factories/mediaBlock.factory.js";
 import { holidayIntentCacheManager } from "./holidayIntentCacheManager.js";
+import { selectFacetAdjacentMedia } from "../prisms/facets.js";
 
 // ============================================================================
 // HELPER FUNCTIONS
@@ -67,6 +68,8 @@ function constructRemainingStream(
   const remainingStreamBlocks: MediaBlock[] = [];
   let timepoint = startTime;
 
+  const segmentedTags = segmentTags(firstMediaTags);
+
   // Determine if today is a holiday date or within a holiday season
   const todayIsHolidayDate = isHolidayDate(dateString, activeHolidayTags);
   const todayIsHolidaySeason =
@@ -79,7 +82,7 @@ function constructRemainingStream(
   while (timepoint < endOfDayUnix) {
     const nextMedia = streamConstructionOptions.Themed
       ? selectThemedMediaForStream(
-          firstMediaTags,
+          segmentedTags,
           activeHolidayTags,
           timepoint,
           dateString,
@@ -466,8 +469,74 @@ function selectHolidayMediaForTag(
   return null;
 }
 
+/**
+ * Selects media based on specialty tag relationships
+ * Finds other media that share specialty tags with the current content
+ * @param specialtyTags Specialty tags from current media
+ * @returns Movie or Episode with matching specialty, or null if none found
+ */
+function selectSpecialtyAdjacentMedia(
+  specialtyTags: Tag[]
+): Movie | Episode | null {
+  if (specialtyTags.length === 0) {
+    return null;
+  }
+
+  const specialtyTagIds = specialtyTags.map((t) => t.tagId);
+
+  // Find all media that have any of these specialty tags
+  const moviesWithSpecialty = movieRepository.findByTags(specialtyTagIds);
+
+  // Find shows with secondary tags matching specialty tags
+  let episodesWithSpecialty: Episode[] = [];
+  for (const specialtyTagId of specialtyTagIds) {
+    const showsWithSpecialty = showRepository.findByTag(specialtyTagId);
+    for (const show of showsWithSpecialty) {
+      if (show.episodes) {
+        for (const episode of show.episodes) {
+          // if (
+          //   episode.secondaryTags &&
+          //   episode.secondaryTags.some((t: Tag) =>
+          //     specialtyTagIds.includes(t.tagId)
+          //   )
+          // ) {
+          //   episodesWithSpecialty.push(episode);
+          // }
+        }
+      }
+    }
+  }
+
+  // Combine pools
+  const totalAvailable =
+    moviesWithSpecialty.length + episodesWithSpecialty.length;
+
+  if (totalAvailable === 0) {
+    return null;
+  }
+
+  // Randomly choose between movie and episode pool
+  const useMovie = Math.random() < moviesWithSpecialty.length / totalAvailable;
+
+  if (useMovie && moviesWithSpecialty.length > 0) {
+    return moviesWithSpecialty[
+      Math.floor(Math.random() * moviesWithSpecialty.length)
+    ];
+  } else if (episodesWithSpecialty.length > 0) {
+    return episodesWithSpecialty[
+      Math.floor(Math.random() * episodesWithSpecialty.length)
+    ];
+  } else if (moviesWithSpecialty.length > 0) {
+    return moviesWithSpecialty[
+      Math.floor(Math.random() * moviesWithSpecialty.length)
+    ];
+  }
+
+  return null;
+}
+
 export function selectThemedMediaForStream(
-  firstMediaTags: Tag[],
+  segmentedTags: SegmentedTags,
   activeHolidayTags: Tag[],
   timepoint: number,
   dateString: string,
@@ -580,13 +649,21 @@ export function selectThemedMediaForStream(
   }
 
   // PATH 3: NON-HOLIDAY - Select specialty/facet-adjacent media
-  // TODO: Implement specialty/facet selection logic
-  // 1. Flip coin: specialty-adjacent OR facet-adjacent
-  // 2. If specialty: find related specialty tags from firstMediaTags
-  // 3. If facet: find facet relationships and select from related media
-  // 4. Fall back to random if none found
+  // Strategy: Coin flip between specialty-adjacent or facet-adjacent
+  // Fallback: Facet-adjacent if specialty yields no results
 
-  return null;
+  // Attempt specialty-adjacent selection if specialty tags exist
+  if (segmentedTags.specialtyTags.length > 0 && Math.random() < 0.5) {
+    const selectedMedia = selectSpecialtyAdjacentMedia(segmentedTags.specialtyTags);
+    if (selectedMedia) {
+      return selectedMedia;
+    }
+  }
+
+  // Fall back to facet-adjacent selection
+  // This becomes the preferred fallback if specialty fails or we lost the coin flip
+  const selectedMedia = selectFacetAdjacentMedia(segmentedTags);
+  return selectedMedia;
 }
 
 /**

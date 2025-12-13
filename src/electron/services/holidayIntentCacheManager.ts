@@ -1,3 +1,103 @@
+/**
+ * ============================================================================
+ * HOLIDAY INTENT CACHE MANAGER
+ * ============================================================================
+ *
+ * PROBLEM IT SOLVES:
+ * -----------------
+ * When building a continuous media stream, we need to intelligently incorporate
+ * holiday-themed content at the right times and in the right amounts. However,
+ * repeatedly calculating content distribution across dates is expensive:
+ * - Query databases for all holiday content
+ * - Analyze available duration across multiple media items
+ * - Distribute content across 3-day rotations with smart budgeting
+ * - Check holiday dates and season spans
+ *
+ * WHY THIS MATTERS FOR STREAMING:
+ * --------------------------------
+ * Stream construction happens FREQUENTLY:
+ * - Every time a user starts/resumes playback
+ * - Multiple times during a single session as content is selected
+ * - During continuous 24/7 playback blocks with automatic progression
+ *
+ * Without caching, each stream construction would trigger expensive calculations:
+ * - If building streams 10+ times per session, we'd query databases 10+ times
+ * - Database queries could take 100-500ms each
+ * - Delays compound: slow stream construction → poor user experience
+ * - Real-time selection becomes sluggish
+ *
+ * CACHING SOLUTION:
+ * - First stream construction: Calculate once (100-500ms, acceptable overhead)
+ * - Subsequent constructions: Return cached result instantly (<1ms)
+ * - Invalidate only when holiday content actually changes
+ * - Balances performance with data freshness
+ *
+ * This manager caches these calculations to avoid redundant database queries
+ * and computations while remaining responsive to changes.
+ *
+ * WHAT IT DOES:
+ * -------------
+ * 1. LAZY-LOADED CACHE: Only calculates holiday intents when first accessed
+ *    - First access to "Christmas" holiday → calculate and cache
+ *    - Subsequent accesses → return cached value instantly
+ *
+ * 2. INVALIDATION TRACKING: Marks entries as stale when updates occur
+ *    - Holiday content is added/removed → invalidateHoliday("christmas")
+ *    - Next access recalculates from fresh data
+ *    - Other holidays remain cached and don't recalculate
+ *
+ * 3. THREE-DAY ROTATION DISTRIBUTION: Spreads content across rotating days
+ *    - Maps out 3-day rotation cycles (day 1, 2, 3, repeat)
+ *    - Each day gets a fair share of available content
+ *    - Deterministic: same holiday = same distribution each cycle
+ *    - Example: 360 minutes available → 120 minutes per day per cycle
+ *
+ * 4. BUDGET TRACKING: Prevents over-selection of content
+ *    - Tracks minutes selected today vs. 3-day allocation
+ *    - canAddMoreContent() prevents exceeding daily budget
+ *    - getRemainingMinutesToday() shows available capacity
+ *
+ * HOW IT WORKS:
+ * -------------
+ * Cache Structure:
+ *   Map<holidayTagId, HolidayIntent>
+ *   Where HolidayIntent contains:
+ *     - totalAvailableMinutes: All holiday content duration
+ *     - holidayDates: Specific dates (e.g., Dec 25)
+ *     - seasonStartDate: Season begins (e.g., Nov 1)
+ *     - seasonEndDate: Season ends (e.g., Dec 31)
+ *     - threeDayDistribution: Minutes per day in 3-day cycle
+ *     - selectedMinutesToday: Already-selected minutes today
+ *     - stale: Flag indicating if recalculation needed
+ *
+ * Main Methods:
+ *   - getIntent(): Get cached or calculated intent
+ *   - calculateIntent(): Query repos, compute distribution
+ *   - calculateThreeDayDistribution(): Divide content fairly
+ *   - trackSelectedMinutes(): Update daily budget
+ *   - canAddMoreContent(): Check if capacity remains
+ *   - invalidateHoliday(): Mark entry as stale
+ *   - clear(): Reset entire cache
+ *
+ * USAGE EXAMPLE:
+ * ---------------
+ * // Get distribution plan for Christmas
+ * const intent = holidayIntentCacheManager.getIntent("holiday-christmas");
+ * // Returns: { threeDayDistribution: 120, selectedMinutesToday: 0, ... }
+ *
+ * // Check if we can add 45 minutes of content
+ * if (holidayIntentCacheManager.canAddMoreContent("holiday-christmas", 45)) {
+ *   // Add the content...
+ *   holidayIntentCacheManager.trackSelectedMinutes("holiday-christmas", 45);
+ * }
+ *
+ * // If Christmas content is updated in database
+ * holidayIntentCacheManager.invalidateHoliday("holiday-christmas");
+ * // Next getIntent() call will recalculate from database
+ *
+ * ============================================================================
+ */
+
 import { movieRepository } from "../repositories/movieRepository.js";
 import { showRepository } from "../repositories/showRepository.js";
 

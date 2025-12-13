@@ -7,10 +7,34 @@ jest.mock("electron", () => ({
   },
 }));
 
-// This will be set to true after first initialization
+// Make types and enums globally available for tests
 declare global {
   var testDatabaseInitialized: boolean;
   var testDb: any;
+  enum MediaType {
+    Show = "Show",
+    Episode = "Episode",
+    Movie = "Movie",
+    Short = "Short",
+    Music = "Music",
+    Commercial = "Commercial",
+    Promo = "Promo",
+    Bumper = "Bumper",
+  }
+}
+
+// Populate MediaType globally
+if (typeof (globalThis as any).MediaType === "undefined") {
+  (globalThis as any).MediaType = {
+    Show: "Show",
+    Episode: "Episode",
+    Movie: "Movie",
+    Short: "Short",
+    Music: "Music",
+    Commercial: "Commercial",
+    Promo: "Promo",
+    Bumper: "Bumper",
+  };
 }
 
 // Only initialize the test database ONCE per Jest session

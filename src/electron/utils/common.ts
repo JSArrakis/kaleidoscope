@@ -36,3 +36,23 @@ export function findNextCadenceTime(now: number): number {
 
   return getUnixTime(nextMark);
 }
+
+/**
+ * Segments tags into their respective categories
+ * @param tags Array of tags to segment
+ * @returns SegmentedTags object with tags grouped by type
+ */
+export function segmentTags(tags: Tag[]): SegmentedTags {
+  const genreTags = tags.filter((tag) => tag.type === TagType.Genre);
+  const aestheticTags = tags.filter((tag) => tag.type === TagType.Aesthetic);
+  const eraTags = tags.filter((tag) => tag.type === TagType.Era);
+  const specialtyTags = tags.filter((tag) => tag.type === TagType.Specialty);
+  const ageGroupTags = tags.filter((tag) => tag.type === TagType.AgeGroup);
+  return {
+    genreTags,
+    aestheticTags,
+    eraTags,
+    specialtyTags,
+    ageGroupTags,
+  };
+}

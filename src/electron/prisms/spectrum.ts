@@ -2,6 +2,7 @@ import { tagRepository } from "../repositories/tagsRepository.js";
 import { commercialRepository } from "../repositories/commercialRepository.js";
 import { shortRepository } from "../repositories/shortRepository.js";
 import { musicRepository } from "../repositories/musicRepository.js";
+import { segmentTags } from "../utils/common.js";
 
 interface BufferMediaSelectionResult {
   commercials: Commercial[];
@@ -229,7 +230,7 @@ export function selectBufferMedia(
     selectedShorts.push(...randomBufferMedia.shorts);
     selectedMusic.push(...randomBufferMedia.music);
   }
-  
+
   const isValid = isBufferMediaPoolValid(
     selectedCommercials,
     selectedShorts,
@@ -284,21 +285,6 @@ function getAgeGroups(ageGroupTags: Tag[]): Tag[] {
   }
 
   return adjacencyTags;
-}
-
-export function segmentTags(tags: Tag[]): SegmentedTags {
-  const genreTags = tags.filter((tag) => tag.type === TagType.Genre);
-  const aestheticTags = tags.filter((tag) => tag.type === TagType.Aesthetic);
-  const eraTags = tags.filter((tag) => tag.type === TagType.Era);
-  const specialtyTags = tags.filter((tag) => tag.type === TagType.Specialty);
-  const ageGroupTags = tags.filter((tag) => tag.type === TagType.AgeGroup);
-  return {
-    genreTags,
-    aestheticTags,
-    eraTags,
-    specialtyTags,
-    ageGroupTags,
-  };
 }
 
 export function getHolidayBufferMedia(

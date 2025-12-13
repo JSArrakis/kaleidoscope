@@ -1,4 +1,12 @@
+import { jest } from "@jest/globals";
 import { holidayIntentCacheManager } from "../../../../src/electron/services/holidayIntentCacheManager";
+
+// Mock the movieRepository since this test doesn't need real database data
+jest.mock("../../../../src/electron/repositories/movieRepository", () => ({
+  movieRepository: {
+    getTotalMinutesByHolidayTag: jest.fn().mockReturnValue(300),
+  },
+}));
 
 describe("clear", () => {
   beforeEach(() => {

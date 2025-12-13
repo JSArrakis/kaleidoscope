@@ -413,6 +413,161 @@ export class ShowRepository {
       return this.mapRowToShow(showRow, episodeRows);
     });
   }
+
+  /**
+   * Find shows by tags and duration that match temporal progression tracking
+   * Used when we already have shows in the temp episode progression dictionary
+   * Filters shows to only those in the provided list and checks if their next episode fits duration
+   *
+   * For shows with overDuration episodes, queries the episode table to verify the next episode fits
+   * For shows without overDuration, just checks durationLimit <= availableDuration
+   *
+   * @param showIds Array of show media item IDs to check
+   * @param tempProgressions Map of show progressions during stream construction (key: showId-streamType)
+   * @param streamType The stream type being constructed
+   * @param availableDuration The available duration in seconds
+   * @returns Array of shows where the next episode will fit in the available duration
+   */
+  findByIdsWithProgressionCheck(
+    showIds: string[],
+    tempProgressions: Map<string, number>,
+    streamType: string,
+    availableDuration: number
+  ): Show[] {
+    if (showIds.length === 0) return [];
+
+    // Get all shows first
+    const placeholders = showIds.map(() => "?").join(",");
+    const showStmt = this.db.prepare(`
+      SELECT * FROM shows WHERE mediaItemId IN (${placeholders})
+    `);
+
+    const showRows = showStmt.all(...showIds) as any[];
+
+    const validShows: Show[] = [];
+
+    for (const showRow of showRows) {
+      const episodeStmt = this.db.prepare(`
+        SELECT * FROM episodes WHERE showId = ?
+      `);
+      const episodeRows = episodeStmt.all(showRow.id) as any[];
+      const show = this.mapRowToShow(showRow, episodeRows);
+
+      // Get next episode number from temp progression
+      const progressionKey = `${show.mediaItemId}-${streamType}`;
+      const nextEpisodeNumber = tempProgressions.get(progressionKey) || 1;
+
+      // Check if show has overDuration episodes
+      if (showRow.firstEpisodeOverDuration === 1) {
+        // For overDuration shows, check if next episode fits
+        const nextEpisode = show.episodes?.[nextEpisodeNumber - 1];
+        if (
+          nextEpisode &&
+          nextEpisode.duration &&
+          nextEpisode.duration <= availableDuration
+        ) {
+          validShows.push(show);
+        }
+      } else {
+        // For normal shows, check if durationLimit fits
+        if (show.durationLimit && show.durationLimit <= availableDuration) {
+          validShows.push(show);
+        }
+      }
+    }
+
+    return validShows;
+  }
+
+  /**
+   * Find shows by tags and duration with progression table lookup
+   * Used for shows not yet in the temp episode progression dictionary
+   * Joins with episode_progressions table or evaluates episodes directly
+   *
+   * For shows with overDuration episodes, must verify the next episode in progression fits duration
+   * For shows without overDuration, just checks durationLimit <= availableDuration
+   *
+   * @param tagIds Array of tag IDs to match against show tags
+   * @param streamType The stream type being constructed (for progression lookup)
+   * @param availableDuration The available duration in seconds
+   * @returns Array of shows where the next episode will fit in the available duration
+   */
+  findByTagsAndDurationWithProgressionCheck(
+    tagIds: string[],
+    streamType: string,
+    availableDuration: number
+  ): Show[] {
+    if (tagIds.length === 0) return [];
+
+    const placeholders = tagIds.map(() => "?").join(",");
+
+    // Query shows with tags that either:
+    // 1. Have no overDuration episodes and durationLimit fits
+    // 2. Have overDuration episodes but next episode in progression fits
+    const showStmt = this.db.prepare(`
+      SELECT DISTINCT s.* FROM shows s
+      JOIN show_tags st ON s.mediaItemId = st.mediaItemId
+      WHERE st.tagId IN (${placeholders})
+      AND (
+        -- Case 1: No overDuration episodes, check durationLimit
+        (s.firstEpisodeOverDuration = 0 AND s.durationLimit <= ?)
+        OR
+        -- Case 2: Has overDuration episodes, need progression check below
+        (s.firstEpisodeOverDuration = 1)
+      )
+      ORDER BY s.title
+    `);
+
+    const showRows = showStmt.all(...tagIds, availableDuration) as any[];
+
+    const validShows: Show[] = [];
+
+    for (const showRow of showRows) {
+      // If no overDuration, already validated by query above
+      if (showRow.firstEpisodeOverDuration === 0) {
+        const episodeStmt = this.db.prepare(`
+          SELECT * FROM episodes WHERE showId = ?
+        `);
+        const episodeRows = episodeStmt.all(showRow.id) as any[];
+        validShows.push(this.mapRowToShow(showRow, episodeRows));
+        continue;
+      }
+
+      // For overDuration shows, check next episode from progression
+      const progressionStmt = this.db.prepare(`
+        SELECT currentEpisodeNumber FROM episode_progressions 
+        WHERE showItemId = ? AND streamType = ?
+      `);
+      const progression = progressionStmt.get(
+        showRow.mediaItemId,
+        streamType
+      ) as any;
+      const nextEpisodeNumber = progression?.currentEpisodeNumber || 1;
+
+      // Get the next episode and check duration
+      const episodeStmt = this.db.prepare(`
+        SELECT * FROM episodes WHERE showId = ? AND episodeNumber = ?
+      `);
+      const nextEpisodeRow = episodeStmt.get(
+        showRow.id,
+        nextEpisodeNumber
+      ) as any;
+
+      if (
+        nextEpisodeRow &&
+        nextEpisodeRow.duration &&
+        nextEpisodeRow.duration <= availableDuration
+      ) {
+        const allEpisodeStmt = this.db.prepare(`
+          SELECT * FROM episodes WHERE showId = ?
+        `);
+        const episodeRows = allEpisodeStmt.all(showRow.id) as any[];
+        validShows.push(this.mapRowToShow(showRow, episodeRows));
+      }
+    }
+
+    return validShows;
+  }
 }
 
 // Singleton instance
