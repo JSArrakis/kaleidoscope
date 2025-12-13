@@ -139,6 +139,18 @@ class SQLiteService {
       )
     `);
 
+    // Show Secondary Tags junction table
+    this.db.exec(`
+      CREATE TABLE IF NOT EXISTS show_secondary_tags (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        mediaItemId TEXT NOT NULL,
+        tagId TEXT NOT NULL,
+        createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (mediaItemId) REFERENCES shows (mediaItemId) ON DELETE CASCADE,
+        UNIQUE(mediaItemId, tagId)
+      )
+    `);
+
     // Episode Tags junction table
     this.db.exec(`
       CREATE TABLE IF NOT EXISTS episode_tags (
@@ -510,6 +522,8 @@ class SQLiteService {
       CREATE INDEX IF NOT EXISTS idx_show_tags_mediaItemId ON show_tags(mediaItemId);
       CREATE INDEX IF NOT EXISTS idx_show_tags_tagId ON show_tags(tagId);
       CREATE INDEX IF NOT EXISTS idx_show_tags_tagType ON show_tags(tagType);
+      CREATE INDEX IF NOT EXISTS idx_show_secondary_tags_mediaItemId ON show_secondary_tags(mediaItemId);
+      CREATE INDEX IF NOT EXISTS idx_show_secondary_tags_tagId ON show_secondary_tags(tagId);
       CREATE INDEX IF NOT EXISTS idx_episodes_showId ON episodes(showId);
       CREATE INDEX IF NOT EXISTS idx_episodes_mediaItemId ON episodes(mediaItemId);
       CREATE INDEX IF NOT EXISTS idx_episode_tags_mediaItemId ON episode_tags(mediaItemId);

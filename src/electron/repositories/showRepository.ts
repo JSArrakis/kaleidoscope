@@ -30,9 +30,6 @@ export class ShowRepository {
       // Insert show tags
       this.insertShowTags(show.mediaItemId, show.tags);
 
-      // Insert show secondary tags
-      this.insertShowSecondaryTags(show.mediaItemId, show.secondaryTags);
-
       // Insert episodes
       if (show.episodes && show.episodes.length > 0) {
         const episodeStmt = this.db.prepare(`
@@ -59,6 +56,9 @@ export class ShowRepository {
           this.insertEpisodeTags(episode.mediaItemId, episode.tags);
         }
       }
+
+      // Compute and insert secondary tags from episodes
+      this.syncSecondaryTagsForShow(show.mediaItemId);
     });
 
     transaction();
@@ -174,11 +174,8 @@ export class ShowRepository {
         .run(mediaItemId);
       this.insertShowTags(mediaItemId, show.tags);
 
-      // Delete and re-insert secondary tags
-      this.db
-        .prepare("DELETE FROM show_secondary_tags WHERE mediaItemId = ?")
-        .run(mediaItemId);
-      this.insertShowSecondaryTags(mediaItemId, show.secondaryTags);
+      // Recompute and sync secondary tags from episodes
+      this.syncSecondaryTagsForShow(mediaItemId);
     });
 
     transaction();
@@ -253,21 +250,60 @@ export class ShowRepository {
 
   /**
    * Insert secondary tags for a show
+   * Secondary tags are computed from episode tags, not manually inserted
+   * This is a helper for bulk insertion only
    */
-  private insertShowSecondaryTags(
-    mediaItemId: string,
-    secondaryTags: Tag[]
-  ): void {
-    if (secondaryTags.length === 0) return;
+  private insertShowSecondaryTags(mediaItemId: string, tagIds: string[]): void {
+    if (tagIds.length === 0) return;
 
     const stmt = this.db.prepare(`
-      INSERT INTO show_secondary_tags (mediaItemId, tagId, tagType)
-      VALUES (?, ?, ?)
+      INSERT INTO show_secondary_tags (mediaItemId, tagId)
+      VALUES (?, ?)
     `);
 
-    for (const tag of secondaryTags) {
-      stmt.run(mediaItemId, tag.tagId, tag.type);
+    for (const tagId of tagIds) {
+      stmt.run(mediaItemId, tagId);
     }
+  }
+
+  /**
+   * Synchronize secondary tags for a show based on its episodes
+   * Secondary tags = episode tags that are NOT in the show's primary tags
+   * This maintains a computed/derived relationship for performance optimization
+   *
+   * @param mediaItemId The show's mediaItemId
+   */
+  private syncSecondaryTagsForShow(mediaItemId: string): void {
+    // Get all primary show tags
+    const primaryTagsStmt = this.db.prepare(`
+      SELECT DISTINCT tagId FROM show_tags WHERE mediaItemId = ?
+    `);
+    const primaryTagRows = primaryTagsStmt.all(mediaItemId) as any[];
+    const primaryTagIds = new Set(primaryTagRows.map((r) => r.tagId));
+
+    // Get all episode tags for episodes of this show
+    const episodeTagsStmt = this.db.prepare(`
+      SELECT DISTINCT et.tagId FROM episode_tags et
+      JOIN episodes e ON et.mediaItemId = e.mediaItemId
+      JOIN shows s ON e.showId = s.id
+      WHERE s.mediaItemId = ?
+    `);
+    const episodeTagRows = episodeTagsStmt.all(mediaItemId) as any[];
+    const episodeTagIds = new Set(episodeTagRows.map((r) => r.tagId));
+
+    // Compute secondary tags (episode tags NOT in primary tags)
+    const secondaryTagIds = Array.from(episodeTagIds).filter(
+      (tagId) => !primaryTagIds.has(tagId)
+    );
+
+    // Clear existing secondary tags for this show
+    const deleteStmt = this.db.prepare(`
+      DELETE FROM show_secondary_tags WHERE mediaItemId = ?
+    `);
+    deleteStmt.run(mediaItemId);
+
+    // Insert new secondary tags
+    this.insertShowSecondaryTags(mediaItemId, secondaryTagIds);
   }
 
   /**
