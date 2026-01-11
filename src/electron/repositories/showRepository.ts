@@ -120,6 +120,42 @@ export class ShowRepository {
     return this.mapRowToShow(showRow, episodeRows);
   }
 
+  findAllShowsUnderDuration(
+    maxDuration: number,
+    ageGroups: Tag[] = []
+  ): Show[] {
+    const ageGroupIds = ageGroups.map((ageGroup) => ageGroup.tagId);
+
+    let query = `SELECT * FROM shows WHERE durationLimit <= ?`;
+    const params: any[] = [maxDuration];
+
+    if (ageGroupIds.length > 0) {
+      query += `
+        AND mediaItemId IN (
+          SELECT mediaItemId FROM show_tags 
+          WHERE tagId IN (${ageGroupIds.map(() => "?").join(",")})
+          GROUP BY mediaItemId 
+          HAVING COUNT(DISTINCT tagId) = ?
+        )
+      `;
+      params.push(...ageGroupIds, ageGroupIds.length);
+    }
+
+    query += ` ORDER BY title`;
+
+    const stmt = this.db.prepare(query);
+    const showRows = stmt.all(...params) as any[];
+    const shows: Show[] = [];
+    for (const showRow of showRows) {
+      const episodesStmt = this.db.prepare(`
+        SELECT * FROM episodes WHERE showId = ? ORDER BY episodeNumber, episode
+      `);
+      const episodeRows = episodesStmt.all(showRow.id) as any[];
+      shows.push(this.mapRowToShow(showRow, episodeRows));
+    }
+    return shows;
+  }
+
   /**
    * Find shows by tag
    */

@@ -82,7 +82,7 @@ export class MovieRepository {
 
       // Delete existing tags
       this.db
-        .prepare('DELETE FROM media_tags WHERE mediaItemId = ?')
+        .prepare('DELETE FROM movie_tags WHERE mediaItemId = ?')
         .run(mediaItemId);
 
       // Insert new tags
@@ -122,7 +122,7 @@ export class MovieRepository {
     const placeholders = tagIds.map(() => '?').join(',');
     const stmt = this.db.prepare(`
       SELECT DISTINCT m.* FROM movies m
-      INNER JOIN media_tags mt ON m.mediaItemId = mt.mediaItemId
+      INNER JOIN movie_tags mt ON m.mediaItemId = mt.mediaItemId
       WHERE mt.tagId IN (${placeholders})
       ORDER BY m.title
     `);
@@ -135,7 +135,7 @@ export class MovieRepository {
   findByTagType(tagType: string): Movie[] {
     const stmt = this.db.prepare(`
       SELECT DISTINCT m.* FROM movies m
-      INNER JOIN media_tags mt ON m.mediaItemId = mt.mediaItemId
+      INNER JOIN movie_tags mt ON m.mediaItemId = mt.mediaItemId
       WHERE mt.tagType = ?
       ORDER BY m.title
     `);
@@ -166,7 +166,7 @@ export class MovieRepository {
     if (tags.length === 0) return;
 
     const stmt = this.db.prepare(`
-      INSERT INTO media_tags (mediaItemId, tagId, tagType)
+      INSERT INTO movie_tags (mediaItemId, tagId, tagType)
       VALUES (?, ?, ?)
     `);
 
@@ -207,7 +207,7 @@ export class MovieRepository {
   private loadMediaTags(mediaItemId: string): Tag[] {
     const stmt = this.db.prepare(`
       SELECT t.* FROM tags t
-      INNER JOIN media_tags mt ON t.tagId = mt.tagId
+      INNER JOIN movie_tags mt ON t.tagId = mt.tagId
       WHERE mt.mediaItemId = ?
     `);
 

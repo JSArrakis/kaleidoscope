@@ -18,7 +18,7 @@ Creates a complete test database with:
 - `tags` table (holidays with date/season info)
 - `movies` and `shows` tables
 - `episodes` table
-- `media_tags`, `episode_tags`, `show_tags`, `show_secondary_tags` tables
+- `movie_tags`, `episode_tags`, `show_tags`, `show_secondary_tags` tables
 
 ### Test Data Fixture
 

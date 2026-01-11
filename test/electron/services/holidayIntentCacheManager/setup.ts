@@ -86,7 +86,7 @@ export function setupTestDatabase(): Database.Database {
     );
 
     -- Media tags table (for tagging movies and episodes)
-    CREATE TABLE IF NOT EXISTS media_tags (
+    CREATE TABLE IF NOT EXISTS movie_tags (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       mediaItemId TEXT NOT NULL,
       tagId TEXT NOT NULL,
@@ -156,7 +156,7 @@ export function populateTestData(db: Database.Database): void {
   `);
 
   const insertMediaTag = db.prepare(`
-    INSERT INTO media_tags (mediaItemId, tagId)
+    INSERT INTO movie_tags (mediaItemId, tagId)
     VALUES (?, ?)
   `);
 

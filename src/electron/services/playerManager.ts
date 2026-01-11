@@ -171,7 +171,7 @@ export async function stopPlayer(): Promise<void> {
  * TODO: Implement player-specific play logic
  * TODO: Pass timeDeltaMs to deviation correction mechanism
  */
-export async function play(options?: { timeDeltaMs?: number }): Promise<void> {
+export async function play(options?: { timeDelta?: number }): Promise<void> {
   if (!isPlayerInitialized) {
     console.warn(
       "[PlayerManager] Player not initialized, cannot start playback"
@@ -179,7 +179,7 @@ export async function play(options?: { timeDeltaMs?: number }): Promise<void> {
     return;
   }
 
-  const timeDeltaMs = options?.timeDeltaMs || 0;
+  const timeDeltaMs = options?.timeDelta || 0;
 
   try {
     switch (currentPlayerType) {

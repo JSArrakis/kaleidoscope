@@ -77,8 +77,8 @@ class SQLiteService {
         alias TEXT,
         imdb TEXT,
         path TEXT NOT NULL,
-        duration INTEGER,
-        durationLimit INTEGER,
+        duration INTEGER NOT NULL,
+        durationLimit INTEGER NOT NULL,
         createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
         updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
       )
@@ -115,7 +115,7 @@ class SQLiteService {
 
     // Media Tags junction table
     this.db.exec(`
-      CREATE TABLE IF NOT EXISTS media_tags (
+      CREATE TABLE IF NOT EXISTS movie_tags (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         mediaItemId TEXT NOT NULL,
         tagId TEXT NOT NULL,
@@ -433,11 +433,7 @@ class SQLiteService {
       CREATE TABLE IF NOT EXISTS recently_used_commercials (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         mediaItemId TEXT NOT NULL,
-        usageContext TEXT NOT NULL,
-        streamSessionId TEXT,
-        usedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
         expiresAt DATETIME,
-        FOREIGN KEY (mediaItemId) REFERENCES commercials(mediaItemId) ON DELETE CASCADE
       )
     `);
 
@@ -445,11 +441,7 @@ class SQLiteService {
       CREATE TABLE IF NOT EXISTS recently_used_shorts (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         mediaItemId TEXT NOT NULL,
-        usageContext TEXT NOT NULL,
-        streamSessionId TEXT,
-        usedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
         expiresAt DATETIME,
-        FOREIGN KEY (mediaItemId) REFERENCES shorts(mediaItemId) ON DELETE CASCADE
       )
     `);
 
@@ -457,11 +449,7 @@ class SQLiteService {
       CREATE TABLE IF NOT EXISTS recently_used_music (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         mediaItemId TEXT NOT NULL,
-        usageContext TEXT NOT NULL,
-        streamSessionId TEXT,
-        usedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
         expiresAt DATETIME,
-        FOREIGN KEY (mediaItemId) REFERENCES music(mediaItemId) ON DELETE CASCADE
       )
     `);
 
@@ -469,23 +457,7 @@ class SQLiteService {
       CREATE TABLE IF NOT EXISTS recently_used_movies (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         mediaItemId TEXT NOT NULL,
-        usageContext TEXT NOT NULL,
-        streamSessionId TEXT,
-        usedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
         expiresAt DATETIME,
-        FOREIGN KEY (mediaItemId) REFERENCES movies(mediaItemId) ON DELETE CASCADE
-      )
-    `);
-
-    this.db.exec(`
-      CREATE TABLE IF NOT EXISTS recently_used_shows (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        mediaItemId TEXT NOT NULL,
-        usageContext TEXT NOT NULL,
-        streamSessionId TEXT,
-        usedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
-        expiresAt DATETIME,
-        FOREIGN KEY (mediaItemId) REFERENCES shows(mediaItemId) ON DELETE CASCADE
       )
     `);
 
@@ -515,9 +487,9 @@ class SQLiteService {
 
     const indexes = `
       CREATE INDEX IF NOT EXISTS idx_movies_mediaItemId ON movies(mediaItemId);
-      CREATE INDEX IF NOT EXISTS idx_media_tags_mediaItemId ON media_tags(mediaItemId);
-      CREATE INDEX IF NOT EXISTS idx_media_tags_tagId ON media_tags(tagId);
-      CREATE INDEX IF NOT EXISTS idx_media_tags_tagType ON media_tags(tagType);
+      CREATE INDEX IF NOT EXISTS idx_movie_tags_mediaItemId ON movie_tags(mediaItemId);
+      CREATE INDEX IF NOT EXISTS idx_movie_tags_tagId ON movie_tags(tagId);
+      CREATE INDEX IF NOT EXISTS idx_movie_tags_tagType ON movie_tags(tagType);
       CREATE INDEX IF NOT EXISTS idx_shows_mediaItemId ON shows(mediaItemId);
       CREATE INDEX IF NOT EXISTS idx_show_tags_mediaItemId ON show_tags(mediaItemId);
       CREATE INDEX IF NOT EXISTS idx_show_tags_tagId ON show_tags(tagId);

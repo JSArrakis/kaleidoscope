@@ -219,8 +219,8 @@ export class FacetRepository {
         WHERE EXISTS (
           -- Check for movies with both genre and aesthetic tags and durationLimit <= durationWindow
           SELECT 1
-          FROM media_tags mt1
-          INNER JOIN media_tags mt2 ON mt1.mediaItemId = mt2.mediaItemId
+          FROM movie_tags mt1
+          INNER JOIN movie_tags mt2 ON mt1.mediaItemId = mt2.mediaItemId
           INNER JOIN movies m ON mt1.mediaItemId = m.mediaItemId
           WHERE mt1.tagId = fi.genre_tag_id 
             AND mt2.tagId = fi.aesthetic_tag_id

@@ -37,7 +37,7 @@ export class EpisodeProgressionRepository {
 
   findByShowAndStreamType(
     showItemId: string,
-    streamType: string
+    streamType: StreamType
   ): EpisodeProgression | null {
     const stmt = this.db.prepare(
       `SELECT * FROM episode_progressions WHERE showItemId = ? AND streamType = ?`
@@ -55,7 +55,7 @@ export class EpisodeProgressionRepository {
     return rows.map((row) => this.mapRowToProgression(row));
   }
 
-  findByStreamType(streamType: string): EpisodeProgression[] {
+  findByStreamType(streamType: StreamType): EpisodeProgression[] {
     const stmt = this.db.prepare(
       `SELECT * FROM episode_progressions WHERE streamType = ? ORDER BY lastPlayedDate DESC`
     );
@@ -118,7 +118,10 @@ export class EpisodeProgressionRepository {
     return result.changes > 0;
   }
 
-  deleteByShowAndStreamType(showItemId: string, streamType: string): boolean {
+  deleteByShowAndStreamType(
+    showItemId: string,
+    streamType: StreamType
+  ): boolean {
     const stmt = this.db.prepare(
       `DELETE FROM episode_progressions WHERE showItemId = ? AND streamType = ?`
     );

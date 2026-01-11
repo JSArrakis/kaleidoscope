@@ -1,5 +1,4 @@
 import { getDB } from "../db/sqlite.js";
-import { tagRepository } from "./tagsRepository.js";
 
 export class MovieRepository {
   private get db() {
@@ -65,13 +64,48 @@ export class MovieRepository {
     return this.mapRowToMovie(row);
   }
 
+  findRandomMovieUnderDuration(
+    maxDuration: number,
+    ageGroups: Tag[]
+  ): Movie | null {
+    const ageGroupIds = ageGroups.map((ageGroup) => ageGroup.tagId);
+
+    let query = `
+      SELECT * 
+      FROM movies 
+      WHERE duration <= ? 
+      AND mediaItemId NOT IN (SELECT mediaItemId FROM recently_used_movies)
+    `;
+
+    const params: any[] = [maxDuration];
+
+    if (ageGroupIds.length > 0) {
+      query += `
+        AND mediaItemId IN (
+          SELECT mediaItemId FROM movie_tags 
+          WHERE tagId IN (${ageGroupIds.map(() => "?").join(",")})
+          GROUP BY mediaItemId 
+          HAVING COUNT(DISTINCT tagId) = ?
+        )
+      `;
+      params.push(...ageGroupIds, ageGroupIds.length);
+    }
+
+    query += ` ORDER BY RANDOM() LIMIT 1`;
+
+    const stmt = this.db.prepare(query);
+    const row = stmt.get(...params) as any;
+    if (!row) return null;
+    return this.mapRowToMovie(row);
+  }
+
   /**
    * Find movies by tag
    */
   findByTag(tagId: string): Movie[] {
     const stmt = this.db.prepare(`
       SELECT DISTINCT m.* FROM movies m
-      JOIN media_tags mt ON m.mediaItemId = mt.mediaItemId
+      JOIN movie_tags mt ON m.mediaItemId = mt.mediaItemId
       WHERE mt.tagId = ?
       ORDER BY m.title
     `);
@@ -89,7 +123,7 @@ export class MovieRepository {
     const stmt = this.db.prepare(`
       SELECT m.* FROM movies m
       WHERE m.mediaItemId IN (
-        SELECT mediaItemId FROM media_tags 
+        SELECT mediaItemId FROM movie_tags 
         WHERE tagId IN (${placeholders})
         GROUP BY mediaItemId 
         HAVING COUNT(DISTINCT tagId) = ?
@@ -98,6 +132,75 @@ export class MovieRepository {
     `);
 
     const rows = stmt.all(...tagIds, tagIds.length) as any[];
+    return rows.map((row) => this.mapRowToMovie(row));
+  }
+
+  findByTagsUnderDuration(tags: Tag[], maxDuration: number): Movie[] {
+    if (tags.length === 0) return [];
+
+    const tagIds = tags.map((tag) => tag.tagId);
+    const placeholders = tagIds.map(() => "?").join(",");
+    const stmt = this.db.prepare(`
+      SELECT m.* FROM movies m
+      WHERE m.duration <= ?
+      AND m.mediaItemId IN (
+        SELECT mediaItemId FROM movie_tags 
+        WHERE tagId IN (${placeholders})
+        GROUP BY mediaItemId 
+        HAVING COUNT(DISTINCT tagId) = ?
+      )
+      AND mediaItemId NOT IN (SELECT mediaItemId FROM recently_used_movies)
+      ORDER BY m.title
+    `);
+    const rows = stmt.all(maxDuration, ...tagIds, tagIds.length) as any[];
+    return rows.map((row) => this.mapRowToMovie(row));
+  }
+
+  findByTagsAndAgeGroupsUnderDuration(
+    tags: Tag[],
+    ageGroups: Tag[],
+    maxDuration: number
+  ): Movie[] {
+    if (tags.length === 0) {
+      return [];
+    }
+
+    const tagIds = tags.map((tag) => tag.tagId);
+    const ageGroupIds = ageGroups.map((ageGroup) => ageGroup.tagId);
+
+    // Build query conditionally based on whether ageGroups are provided
+    let query = `
+      SELECT m.* FROM movies m
+      WHERE m.duration <= ?
+      AND m.mediaItemId IN (
+        SELECT mediaItemId FROM movie_tags 
+        WHERE tagId IN (${tagIds.map(() => "?").join(",")})
+        GROUP BY mediaItemId 
+        HAVING COUNT(DISTINCT tagId) = ?
+      )
+    `;
+
+    const params: any[] = [maxDuration, ...tagIds, tagIds.length];
+
+    if (ageGroupIds.length > 0) {
+      query += `
+        AND m.mediaItemId IN (
+          SELECT mediaItemId FROM movie_tags 
+          WHERE tagId IN (${ageGroupIds.map(() => "?").join(",")})
+          GROUP BY mediaItemId 
+          HAVING COUNT(DISTINCT tagId) = ?
+        )
+      `;
+      params.push(...ageGroupIds, ageGroupIds.length);
+    }
+
+    query += `
+      AND mediaItemId NOT IN (SELECT mediaItemId FROM recently_used_movies)
+      ORDER BY m.title
+    `;
+
+    const stmt = this.db.prepare(query);
+    const rows = stmt.all(...params) as any[];
     return rows.map((row) => this.mapRowToMovie(row));
   }
 
@@ -111,7 +214,7 @@ export class MovieRepository {
     const stmt = this.db.prepare(`
       SELECT COALESCE(SUM(m.duration), 0) as totalSeconds
       FROM movies m
-      INNER JOIN media_tags mt ON m.mediaItemId = mt.mediaItemId
+      INNER JOIN movie_tags mt ON m.mediaItemId = mt.mediaItemId
       WHERE mt.tagId = ?
     `);
 
@@ -145,7 +248,7 @@ export class MovieRepository {
 
       // Delete and re-insert tags
       this.db
-        .prepare("DELETE FROM media_tags WHERE mediaItemId = ?")
+        .prepare("DELETE FROM movie_tags WHERE mediaItemId = ?")
         .run(mediaItemId);
       this.insertMovieTags(mediaItemId, movie.tags);
     });
@@ -179,7 +282,7 @@ export class MovieRepository {
     if (tags.length === 0) return;
 
     const stmt = this.db.prepare(`
-      INSERT INTO media_tags (mediaItemId, tagId, tagType)
+      INSERT INTO movie_tags (mediaItemId, tagId, tagType)
       VALUES (?, ?, ?)
     `);
 
@@ -194,20 +297,30 @@ export class MovieRepository {
   private mapRowToMovie(row: any): Movie {
     const tagsStmt = this.db.prepare(`
       SELECT t.* FROM tags t
-      JOIN media_tags mt ON t.tagId = mt.tagId
+      JOIN movie_tags mt ON t.tagId = mt.tagId
       WHERE mt.mediaItemId = ?
       ORDER BY t.name
     `);
 
     const tagRows = tagsStmt.all(row.mediaItemId) as any[];
-    const tags = tagRows.map((tagRow) => ({
-      tagId: tagRow.tagId,
-      name: tagRow.name,
-      type: tagRow.type,
-      seasonStartDate: tagRow.seasonStartDate,
-      seasonEndDate: tagRow.seasonEndDate,
-      sequence: tagRow.sequence,
-    }));
+    const tags = tagRows.map((tagRow) => {
+      // Fetch holiday dates for this tag if it has any
+      const holidayDatesStmt = this.db.prepare(`
+        SELECT holidayDate FROM holiday_dates WHERE tagId = ?
+      `);
+      const holidayDateRows = holidayDatesStmt.all(tagRow.tagId) as any[];
+      const holidayDates = holidayDateRows.map((hd) => hd.holidayDate);
+
+      return {
+        tagId: tagRow.tagId,
+        name: tagRow.name,
+        type: tagRow.type,
+        seasonStartDate: tagRow.seasonStartDate,
+        seasonEndDate: tagRow.seasonEndDate,
+        sequence: tagRow.sequence,
+        holidayDates: holidayDates.length > 0 ? holidayDates : [],
+      };
+    });
 
     return {
       mediaItemId: row.mediaItemId,

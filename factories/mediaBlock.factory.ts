@@ -1,4 +1,5 @@
 import { randomUUID } from "crypto";
+import { MediaBlock } from "../src/electron/types/MediaBlock.js";
 
 /**
  * Factory function to create a MediaBlock with constructor-style parameters
@@ -9,20 +10,17 @@ export function createMediaBlock(
   startTime?: number,
   duration?: number
 ): MediaBlock {
-  // Calculate buffer duration
-  const bufferDuration = (buffer ?? []).reduce(
-    (sum, item) => sum + (item.duration || 0),
-    0
+  // Create a new MediaBlock instance using the constructor
+  const mediaBlock = new MediaBlock(
+    buffer ?? [],
+    mainBlock,
+    startTime ?? Math.floor(Date.now() / 1000)
   );
 
-  // Calculate total duration: buffer duration + main media duration
-  const mainDuration = mainBlock?.duration || 0;
-  const totalDuration = duration ?? bufferDuration + mainDuration;
+  // If a custom duration is provided, override the calculated duration
+  if (duration !== undefined) {
+    mediaBlock.duration = duration;
+  }
 
-  return {
-    buffer: buffer ?? [],
-    mainBlock,
-    startTime: startTime ?? Math.floor(Date.now() / 1000),
-    duration: totalDuration
-  };
+  return mediaBlock;
 }

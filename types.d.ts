@@ -79,8 +79,8 @@ type Movie = {
   alias?: string;
   imdb?: string;
   path: string;
-  duration?: number;
-  durationLimit?: number;
+  duration: number;
+  durationLimit: number;
   type: MediaType;
   tags: Tag[];
   createdAt?: string;
@@ -92,12 +92,12 @@ type Episode = {
   showItemId: string;
   season?: string;
   episode?: string;
-  episodeNumber?: number;
+  episodeNumber: number;
   title: string;
   path: string;
-  duration?: number;
-  durationLimit?: number;
-  overDuration?: boolean;
+  duration: number;
+  durationLimit: number;
+  overDuration: boolean;
   type: MediaType;
   tags: Tag[];
   createdAt?: string;
@@ -109,8 +109,8 @@ type Show = {
   title: string;
   alias?: string;
   imdb?: string;
-  durationLimit?: number;
-  firstEpisodeOverDuration?: boolean;
+  durationLimit: number;
+  firstEpisodeOverDuration: boolean;
   episodeCount: number;
   type: MediaType;
   tags: Tag[];
@@ -124,7 +124,7 @@ type Commercial = {
   mediaItemId: string;
   title: string;
   path: string;
-  duration?: number;
+  duration: number;
   type: MediaType;
   tags: Tag[];
   createdAt?: string;
@@ -135,7 +135,7 @@ type Short = {
   mediaItemId: string;
   title: string;
   path: string;
-  duration?: number;
+  duration: number;
   type: MediaType;
   tags: Tag[];
   createdAt?: string;
@@ -147,7 +147,7 @@ type Music = {
   title: string;
   artist?: string;
   path: string;
-  duration?: number;
+  duration: number;
   type: MediaType;
   tags: Tag[];
   createdAt?: string;
@@ -158,7 +158,7 @@ type Promo = {
   mediaItemId: string;
   title: string;
   path: string;
-  duration?: number;
+  duration: number;
   type: MediaType;
   tags: Tag[];
   createdAt?: string;
@@ -169,7 +169,7 @@ type Bumper = {
   mediaItemId: string;
   title: string;
   path: string;
-  duration?: number;
+  duration: number;
   type: MediaType;
   tags: Tag[];
   createdAt?: string;
@@ -180,6 +180,17 @@ type BufferMedia = {
   commercials: Commercial[];
   shorts: Short[];
   music: Music[];
+};
+
+// ============================================================================
+// SCHEDULED BLOCK TYPES
+// ============================================================================
+
+type ScheduledBlock = {
+  scheduledBlockId: string;
+  title: string;
+  scheduledStartTime: number;
+  scheduledEndTime: number;
 };
 
 // ============================================================================
@@ -260,7 +271,7 @@ type Mosaic = {
 type EpisodeProgression = {
   episodeProgressionId: string;
   showItemId: string;
-  streamType: string;
+  streamType: StreamType;
   currentEpisodeNumber?: number;
   totalEpisodes?: number;
   lastPlayedDate?: string;
@@ -334,6 +345,17 @@ interface IStreamRequest {
 interface StreamConstructionOptions {
   Cadence: boolean;
   Themed: boolean;
+  StreamType: StreamType;
+}
+
+interface StreamInitializationData {
+  activeHolidayTags: Tag[];
+  progressionMap: Map<string, number | undefined>;
+  startingTimepoint: number;
+  iterationDuration: number;
+  endOfTimeWindow: number;
+  selectedFirstMedia: Episode | Movie | null;
+  nextScheduledBlock: ScheduledBlock | null;
 }
 
 // ============================================================================

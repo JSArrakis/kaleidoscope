@@ -78,7 +78,7 @@ function createTestDatabaseSchema(db: Database.Database): void {
 
   // Media Tags junction table
   db.exec(`
-    CREATE TABLE IF NOT EXISTS media_tags (
+    CREATE TABLE IF NOT EXISTS movie_tags (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       mediaItemId TEXT NOT NULL,
       tagId TEXT NOT NULL,
@@ -479,9 +479,9 @@ function createTestDatabaseSchema(db: Database.Database): void {
 function createTestDatabaseIndexes(db: Database.Database): void {
   const indexes = `
     CREATE INDEX IF NOT EXISTS idx_movies_mediaItemId ON movies(mediaItemId);
-    CREATE INDEX IF NOT EXISTS idx_media_tags_mediaItemId ON media_tags(mediaItemId);
-    CREATE INDEX IF NOT EXISTS idx_media_tags_tagId ON media_tags(tagId);
-    CREATE INDEX IF NOT EXISTS idx_media_tags_tagType ON media_tags(tagType);
+    CREATE INDEX IF NOT EXISTS idx_movie_tags_mediaItemId ON movie_tags(mediaItemId);
+    CREATE INDEX IF NOT EXISTS idx_movie_tags_tagId ON movie_tags(tagId);
+    CREATE INDEX IF NOT EXISTS idx_movie_tags_tagType ON movie_tags(tagType);
     CREATE INDEX IF NOT EXISTS idx_shows_mediaItemId ON shows(mediaItemId);
     CREATE INDEX IF NOT EXISTS idx_show_tags_mediaItemId ON show_tags(mediaItemId);
     CREATE INDEX IF NOT EXISTS idx_show_tags_tagId ON show_tags(tagId);
@@ -608,7 +608,7 @@ export function populateTestData(db: Database.Database): void {
       ).run(movie.title, movie.id, movie.duration, movie.path);
     }
 
-    // Associate movies with holiday tags (media_tags now includes tagType)
+    // Associate movies with holiday tags (movie_tags now includes tagType)
     const tagAssociations = [
       {
         mediaItemId: "movie-christmas-1",
@@ -644,7 +644,7 @@ export function populateTestData(db: Database.Database): void {
 
     for (const assoc of tagAssociations) {
       db.prepare(
-        "INSERT OR IGNORE INTO media_tags (mediaItemId, tagId, tagType) VALUES (?, ?, ?)"
+        "INSERT OR IGNORE INTO movie_tags (mediaItemId, tagId, tagType) VALUES (?, ?, ?)"
       ).run(assoc.mediaItemId, assoc.tagId, assoc.tagType);
     }
 
