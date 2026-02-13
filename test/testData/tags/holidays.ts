@@ -14,8 +14,8 @@ export const holidayTags = {
     undefined,
     ["2024-12-24", "2024-12-25"], // holidayDates
     undefined, // exclusionGenres
-    "2024-12-01 00:00:00", // seasonStartDate (DATETIME)
-    "2024-12-31 23:59:59" // seasonEndDate (DATETIME)
+    "2024-12-01", // seasonStartDate
+    "2024-12-31", // seasonEndDate
   ),
 
   halloween: createTag(
@@ -25,8 +25,8 @@ export const holidayTags = {
     undefined,
     ["2024-10-31"], // holidayDates
     undefined, // exclusionGenres
-    "2024-10-01 00:00:00", // seasonStartDate (DATETIME)
-    "2024-11-04 23:59:59" // seasonEndDate (DATETIME)
+    "2024-10-01", // seasonStartDate
+    "2024-11-04", // seasonEndDate
   ),
 
   valentine: createTag(
@@ -37,7 +37,7 @@ export const holidayTags = {
     ["2024-02-14"], // holidayDates
     undefined, // exclusionGenres
     undefined, // seasonStartDate
-    undefined // seasonEndDate
+    undefined, // seasonEndDate
   ),
 
   summer: createTag(
@@ -48,7 +48,7 @@ export const holidayTags = {
     ["2024-07-04"], // holidayDates (US Independence Day example)
     undefined, // exclusionGenres
     undefined, // seasonStartDate
-    undefined // seasonEndDate
+    undefined, // seasonEndDate
   ),
 
   newYear: createTag(
@@ -59,7 +59,7 @@ export const holidayTags = {
     ["2024-01-01"], // holidayDates
     undefined, // exclusionGenres
     undefined, // seasonStartDate
-    undefined // seasonEndDate
+    undefined, // seasonEndDate
   ),
 };
 

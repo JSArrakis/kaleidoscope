@@ -147,10 +147,10 @@ const MainLayoutView: FC<MainLayoutViewProps> = function MainLayoutView({
               }`}
             >
               <Button
-                onClick={() => navigateTo("cascade")}
+                onClick={() => navigateTo("facets")}
                 className={styles.subButton}
               >
-                Cascade
+                Facets
               </Button>
               <Button
                 onClick={() => navigateTo("mosaic")}

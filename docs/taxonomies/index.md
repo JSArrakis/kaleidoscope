@@ -12,7 +12,7 @@ Through these concepts I did an analysis on a large variety of movies and drille
 
 Genres are the narrative backbone of media - they describe the fundamental story type or plot structure. These are broad categories that communicate the kind of story being told rather than the style or mood in which it is presented. Some examples include Science Fiction, Action, Horror, Drama, Comedy, Romance, Mystery, and Thriller.
 
-In Kaleidoscope, genres are used to help identify the primary narrative DNA of a piece of media. A Western (such as The Magnificent Seven) and a Samurai film (Seven Samurai) can share the same narrative genre (e.g., Action-Drama) even though they differ wildly in aesthetic presentation. In essence, the plot is what the piece of media is trying to say, the main points its trying to make or convey, how the plot is presented is separated from the main narrative. It doesnt matter if you met the wizard in a galaxy far far away or in middle earth - if there is magic and the hero's journey, it is likely a Fantasy aesthetic - the actual Genre will most likely be Adventure. Spaceships do not automatically make the genre Science Fiction, only the plot narrative can do that.
+In Kaleidoscope, genres are used to help identify the primary narrative DNA of a piece of media. What is considered a Western (such as The Magnificent Seven) and a Samurai film (Seven Samurai) can share the same narrative genre (e.g., Action-Drama) even though they differ wildly in aesthetic presentation. In essence, the plot is what the piece of media is trying to say, the main points its trying to make or convey, how the plot is presented is separated from the main narrative. In this way Genre is the plot and how the plot is emotionally presented, we segment Genres from eachother in this way. It doesnt matter if you met the wizard in a galaxy far far away or in middle earth - if there is magic and the hero's journey, it is likely a Fantasy aesthetic - the actual Genre will most likely be Adventure. Spaceships do not automatically make the genre Science Fiction, only the plot narrative can do that. And as such Fantasy does not speak about the narrative presentation of the story, which is the Genre.
 
 It is important to note that many films have multiple genres, and the combination of those genres change the tone of the media over all to be greater than the some of its parts. For instance Horror encapsulates the idea of dread, where the main narrative is being confronted with fear and the unknown and the other, such as in movies like Halloween, The Exorcist, or Hellraiser. Science Fiction however lays heavily in existential philosophy and speculative realistic technologies over spiritual or magical justifications, movies such as Arrival, Interstellar or Gattaca. However when you combine Science Fiction and Horror, you arrive on the horrors of technology and the hubris of man in it's usage, where they go wrong and how the ethics of them can cause harm and terror, movies such as The Fly, Alien, and Event Horizon - the philosophical discussion of our future is surrounding the terrors it causes. This pattern is common when you combine genres, the genres combined usually 'speak' about eachother in some way.
 
@@ -22,11 +22,11 @@ It is important to note that many films have multiple genres, and the combinatio
 
 Aesthetics define the visual, cultural, and tonal identity of media - the 'surface flavor' of how a story is presented. Unlike genres, aesthetics are not about the core plot structure, but about how that plot is dressed, framed, and delivered to the audience.
 
-Some Examples include Western, Wuxia, Space Opera, Mecha, Noir, Cyberpunk, Gothic, Fairy Tale, High Seas (Nautical), Post-Apocalyptic, and Mythic.
+Some Examples include Western, Wuxia, Space Opera, Mecha, Noir, Cyberpunk, Gothic, Fairy Tale, Fantasy, High Seas (Nautical), Post-Apocalyptic, and Mythic.
 
-Aesthetics can cut across genres - Science Fiction media can be presented as a Space Opera (The Expanse), Dystopian (Interstellar), Mecha (Gundam), etc. By tracking aesthetics independently from narrative genre, Kaleidoscope can group thematically similar works even when their genres differ.
+Aesthetics can cut across genres - Science Fiction media can be presented as a Space Opera (The Expanse), Post Apocalyptic (Interstellar), Mecha (Gundam), etc. By tracking aesthetics independently from narrative genre, Kaleidoscope can group thematically similar works even when their genres differ.
 
-Note also that it is possible for media to have more than one Aesthetic taxonomy, much like Genres, some examples being Pacific Rim (Dystopian Mecha) or Mortal Engines (Dystopian Diesel-Punk), and while these aesthetics can work in conjunction with each other they however do not 'comment' on each other the way that Genre taxonomies do.
+Note also that it is possible for media to have more than one Aesthetic taxonomy, much like Genres, some examples being Pacific Rim (Post-Apocalyptic Mecha) or Mortal Engines (Post-Apocalyptic Diesel-Punk), and while these aesthetics can work in conjunction with each other they however do not 'comment' on each other the way that Genre taxonomies do.
 
 [Read more about Aesthetics](aesthetics/index.md)
 
@@ -48,8 +48,12 @@ Age Groups ensure The Rescuers doesn’t play back-to-back with Annihilation - e
 
 ## 4 - Eras
 
-Eras define the time period in which media was produced. This gives Kaleidoscope the ability to group works by production style specifically surrounding where the media was produced. For users searching for a thematic continuity, viewers who want to experience a particular time period that is explicitly presented in the media such as things like "Ancient World" (Ben-Hur, Troy, 300), "Medieval" (A Knight's Tale, The Name of the Rose, Robin Hood), "Colonial America" (The Last of the Mohicans, The Patriot, Sleepy Hollow), etc - these specific types of 'era settings' are primarily meant for the Aesthetic taxonomy, the Eras taxonomy is something different.
+Eras define the time period in which media was produced. This gives Kaleidoscope the ability to group works by production style specifically surrounding where the media was produced. 
 
+What it is not:
+For users searching for a thematic continuity, viewers who want to experience a particular time period that is explicitly presented in the media such as things like "Ancient World" (Ben-Hur, Troy, 300), "Medieval" (A Knight's Tale, The Name of the Rose, Robin Hood), "Colonial America" (The Last of the Mohicans, The Patriot, Sleepy Hollow), etc - these specific types of 'era settings' are primarily meant for the Aesthetic taxonomy, the Eras taxonomy is something different.
+
+What it is:
 The reason for this distinction and the particular taxonomy is entirely based on how story telling has evolved as a medium, and how plot is presented beyond just its aesthetics. These eras were defined by tropes that went beyond the plot, set, and setting of the stories that were being told. Here are a couple of quick examples of how Eras differentiate movies in production style:
 
 **1980s: Bold, Mythic, and Straightforward**

@@ -10,6 +10,7 @@ import Genres from './Genres/Genres';
 import Help from './Help/Help';
 import Holidays from './Holidays/Holidays';
 import Home from './Home/Home';
+import Facets from './Facets/Facets';
 import Mosaic from './Mosaic/Mosaic';
 import Movies from './Movies/Movies';
 import Music from './Music/Music';
@@ -30,6 +31,7 @@ export {
   Collections,
   Commercials,
   Eras,
+  Facets,
   Genres,
   Help,
   Holidays,

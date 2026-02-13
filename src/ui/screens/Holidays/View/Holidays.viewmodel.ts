@@ -24,7 +24,7 @@ interface HolidaysActions {
 export interface HolidaysViewModel extends HolidaysData, HolidaysActions {}
 
 const useHolidaysViewModel = (
-  navigate: ReturnType<typeof useRootStack>
+  navigate: ReturnType<typeof useRootStack>,
 ): HolidaysViewModel => {
   const $getHolidays = useGetAllHolidays();
   const $createHoliday = useCreateHoliday();
@@ -77,17 +77,14 @@ const useHolidaysViewModel = (
 
   const onSave = (item: Tag) => {
     const deepCopiedSelectedHoliday = JSON.parse(JSON.stringify(item));
-    const existingHoliday = holidays.find(
-      (c) => c.tagId === deepCopiedSelectedHoliday.tagId
-    );
-    if (existingHoliday) {
-      $updateHoliday.mutate(deepCopiedSelectedHoliday);
+    if (item.tagId === newHoliday?.tagId) {
+      $createHoliday.mutate(deepCopiedSelectedHoliday);
       setSelectedHoliday(null);
       setNewHoliday(null);
       setEditModalState(false);
       return;
     }
-    $createHoliday.mutate(deepCopiedSelectedHoliday);
+    $updateHoliday.mutate(deepCopiedSelectedHoliday);
     setSelectedHoliday(null);
     setNewHoliday(null);
     setEditModalState(false);

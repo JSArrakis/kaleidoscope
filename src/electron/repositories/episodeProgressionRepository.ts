@@ -18,7 +18,7 @@ export class EpisodeProgressionRepository {
         progression.streamType,
         progression.currentEpisodeNumber || null,
         progression.totalEpisodes || null,
-        progression.lastPlayedDate || null
+        progression.lastPlayedDate || null,
       );
     });
 
@@ -28,7 +28,7 @@ export class EpisodeProgressionRepository {
 
   findByProgressionId(episodeProgressionId: string): EpisodeProgression | null {
     const stmt = this.db.prepare(
-      `SELECT * FROM episode_progressions WHERE episodeProgressionId = ?`
+      `SELECT * FROM episode_progressions WHERE episodeProgressionId = ?`,
     );
     const row = stmt.get(episodeProgressionId) as any;
     if (!row) return null;
@@ -37,10 +37,10 @@ export class EpisodeProgressionRepository {
 
   findByShowAndStreamType(
     showItemId: string,
-    streamType: StreamType
+    streamType: StreamType,
   ): EpisodeProgression | null {
     const stmt = this.db.prepare(
-      `SELECT * FROM episode_progressions WHERE showItemId = ? AND streamType = ?`
+      `SELECT * FROM episode_progressions WHERE showItemId = ? AND streamType = ?`,
     );
     const row = stmt.get(showItemId, streamType) as any;
     if (!row) return null;
@@ -49,7 +49,7 @@ export class EpisodeProgressionRepository {
 
   findByShow(showItemId: string): EpisodeProgression[] {
     const stmt = this.db.prepare(
-      `SELECT * FROM episode_progressions WHERE showItemId = ? ORDER BY streamType`
+      `SELECT * FROM episode_progressions WHERE showItemId = ? ORDER BY streamType`,
     );
     const rows = stmt.all(showItemId) as any[];
     return rows.map((row) => this.mapRowToProgression(row));
@@ -57,15 +57,15 @@ export class EpisodeProgressionRepository {
 
   findByStreamType(streamType: StreamType): EpisodeProgression[] {
     const stmt = this.db.prepare(
-      `SELECT * FROM episode_progressions WHERE streamType = ? ORDER BY lastPlayedDate DESC`
+      `SELECT * FROM episode_progressions WHERE streamType = :streamType`,
     );
-    const rows = stmt.all(streamType) as any[];
+    const rows = stmt.all({ streamType }) as any[];
     return rows.map((row) => this.mapRowToProgression(row));
   }
 
   findAll(): EpisodeProgression[] {
     const stmt = this.db.prepare(
-      `SELECT * FROM episode_progressions ORDER BY lastPlayedDate DESC`
+      `SELECT * FROM episode_progressions ORDER BY lastPlayedDate DESC`,
     );
     const rows = stmt.all() as any[];
     return rows.map((row) => this.mapRowToProgression(row));
@@ -74,7 +74,7 @@ export class EpisodeProgressionRepository {
   updateEpisodeNumber(
     episodeProgressionId: string,
     currentEpisodeNumber: number,
-    totalEpisodes?: number
+    totalEpisodes?: number,
   ): EpisodeProgression | null {
     const transaction = this.db.transaction(() => {
       const stmt = this.db.prepare(`
@@ -87,7 +87,7 @@ export class EpisodeProgressionRepository {
 
       if (totalEpisodes !== undefined) {
         const totalStmt = this.db.prepare(
-          `UPDATE episode_progressions SET totalEpisodes = ? WHERE episodeProgressionId = ?`
+          `UPDATE episode_progressions SET totalEpisodes = ? WHERE episodeProgressionId = ?`,
         );
         totalStmt.run(totalEpisodes, episodeProgressionId);
       }
@@ -112,7 +112,7 @@ export class EpisodeProgressionRepository {
 
   delete(episodeProgressionId: string): boolean {
     const stmt = this.db.prepare(
-      `DELETE FROM episode_progressions WHERE episodeProgressionId = ?`
+      `DELETE FROM episode_progressions WHERE episodeProgressionId = ?`,
     );
     const result = stmt.run(episodeProgressionId);
     return result.changes > 0;
@@ -120,10 +120,10 @@ export class EpisodeProgressionRepository {
 
   deleteByShowAndStreamType(
     showItemId: string,
-    streamType: StreamType
+    streamType: StreamType,
   ): boolean {
     const stmt = this.db.prepare(
-      `DELETE FROM episode_progressions WHERE showItemId = ? AND streamType = ?`
+      `DELETE FROM episode_progressions WHERE showItemId = ? AND streamType = ?`,
     );
     const result = stmt.run(showItemId, streamType);
     return result.changes > 0;
@@ -131,7 +131,7 @@ export class EpisodeProgressionRepository {
 
   count(): number {
     const stmt = this.db.prepare(
-      `SELECT COUNT(*) as count FROM episode_progressions`
+      `SELECT COUNT(*) as count FROM episode_progressions`,
     );
     const result = stmt.get() as any;
     return result.count;

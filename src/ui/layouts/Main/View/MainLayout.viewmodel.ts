@@ -13,14 +13,13 @@ interface MainLayoutActions {
 }
 
 export interface MainLayoutViewModel
-  extends MainLayoutData,
-    MainLayoutActions {}
+  extends MainLayoutData, MainLayoutActions {}
 
 const useMainLayoutViewModel = (): MainLayoutViewModel => {
   const navigate = useRootStack();
   const [isModalOpen, setIsModalOpen] = useState(true);
   const [expandedAccordion, setExpandedAccordion] = useState<string | null>(
-    null
+    null,
   );
 
   const closeModal = () => {
@@ -63,6 +62,9 @@ const useMainLayoutViewModel = (): MainLayoutViewModel => {
         break;
       case "eras":
         navigate("/eras");
+        break;
+      case "facets":
+        navigate("/facets");
         break;
       case "genres":
         navigate("/genres");

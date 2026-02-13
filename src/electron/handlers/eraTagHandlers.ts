@@ -1,17 +1,17 @@
 import * as tagController from "../controllers/tagController.js";
 
 export async function getEraTagsHandler(): Promise<Tag[]> {
-  return tagController.getTagsByType("Era");
+  return tagController.getTagsByType(TagType.Era);
 }
 
 export async function createEraTagHandler(
-  tag: Tag
+  tag: Tag,
 ): Promise<{ message: string; status: number }> {
-  return tagController.createTag({ ...tag, type: "Era" });
+  return tagController.createTag({ ...tag, type: TagType.Era });
 }
 
 export async function deleteEraTagHandler(
-  tag: Tag
+  tag: Tag,
 ): Promise<{ message: string; status: number }> {
   return tagController.deleteTag(tag.tagId);
 }

@@ -19,7 +19,7 @@ export function getAgeGroupAdjacency(ageGroupTags: Tag[]): Tag[] {
 
   // Get the lowest age group for viewer 'safety'
   const sortedAgeGroups = ageGroupTags.sort(
-    (a, b) => (a.sequence || 0) - (b.sequence || 0)
+    (a, b) => (a.sequence || 0) - (b.sequence || 0),
   );
   const baseAgeGroup = sortedAgeGroups[0];
   let adjacencyTags: Tag[] = [baseAgeGroup];
@@ -69,7 +69,7 @@ export function cleanupExpiredRecentlyUsed(timepoint: number): number {
 export function willEpisodeFitInDuration(
   show: Show,
   nextEpisodeNumber: number,
-  availableDuration: number
+  availableDuration: number,
 ): boolean {
   if (!show.episodes || show.episodes.length === 0) {
     return false;
@@ -82,7 +82,7 @@ export function willEpisodeFitInDuration(
   }
 
   // Check if episode has overDuration
-  if (episode.isOverDuration && episode.duration) {
+  if (episode.overDuration && episode.duration) {
     // OverDuration episodes must fit exactly within available duration
     return episode.duration <= availableDuration;
   }
@@ -108,7 +108,7 @@ export function willEpisodeFitInDuration(
 export function getNextEpisodeForShow(
   show: Show,
   streamType: StreamType,
-  availableDuration: number
+  availableDuration: number,
 ): Episode | null {
   if (!show.episodes || show.episodes.length === 0) {
     return null;
@@ -117,7 +117,7 @@ export function getNextEpisodeForShow(
   // Get or create progression for this show/stream type combination
   let progression = episodeProgressionRepository.findByShowAndStreamType(
     show.mediaItemId,
-    streamType
+    streamType,
   );
 
   if (!progression) {
@@ -163,7 +163,7 @@ export function getNextEpisodeForShow(
 export function selectRandomEpisodeOrMovie(
   ageGroupTags: Tag[],
   duration: number,
-  timepoint: number
+  timepoint: number,
 ): Movie | Episode | null {
   // Clean up expired recently-used media
   cleanupExpiredRecentlyUsed(timepoint);

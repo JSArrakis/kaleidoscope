@@ -1,48 +1,62 @@
 import { facetRepository } from "../repositories/facetRepository.js";
 import { movieRepository } from "../repositories/movieRepository.js";
 import { showRepository } from "../repositories/showRepository.js";
+import {
+  doesNextEpisodeFitDuration,
+  incrementShowProgression,
+} from "../services/streamConstruction/selectionHelpers.js";
 
 /**
- * Finds media matching a specific facet (genre/aesthetic combination)
+ * Selects a facet relationship from a list using weighted distance selection
+ * Closer relationships (lower distance) have higher probability of selection
+ * Uses inverse distance weighting: weight = 1 - distance
+ *
+ * Duplicates in the relationship list naturally increase their selection probability
+ *
+ * @param relationships Array of FacetRelationshipItems to select from
+ * @returns Selected FacetRelationshipItem, or null if none available
  */
-export function findMediaWithFacet(facet: {
-  genre: Tag;
-  aesthetic: Tag;
-}): Movie | Show | null {
-  // Find movies with both tags
-  const moviesWithGenre = movieRepository.findByTag(facet.genre.tagId);
-  const moviesWithBoth = moviesWithGenre.filter((movie: Movie) =>
-    movie.tags.some((tag: Tag) => tag.tagId === facet.aesthetic.tagId)
-  );
+export function selectFacetRelationship(
+  relationships: FacetRelationshipItem[],
+): FacetRelationshipItem {
+  // Build weighted selection from relationships using inverse distance
+  const weightedRelationships: Array<{
+    relationship: FacetRelationshipItem;
+    weight: number;
+  }> = [];
+  let totalWeighting = 0;
 
-  if (moviesWithBoth.length > 0) {
-    return moviesWithBoth[Math.floor(Math.random() * moviesWithBoth.length)];
+  for (const relationship of relationships) {
+    const weight = 1 - relationship.distance;
+    weightedRelationships.push({ relationship, weight });
+    totalWeighting += weight;
   }
 
-  // Find shows with both tags
-  const showsWithGenre = showRepository.findByTag(facet.genre.tagId);
-  const showsWithBoth = showsWithGenre.filter((show: Show) =>
-    show.tags.some((tag: Tag) => tag.tagId === facet.aesthetic.tagId)
-  );
+  // Select a relationship using weighted random
+  let random = Math.random() * totalWeighting;
 
-  if (showsWithBoth.length > 0) {
-    return showsWithBoth[Math.floor(Math.random() * showsWithBoth.length)];
+  for (const { relationship, weight } of weightedRelationships) {
+    if (random < weight) {
+      return relationship;
+    }
+    random -= weight;
   }
 
-  return null;
+  // Fallback: return last relationship (shouldn't reach here)
+  return weightedRelationships[weightedRelationships.length - 1].relationship;
 }
 
 /**
  * Finds matching facets based on genre and aesthetic tags
- * Returns only full pairings (both genre AND aesthetic) - these represent meaningful relationship maps
+ * Returns facets and a boolean indicating if they are full genre/aesthetic pairs
  *
  * FACETS AS RELATIONSHIP MAPS
  * ===========================
  * A facet (genre + aesthetic pairing) creates a signature identity. For example, Blade Runner
  * is Noir (aesthetic) + Sci-Fi (genre). This specific combination creates a unique thematic voice
- * that speaks to the nature of humanity and our relationship with technology.
+ * that is recognizable for its narrative themes and subjects and the way it presents those themes or subjects.
  *
- * Facets define relationships between these signature identities at varying distances. A full
+ * Facets define relationships between these one signature identity and another at varying distances. A full
  * pairing is required for a meaningful relationship map because the distance is calculated
  * relative to that specific combined identity.
  *
@@ -53,13 +67,16 @@ export function findMediaWithFacet(facet: {
  * deterministic progressions without compromising the relationship map system.
  *
  * Algorithm:
- * 1. Find facets matching ALL genre-aesthetic pairings from current media
- * 2. Return those full pairings (caller handles fallback to tag-based selection)
+ * 1. If both genres and aesthetics exist, find facets matching all genre-aesthetic pairings
+ * 2. If only genres exist, find facets sharing those genres
+ * 3. If only aesthetics exist, find facets sharing those aesthetics
+ * 4. Return facets and boolean indicating if they are full pairs
  *
  * @param segmentedTags SegmentedTags with genre and aesthetic tag arrays
- * @returns Array of full-pairing facets (empty if none found)
+ * @returns Object with facets array and isFullPair boolean
  */
 export function findMatchingFacets(segmentedTags: SegmentedTags): Facet[] {
+  // If no genres and no aesthetics, can't find any facets
   if (
     segmentedTags.genreTags.length === 0 ||
     segmentedTags.aestheticTags.length === 0
@@ -67,6 +84,7 @@ export function findMatchingFacets(segmentedTags: SegmentedTags): Facet[] {
     return [];
   }
 
+  // Both genres and aesthetics - find facets matching all pairings
   const genreTagIds = segmentedTags.genreTags.map((t) => t.tagId);
   const aestheticTagIds = segmentedTags.aestheticTags.map((t) => t.tagId);
 
@@ -76,7 +94,7 @@ export function findMatchingFacets(segmentedTags: SegmentedTags): Facet[] {
     for (const aestheticTagId of aestheticTagIds) {
       const facet = facetRepository.findByGenreAndAestheticId(
         genreTagId,
-        aestheticTagId
+        aestheticTagId,
       );
       if (facet) {
         matchedFacets.push(facet);
@@ -85,48 +103,4 @@ export function findMatchingFacets(segmentedTags: SegmentedTags): Facet[] {
   }
 
   return matchedFacets;
-}
-
-/**
- * Selects media based on facet relationships
- * Uses genre and aesthetic tags to find matching facets, then selects media from those facet-aligned genres/aesthetics
- * This is the preferred fallback when specialty selection fails
- *
- * Falls back to tag-based media selection if no facet relationships exist, breaking deterministic loops
- *
- * @param segmentedTags SegmentedTags with genre and aesthetic tag arrays
- * @returns Movie or Episode from facet-related genres/aesthetics, or null if none found
- */
-export function selectFacetAdjacentMedia(
-  segmentedTags: SegmentedTags
-): Movie | Episode | null {
-  // If no genre or aesthetic tags, pick random media
-  if (
-    segmentedTags.genreTags.length === 0 &&
-    segmentedTags.aestheticTags.length === 0
-  ) {
-    // TODO: Pick a random movie or show
-    return null;
-  }
-
-  const matchedFacets = findMatchingFacets(segmentedTags);
-
-  // If we have facets with relationships, use 70-30 split
-  // (70% facet-based selection, 30% tag-based fallback for variety)
-  if (matchedFacets.length > 0) {
-    const useFacetPath = Math.random() < 0.7;
-
-    if (useFacetPath) {
-      // TODO: Select a facet relationship (considering distance/weighting)
-      // TODO: Extract unique genres/aesthetics from selected facet's relationships
-      // TODO: Select media from combined pool of matching tags
-      return null;
-    }
-  }
-
-  // FALLBACK: Either no facets with relationships, or we lost the coin flip
-  // Find media that shares genre OR aesthetic tags directly
-  // This prevents Movie A -> Movie G loops in small libraries
-  // TODO: Find any media that shares genre OR aesthetic tags
-  return null;
 }

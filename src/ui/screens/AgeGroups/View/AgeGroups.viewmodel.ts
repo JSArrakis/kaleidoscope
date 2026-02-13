@@ -23,7 +23,7 @@ interface AgeGroupsActions {
 export interface AgeGroupsViewModel extends AgeGroupsData, AgeGroupsActions {}
 
 const useAgeGroupsViewModel = (
-  navigate: ReturnType<typeof useRootStack>
+  navigate: ReturnType<typeof useRootStack>,
 ): AgeGroupsViewModel => {
   const $getAgeGroups = useGetAllAgeGroups();
   const $createAgeGroup = useCreateAgeGroup();
@@ -44,9 +44,14 @@ const useAgeGroupsViewModel = (
 
   useEffect(() => {
     let currentAgeGroups: Tag[] = [];
+    const sortedSavedAgeGroups = [...savedAgeGroups].sort((a, b) => {
+      const seqA = a.sequence ?? Number.MAX_VALUE;
+      const seqB = b.sequence ?? Number.MAX_VALUE;
+      return seqA - seqB;
+    });
     currentAgeGroups = newAgeGroup
-      ? [newAgeGroup, ...savedAgeGroups]
-      : [...savedAgeGroups];
+      ? [newAgeGroup, ...sortedSavedAgeGroups]
+      : [...sortedSavedAgeGroups];
     setAgeGroups(currentAgeGroups);
   }, [newAgeGroup, savedAgeGroups]);
 

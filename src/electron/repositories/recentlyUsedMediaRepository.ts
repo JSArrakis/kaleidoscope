@@ -17,7 +17,7 @@ export class RecentlyUsedMediaRepository {
         media.mediaItemId,
         media.mediaType,
         media.lastUsedDate,
-        media.expirationDate || null
+        media.expirationDate || null,
       );
     });
 
@@ -27,7 +27,7 @@ export class RecentlyUsedMediaRepository {
 
   findById(recentlyUsedMediaId: string): RecentlyUsedMedia | null {
     const stmt = this.db.prepare(
-      `SELECT * FROM recently_used_media WHERE recentlyUsedMediaId = ?`
+      `SELECT * FROM recently_used_media WHERE recentlyUsedMediaId = ?`,
     );
     const row = stmt.get(recentlyUsedMediaId) as any;
     if (!row) return null;
@@ -36,16 +36,16 @@ export class RecentlyUsedMediaRepository {
 
   findByMediaItemId(mediaItemId: string): RecentlyUsedMedia | null {
     const stmt = this.db.prepare(
-      `SELECT * FROM recently_used_media WHERE mediaItemId = ? LIMIT 1`
+      `SELECT * FROM recently_used_media WHERE mediaItemId = ? LIMIT 1`,
     );
     const row = stmt.get(mediaItemId) as any;
     if (!row) return null;
     return this.mapRowToMedia(row);
   }
 
-  findByMediaType(mediaType: string): RecentlyUsedMedia[] {
+  findByMediaType(mediaType: MediaType): RecentlyUsedMedia[] {
     const stmt = this.db.prepare(
-      `SELECT * FROM recently_used_media WHERE mediaType = ? ORDER BY lastUsedDate DESC`
+      `SELECT * FROM recently_used_media WHERE mediaType = ? ORDER BY lastUsedDate DESC`,
     );
     const rows = stmt.all(mediaType) as any[];
     return rows.map((row) => this.mapRowToMedia(row));
@@ -53,7 +53,7 @@ export class RecentlyUsedMediaRepository {
 
   findAll(): RecentlyUsedMedia[] {
     const stmt = this.db.prepare(
-      `SELECT * FROM recently_used_media ORDER BY lastUsedDate DESC`
+      `SELECT * FROM recently_used_media ORDER BY lastUsedDate DESC`,
     );
     const rows = stmt.all() as any[];
     return rows.map((row) => this.mapRowToMedia(row));
@@ -94,8 +94,8 @@ export class RecentlyUsedMediaRepository {
 
   recordUsage(
     mediaItemId: string,
-    mediaType: string,
-    expirationDate?: string
+    mediaType: MediaType,
+    expirationDate?: string,
   ): RecentlyUsedMedia {
     const existing = this.findByMediaItemId(mediaItemId);
 
@@ -124,7 +124,7 @@ export class RecentlyUsedMediaRepository {
 
   setExpiration(
     recentlyUsedMediaId: string,
-    expirationDate: string
+    expirationDate: string,
   ): RecentlyUsedMedia | null {
     const stmt = this.db.prepare(`
       UPDATE recently_used_media 
@@ -153,7 +153,7 @@ export class RecentlyUsedMediaRepository {
 
   delete(recentlyUsedMediaId: string): boolean {
     const stmt = this.db.prepare(
-      `DELETE FROM recently_used_media WHERE recentlyUsedMediaId = ?`
+      `DELETE FROM recently_used_media WHERE recentlyUsedMediaId = ?`,
     );
     const result = stmt.run(recentlyUsedMediaId);
     return result.changes > 0;
@@ -173,15 +173,15 @@ export class RecentlyUsedMediaRepository {
 
     const stmt = this.db.prepare(`
       DELETE FROM recently_used_media 
-      WHERE expirationDate IS NOT NULL AND expirationDate <= ?
+      WHERE expirationDate IS NOT NULL AND expirationDate <= :comparisonTime
     `);
-    const result = stmt.run(comparisonTime);
+    const result = stmt.run({ comparisonTime });
     return result.changes;
   }
 
   count(): number {
     const stmt = this.db.prepare(
-      `SELECT COUNT(*) as count FROM recently_used_media`
+      `SELECT COUNT(*) as count FROM recently_used_media`,
     );
     const result = stmt.get() as any;
     return result.count;

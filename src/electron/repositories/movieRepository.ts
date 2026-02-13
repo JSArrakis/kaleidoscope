@@ -22,7 +22,7 @@ export class MovieRepository {
         movie.imdb || null,
         movie.path,
         movie.duration || null,
-        movie.durationLimit || null
+        movie.durationLimit || null,
       );
 
       // Insert tags
@@ -57,7 +57,7 @@ export class MovieRepository {
    */
   findRandomMovie(): Movie | null {
     const stmt = this.db.prepare(
-      `SELECT * FROM movies ORDER BY RANDOM() LIMIT 1`
+      `SELECT * FROM movies ORDER BY RANDOM() LIMIT 1`,
     );
     const row = stmt.get() as any;
     if (!row) return null;
@@ -66,35 +66,45 @@ export class MovieRepository {
 
   findRandomMovieUnderDuration(
     maxDuration: number,
-    ageGroups: Tag[]
+    ageGroups: Tag[],
   ): Movie | null {
     const ageGroupIds = ageGroups.map((ageGroup) => ageGroup.tagId);
 
     let query = `
       SELECT * 
       FROM movies 
-      WHERE duration <= ? 
+      WHERE duration <= :maxDuration 
       AND mediaItemId NOT IN (SELECT mediaItemId FROM recently_used_movies)
     `;
 
-    const params: any[] = [maxDuration];
+    const params: any = { maxDuration };
 
     if (ageGroupIds.length > 0) {
+      // Build dynamic named parameters for age group IDs
+      const ageGroupPlaceholders = ageGroupIds
+        .map((_, index) => `:ageGroupId_${index}`)
+        .join(",");
+
       query += `
         AND mediaItemId IN (
           SELECT mediaItemId FROM movie_tags 
-          WHERE tagId IN (${ageGroupIds.map(() => "?").join(",")})
+          WHERE tagId IN (${ageGroupPlaceholders})
           GROUP BY mediaItemId 
-          HAVING COUNT(DISTINCT tagId) = ?
+          HAVING COUNT(DISTINCT tagId) = :ageGroupsCount
         )
       `;
-      params.push(...ageGroupIds, ageGroupIds.length);
+
+      // Add each age group ID to params
+      ageGroupIds.forEach((id, index) => {
+        params[`ageGroupId_${index}`] = id;
+      });
+      params.ageGroupsCount = ageGroupIds.length;
     }
 
     query += ` ORDER BY RANDOM() LIMIT 1`;
 
     const stmt = this.db.prepare(query);
-    const row = stmt.get(...params) as any;
+    const row = stmt.get(params) as any;
     if (!row) return null;
     return this.mapRowToMovie(row);
   }
@@ -110,6 +120,20 @@ export class MovieRepository {
       ORDER BY m.title
     `);
     const rows = stmt.all(tagId) as any[];
+    return rows.map((row) => this.mapRowToMovie(row));
+  }
+
+  /**
+   * Find movies by tag under duration
+   */
+  findByTagAndUnderDuration(tagId: string, maxDuration: number): Movie[] {
+    const stmt = this.db.prepare(`
+      SELECT DISTINCT m.* FROM movies m
+      JOIN movie_tags mt ON m.mediaItemId = mt.mediaItemId
+      WHERE mt.tagId = ? AND m.duration <= ?
+      ORDER BY m.title
+    `);
+    const rows = stmt.all(tagId, maxDuration) as any[];
     return rows.map((row) => this.mapRowToMovie(row));
   }
 
@@ -159,7 +183,7 @@ export class MovieRepository {
   findByTagsAndAgeGroupsUnderDuration(
     tags: Tag[],
     ageGroups: Tag[],
-    maxDuration: number
+    maxDuration: number,
   ): Movie[] {
     if (tags.length === 0) {
       return [];
@@ -241,7 +265,7 @@ export class MovieRepository {
         movie.path,
         movie.duration || null,
         movie.durationLimit || null,
-        mediaItemId
+        mediaItemId,
       );
 
       if (result.changes === 0) return null;

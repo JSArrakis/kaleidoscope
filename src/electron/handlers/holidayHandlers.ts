@@ -1,26 +1,26 @@
 import * as tagController from "../controllers/tagController.js";
 
 export async function getHolidaysHandler(): Promise<Tag[]> {
-  return tagController.getTagsByType("Holiday");
+  return tagController.getTagsByType(TagType.Holiday);
 }
 
 export async function createHolidayHandler(
-  holiday: Tag
+  holiday: Tag,
 ): Promise<{ message: string; status: number }> {
-  return tagController.createTag({ ...holiday, type: "Holiday" });
+  return tagController.createTag({ ...holiday, type: TagType.Holiday });
 }
 
 export async function deleteHolidayHandler(
-  holiday: Tag
+  holiday: Tag,
 ): Promise<{ message: string; status: number }> {
   return tagController.deleteTag(holiday.tagId);
 }
 
 export async function updateHolidayHandler(
-  holiday: Tag
+  holiday: Tag,
 ): Promise<{ message: string; status: number }> {
   return tagController.updateTag(holiday.tagId, {
     ...holiday,
-    type: "Holiday",
+    type: TagType.Holiday,
   });
 }

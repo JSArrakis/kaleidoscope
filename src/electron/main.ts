@@ -93,7 +93,9 @@ import {
 app.on("ready", async () => {
   // Initialize database first
   try {
+    console.log("Connecting to database...");
     await connectToDB();
+    console.log("Database connected.");
   } catch (error) {
     console.error("Failed to connect to database:", error);
     // Continue anyway to allow app to start

@@ -12,6 +12,7 @@ import {
   Help,
   Holidays,
   Home,
+  Facets,
   Mosaic,
   Movies,
   Music,
@@ -38,6 +39,7 @@ function RootStackNavigator() {
         <Route path="/collections" element={<Collections />} />
         <Route path="/commercials" element={<Commercials />} />
         <Route path="/eras" element={<Eras />} />
+        <Route path="/facets" element={<Facets />} />
         <Route path="/genres" element={<Genres />} />
         <Route path="/help" element={<Help />} />
         <Route path="/holidays" element={<Holidays />} />

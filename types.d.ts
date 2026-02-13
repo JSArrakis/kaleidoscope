@@ -247,7 +247,7 @@ type FacetRelationshipItem = {
 type RecentlyUsedMedia = {
   recentlyUsedMediaId: string;
   mediaItemId: string;
-  mediaType: string;
+  mediaType: MediaType;
   lastUsedDate: string;
   expirationDate?: string;
   createdAt?: string;
@@ -426,138 +426,138 @@ interface Window {
     openFileDialogHandler: () => Promise<string[]>;
     getCollectionsHandler: () => Promise<PrismCurationObj[]>;
     createCollectionHandler: (
-      collection: PrismCurationObj
+      collection: PrismCurationObj,
     ) => Promise<{ message: string; status: number }>;
     deleteCollectionHandler: (
-      collection: PrismCurationObj
+      collection: PrismCurationObj,
     ) => Promise<{ message: string; status: number }>;
     updateCollectionHandler: (
-      collection: PrismCurationObj
+      collection: PrismCurationObj,
     ) => Promise<{ message: string; status: number }>;
     getMoviesHandler: () => Promise<Movie[]>;
     createMovieHandler: (
-      movie: Movie
+      movie: Movie,
     ) => Promise<{ message: string; status: number }>;
     deleteMovieHandler: (
-      movie: Movie
+      movie: Movie,
     ) => Promise<{ message: string; status: number }>;
     updateMovieHandler: (
-      movie: Movie
+      movie: Movie,
     ) => Promise<{ message: string; status: number }>;
     getShowsHandler: () => Promise<Show[]>;
     createShowHandler: (
-      show: Show
+      show: Show,
     ) => Promise<{ message: string; status: number }>;
     deleteShowHandler: (
-      show: Show
+      show: Show,
     ) => Promise<{ message: string; status: number }>;
     updateShowHandler: (
-      show: Show
+      show: Show,
     ) => Promise<{ message: string; status: number }>;
     getShortsHandler: () => Promise<Short[]>;
     createShortHandler: (
-      short: Short
+      short: Short,
     ) => Promise<{ message: string; status: number }>;
     deleteShortHandler: (
-      short: Short
+      short: Short,
     ) => Promise<{ message: string; status: number }>;
     updateShortHandler: (
-      short: Short
+      short: Short,
     ) => Promise<{ message: string; status: number }>;
     getMusicHandler: () => Promise<Music[]>;
     createMusicHandler: (
-      music: Music
+      music: Music,
     ) => Promise<{ message: string; status: number }>;
     deleteMusicHandler: (
-      music: Music
+      music: Music,
     ) => Promise<{ message: string; status: number }>;
     updateMusicHandler: (
-      music: Music
+      music: Music,
     ) => Promise<{ message: string; status: number }>;
     getCommercialsHandler: () => Promise<Commercial[]>;
     createCommercialHandler: (
-      commercial: Commercial
+      commercial: Commercial,
     ) => Promise<{ message: string; status: number }>;
     deleteCommercialHandler: (
-      commercial: Commercial
+      commercial: Commercial,
     ) => Promise<{ message: string; status: number }>;
     updateCommercialHandler: (
-      commercial: Commercial
+      commercial: Commercial,
     ) => Promise<{ message: string; status: number }>;
     getPromosHandler: () => Promise<Promo[]>;
     createPromoHandler: (
-      promo: Promo
+      promo: Promo,
     ) => Promise<{ message: string; status: number }>;
     deletePromoHandler: (
-      promo: Promo
+      promo: Promo,
     ) => Promise<{ message: string; status: number }>;
     updatePromoHandler: (
-      promo: Promo
+      promo: Promo,
     ) => Promise<{ message: string; status: number }>;
     getBumpersHandler: () => Promise<Bumper[]>;
     createBumperHandler: (
-      bumper: Bumper
+      bumper: Bumper,
     ) => Promise<{ message: string; status: number }>;
     deleteBumperHandler: (
-      bumper: Bumper
+      bumper: Bumper,
     ) => Promise<{ message: string; status: number }>;
     updateBumperHandler: (
-      bumper: Bumper
+      bumper: Bumper,
     ) => Promise<{ message: string; status: number }>;
     getAestheticTagsHandler: () => Promise<Tag[]>;
     createAestheticTagHandler: (
-      tag: Tag
+      tag: Tag,
     ) => Promise<{ message: string; status: number }>;
     deleteAestheticTagHandler: (
-      tag: Tag
+      tag: Tag,
     ) => Promise<{ message: string; status: number }>;
     getEraTagsHandler: () => Promise<Tag[]>;
     createEraTagHandler: (
-      tag: Tag
+      tag: Tag,
     ) => Promise<{ message: string; status: number }>;
     deleteEraTagHandler: (
-      tag: Tag
+      tag: Tag,
     ) => Promise<{ message: string; status: number }>;
     getGenreTagsHandler: () => Promise<Tag[]>;
     createGenreTagHandler: (
-      tag: Tag
+      tag: Tag,
     ) => Promise<{ message: string; status: number }>;
     deleteGenreTagHandler: (
-      tag: Tag
+      tag: Tag,
     ) => Promise<{ message: string; status: number }>;
     getSpecialtyTagsHandler: () => Promise<Tag[]>;
     createSpecialtyTagHandler: (
-      tag: Tag
+      tag: Tag,
     ) => Promise<{ message: string; status: number }>;
     deleteSpecialtyTagHandler: (
-      tag: Tag
+      tag: Tag,
     ) => Promise<{ message: string; status: number }>;
     getAgeGroupsHandler: () => Promise<Tag[]>;
     createAgeGroupHandler: (
-      tag: Tag
+      tag: Tag,
     ) => Promise<{ message: string; status: number }>;
     deleteAgeGroupHandler: (
-      tag: Tag
+      tag: Tag,
     ) => Promise<{ message: string; status: number }>;
     updateAgeGroupHandler: (
-      tag: Tag
+      tag: Tag,
     ) => Promise<{ message: string; status: number }>;
     getHolidaysHandler: () => Promise<Tag[]>;
     createHolidayHandler: (
-      tag: Tag
+      tag: Tag,
     ) => Promise<{ message: string; status: number }>;
     deleteHolidayHandler: (
-      tag: Tag
+      tag: Tag,
     ) => Promise<{ message: string; status: number }>;
     updateHolidayHandler: (
-      tag: Tag
+      tag: Tag,
     ) => Promise<{ message: string; status: number }>;
     getMusicGenresHandler: () => Promise<Tag[]>;
     createMusicGenreHandler: (
-      tag: Tag
+      tag: Tag,
     ) => Promise<{ message: string; status: number }>;
     deleteMusicGenreHandler: (
-      tag: Tag
+      tag: Tag,
     ) => Promise<{ message: string; status: number }>;
   };
 }

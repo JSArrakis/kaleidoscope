@@ -22,7 +22,7 @@ export class ShowRepository {
         show.imdb || null,
         show.durationLimit || null,
         show.firstEpisodeOverDuration ? 1 : 0,
-        show.episodeCount
+        show.episodeCount,
       );
 
       const showId = showResult.lastInsertRowid as number;
@@ -50,7 +50,7 @@ export class ShowRepository {
             episode.duration || null,
             episode.durationLimit || null,
             episode.overDuration ? 1 : 0,
-            7 // MediaType.Episode
+            7, // MediaType.Episode
           );
 
           this.insertEpisodeTags(episode.mediaItemId, episode.tags);
@@ -70,7 +70,7 @@ export class ShowRepository {
    */
   findByMediaItemId(mediaItemId: string): Show | null {
     const showStmt = this.db.prepare(
-      `SELECT * FROM shows WHERE mediaItemId = ?`
+      `SELECT * FROM shows WHERE mediaItemId = ?`,
     );
     const showRow = showStmt.get(mediaItemId) as any;
     if (!showRow) return null;
@@ -107,7 +107,7 @@ export class ShowRepository {
    */
   findRandomShow(): Show | null {
     const stmt = this.db.prepare(
-      `SELECT * FROM shows ORDER BY RANDOM() LIMIT 1`
+      `SELECT * FROM shows ORDER BY RANDOM() LIMIT 1`,
     );
     const showRow = stmt.get() as any;
     if (!showRow) return null;
@@ -122,29 +122,39 @@ export class ShowRepository {
 
   findAllShowsUnderDuration(
     maxDuration: number,
-    ageGroups: Tag[] = []
+    ageGroups: Tag[] = [],
   ): Show[] {
     const ageGroupIds = ageGroups.map((ageGroup) => ageGroup.tagId);
 
-    let query = `SELECT * FROM shows WHERE durationLimit <= ?`;
-    const params: any[] = [maxDuration];
+    let query = `SELECT * FROM shows WHERE durationLimit <= :maxDuration`;
+    const params: any = { maxDuration };
 
     if (ageGroupIds.length > 0) {
+      // Build dynamic named parameters for age group IDs
+      const ageGroupPlaceholders = ageGroupIds
+        .map((_, index) => `:ageGroupId_${index}`)
+        .join(",");
+
       query += `
         AND mediaItemId IN (
           SELECT mediaItemId FROM show_tags 
-          WHERE tagId IN (${ageGroupIds.map(() => "?").join(",")})
+          WHERE tagId IN (${ageGroupPlaceholders})
           GROUP BY mediaItemId 
-          HAVING COUNT(DISTINCT tagId) = ?
+          HAVING COUNT(DISTINCT tagId) = :ageGroupsCount
         )
       `;
-      params.push(...ageGroupIds, ageGroupIds.length);
+
+      // Add each age group ID to params
+      ageGroupIds.forEach((id, index) => {
+        params[`ageGroupId_${index}`] = id;
+      });
+      params.ageGroupsCount = ageGroupIds.length;
     }
 
     query += ` ORDER BY title`;
 
     const stmt = this.db.prepare(query);
-    const showRows = stmt.all(...params) as any[];
+    const showRows = stmt.all(params) as any[];
     const shows: Show[] = [];
     for (const showRow of showRows) {
       const episodesStmt = this.db.prepare(`
@@ -154,6 +164,25 @@ export class ShowRepository {
       shows.push(this.mapRowToShow(showRow, episodeRows));
     }
     return shows;
+  }
+
+  /**
+   * Find a random show under duration
+   */
+  findRandomShowUnderDuration(maxDuration: number): Show | null {
+    const stmt = this.db.prepare(`
+      SELECT * FROM shows 
+      WHERE durationLimit <= ?
+      ORDER BY RANDOM() LIMIT 1
+    `);
+    const showRow = stmt.get(maxDuration) as any;
+    if (!showRow) return null;
+
+    const episodesStmt = this.db.prepare(`
+      SELECT * FROM episodes WHERE showId = ? ORDER BY episodeNumber, episode
+    `);
+    const episodeRows = episodesStmt.all(showRow.id) as any[];
+    return this.mapRowToShow(showRow, episodeRows);
   }
 
   /**
@@ -167,6 +196,147 @@ export class ShowRepository {
       ORDER BY s.title
     `);
     const showRows = stmt.all(tagId) as any[];
+
+    const shows: Show[] = [];
+    for (const showRow of showRows) {
+      const episodesStmt = this.db.prepare(`
+        SELECT * FROM episodes WHERE showId = ? ORDER BY episodeNumber, episode
+      `);
+      const episodeRows = episodesStmt.all(showRow.id) as any[];
+      shows.push(this.mapRowToShow(showRow, episodeRows));
+    }
+
+    return shows;
+  }
+
+  /**
+   * Find shows by tag with episodes under duration
+   */
+  findByTagAndUnderDuration(tagId: string, maxDuration: number): Show[] {
+    const stmt = this.db.prepare(`
+      SELECT DISTINCT s.* FROM shows s
+      JOIN show_tags st ON s.mediaItemId = st.mediaItemId
+      WHERE st.tagId = ?
+      ORDER BY s.title
+    `);
+    const showRows = stmt.all(tagId) as any[];
+
+    const shows: Show[] = [];
+    for (const showRow of showRows) {
+      const episodesStmt = this.db.prepare(`
+        SELECT * FROM episodes WHERE showId = ? AND duration <= ? ORDER BY episodeNumber, episode
+      `);
+      const episodeRows = episodesStmt.all(showRow.id, maxDuration) as any[];
+      if (episodeRows.length > 0) {
+        const show = this.mapRowToShow(showRow, episodeRows);
+        shows.push(show);
+      }
+    }
+
+    return shows;
+  }
+
+  /**
+   * Find shows with multiple tags (AND condition) where durationLimit is under max duration
+   * Useful for facet-based selection where genre + aesthetic must both exist on the show
+   * Optionally filter by age groups
+   */
+  findByTagsAndDurationLimit(
+    tagIds: string[],
+    maxDurationLimit: number,
+    ageGroups: Tag[] = [],
+  ): Show[] {
+    if (tagIds.length === 0) return [];
+
+    const ageGroupIds = ageGroups.map((ageGroup) => ageGroup.tagId);
+    const placeholders = tagIds.map(() => "?").join(",");
+
+    let query = `
+      SELECT s.* FROM shows s
+      WHERE s.durationLimit <= ?
+      AND s.mediaItemId IN (
+        SELECT mediaItemId FROM show_tags 
+        WHERE tagId IN (${placeholders})
+        GROUP BY mediaItemId 
+        HAVING COUNT(DISTINCT tagId) = ?
+      )
+    `;
+
+    const params: any[] = [maxDurationLimit, ...tagIds, tagIds.length];
+
+    if (ageGroupIds.length > 0) {
+      query += `
+        AND s.mediaItemId IN (
+          SELECT mediaItemId FROM show_tags 
+          WHERE tagId IN (${ageGroupIds.map(() => "?").join(",")})
+          GROUP BY mediaItemId 
+          HAVING COUNT(DISTINCT tagId) = ?
+        )
+      `;
+      params.push(...ageGroupIds, ageGroupIds.length);
+    }
+
+    query += ` ORDER BY s.title`;
+
+    const stmt = this.db.prepare(query);
+    const showRows = stmt.all(...params) as any[];
+
+    const shows: Show[] = [];
+    for (const showRow of showRows) {
+      const episodesStmt = this.db.prepare(`
+        SELECT * FROM episodes WHERE showId = ? ORDER BY episodeNumber, episode
+      `);
+      const episodeRows = episodesStmt.all(showRow.id) as any[];
+      shows.push(this.mapRowToShow(showRow, episodeRows));
+    }
+
+    return shows;
+  }
+
+  /**
+   * Find shows with multiple tags (AND condition) where durationLimit is under max duration
+   * Optionally filter by age groups if provided
+   */
+  findByTagsAndAgeGroupsUnderDuration(
+    tags: Tag[],
+    ageGroups: Tag[] = [],
+    maxDurationLimit: number,
+  ): Show[] {
+    if (tags.length === 0) return [];
+
+    const tagIds = tags.map((tag) => tag.tagId);
+    const ageGroupIds = ageGroups.map((ageGroup) => ageGroup.tagId);
+    const placeholders = tagIds.map(() => "?").join(",");
+
+    let query = `
+      SELECT s.* FROM shows s
+      WHERE s.durationLimit <= ?
+      AND s.mediaItemId IN (
+        SELECT mediaItemId FROM show_tags 
+        WHERE tagId IN (${placeholders})
+        GROUP BY mediaItemId 
+        HAVING COUNT(DISTINCT tagId) = ?
+      )
+    `;
+
+    const params: any[] = [maxDurationLimit, ...tagIds, tagIds.length];
+
+    if (ageGroupIds.length > 0) {
+      query += `
+        AND s.mediaItemId IN (
+          SELECT mediaItemId FROM show_tags 
+          WHERE tagId IN (${ageGroupIds.map(() => "?").join(",")})
+          GROUP BY mediaItemId 
+          HAVING COUNT(DISTINCT tagId) = ?
+        )
+      `;
+      params.push(...ageGroupIds, ageGroupIds.length);
+    }
+
+    query += ` ORDER BY s.title`;
+
+    const stmt = this.db.prepare(query);
+    const showRows = stmt.all(...params) as any[];
 
     const shows: Show[] = [];
     for (const showRow of showRows) {
@@ -199,7 +369,7 @@ export class ShowRepository {
         show.durationLimit || null,
         show.firstEpisodeOverDuration ? 1 : 0,
         show.episodeCount,
-        mediaItemId
+        mediaItemId,
       );
 
       if (result.changes === 0) return null;
@@ -261,7 +431,7 @@ export class ShowRepository {
    */
   getEpisode(episodeMediaItemId: string): Episode | null {
     const stmt = this.db.prepare(
-      `SELECT * FROM episodes WHERE mediaItemId = ?`
+      `SELECT * FROM episodes WHERE mediaItemId = ?`,
     );
     const row = stmt.get(episodeMediaItemId) as any;
     if (!row) return null;
@@ -329,7 +499,7 @@ export class ShowRepository {
 
     // Compute secondary tags (episode tags NOT in primary tags)
     const secondaryTagIds = Array.from(episodeTagIds).filter(
-      (tagId) => !primaryTagIds.has(tagId)
+      (tagId) => !primaryTagIds.has(tagId),
     );
 
     // Clear existing secondary tags for this show
@@ -426,7 +596,7 @@ export class ShowRepository {
     `);
 
     const secondaryTagRows = secondaryTagsStmt.all(
-      showRow.mediaItemId
+      showRow.mediaItemId,
     ) as any[];
     const secondaryTags = secondaryTagRows.map((tagRow) => ({
       tagId: tagRow.tagId,
@@ -504,7 +674,7 @@ export class ShowRepository {
     showIds: string[],
     tempProgressions: Map<string, number>,
     streamType: string,
-    availableDuration: number
+    availableDuration: number,
   ): Show[] {
     if (showIds.length === 0) return [];
 
@@ -567,7 +737,7 @@ export class ShowRepository {
   findByTagsAndDurationWithProgressionCheck(
     tagIds: string[],
     streamType: string,
-    availableDuration: number
+    availableDuration: number,
   ): Show[] {
     if (tagIds.length === 0) return [];
 
@@ -612,7 +782,7 @@ export class ShowRepository {
       `);
       const progression = progressionStmt.get(
         showRow.mediaItemId,
-        streamType
+        streamType,
       ) as any;
       const nextEpisodeNumber = progression?.currentEpisodeNumber || 1;
 
@@ -622,7 +792,7 @@ export class ShowRepository {
       `);
       const nextEpisodeRow = episodeStmt.get(
         showRow.id,
-        nextEpisodeNumber
+        nextEpisodeNumber,
       ) as any;
 
       if (

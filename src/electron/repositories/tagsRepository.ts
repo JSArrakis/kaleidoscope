@@ -36,7 +36,7 @@ export class TagRepository {
           tag.type,
           tag.seasonStartDate || null,
           tag.seasonEndDate || null,
-          tag.sequence || null
+          tag.sequence || null,
         );
 
         if (
@@ -95,7 +95,7 @@ export class TagRepository {
    */
   findByNameIgnoreCase(name: string): Tag | null {
     const stmt = this.db.prepare(
-      `SELECT * FROM tags WHERE LOWER(name) = LOWER(?)`
+      `SELECT * FROM tags WHERE LOWER(name) = LOWER(?)`,
     );
     const row = stmt.get(name) as any;
     if (!row) return null;
@@ -141,7 +141,7 @@ export class TagRepository {
    */
   findByType(type: string): Tag[] {
     const stmt = this.db.prepare(
-      `SELECT * FROM tags WHERE type = ? ORDER BY name`
+      `SELECT * FROM tags WHERE type = ? ORDER BY name`,
     );
     const rows = stmt.all(type) as any[];
     return rows.map((row) => this.mapRowToTag(row));
@@ -152,7 +152,7 @@ export class TagRepository {
    */
   findAgeGroupBySequence(sequence: number): Tag | null {
     const stmt = this.db.prepare(
-      `SELECT * FROM tags WHERE type = ? AND sequence = ?`
+      `SELECT * FROM tags WHERE type = ? AND sequence = ?`,
     );
     const row = stmt.get("AgeGroup", sequence) as any;
     if (!row) return null;
@@ -177,7 +177,7 @@ export class TagRepository {
         tag.seasonStartDate || null,
         tag.seasonEndDate || null,
         tag.sequence || null,
-        tagId
+        tagId,
       );
 
       if (result.changes === 0) return null;
@@ -187,7 +187,7 @@ export class TagRepository {
         this.db.prepare("DELETE FROM holiday_dates WHERE tagId = ?").run(tagId);
         if (tag.holidayDates && tag.holidayDates.length > 0) {
           const insertStmt = this.db.prepare(
-            `INSERT INTO holiday_dates (tagId, holidayDate) VALUES (?, ?)`
+            `INSERT INTO holiday_dates (tagId, holidayDate) VALUES (?, ?)`,
           );
           for (const date of tag.holidayDates) {
             insertStmt.run(tagId, date);
@@ -240,32 +240,39 @@ export class TagRepository {
   /**
    * Find all active holiday tags for a given date
    * Matches holidays where:
-   * - The date matches an exact holiday date, OR
-   * - The date falls within the seasonStartDate and seasonEndDate range
+   * - The date matches an exact holiday date (by month-day), OR
+   * - The date falls within the seasonStartDate and seasonEndDate range (by month-day)
    */
   findActiveHolidaysByDate(date: string): Tag[] {
-    const stmt = this.db.prepare(`
-      SELECT DISTINCT t.* FROM tags t
-      WHERE t.type = 'Holiday'
-        AND (
-          -- Match exact holiday dates
-          EXISTS (
-            SELECT 1 FROM holiday_dates hd
-            WHERE hd.tagId = t.tagId
-              AND DATE(hd.holidayDate) = DATE(?)
-          )
-          OR
-          -- Match season date range
-          (
-            t.seasonStartDate IS NOT NULL
-            AND t.seasonEndDate IS NOT NULL
-            AND DATE(?) BETWEEN DATE(t.seasonStartDate) AND DATE(t.seasonEndDate)
-          )
-        )
-      ORDER BY t.name
-    `);
-    const rows = stmt.all(date, date) as any[];
-    return rows.map((row) => this.mapRowToTag(row));
+    const inputMonthDay = date.substring(5); // Extract "MM-DD"
+    const allHolidays = this.findByType("Holiday");
+
+    const activeHolidays = allHolidays.filter((holiday) => {
+      // Check if the date matches any specific holiday dates (by month-day)
+      if (
+        holiday.holidayDates?.some((hd) => hd.substring(5) === inputMonthDay)
+      ) {
+        return true;
+      }
+
+      // If not a specific holiday date, check season range
+      if (holiday.seasonStartDate && holiday.seasonEndDate) {
+        const seasonStart = holiday.seasonStartDate.substring(5);
+        const seasonEnd = holiday.seasonEndDate.substring(5);
+
+        if (seasonStart <= seasonEnd) {
+          // No wrap-around: simple range check
+          return inputMonthDay >= seasonStart && inputMonthDay <= seasonEnd;
+        } else {
+          // Wrap-around: date >= start OR date <= end
+          return inputMonthDay >= seasonStart || inputMonthDay <= seasonEnd;
+        }
+      }
+
+      return false;
+    });
+
+    return activeHolidays.sort((a, b) => a.name.localeCompare(b.name));
   }
 
   /**
@@ -293,13 +300,13 @@ export class TagRepository {
     // Load holiday dates if this is a holiday tag
     if (tag.type === "Holiday") {
       const stmt = this.db.prepare(
-        `SELECT holidayDate FROM holiday_dates WHERE tagId = ? ORDER BY holidayDate`
+        `SELECT holidayDate FROM holiday_dates WHERE tagId = ? ORDER BY holidayDate`,
       );
       const dates = stmt.all(tag.tagId) as any[];
       tag.holidayDates = dates.map((d) => d.holidayDate);
 
       const exclusionStmt = this.db.prepare(
-        `SELECT excludedTagId FROM holiday_exclusion_tags WHERE holidayTagId = ?`
+        `SELECT excludedTagId FROM holiday_exclusion_tags WHERE holidayTagId = ?`,
       );
       const exclusions = exclusionStmt.all(tag.tagId) as any[];
       tag.exclusionTagIds = exclusions.map((e) => e.excludedTagId);

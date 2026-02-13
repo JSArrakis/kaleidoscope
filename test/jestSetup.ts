@@ -39,6 +39,19 @@ if (typeof (globalThis as any).MediaType === "undefined") {
   };
 }
 
+// Populate TagType globally
+if (typeof (globalThis as any).TagType === "undefined") {
+  (globalThis as any).TagType = {
+    Aesthetic: "Aesthetic",
+    Era: "Era",
+    Genre: "Genre",
+    Specialty: "Specialty",
+    Holiday: "Holiday",
+    AgeGroup: "AgeGroup",
+    MusicalGenre: "MusicalGenre",
+  };
+}
+
 const TEST_DB_PATH = path.join(process.cwd(), "temp-test.db");
 
 // Helper function to safely delete file with retry logic for Windows file locks
@@ -65,7 +78,7 @@ function safeDeleteFile(filePath: string, maxRetries: number = 3): boolean {
       // Non-EBUSY errors or final retry - log as warning not error
       if (error.code !== "EBUSY") {
         console.warn(
-          `[Jest Setup] Warning: Could not delete ${filePath}: ${error.message}`
+          `[Jest Setup] Warning: Could not delete ${filePath}: ${error.message}`,
         );
       }
       return false;
