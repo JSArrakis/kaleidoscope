@@ -1,17 +1,23 @@
 {
-  "name": "streamassistant",
-  "version": "1.0.0",
-  "description": "Stream creation and shuffler assistant",
-  "main": "src/app.ts",
+  "name": "prism",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "main": "dist-electron/src/electron/main.js",
   "scripts": {
+    "dev": "npm-run-all --parallel dev:react dev:electron",
+    "dev:react": "vite",
+    "dev:electron": "npm run transpile:electron && cross-env NODE_ENV=development electron .",
+    "build": "tsc -b && vite build",
+    "lint": "eslint .",
     "test": "jest",
-    "test:verbose": "jest --verbose --runInBand --silent=false",
-    "start": "ts-node-dev --respawn --transpile-only src/app.ts",
-    "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "test:watch": "jest --watch",
+    "preview": "vite preview",
+    "transpile:electron": "tsc --project src/electron/tsconfig.json",
+    "dist:win": "npm run transpile:electron && npm run build && electron-builder --win -- x64",
+    "dist:mac": "npm run transpile:electron && npm run build && electron-builder --mac --arm64",
+    "dist:linux": "npm run transpile:electron && npm run build && electron-builder --linux --x64"
   },
-  "author": "",
-  "license": "ISC",
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",

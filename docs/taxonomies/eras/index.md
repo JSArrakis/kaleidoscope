@@ -133,35 +133,5 @@ However, the Era paradigm transforms the treatment:
 - Emphasizes stylized action and moral ambiguity about law vs. freedom
 - Ends with protagonist making personal choice that defies simple categorization
 
-Same narrative structure, completely different assumptions about character motivation, institutional trust, and resolution philosophy.
+Same narrative structure - same contemporary aesthetic presentation, completely different assumptions about character motivation, institutional trust, and resolution philosophy.
 
-## Era Transitions and Boundary Films
-
-Some films exist at Era boundaries, exhibiting characteristics of multiple paradigms:
-
-**Transitional Films:**
-
-- **Jaws** (1975) - bridges 1970s paranoia with 1980s adventure heroism
-- **Batman** (1989) - combines 1980s mythic approach with emerging 1990s dark psychology
-- **The Dark Knight** (2008) - merges 2000s systemic complexity with 2010s franchise building
-
-These boundary films often feel uniquely innovative because they synthesize different storytelling approaches, creating new paradigmatic possibilities.
-
-## Custom Era Configuration
-
-Kaleidoscope allows users to define custom Eras based on their media collection and interests:
-
-**Possible Additions:**
-
-- **Classical Hollywood** (1930s-1950s) for studio system productions
-- **New Hollywood** (late 1960s-1970s) for auteur-driven cinema
-- **Independent Film** movement periods
-- **International Cinema** movements (French New Wave, Hong Kong Action, etc.)
-
-**Personal Eras:**
-
-- **Childhood Viewing Era** - content consumed during formative years
-- **Discovery Era** - period when user developed serious film interest
-- **Genre-Specific Eras** - Golden Age of Horror, Animation Renaissance, etc.
-
-The key principle: Eras should reflect actual differences in storytelling approach and audience relationship, not just temporal proximity or cultural events.

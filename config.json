@@ -1,6 +1,0 @@
-{
-  "dataFolder": "./data/",
-  "interval": 1800,
-  "defaultPromo": "./data/promo/defaultpromo.mp4",
-  "defaultCommercialFolder": "./data/buffer"
-}

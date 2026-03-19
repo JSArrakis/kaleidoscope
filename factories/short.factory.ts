@@ -9,7 +9,7 @@ export function createShort(
   duration?: number,
   path?: string,
   type?: MediaType,
-  tags?: any[]
+  tags?: any[],
   isHolidayExclusive?: boolean,
 ): Short {
   const id = mediaItemId ?? randomUUID();

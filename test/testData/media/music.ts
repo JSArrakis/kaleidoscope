@@ -1,657 +1,635 @@
-import { MusicGenres } from '../../../src/models/const/musicGenres';
-import { MediaType } from '../../../src/models/enum/mediaTypes';
-import { Music } from '../../../src/models/music';
-import { holidayTags, musicalGenreTags, specialtyTags } from '../tags';
+import { createMusic } from "../../../factories/music.factory";
+import { holidayTags, musicalGenreTags, specialtyTags } from "../tags";
 
-export const sweetchildomine = new Music(
-  'Sweet Child O Mine',
-  'Guns and Roses',
-  'sweetchildomine-gunsandroses',
+export const sweetchildomine = createMusic(
+  "Sweet Child O Mine",
+  "Guns and Roses",
+  "sweetchildomine-gunsandroses",
   293,
-  '/path/sweetchildomine-gunsandroses.mp4',
+  "/path/sweetchildomine-gunsandroses.mp4",
   MediaType.Music,
-  [musicalGenreTags.rock],
+  [musicalGenreTags.rock]
 );
-export const hotelcalifornia = new Music(
-  'Hotel California',
-  'Eagles',
-  'hotelcalifornia-eagles',
+export const hotelcalifornia = createMusic(
+  "Hotel California",
+  "Eagles",
+  "hotelcalifornia-eagles",
   369,
-  '/path/hotelcalifornia-eagles.mp4',
+  "/path/hotelcalifornia-eagles.mp4",
   MediaType.Music,
-  [musicalGenreTags.rock],
+  [musicalGenreTags.rock]
 );
-export const backinblack = new Music(
-  'Back in Black',
-  'ACDC',
-  'backinblack-acdc',
+export const backinblack = createMusic(
+  "Back in Black",
+  "ACDC",
+  "backinblack-acdc",
   255,
-  '/path/backinblack-acdc.mp4',
+  "/path/backinblack-acdc.mp4",
   MediaType.Music,
-  [musicalGenreTags.rock, specialtyTags.marvel],
+  [musicalGenreTags.rock, specialtyTags.marvel]
 );
-export const heyjude = new Music(
-  'Hey Jude',
-  'The Beatles',
-  'heyjude-thebeatles',
+export const heyjude = createMusic(
+  "Hey Jude",
+  "The Beatles",
+  "heyjude-thebeatles",
   431,
-  '/path/heyjude-thebeatles.mp4',
+  "/path/heyjude-thebeatles.mp4",
   MediaType.Music,
-  [musicalGenreTags.rock],
+  [musicalGenreTags.rock]
 );
-export const alive = new Music(
-  'Alive',
-  'Pearl Jam',
-  'alive-pearljam',
+export const alive = createMusic(
+  "Alive",
+  "Pearl Jam",
+  "alive-pearljam",
   312,
-  '/path/alive-pearljam.mp4',
+  "/path/alive-pearljam.mp4",
   MediaType.Music,
-  [musicalGenreTags.rock],
+  [musicalGenreTags.rock]
 );
-export const paranoid = new Music(
-  'Paranoid',
-  'Black Sabbath',
-  'paranoid-blacksabbath',
+export const paranoid = createMusic(
+  "Paranoid",
+  "Black Sabbath",
+  "paranoid-blacksabbath",
   172,
-  '/path/paranoid-blacksabbath.mp4',
+  "/path/paranoid-blacksabbath.mp4",
   MediaType.Music,
-  [musicalGenreTags.metal],
+  [musicalGenreTags.metal]
 );
-export const one = new Music(
-  'One',
-  'Metallica',
-  'one-metallica',
+export const one = createMusic(
+  "One",
+  "Metallica",
+  "one-metallica",
   448,
-  '/path/one-metallica.mp4',
+  "/path/one-metallica.mp4",
   MediaType.Music,
-  [musicalGenreTags.metal],
+  [musicalGenreTags.metal]
 );
-export const aceofspades = new Music(
-  'Ace of Spades',
-  'Motorhead',
-  'aceofspades-motorhead',
+export const aceofspades = createMusic(
+  "Ace of Spades",
+  "Motorhead",
+  "aceofspades-motorhead",
   170,
-  '/path/aceofspades-motorhead.mp4',
+  "/path/aceofspades-motorhead.mp4",
   MediaType.Music,
-  [musicalGenreTags.metal],
+  [musicalGenreTags.metal]
 );
-export const holydiver = new Music(
-  'Holy Diver',
-  'Dio',
-  'holydiver-dio',
+export const holydiver = createMusic(
+  "Holy Diver",
+  "Dio",
+  "holydiver-dio",
   310,
-  '/path/holydiver-dio.mp4',
+  "/path/holydiver-dio.mp4",
   MediaType.Music,
-  [musicalGenreTags.metal],
+  [musicalGenreTags.metal]
 );
-export const painkiller = new Music(
-  'Painkiller',
-  'Judas Priest',
-  'painkiller-judaspriest',
+export const painkiller = createMusic(
+  "Painkiller",
+  "Judas Priest",
+  "painkiller-judaspriest",
   399,
-  '/path/painkiller-judaspriest.mp4',
+  "/path/painkiller-judaspriest.mp4",
   MediaType.Music,
-  [musicalGenreTags.metal],
+  [musicalGenreTags.metal]
 );
-export const rapperdelight = new Music(
-  'Rapper Delight',
-  'Sugarhill Gang',
-  'rapperdelight-sugarhillgang',
+export const rapperdelight = createMusic(
+  "Rapper Delight",
+  "Sugarhill Gang",
+  "rapperdelight-sugarhillgang",
   900,
-  '/path/rapperdelight-sugarhillgang.mp4',
+  "/path/rapperdelight-sugarhillgang.mp4",
   MediaType.Music,
-  [musicalGenreTags.hiphop],
+  [musicalGenreTags.hiphop]
 );
-export const loseyourself = new Music(
-  'Lose Yourself',
-  'Eminem',
-  'loseyourself-eminem',
+export const loseyourself = createMusic(
+  "Lose Yourself",
+  "Eminem",
+  "loseyourself-eminem",
   366,
-  '/path/loseyourself-eminem.mp4',
+  "/path/loseyourself-eminem.mp4",
   MediaType.Music,
-  [musicalGenreTags.hiphop],
+  [musicalGenreTags.hiphop]
 );
-export const nystateofmind = new Music(
-  'NY State of Mind',
-  'Nas',
-  'nystateofmind-nas',
+export const nystateofmind = createMusic(
+  "NY State of Mind",
+  "Nas",
+  "nystateofmind-nas",
   241,
-  '/path/nystateofmind-nas.mp4',
+  "/path/nystateofmind-nas.mp4",
   MediaType.Music,
-  [musicalGenreTags.hiphop],
+  [musicalGenreTags.hiphop]
 );
-export const blitzkriegbop = new Music(
-  'Blitzkrieg Bop',
-  'The Ramones',
-  'blitzkriegbop-theramones',
+export const blitzkriegbop = createMusic(
+  "Blitzkrieg Bop",
+  "The Ramones",
+  "blitzkriegbop-theramones",
   144,
-  '/path/blitzkriegbop-theramones.mp4',
+  "/path/blitzkriegbop-theramones.mp4",
   MediaType.Music,
-  [musicalGenreTags.punk],
+  [musicalGenreTags.punk]
 );
-export const anarchyintheuk = new Music(
-  'Anarchy in the UK',
-  'Sex Pistols',
-  'anarchyintheuk-sexpistols',
+export const anarchyintheuk = createMusic(
+  "Anarchy in the UK",
+  "Sex Pistols",
+  "anarchyintheuk-sexpistols",
   210,
-  '/path/anarchyintheuk-sexpistols.mp4',
+  "/path/anarchyintheuk-sexpistols.mp4",
   MediaType.Music,
-  [musicalGenreTags.punk],
+  [musicalGenreTags.punk]
 );
-export const londoncalling = new Music(
-  'London Calling',
-  'The Clash',
-  'londoncalling-theclash',
+export const londoncalling = createMusic(
+  "London Calling",
+  "The Clash",
+  "londoncalling-theclash",
   199,
-  '/path/londoncalling-theclash.mp4',
+  "/path/londoncalling-theclash.mp4",
   MediaType.Music,
-  [musicalGenreTags.punk],
+  [musicalGenreTags.punk]
 );
-export const holidayincambodia = new Music(
-  'Holiday in Cambodia',
-  'Dead Kennedys',
-  'holidayincambodia-deadkennedys',
+export const holidayincambodia = createMusic(
+  "Holiday in Cambodia",
+  "Dead Kennedys",
+  "holidayincambodia-deadkennedys",
   211,
-  '/path/holidayincambodia-deadkennedys.mp4',
+  "/path/holidayincambodia-deadkennedys.mp4",
   MediaType.Music,
-  [musicalGenreTags.punk],
+  [musicalGenreTags.punk]
 );
-export const louise = new Music(
-  'Louise',
-  'Clan of Xymox',
-  'louise-clanofxymox',
+export const louise = createMusic(
+  "Louise",
+  "Clan of Xymox",
+  "louise-clanofxymox",
   292,
-  '/path/louise-clanofxymox.mp4',
+  "/path/louise-clanofxymox.mp4",
   MediaType.Music,
-  [musicalGenreTags.darkwave],
+  [musicalGenreTags.darkwave]
 );
-export const hostofseraphim = new Music(
-  'Host of Seraphim',
-  'Dead Can Dance',
-  'hostofseraphim-deadcandance',
+export const hostofseraphim = createMusic(
+  "Host of Seraphim",
+  "Dead Can Dance",
+  "hostofseraphim-deadcandance",
   366,
-  '/path/hostofseraphim-deadcandance.mp4',
+  "/path/hostofseraphim-deadcandance.mp4",
   MediaType.Music,
-  [musicalGenreTags.darkwave],
+  [musicalGenreTags.darkwave]
 );
-export const duskislikeadagger = new Music(
-  'Dusk is Like a Dagger',
-  'Attrition',
-  'duskislikeadagger-attrition',
+export const duskislikeadagger = createMusic(
+  "Dusk is Like a Dagger",
+  "Attrition",
+  "duskislikeadagger-attrition",
   292,
-  '/path/duskislikeadagger-attrition.mp4',
+  "/path/duskislikeadagger-attrition.mp4",
   MediaType.Music,
-  [musicalGenreTags.darkwave],
+  [musicalGenreTags.darkwave]
 );
-export const thetimehascomeandgone = new Music(
-  'The Time Has Come and Gone',
-  'The Frozen Autumn',
-  'thetimehascomeandgone-thefrozenautumn',
+export const thetimehascomeandgone = createMusic(
+  "The Time Has Come and Gone",
+  "The Frozen Autumn",
+  "thetimehascomeandgone-thefrozenautumn",
   292,
-  '/path/thetimehascomeandgone-thefrozenautumn.mp4',
+  "/path/thetimehascomeandgone-thefrozenautumn.mp4",
   MediaType.Music,
-  [musicalGenreTags.darkwave],
+  [musicalGenreTags.darkwave]
 );
-export const ritüel = new Music(
-  'Ritüel',
-  'She Past Away',
-  'ritüel-shepastaway',
+export const ritüel = createMusic(
+  "Ritüel",
+  "She Past Away",
+  "ritüel-shepastaway",
   292,
-  '/path/ritüel-shepastaway.mp4',
+  "/path/ritüel-shepastaway.mp4",
   MediaType.Music,
-  [musicalGenreTags.darkwave],
+  [musicalGenreTags.darkwave]
 );
-export const headlikeahole = new Music(
-  'Head Like a Hole',
-  'Nine Inch Nails',
-  'headlikeahole-nineinchnails',
+export const headlikeahole = createMusic(
+  "Head Like a Hole",
+  "Nine Inch Nails",
+  "headlikeahole-nineinchnails",
   292,
-  '/path/headlikeahole-nineinchnails.mp4',
+  "/path/headlikeahole-nineinchnails.mp4",
   MediaType.Music,
-  [musicalGenreTags.industrialrock],
+  [musicalGenreTags.industrialrock]
 );
-export const stigmata = new Music(
-  'Stigmata',
-  'Ministry',
-  'stigmata-ministry',
+export const stigmata = createMusic(
+  "Stigmata",
+  "Ministry",
+  "stigmata-ministry",
   292,
-  '/path/stigmata-ministry.mp4',
+  "/path/stigmata-ministry.mp4",
   MediaType.Music,
-  [musicalGenreTags.industrialrock],
+  [musicalGenreTags.industrialrock]
 );
-export const adrugagainstwar = new Music(
-  'A Drug Against War',
-  'KMFDM',
-  'adrugagainstwar-kmfdm',
+export const adrugagainstwar = createMusic(
+  "A Drug Against War",
+  "KMFDM",
+  "adrugagainstwar-kmfdm",
   292,
-  '/path/adrugagainstwar-kmfdm.mp4',
+  "/path/adrugagainstwar-kmfdm.mp4",
   MediaType.Music,
-  [musicalGenreTags.industrialrock],
+  [musicalGenreTags.industrialrock]
 );
-export const dragula = new Music(
-  'Dragula',
-  'Rob Zombie',
-  'dragula-robzombie',
+export const dragula = createMusic(
+  "Dragula",
+  "Rob Zombie",
+  "dragula-robzombie",
   292,
-  '/path/dragula-robzombie.mp4',
+  "/path/dragula-robzombie.mp4",
   MediaType.Music,
-  [musicalGenreTags.industrialrock],
+  [musicalGenreTags.industrialrock]
 );
-export const thebeautifulpeople = new Music(
-  'The Beautiful People',
-  'Marilyn Manson',
-  'thebeautifulpeople-marilynmanson',
+export const thebeautifulpeople = createMusic(
+  "The Beautiful People",
+  "Marilyn Manson",
+  "thebeautifulpeople-marilynmanson",
   292,
-  '/path/thebeautifulpeople-marilynmanson.mp4',
+  "/path/thebeautifulpeople-marilynmanson.mp4",
   MediaType.Music,
-  [musicalGenreTags.industrialrock],
+  [musicalGenreTags.industrialrock]
 );
-export const nightcall = new Music(
-  'Nightcall',
-  'Kavinsky',
-  'nightcall-kavinsky',
+export const nightcall = createMusic(
+  "Nightcall",
+  "Kavinsky",
+  "nightcall-kavinsky",
   292,
-  '/path/nightcall-kavinsky.mp4',
+  "/path/nightcall-kavinsky.mp4",
   MediaType.Music,
-  [musicalGenreTags.synthwave],
+  [musicalGenreTags.synthwave]
 );
-export const neotokyo = new Music(
-  'Neotokyo',
-  'Purturbator',
-  'neotokyo-purturbator',
+export const neotokyo = createMusic(
+  "Neotokyo",
+  "Purturbator",
+  "neotokyo-purturbator",
   292,
-  '/path/neotokyo-purturbator.mp4',
+  "/path/neotokyo-purturbator.mp4",
   MediaType.Music,
-  [musicalGenreTags.synthwave],
+  [musicalGenreTags.synthwave]
 );
-export const daysofthunder = new Music(
-  'Days of Thunder',
-  'The Midnight',
-  'daysofthunder-themidnight',
+export const daysofthunder = createMusic(
+  "Days of Thunder",
+  "The Midnight",
+  "daysofthunder-themidnight",
   292,
-  '/path/daysofthunder-themidnight.mp4',
+  "/path/daysofthunder-themidnight.mp4",
   MediaType.Music,
-  [musicalGenreTags.synthwave],
+  [musicalGenreTags.synthwave]
 );
-export const turbokiller = new Music(
-  'Turbokiller',
-  'Carpenter Brut',
-  'turbokiller-carpenterbrut',
+export const turbokiller = createMusic(
+  "Turbokiller",
+  "Carpenter Brut",
+  "turbokiller-carpenterbrut",
   292,
-  '/path/turbokiller-carpenterbrut.mp4',
+  "/path/turbokiller-carpenterbrut.mp4",
   MediaType.Music,
-  [musicalGenreTags.synthwave],
+  [musicalGenreTags.synthwave]
 );
-export const technoir = new Music(
-  'Technoir',
-  'Gunship',
-  'technoir-gunship',
+export const technoir = createMusic(
+  "Technoir",
+  "Gunship",
+  "technoir-gunship",
   292,
-  '/path/technoir-gunship.mp4',
+  "/path/technoir-gunship.mp4",
   MediaType.Music,
-  [musicalGenreTags.synthwave],
+  [musicalGenreTags.synthwave]
 );
-export const requiemiikyrie = new Music(
-  'Requiem II. Kyrie',
-  'György Ligeti',
-  'requiemiikyrie-gyorgyligeti',
+export const requiemiikyrie = createMusic(
+  "Requiem II. Kyrie",
+  "György Ligeti",
+  "requiemiikyrie-gyorgyligeti",
   292,
-  '/path/requiemiikyrie-gyorgyligeti.mp4',
+  "/path/requiemiikyrie-gyorgyligeti.mp4",
   MediaType.Music,
-  [musicalGenreTags.avantgarde],
+  [musicalGenreTags.avantgarde]
 );
-export const sonatasandinterludes = new Music(
-  'Sonatas and Interludes',
-  'John Cage',
-  'sonatasandinterludes-johncage',
+export const sonatasandinterludes = createMusic(
+  "Sonatas and Interludes",
+  "John Cage",
+  "sonatasandinterludes-johncage",
   292,
-  '/path/sonatasandinterludes-johncage.mp4',
+  "/path/sonatasandinterludes-johncage.mp4",
   MediaType.Music,
-  [musicalGenreTags.avantgarde],
+  [musicalGenreTags.avantgarde]
 );
-export const stimmung = new Music(
-  'Stimmung',
-  'Karlheinz Stockhausen',
-  'stimmung-karlheinzstockhausen',
+export const stimmung = createMusic(
+  "Stimmung",
+  "Karlheinz Stockhausen",
+  "stimmung-karlheinzstockhausen",
   292,
-  '/path/stimmung-karlheinzstockhausen.mp4',
+  "/path/stimmung-karlheinzstockhausen.mp4",
   MediaType.Music,
-  [musicalGenreTags.avantgarde],
+  [musicalGenreTags.avantgarde]
 );
-export const anendingascent = new Music(
-  'An Ending, Ascent',
-  'Brian Eno',
-  'anendingascent-brianeno',
+export const anendingascent = createMusic(
+  "An Ending, Ascent",
+  "Brian Eno",
+  "anendingascent-brianeno",
   292,
-  '/path/anendingascent-brianeno.mp4',
+  "/path/anendingascent-brianeno.mp4",
   MediaType.Music,
-  [musicalGenreTags.ambient],
+  [musicalGenreTags.ambient]
 );
-export const no3 = new Music(
-  '#3',
-  'Aphex Twin',
-  'no3-aphextwin',
+export const no3 = createMusic(
+  "#3",
+  "Aphex Twin",
+  "no3-aphextwin",
   292,
-  '/path/no3-aphextwin.mp4',
+  "/path/no3-aphextwin.mp4",
   MediaType.Music,
-  [musicalGenreTags.ambient],
+  [musicalGenreTags.ambient]
 );
-export const deepstaria = new Music(
-  'Deepstaria',
-  'Hello Meteor',
-  'deepstaria-hellometeor',
+export const deepstaria = createMusic(
+  "Deepstaria",
+  "Hello Meteor",
+  "deepstaria-hellometeor",
   292,
-  '/path/deepstaria-hellometeor.mp4',
+  "/path/deepstaria-hellometeor.mp4",
   MediaType.Music,
-  [musicalGenreTags.ambient],
+  [musicalGenreTags.ambient]
 );
-export const bluemoonstation = new Music(
-  'Blue Moon Station',
-  'Solar Fields',
-  'bluemoonstation-solarfields',
+export const bluemoonstation = createMusic(
+  "Blue Moon Station",
+  "Solar Fields",
+  "bluemoonstation-solarfields",
   292,
-  '/path/bluemoonstation-solarfields.mp4',
+  "/path/bluemoonstation-solarfields.mp4",
   MediaType.Music,
-  [musicalGenreTags.ambient],
+  [musicalGenreTags.ambient]
 );
-export const kobresia = new Music(
-  'Kobresia',
-  'Biosphere',
-  'kobresia-biosphere',
+export const kobresia = createMusic(
+  "Kobresia",
+  "Biosphere",
+  "kobresia-biosphere",
   292,
-  '/path/kobresia-biosphere.mp4',
+  "/path/kobresia-biosphere.mp4",
   MediaType.Music,
-  [musicalGenreTags.ambient],
+  [musicalGenreTags.ambient]
 );
-export const onthenatureofdaylight = new Music(
-  'On the Nature of Daylight',
-  'Max Richter',
-  'onthenatureofdaylight-maxrichter',
+export const onthenatureofdaylight = createMusic(
+  "On the Nature of Daylight",
+  "Max Richter",
+  "onthenatureofdaylight-maxrichter",
   292,
-  '/path/onthenatureofdaylight-maxrichter.mp4',
+  "/path/onthenatureofdaylight-maxrichter.mp4",
   MediaType.Music,
-  [musicalGenreTags.neoclassical],
+  [musicalGenreTags.neoclassical]
 );
-export const re = new Music(
-  'Re',
-  'Nil Frahm',
-  're-nilfrahm',
+export const re = createMusic(
+  "Re",
+  "Nil Frahm",
+  "re-nilfrahm",
   292,
-  '/path/re-nilfrahm.mp4',
+  "/path/re-nilfrahm.mp4",
   MediaType.Music,
-  [musicalGenreTags.neoclassical],
+  [musicalGenreTags.neoclassical]
 );
-export const nuvole = new Music(
-  'Nuvole Bianche',
-  'Ludovico Einaudi',
-  'nuvolebianche-ludovicoeinaudi',
+export const nuvole = createMusic(
+  "Nuvole Bianche",
+  "Ludovico Einaudi",
+  "nuvolebianche-ludovicoeinaudi",
   292,
-  '/path/nuvolebianche-ludovicoeinaudi.mp4',
+  "/path/nuvolebianche-ludovicoeinaudi.mp4",
   MediaType.Music,
-  [musicalGenreTags.neoclassical],
+  [musicalGenreTags.neoclassical]
 );
-export const saman = new Music(
-  'Saman',
-  'Ólafur Arnalds',
-  'saman-olafurarnalds',
+export const saman = createMusic(
+  "Saman",
+  "Ólafur Arnalds",
+  "saman-olafurarnalds",
   292,
-  '/path/saman-olafurarnalds.mp4',
+  "/path/saman-olafurarnalds.mp4",
   MediaType.Music,
-  [musicalGenreTags.neoclassical],
+  [musicalGenreTags.neoclassical]
 );
-export const abovo = new Music(
-  'Abovo',
-  'Joep Beving',
-  'abovo-joepbeving',
+export const abovo = createMusic(
+  "Abovo",
+  "Joep Beving",
+  "abovo-joepbeving",
   292,
-  '/path/abovo-joepbeving.mp4',
+  "/path/abovo-joepbeving.mp4",
   MediaType.Music,
-  [musicalGenreTags.neoclassical],
+  [musicalGenreTags.neoclassical]
 );
-export const xerroxisola = new Music(
-  'Xerrox Isola',
-  'Alva Noto',
-  'xerroxisola-alvanoto',
+export const xerroxisola = createMusic(
+  "Xerrox Isola",
+  "Alva Noto",
+  "xerroxisola-alvanoto",
   292,
-  '/path/xerroxisola-alvanoto.mp4',
+  "/path/xerroxisola-alvanoto.mp4",
   MediaType.Music,
-  [musicalGenreTags.electronicMinimalist],
+  [musicalGenreTags.electronicMinimalist]
 );
-export const dexter = new Music(
-  'Dexter',
-  'Ricardo Villalobos',
-  'dexter-ricardovillalobos',
+export const dexter = createMusic(
+  "Dexter",
+  "Ricardo Villalobos",
+  "dexter-ricardovillalobos",
   292,
-  '/path/dexter-ricardovillalobos.mp4',
+  "/path/dexter-ricardovillalobos.mp4",
   MediaType.Music,
-  [musicalGenreTags.electronicMinimalist],
+  [musicalGenreTags.electronicMinimalist]
 );
-export const sticktomyside = new Music(
-  'Stick to My Side',
-  'Pantha du Prince',
-  'sticktomyside-panthaduprince',
+export const sticktomyside = createMusic(
+  "Stick to My Side",
+  "Pantha du Prince",
+  "sticktomyside-panthaduprince",
   292,
-  '/path/sticktomyside-panthaduprince.mp4',
+  "/path/sticktomyside-panthaduprince.mp4",
   MediaType.Music,
-  [musicalGenreTags.electronicMinimalist],
+  [musicalGenreTags.electronicMinimalist]
 );
-export const camino = new Music(
-  'Camino',
-  'Murcof',
-  'camino-murcof',
+export const camino = createMusic(
+  "Camino",
+  "Murcof",
+  "camino-murcof",
   292,
-  '/path/camino-murcof.mp4',
+  "/path/camino-murcof.mp4",
   MediaType.Music,
-  [musicalGenreTags.electronicMinimalist],
+  [musicalGenreTags.electronicMinimalist]
 );
-export const easthastings = new Music(
-  'East Hastings',
-  'Godspeed You! Black Emperor',
-  'easthastings-godspeedyoublackemperor',
+export const easthastings = createMusic(
+  "East Hastings",
+  "Godspeed You! Black Emperor",
+  "easthastings-godspeedyoublackemperor",
   292,
-  '/path/easthastings-godspeedyoublackemperor.mp4',
+  "/path/easthastings-godspeedyoublackemperor.mp4",
   MediaType.Music,
-  [musicalGenreTags.postrock],
+  [musicalGenreTags.postrock]
 );
-export const yourhandinmine = new Music(
-  'Your Hand in Mine',
-  'Explosions in the Sky',
-  'yourhandinmine-explosionsinthesky',
+export const yourhandinmine = createMusic(
+  "Your Hand in Mine",
+  "Explosions in the Sky",
+  "yourhandinmine-explosionsinthesky",
   292,
-  '/path/yourhandinmine-explosionsinthesky.mp4',
+  "/path/yourhandinmine-explosionsinthesky.mp4",
   MediaType.Music,
-  [musicalGenreTags.postrock],
+  [musicalGenreTags.postrock]
 );
-export const mogwaifearsatan = new Music(
-  'Mogwai Fear Satan',
-  'Mogwai',
-  'mogwaifearsatan-mogwai',
+export const mogwaifearsatan = createMusic(
+  "Mogwai Fear Satan",
+  "Mogwai",
+  "mogwaifearsatan-mogwai",
   292,
-  '/path/mogwaifearsatan-mogwai.mp4',
+  "/path/mogwaifearsatan-mogwai.mp4",
   MediaType.Music,
-  [musicalGenreTags.postrock],
+  [musicalGenreTags.postrock]
 );
-export const untitledno3 = new Music(
-  'Untitled #3',
-  'Sigur Rós',
-  'untitledno3-sigurros',
+export const untitledno3 = createMusic(
+  "Untitled #3",
+  "Sigur Rós",
+  "untitledno3-sigurros",
   292,
-  '/path/untitledno3-sigurros.mp4',
+  "/path/untitledno3-sigurros.mp4",
   MediaType.Music,
-  [musicalGenreTags.postrock],
+  [musicalGenreTags.postrock]
 );
-export const ashesinthesnow = new Music(
-  'Ashes in the Snow',
-  'Mono',
-  'ashesinthesnow-mono',
+export const ashesinthesnow = createMusic(
+  "Ashes in the Snow",
+  "Mono",
+  "ashesinthesnow-mono",
   292,
-  '/path/ashesinthesnow-mono.mp4',
+  "/path/ashesinthesnow-mono.mp4",
   MediaType.Music,
-  [musicalGenreTags.postrock],
+  [musicalGenreTags.postrock]
 );
-export const thedarkplacesoftheearth = new Music(
-  'The Dark Places of the Earth',
-  'Lustmord',
-  'thedarkplacesoftheearth-lustmord',
+export const thedarkplacesoftheearth = createMusic(
+  "The Dark Places of the Earth",
+  "Lustmord",
+  "thedarkplacesoftheearth-lustmord",
   292,
-  '/path/thedarkplacesoftheearth-lustmord.mp4',
+  "/path/thedarkplacesoftheearth-lustmord.mp4",
   MediaType.Music,
-  [musicalGenreTags.darkambient],
+  [musicalGenreTags.darkambient]
 );
-export const endtitles = new Music(
-  'End Titles',
-  'Atrium Carceri',
-  'endtitles-atriumcarceri',
+export const endtitles = createMusic(
+  "End Titles",
+  "Atrium Carceri",
+  "endtitles-atriumcarceri",
   292,
-  '/path/endtitles-atriumcarceri.mp4',
+  "/path/endtitles-atriumcarceri.mp4",
   MediaType.Music,
-  [musicalGenreTags.darkambient],
+  [musicalGenreTags.darkambient]
 );
-export const reflectinginshadows = new Music(
-  'Reflecting in Shadows',
-  'Kammarheit',
-  'reflectinginshadows-kammarheit',
+export const reflectinginshadows = createMusic(
+  "Reflecting in Shadows",
+  "Kammarheit",
+  "reflectinginshadows-kammarheit",
   292,
-  '/path/reflectinginshadows-kammarheit.mp4',
+  "/path/reflectinginshadows-kammarheit.mp4",
   MediaType.Music,
-  [musicalGenreTags.darkambient],
+  [musicalGenreTags.darkambient]
 );
-export const hypnagogic = new Music(
-  'Hypnagogic',
-  'Kammarheit',
-  'hypnagogic-kammarheit',
+export const hypnagogic = createMusic(
+  "Hypnagogic",
+  "Kammarheit",
+  "hypnagogic-kammarheit",
   292,
-  '/path/hypnagogic-kammarheit.mp4',
+  "/path/hypnagogic-kammarheit.mp4",
   MediaType.Music,
-  [musicalGenreTags.darkambient],
+  [musicalGenreTags.darkambient]
 );
-export const twoonefourfive = new Music(
-  '2145',
-  'Sabled Sun',
-  '2145-sabledsun',
+export const twoonefourfive = createMusic(
+  "2145",
+  "Sabled Sun",
+  "2145-sabledsun",
   292,
-  '/path/2145-sabledsun.mp4',
+  "/path/2145-sabledsun.mp4",
   MediaType.Music,
-  [musicalGenreTags.darkambient],
+  [musicalGenreTags.darkambient]
 );
-export const hajnal = new Music(
-  'Hajnal',
-  'Venetian Snares',
-  'hajnal-venetiansnares',
+export const hajnal = createMusic(
+  "Hajnal",
+  "Venetian Snares",
+  "hajnal-venetiansnares",
   292,
-  '/path/hajnal-venetiansnares.mp4',
+  "/path/hajnal-venetiansnares.mp4",
   MediaType.Music,
-  [musicalGenreTags.breakcore],
+  [musicalGenreTags.breakcore]
 );
-export const nostep = new Music(
-  'No Step',
-  'Bong-Ra',
-  'nostep-bongra',
+export const nostep = createMusic(
+  "No Step",
+  "Bong-Ra",
+  "nostep-bongra",
   292,
-  '/path/nostep-bongra.mp4',
+  "/path/nostep-bongra.mp4",
   MediaType.Music,
-  [musicalGenreTags.breakcore],
+  [musicalGenreTags.breakcore]
 );
-export const thesoundoftheunderground = new Music(
-  'The Sound of the Underground',
-  'Shitmat',
-  'thesoundoftheunderground-shitmat',
+export const thesoundoftheunderground = createMusic(
+  "The Sound of the Underground",
+  "Shitmat",
+  "thesoundoftheunderground-shitmat",
   292,
-  '/path/thesoundoftheunderground-shitmat.mp4',
+  "/path/thesoundoftheunderground-shitmat.mp4",
   MediaType.Music,
-  [musicalGenreTags.breakcore],
+  [musicalGenreTags.breakcore]
 );
-export const manicpanic = new Music(
-  'Manic Panic',
-  'Otto Von Schirach',
-  'manicpanic-ottovonschirach',
+export const manicpanic = createMusic(
+  "Manic Panic",
+  "Otto Von Schirach",
+  "manicpanic-ottovonschirach",
   292,
-  '/path/manicpanic-ottovonschirach.mp4',
+  "/path/manicpanic-ottovonschirach.mp4",
   MediaType.Music,
-  [musicalGenreTags.breakcore],
+  [musicalGenreTags.breakcore]
 );
-export const blackacid = new Music(
-  'Black Acid',
-  'Enduser',
-  'blackacid-enduser',
+export const blackacid = createMusic(
+  "Black Acid",
+  "Enduser",
+  "blackacid-enduser",
   292,
-  '/path/blackacid-enduser.mp4',
+  "/path/blackacid-enduser.mp4",
   MediaType.Music,
-  [musicalGenreTags.breakcore],
+  [musicalGenreTags.breakcore]
 );
-export const hereitschristmastime = new Music(
+export const hereitschristmastime = createMusic(
   "Here It's Christmas Time",
-  'Kevin Bacon',
-  'hereitschristmastime-kevinbacon',
+  "Kevin Bacon",
+  "hereitschristmastime-kevinbacon",
   292,
-  '/path/hereitschristmastime-kevinbacon.mp4',
+  "/path/hereitschristmastime-kevinbacon.mp4",
   MediaType.Music,
-  [
-    musicalGenreTags.pop,
-    holidayTags.christmas,
-    specialtyTags.marvel,
-  ],
+  [musicalGenreTags.pop, holidayTags.christmas, specialtyTags.marvel]
 );
-export const allIwantforchristmasisyou = new Music(
-  'All I Want for Christmas is You',
-  'Mariah Carey',
-  'alliwantforchristmasisyou-mariahcarey',
+export const allIwantforchristmasisyou = createMusic(
+  "All I Want for Christmas is You",
+  "Mariah Carey",
+  "alliwantforchristmasisyou-mariahcarey",
   292,
-  '/path/alliwantforchristmasisyou-mariahcarey.mp4',
+  "/path/alliwantforchristmasisyou-mariahcarey.mp4",
   MediaType.Music,
-  [
-    musicalGenreTags.pop,
-    holidayTags.christmas,
-  ],
+  [musicalGenreTags.pop, holidayTags.christmas]
 );
-export const kidnapthesandyclaws = new Music(
-  'Kidnap the Sandy Claws',
-  'Korn',
-  'kidnapthesandyclaws-korn',
+export const kidnapthesandyclaws = createMusic(
+  "Kidnap the Sandy Claws",
+  "Korn",
+  "kidnapthesandyclaws-korn",
   292,
-  '/path/kidnapthesandyclaws-korn.mp4',
+  "/path/kidnapthesandyclaws-korn.mp4",
   MediaType.Music,
-  [
-    musicalGenreTags.metal,
-    holidayTags.christmas,
-    holidayTags.halloween,
-  ],
+  [musicalGenreTags.metal, holidayTags.christmas, holidayTags.halloween]
 );
-export const monstermash = new Music(
-  'Monster Mash',
-  'Bobby Pickett',
-  'monstermash-bobbypickett',
+export const monstermash = createMusic(
+  "Monster Mash",
+  "Bobby Pickett",
+  "monstermash-bobbypickett",
   292,
-  '/path/monstermash-bobbypickett.mp4',
+  "/path/monstermash-bobbypickett.mp4",
   MediaType.Music,
-  [
-    musicalGenreTags.pop,
-    holidayTags.halloween,
-  ],
+  [musicalGenreTags.pop, holidayTags.halloween]
 );
-export const comeandgetyourlove = new Music(
-  'Come and Get Your Love',
-  'Redbone',
-  'comeandgetyourlove-redbone',
+export const comeandgetyourlove = createMusic(
+  "Come and Get Your Love",
+  "Redbone",
+  "comeandgetyourlove-redbone",
   292,
-  '/path/comeandgetyourlove-redbone.mp4',
+  "/path/comeandgetyourlove-redbone.mp4",
   MediaType.Music,
-  [
-    musicalGenreTags.rock,
-    specialtyTags.marvel,
-  ],
+  [musicalGenreTags.rock, specialtyTags.marvel]
 );
-export const ohhchild = new Music(
-  'Ohh Child',
-  'The Five Stairsteps',
-  'ohhchild-thefivestairsteps',
+export const ohhchild = createMusic(
+  "Ohh Child",
+  "The Five Stairsteps",
+  "ohhchild-thefivestairsteps",
   292,
-  '/path/ohhchild-thefivestairsteps.mp4',
+  "/path/ohhchild-thefivestairsteps.mp4",
   MediaType.Music,
-  [
-    musicalGenreTags.rnb,
-    specialtyTags.marvel,
-  ],
+  [musicalGenreTags.rnb, specialtyTags.marvel]
 );
 
 export const music = [

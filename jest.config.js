@@ -1,8 +1,26 @@
-/** @type {import('ts-jest').JestConfigWithTsJest} **/
-module.exports = {
-  testEnvironment: 'node',
-  transform: {
-    '^.+\\.tsx?$': ['ts-jest', {}],
+export default {
+  preset: "ts-jest",
+  testEnvironment: "node",
+  extensionsToTreatAsEsm: [".ts"],
+  roots: ["<rootDir>/test"],
+  testMatch: ["**/__tests__/**/*.ts", "**/?(*.)+(spec|test).ts"],
+  moduleFileExtensions: ["ts", "tsx", "js", "jsx", "json", "node"],
+  moduleNameMapper: {
+    "^(\\.{1,2}/.*)\\.js$": "$1",
   },
-  setupFiles: ['<rootDir>/jest.setup.js'],
+  setupFilesAfterEnv: ["<rootDir>/test/jestSetup.ts"],
+  transform: {
+    "^.+\\.tsx?$": [
+      "ts-jest",
+      {
+        useESM: true,
+        tsconfig: {
+          esModuleInterop: true,
+          allowSyntheticDefaultImports: true,
+          module: "ESNext",
+        },
+      },
+    ],
+  },
+  collectCoverageFrom: ["test/**/*.ts", "!test/**/*.d.ts", "!test/testData/**"],
 };

@@ -1,5 +1,4 @@
-import { Tag } from '../../../src/models/tag';
-import { TagType } from '../../../src/models/const/tagTypes';
+import { createTag } from "../../../factories/tag.factory";
 
 /**
  * Age Group test tags for Kaleidoscope testing
@@ -9,52 +8,48 @@ import { TagType } from '../../../src/models/const/tagTypes';
  */
 
 export const ageGroupTags = {
-  kids: new Tag(
-    'kids',
-    'Kids',
+  kids: createTag(
+    "kids",
+    "Kids",
     TagType.AgeGroup,
-    undefined, // holidayDates
-    undefined, // exclusionGenres
-    undefined, // seasonStartDate
-    undefined, // seasonEndDate
-    undefined, // explicitlyHoliday
     1, // sequence
-  ),
-
-  family: new Tag(
-    'family',
-    'Family',
-    TagType.AgeGroup,
     undefined, // holidayDates
     undefined, // exclusionGenres
     undefined, // seasonStartDate
-    undefined, // seasonEndDate
-    undefined, // explicitlyHoliday
+    undefined // seasonEndDate
+  ),
+
+  family: createTag(
+    "family",
+    "Family",
+    TagType.AgeGroup,
     2, // sequence
-  ),
-
-  youngAdult: new Tag(
-    'young-adult',
-    'Young Adult',
-    TagType.AgeGroup,
     undefined, // holidayDates
     undefined, // exclusionGenres
     undefined, // seasonStartDate
-    undefined, // seasonEndDate
-    undefined, // explicitlyHoliday
+    undefined // seasonEndDate
+  ),
+
+  youngAdult: createTag(
+    "young-adult",
+    "Young Adult",
+    TagType.AgeGroup,
     3, // sequence
-  ),
-
-  mature: new Tag(
-    'mature',
-    'Mature',
-    TagType.AgeGroup,
     undefined, // holidayDates
     undefined, // exclusionGenres
     undefined, // seasonStartDate
-    undefined, // seasonEndDate
-    undefined, // explicitlyHoliday
+    undefined // seasonEndDate
+  ),
+
+  mature: createTag(
+    "mature",
+    "Mature",
+    TagType.AgeGroup,
     4, // sequence
+    undefined, // holidayDates
+    undefined, // exclusionGenres
+    undefined, // seasonStartDate
+    undefined // seasonEndDate
   ),
 };
 

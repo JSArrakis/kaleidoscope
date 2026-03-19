@@ -23,7 +23,7 @@ export function createMovie(
     imdb,
     path: path ?? `/media/movies/test-${id.substring(0, 8)}.mp4`,
     duration: duration ?? 7200,
-    durationLimit,
+    durationLimit: durationLimit ?? 0,
     isHolidayExclusive: isHolidayExclusive ?? false,
     tags: tags ?? [],
     type: type ?? MediaType.Movie,
