@@ -4,7 +4,7 @@ import BufferItem from "./BufferItem/BufferItem";
 import BufferEditForm from "../BufferEditForm/BufferEditForm";
 import Modal from "../Modal/Modal";
 
-type BufferType = Short | Commercial | Promo | Bumper;
+type BufferType = Short | Commercial | Promo | Bumper | Music;
 
 interface BufferItemListProps {
   mediaList: BufferType[];
@@ -38,7 +38,7 @@ const BufferItemList: FC<BufferItemListProps> = ({
     if (selectedItem) {
       // find the item in the mediaList
       const item = mediaList.find(
-        (item) => item.mediaItemId === selectedItem.mediaItemId
+        (item) => item.mediaItemId === selectedItem.mediaItemId,
       );
       if (item) {
         // If item.title is not empty, set hasOriginalTitle to true
@@ -63,7 +63,7 @@ const BufferItemList: FC<BufferItemListProps> = ({
     const debouncedSearch = setTimeout(() => {
       const searchTerm = mediaListSearchTerm.toLowerCase();
       const filteredList = mediaList.filter(
-        (item) => item.title && item.title.toLowerCase().includes(searchTerm)
+        (item) => item.title && item.title.toLowerCase().includes(searchTerm),
       );
       setFilteredMediaList(filteredList);
     }, 600);

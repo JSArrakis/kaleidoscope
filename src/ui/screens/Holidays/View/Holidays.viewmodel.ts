@@ -106,7 +106,7 @@ const useHolidaysViewModel = (
     const tempHoliday: Tag = {
       tagId: uuidv4(),
       name: "",
-      type: "Holiday",
+      type: TagType.Holiday,
     };
     setNewHoliday(tempHoliday);
   };

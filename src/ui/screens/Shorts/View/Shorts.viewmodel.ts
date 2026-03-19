@@ -23,7 +23,7 @@ interface ShortsActions {
 export interface ShortsViewModel extends ShortsData, ShortsActions {}
 
 const useShortsViewModel = (
-  navigate: ReturnType<typeof useRootStack>
+  navigate: ReturnType<typeof useRootStack>,
 ): ShortsViewModel => {
   const $getShorts = useGetAllShorts();
   const $createShort = useCreateShort();
@@ -57,12 +57,15 @@ const useShortsViewModel = (
         mediaItemId: normalizeItem(shortPath),
         title: "",
         path: shortPath,
+        duration: 0,
+        isHolidayExclusive: false,
+        type: MediaType.Short,
         tags: [] as Tag[],
       }));
 
       for (const short of newShortsList) {
         const existingShort = savedShorts.find(
-          (m) => m.mediaItemId === short.mediaItemId
+          (m) => m.mediaItemId === short.mediaItemId,
         );
         if (!existingShort) {
           $createShort.mutate(short);
@@ -89,7 +92,7 @@ const useShortsViewModel = (
   const saveShort = (short: Short) => {
     const deepCopiedShort = JSON.parse(JSON.stringify(short));
     const existingShort = savedShorts.find(
-      (m) => m.mediaItemId === deepCopiedShort.mediaItemId
+      (m) => m.mediaItemId === deepCopiedShort.mediaItemId,
     );
 
     if (existingShort) {
@@ -97,14 +100,14 @@ const useShortsViewModel = (
       setSelectedShort(null);
       setEditModalState(false);
       setNewShorts((prev) =>
-        prev.filter((m) => m.mediaItemId !== deepCopiedShort.mediaItemId)
+        prev.filter((m) => m.mediaItemId !== deepCopiedShort.mediaItemId),
       );
       return;
     }
     setSelectedShort(null);
     setEditModalState(false);
     setNewShorts((prev) =>
-      prev.filter((m) => m.mediaItemId !== deepCopiedShort.mediaItemId)
+      prev.filter((m) => m.mediaItemId !== deepCopiedShort.mediaItemId),
     );
     $createShort.mutate(deepCopiedShort);
   };
@@ -117,12 +120,12 @@ const useShortsViewModel = (
 
     if (newShorts.includes(item)) {
       setNewShorts((prev) =>
-        prev.filter((m) => m.mediaItemId !== item.mediaItemId)
+        prev.filter((m) => m.mediaItemId !== item.mediaItemId),
       );
       return;
     } else {
       setSavedShorts((prev) =>
-        prev.filter((m) => m.mediaItemId !== item.mediaItemId)
+        prev.filter((m) => m.mediaItemId !== item.mediaItemId),
       );
       $deleteShort.mutate(item);
     }

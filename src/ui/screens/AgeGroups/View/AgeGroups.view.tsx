@@ -25,7 +25,7 @@ const AgeGroupsView: FC<AgeGroupsViewProps> = ({ viewModel }) => {
               selectedItem={{
                 tagId: "",
                 name: "",
-                type: "AgeGroup",
+                type: TagType.AgeGroup,
                 sequence: 0,
               }}
             />

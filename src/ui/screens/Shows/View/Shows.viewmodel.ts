@@ -23,7 +23,7 @@ interface ShowsActions {
 export interface ShowsViewModel extends ShowsData, ShowsActions {}
 
 const useShowsViewModel = (
-  navigate: ReturnType<typeof useRootStack>
+  navigate: ReturnType<typeof useRootStack>,
 ): ShowsViewModel => {
   const $getShows = useGetAllShows();
   const $createShow = useCreateShow();
@@ -104,8 +104,12 @@ const useShowsViewModel = (
     const tempShow: Show = {
       mediaItemId: uuidv4(),
       title: "",
+      durationLimit: 0,
+      firstEpisodeOverDuration: false,
       episodeCount: 0,
+      type: MediaType.Show,
       tags: [],
+      secondaryTags: [],
       episodes: [],
     };
     setNewShow(tempShow);

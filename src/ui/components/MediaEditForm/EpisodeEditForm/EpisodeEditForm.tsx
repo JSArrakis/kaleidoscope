@@ -26,10 +26,10 @@ const EpisodeEditForm: FC<EpisodeEditFormProps> = ({
   const [season, setSeason] = useState<string | undefined>(episode.season);
   const [episodeCount, setEpisodeCount] = useState<number>(1);
   const [episodeNumber, setEpisodeNumber] = useState<number | undefined>(
-    undefined
+    undefined,
   );
   const [episodeNumberTwo, setEpisodeNumberTwo] = useState<number | undefined>(
-    undefined
+    undefined,
   );
   const [episodeNumberThree, setEpisodeNumberThree] = useState<
     number | undefined
@@ -38,7 +38,7 @@ const EpisodeEditForm: FC<EpisodeEditFormProps> = ({
     number | undefined
   >(undefined);
   const [sequence, setSequence] = useState<number | undefined>(
-    episode.episodeNumber
+    episode.episodeNumber,
   );
   const titleRef = useRef<HTMLInputElement>(null);
   const seasonRef = useRef<HTMLInputElement>(null);
@@ -140,12 +140,12 @@ const EpisodeEditForm: FC<EpisodeEditFormProps> = ({
   const [currentSelectedCategory, setCurrentSelectedCategory] =
     useState<string>(TAG_CATEGORIES.ALL);
   const [tagChipList, setTagChipList] = useState<string[]>(
-    episode.tags.map((t) => t.name)
+    episode.tags.map((t) => t.name),
   );
   const [tagObjectList, setTagObjectList] = useState<Tag[]>(episode.tags);
   const [selectedTagList, setSelectedTagList] = useState<string[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>(
-    TAG_CATEGORIES.ALL
+    TAG_CATEGORIES.ALL,
   );
   const [currentSelectedTagList, setCurrentSelectedTagList] = useState<
     string[]
@@ -170,7 +170,7 @@ const EpisodeEditForm: FC<EpisodeEditFormProps> = ({
       console.log("searchTerm", searchTerm);
       const filteredList = allTags
         .filter(
-          (item) => item.name && item.name.toLowerCase().includes(searchTerm)
+          (item) => item.name && item.name.toLowerCase().includes(searchTerm),
         )
         .map((tag) => tag.name);
       setSelectedTagList(filteredList);
@@ -297,7 +297,7 @@ const EpisodeEditForm: FC<EpisodeEditFormProps> = ({
       title: title,
       season: season,
       episode: episodeNumbers,
-      episodeNumber: sequence,
+      episodeNumber: sequence ?? 0,
       tags: tagObjectList,
     };
 
@@ -453,7 +453,7 @@ const EpisodeEditForm: FC<EpisodeEditFormProps> = ({
                 const value = e.target.value;
                 if (/^\d{0,3}$/.test(value)) {
                   setEpisodeNumberThree(
-                    value === "" ? undefined : Number(value)
+                    value === "" ? undefined : Number(value),
                   );
                 }
               }}
@@ -486,7 +486,7 @@ const EpisodeEditForm: FC<EpisodeEditFormProps> = ({
                 const value = e.target.value;
                 if (/^\d{0,3}$/.test(value)) {
                   setEpisodeNumberFour(
-                    value === "" ? undefined : Number(value)
+                    value === "" ? undefined : Number(value),
                   );
                 }
               }}

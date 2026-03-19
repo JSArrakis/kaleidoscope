@@ -13,8 +13,12 @@ const ShowsView: FC<ShowsViewProps> = ({ viewModel }) => {
     : {
         mediaItemId: "",
         title: "",
+        durationLimit: 0,
+        firstEpisodeOverDuration: false,
         episodeCount: 0,
+        type: MediaType.Show,
         tags: [],
+        secondaryTags: [],
         episodes: [],
       };
   return (

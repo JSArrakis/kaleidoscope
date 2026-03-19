@@ -18,11 +18,10 @@ interface AestheticsActions {
 }
 
 export interface AestheticsViewModel
-  extends AestheticsData,
-    AestheticsActions {}
+  extends AestheticsData, AestheticsActions {}
 
 const useAestheticsViewModel = (
-  navigate: ReturnType<typeof useRootStack>
+  navigate: ReturnType<typeof useRootStack>,
 ): AestheticsViewModel => {
   const $useGetAllAestheticTags = useGetAllAestheticTags();
   const $useCreateAestheticTag = useCreateAestheticTag();
@@ -46,7 +45,7 @@ const useAestheticsViewModel = (
     const tag: Tag = {
       tagId: item.replace(/[^a-zA-Z0-9]/g, "").toLowerCase(),
       name: item,
-      type: "Aesthetic",
+      type: TagType.Aesthetic,
     };
     $useCreateAestheticTag.mutate(tag);
     setItem("");

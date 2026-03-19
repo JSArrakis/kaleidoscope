@@ -21,11 +21,10 @@ interface CommercialsActions {
 }
 
 export interface CommercialsViewModel
-  extends CommercialsData,
-    CommercialsActions {}
+  extends CommercialsData, CommercialsActions {}
 
 const useCommercialsViewModel = (
-  navigate: ReturnType<typeof useRootStack>
+  navigate: ReturnType<typeof useRootStack>,
 ): CommercialsViewModel => {
   const $getCommercials = useGetAllCommercials();
   const $createCommercial = useCreateCommercial();
@@ -61,13 +60,16 @@ const useCommercialsViewModel = (
           mediaItemId: normalizeItem(commercialPath),
           title: "",
           path: commercialPath,
+          duration: 0,
+          isHolidayExclusive: false,
+          type: MediaType.Commercial,
           tags: [] as Tag[],
-        })
+        }),
       );
 
       for (const commercial of newCommercialsList) {
         const existingCommercial = savedCommercials.find(
-          (m) => m.mediaItemId === commercial.mediaItemId
+          (m) => m.mediaItemId === commercial.mediaItemId,
         );
         if (!existingCommercial) {
           $createCommercial.mutate(commercial);
@@ -83,7 +85,7 @@ const useCommercialsViewModel = (
     }
 
     const commercialToEdit = commercials.find(
-      (m) => m.mediaItemId === commercial.mediaItemId
+      (m) => m.mediaItemId === commercial.mediaItemId,
     );
     if (!commercialToEdit) {
       console.error("Commercial not found:", commercial);
@@ -96,7 +98,7 @@ const useCommercialsViewModel = (
   const saveCommercial = (commercial: Commercial) => {
     const deepCopiedCommercial = JSON.parse(JSON.stringify(commercial));
     const existingCommercial = savedCommercials.find(
-      (m) => m.mediaItemId === deepCopiedCommercial.mediaItemId
+      (m) => m.mediaItemId === deepCopiedCommercial.mediaItemId,
     );
 
     if (existingCommercial) {
@@ -104,14 +106,14 @@ const useCommercialsViewModel = (
       setSelectedCommercial(null);
       setEditModalState(false);
       setNewCommercials((prev) =>
-        prev.filter((m) => m.mediaItemId !== deepCopiedCommercial.mediaItemId)
+        prev.filter((m) => m.mediaItemId !== deepCopiedCommercial.mediaItemId),
       );
       return;
     }
     setSelectedCommercial(null);
     setEditModalState(false);
     setNewCommercials((prev) =>
-      prev.filter((m) => m.mediaItemId !== deepCopiedCommercial.mediaItemId)
+      prev.filter((m) => m.mediaItemId !== deepCopiedCommercial.mediaItemId),
     );
     $createCommercial.mutate(deepCopiedCommercial);
   };
@@ -124,12 +126,12 @@ const useCommercialsViewModel = (
 
     if (newCommercials.includes(item)) {
       setNewCommercials((prev) =>
-        prev.filter((m) => m.mediaItemId !== item.mediaItemId)
+        prev.filter((m) => m.mediaItemId !== item.mediaItemId),
       );
       return;
     } else {
       setSavedCommercials((prev) =>
-        prev.filter((m) => m.mediaItemId !== item.mediaItemId)
+        prev.filter((m) => m.mediaItemId !== item.mediaItemId),
       );
       $deleteCommercial.mutate(item);
     }

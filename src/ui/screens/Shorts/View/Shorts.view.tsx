@@ -14,6 +14,9 @@ const ShortsView: FC<ShortsViewProps> = ({ viewModel }) => {
         mediaItemId: "",
         title: "",
         path: "",
+        duration: 0,
+        isHolidayExclusive: false,
+        type: MediaType.Short,
         tags: [],
       };
   return (
@@ -27,9 +30,9 @@ const ShortsView: FC<ShortsViewProps> = ({ viewModel }) => {
               mediaList={viewModel.shorts}
               type="short"
               selectedItem={selectedShort}
-              onEdit={viewModel.editShort}
-              onSave={viewModel.saveShort}
-              onRemove={viewModel.onRemove}
+              onEdit={viewModel.editShort as (item: any) => void}
+              onSave={viewModel.saveShort as (item: any) => void}
+              onRemove={viewModel.onRemove as (item: any) => void}
               onAddItem={viewModel.addShorts}
             />
           </div>

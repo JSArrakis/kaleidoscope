@@ -23,7 +23,7 @@ interface MoviesActions {
 export interface MoviesViewModel extends MoviesData, MoviesActions {}
 
 const useMoviesViewModel = (
-  navigate: ReturnType<typeof useRootStack>
+  navigate: ReturnType<typeof useRootStack>,
 ): MoviesViewModel => {
   const $getMovies = useGetAllMovies();
   const $createMovie = useCreateMovie();
@@ -36,9 +36,7 @@ const useMoviesViewModel = (
 
   const [movies, setMovies] = useState<Movie[]>([]);
   const [isEditModalOpen, setEditModalState] = useState(false);
-  const [selectedMovie, setSelectedMovie] = useState<Movie | null>(
-    null
-  );
+  const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
 
   const calculateSize = (obj: any): string => {
     const bytes = new TextEncoder().encode(JSON.stringify(obj)).length;
@@ -47,7 +45,7 @@ const useMoviesViewModel = (
     const gB = mB / 1024;
 
     return `${bytes.toFixed(2)} bytes / ${kB.toFixed(2)} KB / ${mB.toFixed(
-      2
+      2,
     )} MB / ${gB.toFixed(2)} GB`;
   };
 
@@ -74,6 +72,10 @@ const useMoviesViewModel = (
         mediaItemId: normalizeItem(moviePath),
         title: "",
         path: moviePath,
+        duration: 0,
+        durationLimit: 0,
+        isHolidayExclusive: false,
+        type: MediaType.Movie,
         tags: [] as Tag[],
       }));
 
@@ -100,7 +102,7 @@ const useMoviesViewModel = (
     const deepCopiedMovie = JSON.parse(JSON.stringify(movie));
     console.log("Saving movie:", deepCopiedMovie);
     const existingMovie = savedMovies.find(
-      (m) => m.mediaItemId === deepCopiedMovie.mediaItemId
+      (m) => m.mediaItemId === deepCopiedMovie.mediaItemId,
     );
 
     console.log("Existing movie:", existingMovie);
@@ -110,14 +112,14 @@ const useMoviesViewModel = (
       setSelectedMovie(null);
       setEditModalState(false);
       setNewMovies((prev) =>
-        prev.filter((m) => m.mediaItemId !== deepCopiedMovie.mediaItemId)
+        prev.filter((m) => m.mediaItemId !== deepCopiedMovie.mediaItemId),
       );
       return;
     }
     setSelectedMovie(null);
     setEditModalState(false);
     setNewMovies((prev) =>
-      prev.filter((m) => m.mediaItemId !== deepCopiedMovie.mediaItemId)
+      prev.filter((m) => m.mediaItemId !== deepCopiedMovie.mediaItemId),
     );
     $createMovie.mutate(deepCopiedMovie);
   };
@@ -130,12 +132,12 @@ const useMoviesViewModel = (
 
     if (newMovies.includes(item)) {
       setNewMovies((prev) =>
-        prev.filter((m) => m.mediaItemId !== item.mediaItemId)
+        prev.filter((m) => m.mediaItemId !== item.mediaItemId),
       );
       return;
     } else {
       setSavedMovies((prev) =>
-        prev.filter((m) => m.mediaItemId !== item.mediaItemId)
+        prev.filter((m) => m.mediaItemId !== item.mediaItemId),
       );
       $deleteMovie.mutate(item);
     }

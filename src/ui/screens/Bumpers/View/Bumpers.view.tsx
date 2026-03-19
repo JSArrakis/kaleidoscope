@@ -14,6 +14,8 @@ const BumpersView: FC<BumpersViewProps> = ({ viewModel }) => {
         mediaItemId: "",
         title: "",
         path: "",
+        duration: 0,
+        type: MediaType.Bumper,
         tags: [],
       };
   return (

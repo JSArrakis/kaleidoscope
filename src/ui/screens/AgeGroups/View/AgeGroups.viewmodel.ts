@@ -106,7 +106,7 @@ const useAgeGroupsViewModel = (
     const tempAgeGroup: Tag = {
       tagId: uuidv4(),
       name: "",
-      type: "AgeGroup",
+      type: TagType.AgeGroup,
       sequence: 0,
     };
     setNewAgeGroup(tempAgeGroup);

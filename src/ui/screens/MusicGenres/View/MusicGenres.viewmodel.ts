@@ -18,11 +18,10 @@ interface MusicGenresActions {
 }
 
 export interface MusicGenresViewModel
-  extends MusicGenresData,
-    MusicGenresActions {}
+  extends MusicGenresData, MusicGenresActions {}
 
 const useMusicGenresViewModel = (
-  navigate: ReturnType<typeof useRootStack>
+  navigate: ReturnType<typeof useRootStack>,
 ): MusicGenresViewModel => {
   const $useGetAllMusicGenres = useGetAllMusicGenres();
   const $useCreateMusicGenre = useCreateMusicGenre();
@@ -46,7 +45,7 @@ const useMusicGenresViewModel = (
     const tag: Tag = {
       tagId: item.replace(/[^a-zA-Z0-9]/g, "").toLowerCase(),
       name: item,
-      type: "MusicGenre",
+      type: TagType.MusicalGenre,
     };
     console.log("TAG", tag);
     $useCreateMusicGenre.mutate(tag);

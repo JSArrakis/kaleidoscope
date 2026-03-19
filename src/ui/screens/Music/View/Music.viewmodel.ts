@@ -21,11 +21,10 @@ interface MusicVideosActions {
 }
 
 export interface MusicVideosViewModel
-  extends MusicVideosData,
-    MusicVideosActions {}
+  extends MusicVideosData, MusicVideosActions {}
 
 const useMusicVideosViewModel = (
-  navigate: ReturnType<typeof useRootStack>
+  navigate: ReturnType<typeof useRootStack>,
 ): MusicVideosViewModel => {
   const $getMusicVideos = useGetAllMusicVideos();
   const $createMusicVideo = useCreateMusicVideo();
@@ -39,7 +38,7 @@ const useMusicVideosViewModel = (
   const [musicVideos, setMusicVideos] = useState<Music[]>([]);
   const [isEditModalOpen, setEditModalState] = useState(false);
   const [selectedMusicVideo, setSelectedMusicVideo] = useState<Music | null>(
-    null
+    null,
   );
 
   useEffect(() => {
@@ -63,13 +62,16 @@ const useMusicVideosViewModel = (
           title: "",
           artist: "",
           path: musicVideoPath,
+          duration: 0,
+          isHolidayExclusive: false,
+          type: MediaType.Music,
           tags: [] as Tag[],
-        })
+        }),
       );
 
       for (const musicVideo of newMusicVideosList) {
         const existingMusicVideo = savedMusicVideos.find(
-          (m) => m.mediaItemId === musicVideo.mediaItemId
+          (m) => m.mediaItemId === musicVideo.mediaItemId,
         );
         if (!existingMusicVideo) {
           $createMusicVideo.mutate(musicVideo);
@@ -85,7 +87,7 @@ const useMusicVideosViewModel = (
     }
 
     const musicVideoToEdit = musicVideos.find(
-      (m) => m.mediaItemId === musicVideo.mediaItemId
+      (m) => m.mediaItemId === musicVideo.mediaItemId,
     );
     if (!musicVideoToEdit) {
       console.error("MusicVideo not found:", musicVideo);
@@ -98,7 +100,7 @@ const useMusicVideosViewModel = (
   const saveMusicVideo = (musicVideo: Music) => {
     const deepCopiedMusicVideo = JSON.parse(JSON.stringify(musicVideo));
     const existingMusicVideo = savedMusicVideos.find(
-      (m) => m.mediaItemId === deepCopiedMusicVideo.mediaItemId
+      (m) => m.mediaItemId === deepCopiedMusicVideo.mediaItemId,
     );
 
     if (existingMusicVideo) {
@@ -106,14 +108,14 @@ const useMusicVideosViewModel = (
       setSelectedMusicVideo(null);
       setEditModalState(false);
       setNewMusicVideos((prev) =>
-        prev.filter((m) => m.mediaItemId !== deepCopiedMusicVideo.mediaItemId)
+        prev.filter((m) => m.mediaItemId !== deepCopiedMusicVideo.mediaItemId),
       );
       return;
     }
     setSelectedMusicVideo(null);
     setEditModalState(false);
     setNewMusicVideos((prev) =>
-      prev.filter((m) => m.mediaItemId !== deepCopiedMusicVideo.mediaItemId)
+      prev.filter((m) => m.mediaItemId !== deepCopiedMusicVideo.mediaItemId),
     );
     $createMusicVideo.mutate(deepCopiedMusicVideo);
   };
@@ -126,12 +128,12 @@ const useMusicVideosViewModel = (
 
     if (newMusicVideos.includes(item)) {
       setNewMusicVideos((prev) =>
-        prev.filter((m) => m.mediaItemId !== item.mediaItemId)
+        prev.filter((m) => m.mediaItemId !== item.mediaItemId),
       );
       return;
     } else {
       setSavedMusicVideos((prev) =>
-        prev.filter((m) => m.mediaItemId !== item.mediaItemId)
+        prev.filter((m) => m.mediaItemId !== item.mediaItemId),
       );
       $deleteMusicVideo.mutate(item);
     }

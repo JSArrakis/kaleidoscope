@@ -14,6 +14,9 @@ const CommercialsView: FC<CommercialsViewProps> = ({ viewModel }) => {
         mediaItemId: "",
         title: "",
         path: "",
+        duration: 0,
+        isHolidayExclusive: false,
+        type: MediaType.Commercial,
         tags: [],
       };
   return (
@@ -27,9 +30,9 @@ const CommercialsView: FC<CommercialsViewProps> = ({ viewModel }) => {
               mediaList={viewModel.commercials}
               type="commercial"
               selectedItem={selectedCommercial}
-              onEdit={viewModel.editCommercial}
-              onSave={viewModel.saveCommercial}
-              onRemove={viewModel.onRemove}
+              onEdit={viewModel.editCommercial as (item: any) => void}
+              onSave={viewModel.saveCommercial as (item: any) => void}
+              onRemove={viewModel.onRemove as (item: any) => void}
               onAddItem={viewModel.addCommercials}
             />
           </div>

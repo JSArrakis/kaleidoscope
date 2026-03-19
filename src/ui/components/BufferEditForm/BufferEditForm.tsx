@@ -330,7 +330,7 @@ const BufferEditForm: FC<BufferEditFormProps> = ({
   const onUpdateEpisodeSequence = (item: Episode, sequence: number | null) => {
     const newEpisodeList: Episode[] = episodeList.map((originalItem) =>
       originalItem.mediaItemId === item.mediaItemId
-        ? { ...originalItem, episodeNumber: sequence ?? undefined }
+        ? { ...originalItem, episodeNumber: sequence ?? 0 }
         : originalItem,
     );
 

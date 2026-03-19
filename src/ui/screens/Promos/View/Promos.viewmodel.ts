@@ -23,7 +23,7 @@ interface PromosActions {
 export interface PromosViewModel extends PromosData, PromosActions {}
 
 const usePromosViewModel = (
-  navigate: ReturnType<typeof useRootStack>
+  navigate: ReturnType<typeof useRootStack>,
 ): PromosViewModel => {
   const $getPromos = useGetAllPromos();
   const $createPromo = useCreatePromo();
@@ -58,12 +58,14 @@ const usePromosViewModel = (
         mediaItemId: normalizeItem(promoPath),
         title: "",
         path: promoPath,
+        duration: 0,
+        type: MediaType.Promo,
         tags: [] as Tag[],
       }));
 
       for (const promo of newPromosList) {
         const existingPromo = savedPromos.find(
-          (m) => m.mediaItemId === promo.mediaItemId
+          (m) => m.mediaItemId === promo.mediaItemId,
         );
         if (!existingPromo) {
           $createPromo.mutate(promo);
@@ -90,7 +92,7 @@ const usePromosViewModel = (
   const savePromo = (promo: Promo) => {
     const deepCopiedPromo = JSON.parse(JSON.stringify(promo));
     const existingPromo = savedPromos.find(
-      (m) => m.mediaItemId === deepCopiedPromo.mediaItemId
+      (m) => m.mediaItemId === deepCopiedPromo.mediaItemId,
     );
 
     if (existingPromo) {
@@ -98,14 +100,14 @@ const usePromosViewModel = (
       setSelectedPromo(null);
       setEditModalState(false);
       setNewPromos((prev) =>
-        prev.filter((m) => m.mediaItemId !== deepCopiedPromo.mediaItemId)
+        prev.filter((m) => m.mediaItemId !== deepCopiedPromo.mediaItemId),
       );
       return;
     }
     setSelectedPromo(null);
     setEditModalState(false);
     setNewPromos((prev) =>
-      prev.filter((m) => m.mediaItemId !== deepCopiedPromo.mediaItemId)
+      prev.filter((m) => m.mediaItemId !== deepCopiedPromo.mediaItemId),
     );
     $createPromo.mutate(deepCopiedPromo);
   };
@@ -118,12 +120,12 @@ const usePromosViewModel = (
 
     if (newPromos.includes(item)) {
       setNewPromos((prev) =>
-        prev.filter((m) => m.mediaItemId !== item.mediaItemId)
+        prev.filter((m) => m.mediaItemId !== item.mediaItemId),
       );
       return;
     } else {
       setSavedPromos((prev) =>
-        prev.filter((m) => m.mediaItemId !== item.mediaItemId)
+        prev.filter((m) => m.mediaItemId !== item.mediaItemId),
       );
       $deletePromo.mutate(item);
     }

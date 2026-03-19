@@ -340,7 +340,7 @@ const MediaEditForm: FC<MediaEditFormProps> = ({
   const onUpdateEpisodeSequence = (item: Episode, sequence: number | null) => {
     const newEpisodeList: Episode[] = episodeList.map((originalItem) =>
       originalItem.mediaItemId === item.mediaItemId
-        ? { ...originalItem, episodeNumber: sequence ?? undefined }
+        ? { ...originalItem, episodeNumber: sequence ?? 0 }
         : originalItem,
     );
 
@@ -359,7 +359,11 @@ const MediaEditForm: FC<MediaEditFormProps> = ({
             path: episodePath,
             season: "",
             episode: "",
-            episodeNumber: undefined,
+            episodeNumber: 0,
+            duration: 0,
+            durationLimit: 0,
+            overDuration: false,
+            type: MediaType.Episode,
             tags: [],
           }) as Episode,
       );

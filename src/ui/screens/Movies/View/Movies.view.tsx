@@ -10,7 +10,16 @@ interface MoviesViewProps {
 const MoviesView: FC<MoviesViewProps> = ({ viewModel }) => {
   const selectedMovie = viewModel.selectedMovie
     ? viewModel.selectedMovie
-    : { mediaItemId: "", title: "", path: "", tags: [] as Tag[] };
+    : {
+        mediaItemId: "",
+        title: "",
+        path: "",
+        duration: 0,
+        durationLimit: 0,
+        isHolidayExclusive: false,
+        type: MediaType.Movie,
+        tags: [] as Tag[],
+      };
 
   return (
     <div className={styles.screen}>

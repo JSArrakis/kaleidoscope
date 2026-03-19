@@ -14,6 +14,8 @@ const PromosView: FC<PromosViewProps> = ({ viewModel }) => {
         mediaItemId: "",
         title: "",
         path: "",
+        duration: 0,
+        type: MediaType.Promo,
         tags: [],
       };
   return (

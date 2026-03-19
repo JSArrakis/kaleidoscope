@@ -13,7 +13,7 @@ const HolidaysView: FC<HolidaysViewProps> = ({ viewModel }) => {
     : {
         tagId: "",
         name: "",
-        type: "Holiday" as const,
+        type: TagType.Holiday,
       };
 
   return (

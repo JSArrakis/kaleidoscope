@@ -20,7 +20,7 @@ interface GenresActions {
 export interface GenresViewModel extends GenresData, GenresActions {}
 
 const useGenresViewModel = (
-  navigate: ReturnType<typeof useRootStack>
+  navigate: ReturnType<typeof useRootStack>,
 ): GenresViewModel => {
   const $useGetAllGenreTags = useGetAllGenreTags();
   const $useCreateGenreTag = useCreateGenreTag();
@@ -44,7 +44,7 @@ const useGenresViewModel = (
     const tag: Tag = {
       tagId: item.replace(/[^a-zA-Z0-9]/g, "").toLowerCase(),
       name: item,
-      type: "Genre",
+      type: TagType.Genre,
     };
     $useCreateGenreTag.mutate(tag);
     setItem("");

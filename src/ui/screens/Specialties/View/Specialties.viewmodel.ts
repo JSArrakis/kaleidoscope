@@ -18,11 +18,10 @@ interface SpecialtiesActions {
 }
 
 export interface SpecialtiesViewModel
-  extends SpecialtiesData,
-    SpecialtiesActions {}
+  extends SpecialtiesData, SpecialtiesActions {}
 
 const useSpecialtiesViewModel = (
-  navigate: ReturnType<typeof useRootStack>
+  navigate: ReturnType<typeof useRootStack>,
 ): SpecialtiesViewModel => {
   const $useGetAllSpecialtyTags = useGetAllSpecialtyTags();
   const $useCreateSpecialtyTag = useCreateSpecialtyTag();
@@ -46,7 +45,7 @@ const useSpecialtiesViewModel = (
     const tag: Tag = {
       tagId: item.replace(/[^a-zA-Z0-9]/g, "").toLowerCase(),
       name: item,
-      type: "Specialty",
+      type: TagType.Specialty,
     };
     $useCreateSpecialtyTag.mutate(tag);
     setItem("");

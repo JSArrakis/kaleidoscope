@@ -20,7 +20,7 @@ interface ErasActions {
 export interface ErasViewModel extends ErasData, ErasActions {}
 
 const useErasViewModel = (
-  navigate: ReturnType<typeof useRootStack>
+  navigate: ReturnType<typeof useRootStack>,
 ): ErasViewModel => {
   const $useGetAllEraTags = useGetAllEraTags();
   const $useCreateEraTag = useCreateEraTag();
@@ -44,7 +44,7 @@ const useErasViewModel = (
     const tag: Tag = {
       tagId: item.replace(/[^a-zA-Z0-9]/g, "").toLowerCase(),
       name: item,
-      type: "Era",
+      type: TagType.Era,
     };
     $useCreateEraTag.mutate(tag);
     setItem("");

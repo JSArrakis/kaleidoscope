@@ -23,7 +23,7 @@ interface BumpersActions {
 export interface BumpersViewModel extends BumpersData, BumpersActions {}
 
 const useBumpersViewModel = (
-  navigate: ReturnType<typeof useRootStack>
+  navigate: ReturnType<typeof useRootStack>,
 ): BumpersViewModel => {
   const $getBumpers = useGetAllBumpers();
   const $createBumper = useCreateBumper();
@@ -58,12 +58,14 @@ const useBumpersViewModel = (
         mediaItemId: normalizeItem(bumperPath),
         title: "",
         path: bumperPath,
+        duration: 0,
+        type: MediaType.Bumper,
         tags: [] as Tag[],
       }));
 
       for (const bumper of newBumpersList) {
         const existingBumper = savedBumpers.find(
-          (m) => m.mediaItemId === bumper.mediaItemId
+          (m) => m.mediaItemId === bumper.mediaItemId,
         );
         if (!existingBumper) {
           $createBumper.mutate(bumper);
@@ -79,7 +81,7 @@ const useBumpersViewModel = (
     }
 
     const bumperToEdit = bumpers.find(
-      (m) => m.mediaItemId === bumper.mediaItemId
+      (m) => m.mediaItemId === bumper.mediaItemId,
     );
     if (!bumperToEdit) {
       console.error("Bumper not found:", bumper);
@@ -92,7 +94,7 @@ const useBumpersViewModel = (
   const saveBumper = (bumper: Bumper) => {
     const deepCopiedBumper = JSON.parse(JSON.stringify(bumper));
     const existingBumper = savedBumpers.find(
-      (m) => m.mediaItemId === deepCopiedBumper.mediaItemId
+      (m) => m.mediaItemId === deepCopiedBumper.mediaItemId,
     );
 
     if (existingBumper) {
@@ -100,14 +102,14 @@ const useBumpersViewModel = (
       setSelectedBumper(null);
       setEditModalState(false);
       setNewBumpers((prev) =>
-        prev.filter((m) => m.mediaItemId !== deepCopiedBumper.mediaItemId)
+        prev.filter((m) => m.mediaItemId !== deepCopiedBumper.mediaItemId),
       );
       return;
     }
     setSelectedBumper(null);
     setEditModalState(false);
     setNewBumpers((prev) =>
-      prev.filter((m) => m.mediaItemId !== deepCopiedBumper.mediaItemId)
+      prev.filter((m) => m.mediaItemId !== deepCopiedBumper.mediaItemId),
     );
     $createBumper.mutate(deepCopiedBumper);
   };
@@ -120,12 +122,12 @@ const useBumpersViewModel = (
 
     if (newBumpers.includes(item)) {
       setNewBumpers((prev) =>
-        prev.filter((m) => m.mediaItemId !== item.mediaItemId)
+        prev.filter((m) => m.mediaItemId !== item.mediaItemId),
       );
       return;
     } else {
       setSavedBumpers((prev) =>
-        prev.filter((m) => m.mediaItemId !== item.mediaItemId)
+        prev.filter((m) => m.mediaItemId !== item.mediaItemId),
       );
       $deleteBumper.mutate(item);
     }
