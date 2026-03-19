@@ -1,16 +1,16 @@
 # Political
 
-Political serves as the aesthetic framework for narratives that present stories through the lens of governance, power structures, and institutional conflicts. It provides the visual, cultural, and tonal identity for stories set within government systems, campaign environments, or policy-making contexts, featuring politicians, civil servants, activists, and conflicts rooted in the exercise and distribution of power. While Political creates rich institutional worlds, the specific narrative structure - whether Drama, Thriller, Action, or Romance - is supplied by the underlying story being told within this governmental presentation.
+Political serves as the aesthetic framework for narratives that present stories through the lens of governance, power structures, and institutional conflicts. It provides the visual, cultural, and tonal identity for stories set within government systems, campaign environments, or policy-making contexts, featuring politicians, civil servants, activists, and conflicts rooted in the exercise and distribution of power. While Political creates rich institutional worlds, the specific narrative structure, whether Drama, Thriller, Action, or Romance, is supplied by the underlying story being told within this governmental presentation.
 
 ## Core Characteristics of Political Aesthetic:
 
 ### Institutional Power Structures
 
-Political is rooted in formal systems of governance - legislatures, executive offices, bureaucracies, and the complex web of relationships that define how power is exercised. The aesthetic emphasizes meeting rooms, government buildings, policy debates, and the formal protocols that govern institutional behavior.
+Political is rooted in formal systems of governance such as legislatures, executive offices, bureaucracies, and the complex web of relationships that define how power is exercised. The aesthetic emphasizes meeting rooms, government buildings, policy debates, and the formal protocols that govern institutional behavior.
 
 ### Ideological Conflict and Compromise
 
-Central to Political is the tension between competing visions of governance, policy, and social order. Characters operate within systems that require negotiation, coalition-building, and the balancing of competing interests. The aesthetic explores how personal beliefs interact with institutional necessities.
+Central to Political is the tension between competing visions of governance, policy, and social order. Characters operate within systems that require negotiation, coalition building, and the balancing of competing interests. The aesthetic explores how personal beliefs interact with institutional necessities.
 
 ### Public vs. Private Personas
 
@@ -26,7 +26,7 @@ The aesthetic frequently explores the tension between idealistic goals and pragm
 
 ### Process and Procedure
 
-Political highlights the importance of institutional processes - elections, legislative procedures, diplomatic protocols, and bureaucratic systems. These frameworks both enable and constrain character actions, creating dramatic tension through procedural obstacles and opportunities.
+Political highlights the importance of institutional processes; elections, legislative procedures, diplomatic protocols, and bureaucratic systems. These frameworks both enable and constrain character actions, creating dramatic tension through procedural obstacles and opportunities.
 
 ## Narrative Genres Layered Over Political Aesthetic
 

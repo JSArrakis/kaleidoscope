@@ -1,3 +1,8 @@
+import * as streamManager from "./streamManager.js";
+import { rolloverToNextDay } from "./streamConstruction/continuousStreamBuilder.js";
+import { StreamType } from "../types/StreamType.js";
+import { existsSync } from "fs";
+
 let cycleCheckTimeout: NodeJS.Timeout | null = null;
 
 const intervalInSeconds: number = 300; // 5 minutes
@@ -27,7 +32,7 @@ function setEndOfDayMarker(): void {
     23,
     30,
     0,
-    0
+    0,
   );
   endOfDayMarker = Math.floor(endOfDay.getTime() / 1000);
   console.log(`End of day marker set to: ${endOfDayMarker}`);
@@ -44,67 +49,69 @@ function setTomorrow(): void {
       0,
       0,
       0,
-      0
-    ).getTime() / 1000
+      0,
+    ).getTime() / 1000,
   );
   console.log(`Tomorrow marker set to: ${tomorrow}`);
 }
 
-interface TimedMediaItem {
-  path: string;
-  title: string;
-  startTime: number;
-  mediaType: "initialBuffer" | "mainBlock" | "buffer";
-  blockTitle: string;
-}
-
-let cachedTimedMediaItems: TimedMediaItem[] = [];
-
 function validateUpcomingMediaFiles(currentUnixTimestamp: number): void {
-  // Clean up old cached items to prevent memory leak
-  cachedTimedMediaItems = cachedTimedMediaItems.filter(
-    (item) => item.startTime > currentUnixTimestamp
-  );
-
   const validationEndTime = currentUnixTimestamp + intervalInSeconds;
 
-  const upcomingItems = cachedTimedMediaItems.filter(
-    (item) =>
-      item.startTime >= currentUnixTimestamp &&
-      item.startTime <= validationEndTime
-  );
+  // Check On Deck and Upcoming blocks whose startTime falls within the next interval
+  const blocks = [
+    ...streamManager.getOnDeckStream(),
+    ...streamManager.getUpcomingStream(),
+  ];
 
-  upcomingItems.forEach((item) => {
-    try {
-      // TODO: When a file is missing we need to add or rearrange buffers to cover the missing file
-      console.log(
-        `[Media Validation] Checking ${item.mediaType}: "${item.title}" ` +
-          `from block "${item.blockTitle}" at path: ${item.path} ` +
-          `(scheduled for ${new Date(item.startTime * 1000).toISOString()})`
-      );
-    } catch (error) {
-      console.log(
-        `[Media Validation] Error checking ${item.mediaType}: "${item.title}" ` +
-          `from block "${item.blockTitle}" at path: ${item.path} ` +
-          `(Error: ${error})`
-      );
+  let missingCount = 0;
+
+  for (const block of blocks) {
+    if (block.startTime > validationEndTime) break;
+
+    // Check anchor media file
+    if (
+      block.anchorMedia &&
+      "path" in block.anchorMedia &&
+      block.anchorMedia.path
+    ) {
+      if (!existsSync(block.anchorMedia.path)) {
+        console.warn(
+          `[Media Validation] MISSING anchor file: "${block.anchorMedia.title}" ` +
+            `at path: ${block.anchorMedia.path} ` +
+            `(scheduled for ${new Date(block.startTime * 1000).toISOString()})`,
+        );
+        missingCount++;
+      }
     }
-  });
 
-  if (upcomingItems.length > 0) {
-    console.log(
-      `[Media Validation] Checked ${upcomingItems.length} media files scheduled for next ${intervalInSeconds}s interval`
+    // Check buffer media files
+    for (const item of block.buffer) {
+      if ("path" in item && item.path) {
+        if (!existsSync(item.path)) {
+          console.warn(
+            `[Media Validation] MISSING buffer file: "${item.title}" ` +
+              `at path: ${item.path}`,
+          );
+          missingCount++;
+        }
+      }
+    }
+  }
+
+  if (missingCount > 0) {
+    console.warn(
+      `[Media Validation] ${missingCount} missing file(s) in upcoming ${intervalInSeconds}s interval`,
     );
   }
 }
 
 async function cycleCheck(): Promise<void> {
   // BACKGROUND SERVICE OPERATIONS:
-  // - Monitors and manages current/ondeck playlists
+  // - Monitors and manages On Deck / Upcoming lists
   // - Transitions media blocks at scheduled times
   // - Generates next day's stream ONLY for continuous streams
-  // - Adjusts streams for missing media files
-  // - Adjusts streams for time drift off of cadence marks
+  // - Validates upcoming media files for missing paths
 
   const currentUnixTimestamp = getCurrentUnixTimestamp();
   console.log(`[Cycle Check] Current Unix Timestamp: ${currentUnixTimestamp}`);
@@ -112,46 +119,96 @@ async function cycleCheck(): Promise<void> {
   // Validate upcoming media files
   validateUpcomingMediaFiles(currentUnixTimestamp);
 
-  // TODO: Get the items currently loaded into the on deck array from streamManager
-  // const onDeck: MediaBlock[] = streamMan.getOnDeckStream();
+  // --- On Deck state ---
+  const onDeck = streamManager.getOnDeckStream();
 
-  // TODO: Log when next item should start
-  // if (onDeck.length >= 2) {
-  //   console.log('Target Unix Timestamp: ' + onDeck[1].startTime);
-  // } else {
-  //   console.log(
-  //     'There arent enough items in the on deck stream to check for a new item',
-  //   );
-  // }
+  if (onDeck.length >= 2) {
+    console.log(`[Cycle Check] Next item start time: ${onDeck[1].startTime}`);
+  } else {
+    console.log(
+      "[Cycle Check] Not enough items in On Deck to check for a new item",
+    );
+  }
 
-  // TODO: Check if next item should be starting
-  // if (onDeck.length >= 1 && currentUnixTimestamp === onDeck[0].startTime) {
-  //   console.log(onDeck[0].featureMedia?.title + ' is starting now');
-  // }
+  if (onDeck.length >= 1 && currentUnixTimestamp >= onDeck[0].startTime) {
+    console.log(
+      `[Cycle Check] "${
+        onDeck[0].anchorMedia?.title ?? "(buffer block)"
+      }" is starting now`,
+    );
+  }
 
-  // TODO: Manage stream transitions
-  // if (streamMan.isContinuousStream() && onDeck.length > 1) {
-  //   if (onDeck[1].startTime && currentUnixTimestamp >= onDeck[1].startTime) {
-  //     // Remove and transition logic
-  //   }
-  // }
+  // --- Prune expired On Deck blocks ---
+  // When Slot 2's startTime has passed, Slot 1 has finished — remove it.
+  // Loop in case multiple slots expired between cycles (e.g. after a long pause).
+  if (streamManager.isContinuousStream()) {
+    while (onDeck.length > 1 && currentUnixTimestamp >= onDeck[1].startTime) {
+      const expired = streamManager.removeFirstItemFromOnDeck();
+      if (expired) {
+        streamManager.recordPlayedMovie(expired);
+        streamManager.recordPlayedEpisodeProgression(expired);
+      }
+      console.log(
+        `[Cycle Check] Removed expired On Deck block: "${
+          expired?.anchorMedia?.title ?? "(buffer block)"
+        }"`,
+      );
+    }
+  }
 
-  // Check if day has changed
+  // --- Promote from Upcoming → On Deck (Slot 3) when below threshold ---
+  if (onDeck.length < 3) {
+    const upcoming = streamManager.getUpcomingStream();
+    if (upcoming.length > 0) {
+      const next = streamManager.removeFirstItemFromUpcoming();
+      if (next) {
+        streamManager.addItemToOnDeck([next]);
+        console.log(
+          `[Cycle Check] Promoted to On Deck Slot ${
+            onDeck.length
+          }: "${next.anchorMedia?.title ?? "(buffer block)"}"`,
+        );
+      }
+    }
+  }
+
+  // --- Day rollover ---
+  // Trigger when Upcoming is down to exactly 1 block and that block has no
+  // buffer yet (i.e. it was the terminal element of the previous iteration,
+  // skipped by fillStreamBlockBuffers).
+  const upcoming = streamManager.getUpcomingStream();
+  const lastUpcoming =
+    upcoming.length > 0 ? upcoming[upcoming.length - 1] : null;
+
+  const shouldRollover =
+    streamManager.isContinuousStream() &&
+    lastUpcoming !== null &&
+    upcoming.length === 1 &&
+    lastUpcoming.buffer.length === 0;
+
+  if (shouldRollover) {
+    const args = streamManager.getContinuousStreamArgs();
+    if (args) {
+      const options: StreamConstructionOptions = {
+        Cadence: args.Cadence ?? true,
+        Themed: args.Themed ?? false,
+        StreamType: StreamType.Cont,
+      };
+      rolloverToNextDay(options, tomorrow);
+      console.log(
+        "[Cycle Check] Day rollover triggered — next day's stream built",
+      );
+    }
+  }
+
+  // Check if day has changed — update tomorrow marker
   if (currentUnixTimestamp >= tomorrow) {
     setTomorrow();
   }
 
-  // Check if it's time to prepare next day's stream
+  // Reset end-of-day marker after it passes
   if (currentUnixTimestamp >= endOfDayMarker) {
     setEndOfDayMarker();
-
-    // TODO: Generate next day's stream for continuous streams only
-    // const currentStreamType = getStreamType();
-    // if (currentStreamType === StreamType.Cont) {
-    //   const continuousStreamArgs = streamMan.getContinuousStreamArgs();
-    //   const stream = constructStream(getStreamType(), tomorrow, false);
-    //   streamMan.addToUpcomingStream(stream[0]);
-    // }
   }
 
   // Calculate delay to next interval and reschedule

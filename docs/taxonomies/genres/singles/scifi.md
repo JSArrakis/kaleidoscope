@@ -12,7 +12,7 @@ The foundation of Science Fiction is speculative or futuristic science, such as 
 
 ### Exploration of Unknowns:
 
-Science Fiction frequently delves into uncharted realms—whether it’s distant galaxies, alternative dimensions, or speculative futures. These journeys invite audiences to question the boundaries of our current understanding, creating tension as characters confront unknowns that defy conventional thought or challenge human limitations as well as humanity's place within the universe.
+Science Fiction frequently delves into uncharted realms whether it’s distant galaxies, alternative dimensions, or speculative futures. These journeys invite audiences to question the boundaries of our current understanding, creating tension as characters confront unknowns that defy conventional thought or challenge human limitations as well as humanity's place within the universe.
 
 ### Philosophical or Existential Themes:
 
@@ -42,7 +42,7 @@ Arrival exemplifies Science Fiction by exploring themes of communication, time, 
 
 ### Interstellar
 
-Interstellar is a prime example of Science Fiction, where speculative science—particularly space travel and time dilation—takes center stage. As humanity faces extinction, the narrative poses ethical dilemmas regarding sacrifice and survival. The protagonist, Cooper, must grapple with the emotional and moral implications of leaving his family behind to explore other galaxies for humanity's sake. This conflict deepens as he experiences the effects of time dilation, where hours on one planet equate to years on Earth, raising poignant questions about parental responsibility and the value of human life. The film’s exploration of advanced scientific concepts, like black holes and time relativity, allows these ethical considerations to emerge in a uniquely sci-fi context, challenging the characters and audience alike to reflect on the consequences of exploration and the essence of human connection.
+Interstellar is a prime example of Science Fiction, where speculative science, particularly space travel and time dilation takes center stage. As humanity faces extinction, the narrative poses ethical dilemmas regarding sacrifice and survival. The protagonist, Cooper, must grapple with the emotional and moral implications of leaving his family behind to explore other galaxies for humanity's sake. This conflict deepens as he experiences the effects of time dilation, where hours on one planet equate to years on Earth, raising poignant questions about parental responsibility and the value of human life. The film’s exploration of advanced scientific concepts, like black holes and time relativity, allows these ethical considerations to emerge in a uniquely sci-fi context, challenging the characters and audience alike to reflect on the consequences of exploration and the essence of human connection.
 
 ### Gattaca
 

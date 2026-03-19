@@ -9,7 +9,8 @@ export function createCommercial(
   duration?: number,
   path?: string,
   type?: MediaType,
-  tags?: Tag[]
+  tags?: Tag[],
+  isHolidayExclusive?: boolean,
 ): Commercial {
   const id = mediaItemId ?? randomUUID();
   return {
@@ -17,6 +18,7 @@ export function createCommercial(
     title: title ?? `Test Commercial ${id.substring(0, 8)}`,
     duration: duration ?? 30,
     path: path ?? `/media/commercials/test-${id.substring(0, 8)}.mp4`,
+    isHolidayExclusive: isHolidayExclusive ?? false,
     type: type ?? MediaType.Commercial,
     tags: tags ?? [],
     createdAt: new Date().toISOString(),

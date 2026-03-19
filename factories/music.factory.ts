@@ -11,6 +11,7 @@ export function createMusic(
   path?: string,
   type?: MediaType,
   tags?: any[],
+  isHolidayExclusive?: boolean,
 ): Music {
   const id = mediaItemId ?? randomUUID();
   return {
@@ -19,6 +20,7 @@ export function createMusic(
     artist: artist ?? `Test Artist`,
     path: path ?? `/media/music/test-${id.substring(0, 8)}.mp3`,
     duration: duration ?? 180,
+    isHolidayExclusive: isHolidayExclusive ?? false,
     type: type ?? MediaType.Music,
     tags: tags ?? [],
     createdAt: new Date().toISOString(),

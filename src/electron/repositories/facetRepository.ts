@@ -10,8 +10,8 @@ export class FacetRepository {
    * Create a new facet with the given genre and aesthetic tags
    */
   create(facet: Facet): Facet {
+    const facetId = randomUUID();
     const transaction = this.db.transaction(() => {
-      const facetId = randomUUID();
       const stmt = this.db.prepare(`
         INSERT INTO facets (facetId, genreId, aestheticId)
         VALUES (?, ?, ?)
@@ -20,12 +20,12 @@ export class FacetRepository {
       stmt.run(
         facetId,
         facet.genre?.tagId || null,
-        facet.aesthetic?.tagId || null
+        facet.aesthetic?.tagId || null,
       );
     });
 
     transaction();
-    const createdFacet = this.findByFacetId(randomUUID());
+    const createdFacet = this.findByFacetId(facetId);
     return createdFacet!;
   }
 
@@ -71,10 +71,10 @@ export class FacetRepository {
    */
   findByGenreAndAestheticId(
     genreId: string,
-    aestheticId: string
+    aestheticId: string,
   ): Facet | null {
     const stmt = this.db.prepare(
-      `SELECT * FROM facets WHERE genreId = ? AND aestheticId = ?`
+      `SELECT * FROM facets WHERE genreId = ? AND aestheticId = ?`,
     );
     const row = stmt.get(genreId, aestheticId) as any;
     if (!row) return null;
@@ -95,7 +95,7 @@ export class FacetRepository {
       const result = stmt.run(
         facet.genre?.tagId || null,
         facet.aesthetic?.tagId || null,
-        facetId
+        facetId,
       );
 
       if (result.changes === 0) return null;
@@ -120,7 +120,7 @@ export class FacetRepository {
   addRelationship(
     sourceFacetId: string,
     targetFacetId: string,
-    distance: number
+    distance: number,
   ): void {
     const stmt = this.db.prepare(`
       INSERT INTO facet_distances (sourceFacetId, targetFacetId, distance)
@@ -156,7 +156,7 @@ export class FacetRepository {
    */
   deleteRelationship(sourceFacetId: string, targetFacetId: string): boolean {
     const stmt = this.db.prepare(
-      `DELETE FROM facet_distances WHERE sourceFacetId = ? AND targetFacetId = ?`
+      `DELETE FROM facet_distances WHERE sourceFacetId = ? AND targetFacetId = ?`,
     );
     const result = stmt.run(sourceFacetId, targetFacetId);
     return result.changes > 0;

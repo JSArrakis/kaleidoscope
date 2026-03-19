@@ -17,7 +17,7 @@ export class MusicRepository {
         music.mediaItemId,
         music.artist || null,
         music.duration || null,
-        music.path
+        music.path,
       );
       this.insertTags(music.mediaItemId, music.tags);
     });
@@ -41,7 +41,7 @@ export class MusicRepository {
 
   findRandomMusic(): Music | null {
     const stmt = this.db.prepare(
-      `SELECT * FROM music ORDER BY RANDOM() LIMIT 1`
+      `SELECT * FROM music ORDER BY RANDOM() LIMIT 1`,
     );
     const row = stmt.get() as any;
     if (!row) return null;
@@ -63,7 +63,7 @@ export class MusicRepository {
     ageGroupTags: Tag[],
     holidayTags: Tag[],
     specialtyTags: Tag[],
-    maxDuration: number
+    maxDuration: number,
   ): Music[] {
     if (holidayTags.length === 0) {
       return [];
@@ -81,55 +81,7 @@ export class MusicRepository {
       .map((_, i) => `:holiday${i}`)
       .join(",");
 
-    // Query 1: Music with holiday + specialty tags (no age group or other specialty)
-    if (specialtyTagIds.length > 0) {
-      const specialtyPlaceholders = specialtyTagIds
-        .map((_, i) => `:specialty${i}`)
-        .join(",");
-      const query1 = `
-        SELECT DISTINCT m.* FROM music m
-        JOIN music_tags mt ON m.mediaItemId = mt.mediaItemId
-        WHERE m.duration IS NOT NULL
-          AND m.duration <= :maxDuration
-          AND mt.tagId IN (${holidayPlaceholders})
-          AND EXISTS (
-            SELECT 1 FROM music_tags mt2
-            WHERE mt2.mediaItemId = m.mediaItemId
-              AND mt2.tagId IN (${specialtyPlaceholders})
-          )
-          AND NOT EXISTS (
-            SELECT 1 FROM music_tags mt2
-            JOIN tags t ON mt2.tagId = t.tagId
-            WHERE mt2.mediaItemId = m.mediaItemId
-              AND t.type = 'AgeGroup'
-          )
-          AND NOT EXISTS (
-            SELECT 1 FROM recently_used_media
-            WHERE mediaItemId = m.mediaItemId
-              AND mediaType = 'Music'
-          )
-        ORDER BY m.title
-      `;
-
-      const queryParams1: Record<string, any> = {
-        maxDuration,
-        ...Object.fromEntries(
-          holidayTagIds.map((id, i) => [`:holiday${i}`, id])
-        ),
-        ...Object.fromEntries(
-          specialtyTagIds.map((id, i) => [`:specialty${i}`, id])
-        ),
-      };
-
-      const stmt1 = this.db.prepare(query1);
-      const rows1 = stmt1.all(queryParams1) as any[];
-      rows1.forEach((row) => {
-        const music = this.mapRowToMusic(row);
-        musicMap.set(music.mediaItemId, music);
-      });
-    }
-
-    // Query 2: Music with holiday + age group + specialty tags
+    // Query 1: Music with holiday + age group + specialty tags
     if (ageGroupTagIds.length > 0 && specialtyTagIds.length > 0) {
       const ageGroupPlaceholders = ageGroupTagIds
         .map((_, i) => `:ageGroup${i}`)
@@ -153,30 +105,68 @@ export class MusicRepository {
             WHERE mt2.mediaItemId = m.mediaItemId
               AND mt2.tagId IN (${specialtyPlaceholders})
           )
-          AND NOT EXISTS (
-            SELECT 1 FROM recently_used_media
-            WHERE mediaItemId = m.mediaItemId
-              AND mediaType = 'Music'
-          )
         ORDER BY m.title
       `;
 
       const queryParams2: Record<string, any> = {
         maxDuration,
         ...Object.fromEntries(
-          holidayTagIds.map((id, i) => [`:holiday${i}`, id])
+          holidayTagIds.map((id, i) => [`:holiday${i}`, id]),
         ),
         ...Object.fromEntries(
-          ageGroupTagIds.map((id, i) => [`:ageGroup${i}`, id])
+          ageGroupTagIds.map((id, i) => [`:ageGroup${i}`, id]),
         ),
         ...Object.fromEntries(
-          specialtyTagIds.map((id, i) => [`:specialty${i}`, id])
+          specialtyTagIds.map((id, i) => [`:specialty${i}`, id]),
         ),
       };
 
       const stmt2 = this.db.prepare(query2);
       const rows2 = stmt2.all(queryParams2) as any[];
       rows2.forEach((row) => {
+        const music = this.mapRowToMusic(row);
+        musicMap.set(music.mediaItemId, music);
+      });
+    }
+
+    // Query 2: Music with holiday + specialty tags (no age group or other specialty)
+    if (specialtyTagIds.length > 0) {
+      const specialtyPlaceholders = specialtyTagIds
+        .map((_, i) => `:specialty${i}`)
+        .join(",");
+      const query1 = `
+        SELECT DISTINCT m.* FROM music m
+        JOIN music_tags mt ON m.mediaItemId = mt.mediaItemId
+        WHERE m.duration IS NOT NULL
+          AND m.duration <= :maxDuration
+          AND mt.tagId IN (${holidayPlaceholders})
+          AND EXISTS (
+            SELECT 1 FROM music_tags mt2
+            WHERE mt2.mediaItemId = m.mediaItemId
+              AND mt2.tagId IN (${specialtyPlaceholders})
+          )
+          AND NOT EXISTS (
+            SELECT 1 FROM music_tags mt2
+            JOIN tags t ON mt2.tagId = t.tagId
+            WHERE mt2.mediaItemId = m.mediaItemId
+              AND t.type = 'AgeGroup'
+          )
+        ORDER BY m.title
+      `;
+
+      const queryParams1: Record<string, any> = {
+        maxDuration,
+        ...Object.fromEntries(
+          holidayTagIds.map((id, i) => [`:holiday${i}`, id]),
+        ),
+        ...Object.fromEntries(
+          specialtyTagIds.map((id, i) => [`:specialty${i}`, id]),
+        ),
+      };
+
+      const stmt1 = this.db.prepare(query1);
+      const rows1 = stmt1.all(queryParams1) as any[];
+      rows1.forEach((row) => {
         const music = this.mapRowToMusic(row);
         musicMap.set(music.mediaItemId, music);
       });
@@ -204,21 +194,16 @@ export class MusicRepository {
             WHERE mt2.mediaItemId = m.mediaItemId
               AND t.type = 'Specialty'
           )
-          AND NOT EXISTS (
-            SELECT 1 FROM recently_used_media
-            WHERE mediaItemId = m.mediaItemId
-              AND mediaType = 'Music'
-          )
         ORDER BY m.title
       `;
 
       const queryParams3: Record<string, any> = {
         maxDuration,
         ...Object.fromEntries(
-          holidayTagIds.map((id, i) => [`:holiday${i}`, id])
+          holidayTagIds.map((id, i) => [`:holiday${i}`, id]),
         ),
         ...Object.fromEntries(
-          ageGroupTagIds.map((id, i) => [`:ageGroup${i}`, id])
+          ageGroupTagIds.map((id, i) => [`:ageGroup${i}`, id]),
         ),
       };
 
@@ -242,11 +227,6 @@ export class MusicRepository {
           JOIN tags t ON mt2.tagId = t.tagId
           WHERE mt2.mediaItemId = m.mediaItemId
             AND (t.type = 'AgeGroup' OR t.type = 'Specialty')
-        )
-        AND NOT EXISTS (
-          SELECT 1 FROM recently_used_media
-          WHERE mediaItemId = m.mediaItemId
-            AND mediaType = 'Music'
         )
       ORDER BY m.title
     `;
@@ -281,6 +261,7 @@ export class MusicRepository {
       JOIN music_tags mt ON m.mediaItemId = mt.mediaItemId
       WHERE m.duration IS NOT NULL
         AND m.duration <= :maxDuration
+        AND m.isHolidayExclusive = 0
         AND mt.tagId IN (${specialtyPlaceholders})
       ORDER BY m.title
     `;
@@ -288,7 +269,7 @@ export class MusicRepository {
     const queryParams: Record<string, any> = {
       maxDuration,
       ...Object.fromEntries(
-        specialtyTagIds.map((id, i) => [`:specialty${i}`, id])
+        specialtyTagIds.map((id, i) => [`:specialty${i}`, id]),
       ),
     };
 
@@ -308,81 +289,64 @@ export class MusicRepository {
     genreTags: Tag[],
     aestheticTags: Tag[],
     ageGroupTags: Tag[],
-    maxDuration: number
+    maxDuration: number,
   ): Music[] {
-    const musicMap = new Map<string, Music>();
-
-    // Build list of all tags to search
-    const allTags = [...genreTags, ...aestheticTags, ...ageGroupTags];
-    if (allTags.length === 0) {
+    const genreAestheticTags = [...genreTags, ...aestheticTags];
+    if (genreAestheticTags.length === 0) {
       return [];
     }
 
-    const allTagIds: string[] = allTags.map((tag) => tag.tagId);
-    const allPlaceholders = allTagIds.map((_, i) => `:tag${i}`).join(",");
+    const genreAestheticTagIds = genreAestheticTags.map((tag) => tag.tagId);
+    const genreAestheticPlaceholders = genreAestheticTagIds
+      .map((_, i) => `:gaTag${i}`)
+      .join(",");
 
-    // Query 1: Any music with any of genre/aesthetic/age group tags
-    const query1 = `
+    const params: any = { maxDuration };
+    genreAestheticTagIds.forEach((id, i) => {
+      params[`gaTag${i}`] = id;
+    });
+
+    let query = `
       SELECT DISTINCT m.* FROM music m
       JOIN music_tags mt ON m.mediaItemId = mt.mediaItemId
       WHERE m.duration IS NOT NULL
         AND m.duration <= :maxDuration
-        AND mt.tagId IN (${allPlaceholders})
-      ORDER BY m.title
+        AND m.isHolidayExclusive = 0
+        AND mt.tagId IN (${genreAestheticPlaceholders})
     `;
 
-    const queryParams1: Record<string, any> = {
-      maxDuration,
-      ...Object.fromEntries(allTagIds.map((id, i) => [`:tag${i}`, id])),
-    };
-
-    const stmt1 = this.db.prepare(query1);
-    const rows1 = stmt1.all(queryParams1) as any[];
-    rows1.forEach((row) => {
-      const music = this.mapRowToMusic(row);
-      musicMap.set(music.mediaItemId, music);
-    });
-
-    // Query 2: Music with aesthetic/genre tags but NO age group
-    if (aestheticTags.length > 0 || genreTags.length > 0) {
-      const nonAgeTagIds: string[] = [...genreTags, ...aestheticTags].map(
-        (tag) => tag.tagId
-      );
-      const nonAgePlaceholders = nonAgeTagIds
-        .map((_, i) => `:nonAgeTag${i}`)
+    if (ageGroupTags.length > 0) {
+      const ageGroupIds = ageGroupTags.map((tag) => tag.tagId);
+      const ageGroupPlaceholders = ageGroupIds
+        .map((_, i) => `:ageGroup${i}`)
         .join(",");
 
-      const query2 = `
-        SELECT DISTINCT m.* FROM music m
-        JOIN music_tags mt ON m.mediaItemId = mt.mediaItemId
-        WHERE m.duration IS NOT NULL
-          AND m.duration <= :maxDuration
-          AND mt.tagId IN (${nonAgePlaceholders})
-          AND NOT EXISTS (
+      query += `
+        AND (
+          EXISTS (
+            SELECT 1 FROM music_tags mt2
+            WHERE mt2.mediaItemId = m.mediaItemId
+              AND mt2.tagId IN (${ageGroupPlaceholders})
+          )
+          OR NOT EXISTS (
             SELECT 1 FROM music_tags mt2
             JOIN tags t ON mt2.tagId = t.tagId
             WHERE mt2.mediaItemId = m.mediaItemId
               AND t.type = 'AgeGroup'
           )
-        ORDER BY m.title
+        )
       `;
 
-      const queryParams2: Record<string, any> = {
-        maxDuration,
-        ...Object.fromEntries(
-          nonAgeTagIds.map((id, i) => [`:nonAgeTag${i}`, id])
-        ),
-      };
-
-      const stmt2 = this.db.prepare(query2);
-      const rows2 = stmt2.all(queryParams2) as any[];
-      rows2.forEach((row) => {
-        const music = this.mapRowToMusic(row);
-        musicMap.set(music.mediaItemId, music);
+      ageGroupIds.forEach((id, i) => {
+        params[`ageGroup${i}`] = id;
       });
     }
 
-    return Array.from(musicMap.values());
+    query += ` ORDER BY m.title`;
+
+    const stmt = this.db.prepare(query);
+    const rows = stmt.all(params) as any[];
+    return rows.map((row) => this.mapRowToMusic(row));
   }
 
   findByAgeGroupOnly(ageGroupTags: Tag[], maxDuration: number): Music[] {
@@ -399,6 +363,7 @@ export class MusicRepository {
       SELECT DISTINCT m.* FROM music m
       WHERE m.duration IS NOT NULL
         AND m.duration <= :maxDuration
+        AND m.isHolidayExclusive = 0
         AND EXISTS (
           SELECT 1 FROM music_tags mt
           WHERE mt.mediaItemId = m.mediaItemId
@@ -416,7 +381,7 @@ export class MusicRepository {
     const queryParams: Record<string, any> = {
       maxDuration,
       ...Object.fromEntries(
-        ageGroupTagIds.map((id, i) => [`:ageGroup${i}`, id])
+        ageGroupTagIds.map((id, i) => [`:ageGroup${i}`, id]),
       ),
     };
 
@@ -437,6 +402,7 @@ export class MusicRepository {
       SELECT DISTINCT m.* FROM music m
       WHERE m.duration IS NOT NULL
         AND m.duration <= :maxDuration
+        AND m.isHolidayExclusive = 0
         AND NOT EXISTS (
           SELECT 1 FROM music_tags mt
           JOIN tags t ON mt.tagId = t.tagId
@@ -475,7 +441,7 @@ export class MusicRepository {
         music.artist || null,
         music.duration || null,
         music.path,
-        mediaItemId
+        mediaItemId,
       );
       if (result.changes === 0) return null;
 
@@ -504,7 +470,7 @@ export class MusicRepository {
   private insertTags(mediaItemId: string, tags: Tag[]): void {
     if (tags.length === 0) return;
     const stmt = this.db.prepare(
-      `INSERT INTO music_tags (mediaItemId, tagId) VALUES (?, ?)`
+      `INSERT INTO music_tags (mediaItemId, tagId) VALUES (?, ?)`,
     );
     for (const tag of tags) {
       stmt.run(mediaItemId, tag.tagId);
@@ -535,6 +501,7 @@ export class MusicRepository {
       artist: row.artist,
       path: row.path,
       duration: row.duration,
+      isHolidayExclusive: !!row.isHolidayExclusive,
       type: MediaType.Music,
       tags,
       createdAt: row.createdAt,

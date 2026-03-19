@@ -19,22 +19,17 @@ import { MediaBlock } from "../types/MediaBlock.js";
 export async function createStream(
   streamType: StreamType,
   streamConstructionOptions: StreamConstructionOptions,
-  startTimepoint: number,
-  endTimepoint?: number
+  endTimepoint?: number,
 ): Promise<[MediaBlock[], string]> {
   switch (streamType) {
     case StreamType.Cont:
-      return buildContinuousStream(streamConstructionOptions, startTimepoint);
+      return buildContinuousStream(streamConstructionOptions);
 
     case StreamType.Adhoc:
       if (!endTimepoint) {
         return [[], "Adhoc streams require an endTimepoint parameter"];
       }
-      return buildAdhocStream(
-        streamConstructionOptions,
-        startTimepoint,
-        endTimepoint
-      );
+      return buildAdhocStream(streamConstructionOptions, endTimepoint);
 
     default:
       return [[], `Unsupported stream type: ${streamType}`];

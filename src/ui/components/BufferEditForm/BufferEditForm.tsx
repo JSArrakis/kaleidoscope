@@ -14,6 +14,8 @@ import { useGetAllHolidays } from "../../services/tags/useHolidays";
 
 type BufferType = Short | Commercial | Promo | Bumper;
 
+const HOLIDAY_EXCLUSIVE_TYPES = ["commercial", "short", "music"];
+
 interface BufferEditFormProps {
   item: BufferType;
   itemType: string;
@@ -38,6 +40,9 @@ const BufferEditForm: FC<BufferEditFormProps> = ({
   const [title, setTitle] = useState("");
   const [isFlashing, setIsFlashing] = useState(false);
   const titleRef = useRef<HTMLInputElement>(null);
+  const [isHolidayExclusive, setIsHolidayExclusive] = useState(
+    "isHolidayExclusive" in item ? !!item.isHolidayExclusive : false,
+  );
 
   useEffect(() => {
     setTitle(incomingTitle);
@@ -121,12 +126,12 @@ const BufferEditForm: FC<BufferEditFormProps> = ({
   const [currentSelectedCategory, setCurrentSelectedCategory] =
     useState<string>(TAG_CATEGORIES.ALL);
   const [tagChipList, setTagChipList] = useState<string[]>(
-    (item.tags as Tag[]).map((t) => t.name)
+    (item.tags as Tag[]).map((t) => t.name),
   );
   const [tagObjectList, setTagObjectList] = useState<Tag[]>(item.tags as Tag[]);
   const [selectedTagList, setSelectedTagList] = useState<string[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>(
-    TAG_CATEGORIES.ALL
+    TAG_CATEGORIES.ALL,
   );
   const [currentSelectedTagList, setCurrentSelectedTagList] = useState<
     string[]
@@ -151,7 +156,7 @@ const BufferEditForm: FC<BufferEditFormProps> = ({
       console.log("searchTerm", searchTerm);
       const filteredList = allTags
         .filter(
-          (item) => item.name && item.name.toLowerCase().includes(searchTerm)
+          (item) => item.name && item.name.toLowerCase().includes(searchTerm),
         )
         .map((tag) => tag.name);
       setSelectedTagList(filteredList);
@@ -260,10 +265,10 @@ const BufferEditForm: FC<BufferEditFormProps> = ({
   useEffect(() => {
     let currentEpisodes: Episode[] = [];
     const sequencedEpisodes = savedEpisodes.filter(
-      (episode) => episode.episodeNumber !== undefined
+      (episode) => episode.episodeNumber !== undefined,
     );
     const sortedEpisodes = sequencedEpisodes.sort(
-      (a, b) => (a.episodeNumber ?? 0) - (b.episodeNumber ?? 0)
+      (a, b) => (a.episodeNumber ?? 0) - (b.episodeNumber ?? 0),
     );
     currentEpisodes = [...newEpisodes, ...sortedEpisodes];
     setEpisodeList(currentEpisodes);
@@ -272,7 +277,7 @@ const BufferEditForm: FC<BufferEditFormProps> = ({
   const [episodeSearchTerm, setEpisodeSearchTerm] = useState("");
   const [filteredEpisodeList, setFilteredEpisodeList] = useState<Episode[]>([]);
   const [episodeSearchCategory, setEpisodeSearchCategory] = useState<string>(
-    EPISODE_SEARCH_CATEGORIES.PATH
+    EPISODE_SEARCH_CATEGORIES.PATH,
   );
 
   useEffect(() => {
@@ -296,7 +301,7 @@ const BufferEditForm: FC<BufferEditFormProps> = ({
             return item.title?.toLowerCase().includes(searchTerm);
           case EPISODE_SEARCH_CATEGORIES.TAGS:
             return item.tags.some((tag) =>
-              tag.name.toLowerCase().includes(searchTerm)
+              tag.name.toLowerCase().includes(searchTerm),
             );
           case EPISODE_SEARCH_CATEGORIES.SEASON:
             return item.season?.toString().includes(searchTerm);
@@ -316,7 +321,7 @@ const BufferEditForm: FC<BufferEditFormProps> = ({
 
   const onRemoveEpisode = (item: Episode) => {
     const newEpisodeList: Episode[] = episodeList.filter(
-      (ep) => ep.mediaItemId !== item.mediaItemId
+      (ep) => ep.mediaItemId !== item.mediaItemId,
     );
 
     setEpisodeList(newEpisodeList);
@@ -326,7 +331,7 @@ const BufferEditForm: FC<BufferEditFormProps> = ({
     const newEpisodeList: Episode[] = episodeList.map((originalItem) =>
       originalItem.mediaItemId === item.mediaItemId
         ? { ...originalItem, episodeNumber: sequence ?? undefined }
-        : originalItem
+        : originalItem,
     );
 
     setEpisodeList(newEpisodeList);
@@ -351,22 +356,22 @@ const BufferEditForm: FC<BufferEditFormProps> = ({
     console.log("ON UPDATE EPISODE", item);
     // Remove incoming episode from episdodeList
     const updatedEpisodeList = episodeList.filter(
-      (episode) => episode.mediaItemId !== item.mediaItemId
+      (episode) => episode.mediaItemId !== item.mediaItemId,
     );
     // Add updated episode to episodeList
     const newEpisodeList = [...updatedEpisodeList, item];
     // Sort episodeList by episodeNumber, and put undefined at the beginning
     // Filter out undefined episodeNumbers
     const sequencedEpisodes = newEpisodeList.filter(
-      (episode) => episode.episodeNumber !== undefined
+      (episode) => episode.episodeNumber !== undefined,
     );
     // Sort by episodeNumber
     const sortedEpisodes = sequencedEpisodes.sort(
-      (a, b) => (a.episodeNumber ?? 0) - (b.episodeNumber ?? 0)
+      (a, b) => (a.episodeNumber ?? 0) - (b.episodeNumber ?? 0),
     );
     // Add back episodes with undefined episodeNumbers
     const unsortedEpisodes = newEpisodeList.filter(
-      (episode) => episode.episodeNumber === undefined
+      (episode) => episode.episodeNumber === undefined,
     );
     // Concatenate sorted and unsorted episodes
     const finalEpisodes = [...unsortedEpisodes, ...sortedEpisodes];
@@ -401,20 +406,20 @@ const BufferEditForm: FC<BufferEditFormProps> = ({
       (item) =>
         Number.isNaN(item.episodeNumber) ||
         item.episodeNumber === null ||
-        item.episodeNumber === undefined
+        item.episodeNumber === undefined,
     );
 
     const duplicateNumbers = episodeList
       .map((item) => item.episodeNumber)
       .filter(
-        (num, index, self) => num !== undefined && self.indexOf(num) !== index
+        (num, index, self) => num !== undefined && self.indexOf(num) !== index,
       );
 
     const uniqueDuplicateNumbers = [...new Set(duplicateNumbers)];
 
     if (itemsWithoutSequence.length > 0) {
       setWarningModalMessage(
-        "Some items are missing a sequence. Please add sequences before saving."
+        "Some items are missing a sequence. Please add sequences before saving.",
       );
       setDisplayEpisodes(true);
       setEpisodeSearchTerm("");
@@ -427,10 +432,10 @@ const BufferEditForm: FC<BufferEditFormProps> = ({
       const displayedDuplicates = uniqueDuplicateNumbers.slice(0, 5);
       setWarningModalMessage(
         `Some items have duplicate sequences: ${displayedDuplicates.join(
-          ", "
+          ", ",
         )}${
           uniqueDuplicateNumbers.length > 5 ? ", ..." : ""
-        }. Please update sequences before saving.`
+        }. Please update sequences before saving.`,
       );
       setDisplayEpisodes(true);
       setEpisodeSearchTerm("");
@@ -448,6 +453,7 @@ const BufferEditForm: FC<BufferEditFormProps> = ({
       ...item,
       title,
       tags: newTags,
+      ...(HOLIDAY_EXCLUSIVE_TYPES.includes(itemType) && { isHolidayExclusive }),
     } as BufferType;
 
     onSave(updatedItem);
@@ -499,6 +505,19 @@ const BufferEditForm: FC<BufferEditFormProps> = ({
           </div>
         </div>
       </div>
+      {HOLIDAY_EXCLUSIVE_TYPES.includes(itemType) && (
+        <div className={styles.holidayExclusiveContainer}>
+          <label className={styles.holidayExclusiveLabel}>
+            <input
+              type="checkbox"
+              className={styles.holidayExclusiveCheckbox}
+              checked={isHolidayExclusive}
+              onChange={(e) => setIsHolidayExclusive(e.target.checked)}
+            />
+            HOLIDAY EXCLUSIVE
+          </label>
+        </div>
+      )}
       <div className={styles.bottomContainer}>
         <div className={styles.tagListHeader}>
           <div

@@ -1,6 +1,6 @@
 # Near Future
 
-Near Future serves as the aesthetic framework for narratives that present stories through the lens of recognizably advanced technology and evolved contemporary society. It provides the visual, cultural, and tonal identity for stories set in plausible technological futures, typically 20-50 years from the present, featuring advanced but grounded technology, evolved social structures, and conflicts that feel like natural extensions of current trends. While Near Future creates worlds of technological advancement, the specific narrative structure - whether Action, Drama, Thriller, or Science Fiction - is supplied by the underlying story being told within this technologically enhanced presentation.
+Near Future serves as the aesthetic framework for narratives that present stories through the lens of recognizably advanced technology and evolved contemporary society. It provides the visual, cultural, and tonal identity for stories set in plausible technological futures, typically 20-50 years from the present, featuring advanced but grounded technology, evolved social structures, and conflicts that feel like natural extensions of current trends. While Near Future creates worlds of technological advancement, the specific narrative structure, whether Action, Drama, Thriller, or Science Fiction, is supplied by the underlying story being told within this technologically enhanced presentation.
 
 ## Core Characteristics of Near Future Aesthetic:
 
@@ -18,15 +18,15 @@ The aesthetic emphasizes clean, efficient design that prioritizes functionality 
 
 ### Corporate and Institutional Evolution
 
-Near Future frequently explores how current institutions - governments, corporations, military organizations - have adapted to technological change. These evolved structures often reflect amplified versions of current trends in surveillance, globalization, and technological dependence.
+Near Future frequently explores how current institutions (governments, corporations, military organizations) have adapted to technological change. These evolved structures often reflect amplified versions of current trends in surveillance, globalization, and technological dependence.
 
 ### Environmental and Social Consequences
 
-The aesthetic acknowledges that technological advancement comes with consequences. Climate change adaptation, resource management, social inequality affected by technology, and the psychological impact of constant connectivity become integral elements of the world-building.
+The aesthetic acknowledges that technological advancement comes with consequences. Climate change adaptation, resource management, social inequality affected by technology, and the psychological impact of constant connectivity become integral elements of the world building.
 
 ### Tactical Military Technology
 
-Near Future often features advanced but recognizable military technology - powered armor, enhanced weapons systems, improved vehicles, and sophisticated communication networks that feel like natural evolutions of current military technology rather than science fiction fantasies.
+Near Future often features advanced but recognizable military technology; powered armor, enhanced weapons systems, improved vehicles, and sophisticated communication networks that feel like natural evolutions of current military technology rather than science fiction fantasies.
 
 ## Narrative Genres Layered Over Near Future Aesthetic
 
@@ -56,7 +56,7 @@ Shows Near Future Romance, where advanced AI integration into daily life creates
 
 ### District 9:
 
-Exemplifies Near Future Action-Drama, where alien refugee camps and advanced weaponry create a world that feels like an extension of current social and political issues. The aesthetic grounds fantastical elements in recognizable bureaucratic and military contexts.
+Exemplifies Near Future Science Fiction-Action-Drama, where alien refugee camps and advanced weaponry create a world that feels like an extension of current social and political issues. The aesthetic grounds fantastical elements in recognizable bureaucratic and military contexts.
 
 ## As an Aesthetic Framework
 

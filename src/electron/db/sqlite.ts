@@ -79,6 +79,7 @@ class SQLiteService {
         path TEXT NOT NULL,
         duration INTEGER NOT NULL,
         durationLimit INTEGER NOT NULL,
+        isHolidayExclusive INTEGER DEFAULT 0,
         createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
         updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
       )
@@ -270,6 +271,7 @@ class SQLiteService {
         duration INTEGER,
         path TEXT NOT NULL,
         type INTEGER,
+        isHolidayExclusive INTEGER DEFAULT 0,
         createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
         updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
       )
@@ -311,6 +313,7 @@ class SQLiteService {
         duration INTEGER,
         path TEXT NOT NULL,
         type INTEGER,
+        isHolidayExclusive INTEGER DEFAULT 0,
         createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
         updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
       )
@@ -326,6 +329,7 @@ class SQLiteService {
         duration INTEGER,
         path TEXT NOT NULL,
         type INTEGER,
+        isHolidayExclusive INTEGER DEFAULT 0,
         createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
         updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
       )

@@ -13,16 +13,6 @@ jest.mock("electron", () => ({
 declare global {
   var testDatabaseInitialized: boolean;
   var testDb: any;
-  enum MediaType {
-    Show = "Show",
-    Episode = "Episode",
-    Movie = "Movie",
-    Short = "Short",
-    Music = "Music",
-    Commercial = "Commercial",
-    Promo = "Promo",
-    Bumper = "Bumper",
-  }
 }
 
 // Populate MediaType globally

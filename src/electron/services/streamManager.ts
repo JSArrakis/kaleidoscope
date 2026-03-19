@@ -1,6 +1,8 @@
 import { MediaBlock } from "../types/MediaBlock.js";
 import { StreamType } from "../types/StreamType.js";
 import { IStreamRequest } from "../types/StreamRequest.js";
+import { getDB } from "../db/sqlite.js";
+import { episodeProgressionRepository } from "../repositories/episodeProgressionRepository.js";
 
 /**
  * StreamManager Singleton
@@ -20,6 +22,7 @@ class StreamManager {
   private recentlyUsedCommercials: Map<string, number> = new Map();
   private recentlyUsedShorts: Map<string, number> = new Map();
   private recentlyUsedMusic: Map<string, number> = new Map();
+  private remainderTimeInSeconds = 0;
 
   constructor() {
     console.log("[StreamManager] Singleton instance created");
@@ -109,6 +112,26 @@ class StreamManager {
     this.recentlyUsedMovies.delete(movieId);
   }
 
+  /**
+   * Clears recently used movies that are 2 days or older than the provided timepoint
+   * Returns array of media IDs that remain in the recently used map
+   * @param timepoint Unix timestamp (seconds) to measure age against
+   * @returns Array of media IDs still in the recently used movies map
+   */
+  getActiveRecentlyUsedMovieIds(timepoint: number): string[] {
+    const twoDaysInSeconds = 2 * 24 * 60 * 60; // 172,800 seconds
+
+    // Remove entries that are 2 days or older
+    for (const [movieId, usedTime] of this.recentlyUsedMovies.entries()) {
+      if (timepoint - usedTime >= twoDaysInSeconds) {
+        this.recentlyUsedMovies.delete(movieId);
+      }
+    }
+
+    // Return remaining movie IDs as array
+    return Array.from(this.recentlyUsedMovies.keys());
+  }
+
   getRecentlyUsedCommercials(): Map<string, number> {
     return this.recentlyUsedCommercials;
   }
@@ -157,6 +180,14 @@ class StreamManager {
     this.recentlyUsedMusic.delete(musicId);
   }
 
+  getRemainderTimeInSeconds(): number {
+    return this.remainderTimeInSeconds;
+  }
+
+  setRemainderTimeInSeconds(value: number): void {
+    this.remainderTimeInSeconds = value;
+  }
+
   /**
    * Reset all state when stopping the stream
    */
@@ -169,21 +200,19 @@ class StreamManager {
     this.nextIterationTimepoint = 0;
     this.nextIterationFirstMedia = null;
     this.progressionMap.clear();
+    this.recentlyUsedMovies.clear();
     this.recentlyUsedCommercials.clear();
     this.recentlyUsedShorts.clear();
     this.recentlyUsedMusic.clear();
+    this.remainderTimeInSeconds = 0;
   }
 }
 
 // Singleton instance - created once and persists for the app lifetime
 const streamManagerInstance = new StreamManager();
 
-// Legacy module-level state for backwards compatibility during migration
-let upcoming: MediaBlock[] = [];
-let onDeck: MediaBlock[] = [];
-let continuousStream = false;
-let args: IStreamRequest | null = null;
-let streamVarianceInSeconds = 0;
+// All state is now held exclusively in the singleton instance.
+// Module-level functions below proxy to the singleton for API compatibility.
 
 export interface StreamStatus {
   isContinuous: boolean;
@@ -203,13 +232,18 @@ export interface StreamStatus {
 export async function initializeStream(
   streamArgs: IStreamRequest,
   streamType: StreamType = StreamType.Cont,
-) {}
+) {
+  // Placeholder — stream init is handled by buildContinuousStream today.
+  // Future: consolidate init logic here.
+}
 
 /**
  * Populates onDeck with upcoming media blocks
  * Typically called when onDeck drops below a certain threshold
  */
 export function initializeOnDeckStream(): void {
+  const upcoming = streamManagerInstance.getUpcoming();
+  const onDeck = streamManagerInstance.getOnDeck();
   for (let i = 0; i < 2; i++) {
     if (upcoming.length > 0) {
       const selectedBlock = upcoming.shift();
@@ -221,63 +255,149 @@ export function initializeOnDeckStream(): void {
 }
 
 export function addItemToOnDeck(mediaBlocks: MediaBlock[]): void {
-  onDeck.push(...mediaBlocks);
+  streamManagerInstance.getOnDeck().push(...mediaBlocks);
 }
 
 export function removeFirstItemFromOnDeck(): MediaBlock | undefined {
-  return onDeck.shift();
+  return streamManagerInstance.getOnDeck().shift();
+}
+
+/**
+ * Records a movie to the recently_used_movies DB table after it has finished playing.
+ * Called when a block is pruned from On Deck.
+ * @param mediaBlock The block that just finished playing
+ */
+export function recordPlayedMovie(mediaBlock: MediaBlock): void {
+  if (
+    mediaBlock.anchorMedia &&
+    mediaBlock.anchorMedia.type === MediaType.Movie
+  ) {
+    const db = getDB();
+    const TWO_DAYS_MS = 2 * 24 * 60 * 60 * 1000;
+    const expiresAt = new Date(Date.now() + TWO_DAYS_MS).toISOString();
+
+    db.prepare(
+      `INSERT INTO recently_used_movies (mediaItemId, expiresAt) VALUES (?, ?)`,
+    ).run(mediaBlock.anchorMedia.mediaItemId, expiresAt);
+
+    console.log(
+      `[StreamManager] Recorded recently played movie: "${mediaBlock.anchorMedia.title}"`,
+    );
+  }
+}
+
+/**
+ * Loads recently used movies from the DB into the in-memory map.
+ * Only movies need DB persistence (restart protection).
+ * Buffer media (commercials, shorts, music) is session-only — their maps start empty.
+ *
+ * Reads from `recently_used_movies` table, which is written to by
+ * `recordPlayedMovie()` when blocks are pruned from On Deck.
+ * Rows with `expiresAt` at or before the timepoint are cleaned up and skipped.
+ * @param timepoint Unix timestamp in seconds to evaluate expiration against
+ */
+export function loadRecentlyUsedMovies(timepoint: number): void {
+  const db = getDB();
+  const timepointISO = new Date(timepoint * 1000).toISOString();
+
+  // Clean up expired rows
+  db.prepare(`DELETE FROM recently_used_movies WHERE expiresAt <= ?`).run(
+    timepointISO,
+  );
+
+  // Load non-expired movies into the in-memory map
+  const rows = db
+    .prepare(
+      `SELECT mediaItemId, expiresAt FROM recently_used_movies WHERE expiresAt > ?`,
+    )
+    .all(timepointISO) as { mediaItemId: string; expiresAt: string }[];
+
+  const TWO_DAYS_MS = 2 * 24 * 60 * 60 * 1000;
+  for (const row of rows) {
+    // Derive the original usage timestamp from expiresAt for consistency with
+    // the in-memory eviction logic in getActiveRecentlyUsedMovieIds()
+    const expiresAtMs = new Date(row.expiresAt).getTime();
+    const usedAtSeconds = Math.floor((expiresAtMs - TWO_DAYS_MS) / 1000);
+    streamManagerInstance.addRecentlyUsedMovie(row.mediaItemId, usedAtSeconds);
+  }
+}
+
+/**
+ * Persists episode progression to the DB after an episode has finished playing.
+ * Called when a block is pruned from On Deck (proof of playback).
+ * Uses UPSERT so repeated plays of the same show update the existing row.
+ * @param mediaBlock The block that just finished playing
+ */
+export function recordPlayedEpisodeProgression(mediaBlock: MediaBlock): void {
+  if (
+    mediaBlock.anchorMedia &&
+    mediaBlock.anchorMedia.type === MediaType.Episode
+  ) {
+    const episode = mediaBlock.anchorMedia as Episode;
+
+    episodeProgressionRepository.upsertByShowAndStreamType(
+      episode.showItemId,
+      StreamType.Cont,
+      episode.episodeNumber,
+    );
+
+    console.log(
+      `[StreamManager] Recorded episode progression: "${episode.title}" (ep ${episode.episodeNumber}) for show ${episode.showItemId}`,
+    );
+  }
 }
 
 export function removeFirstItemFromUpcoming(): MediaBlock | undefined {
-  return upcoming.shift();
+  return streamManagerInstance.getUpcoming().shift();
 }
 
 export function addToUpcomingStream(mediaBlocks: MediaBlock[]): void {
-  upcoming.push(...mediaBlocks);
+  streamManagerInstance.getUpcoming().push(...mediaBlocks);
 }
 
 export function getUpcomingStream(): MediaBlock[] {
-  return upcoming;
+  return streamManagerInstance.getUpcoming();
 }
 
 export function getOnDeckStream(): MediaBlock[] {
-  return onDeck;
+  return streamManagerInstance.getOnDeck();
 }
 
 export function getOnDeckStreamLength(): number {
-  return onDeck.length;
+  return streamManagerInstance.getOnDeck().length;
 }
 
 export function isContinuousStream(): boolean {
-  return continuousStream;
+  return streamManagerInstance.isContinuous();
 }
 
 export function setContinuousStream(value: boolean): void {
-  continuousStream = value;
+  streamManagerInstance.setContinuous(value);
 }
 
 export function getContinuousStreamArgs(): IStreamRequest | null {
-  return args;
+  return streamManagerInstance.getArgs();
 }
 
 export function setContinuousStreamArgs(value: IStreamRequest): void {
-  args = value;
+  streamManagerInstance.setArgs(value);
 }
 
 export function getStreamVariationInSeconds(): number {
-  return streamVarianceInSeconds;
+  return streamManagerInstance.getVariance();
 }
 
 export function setStreamVariationInSeconds(value: number): void {
-  streamVarianceInSeconds = value;
+  streamManagerInstance.setVariance(value);
 }
 
 export function getStreamStatus(): StreamStatus {
+  const args = streamManagerInstance.getArgs();
   return {
-    isContinuous: continuousStream,
-    hasUpcomingStream: upcoming.length > 0,
-    onDeckLength: onDeck.length,
-    upcomingLength: upcoming.length,
+    isContinuous: streamManagerInstance.isContinuous(),
+    hasUpcomingStream: streamManagerInstance.getUpcoming().length > 0,
+    onDeckLength: streamManagerInstance.getOnDeck().length,
+    upcomingLength: streamManagerInstance.getUpcoming().length,
     streamArgs: args
       ? {
           title: args.Title,
@@ -288,9 +408,6 @@ export function getStreamStatus(): StreamStatus {
 }
 
 export function stopContinuousStream(): void {
-  continuousStream = false;
-  upcoming = [];
-  onDeck = [];
   streamManagerInstance.reset();
   // TODO: Handle VLC or Electron player cleanup
 }
@@ -312,6 +429,10 @@ export function getRecentlyUsedMovies(): Map<string, number> {
 
 export function setRecentlyUsedMovies(value: Map<string, number>): void {
   streamManagerInstance.setRecentlyUsedMovies(value);
+}
+
+export function getActiveRecentlyUsedMovieIds(timepoint: number): string[] {
+  return streamManagerInstance.getActiveRecentlyUsedMovieIds(timepoint);
 }
 
 export function addRecentlyUsedCommercial(
@@ -430,6 +551,14 @@ export function updateProgression(
   episodeNumber: number,
 ): void {
   streamManagerInstance.updateProgression(mediaItemId, episodeNumber);
+}
+
+export function getRemainderTimeInSeconds(): number {
+  return streamManagerInstance.getRemainderTimeInSeconds();
+}
+
+export function setRemainderTimeInSeconds(value: number): void {
+  streamManagerInstance.setRemainderTimeInSeconds(value);
 }
 
 /**

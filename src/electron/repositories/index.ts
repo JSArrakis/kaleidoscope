@@ -24,7 +24,3 @@ export {
   EpisodeProgressionRepository,
   episodeProgressionRepository,
 } from "./episodeProgressionRepository.js";
-export {
-  RecentlyUsedMediaRepository,
-  recentlyUsedMediaRepository,
-} from "./recentlyUsedMediaRepository.js";

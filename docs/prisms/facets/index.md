@@ -94,10 +94,12 @@ This system ensures that media with incomplete tagging can still participate mea
 
 ### The Learning Algorithm
 
-What makes the Facets system intelligent is its ability to learn and adapt based on user feedback. When viewers respond positively or negatively to specific transitions, the system adjusts the distance scores accordingly:
+> **TODO — Not yet implemented.** The learning algorithm is a planned future feature. Currently, all facet distances are static values stored in the database and are never modified at runtime. See `PROJECT_TODOS.md` → Todo #4 for scope and implementation plan.
 
-- **Positive feedback** decreases the distance between facets (making future transitions more likely)
-- **Negative feedback** increases the distance (making transitions less likely)
-- **Neutral or no feedback** maintains existing distances
+The intended design: facet distances will adapt over time based on viewer feedback, personalizing transition probabilities. When viewers respond positively or negatively to specific transitions, the system will adjust the distance scores accordingly:
 
-This creates a personalized transition network that evolves to match each user's preferences while maintaining general compatibility principles.
+- **Positive feedback (upvote)** decreases the distance between facets (making future transitions more likely)
+- **Negative feedback (downvote)** increases the distance (making transitions less likely)
+- **Neutral or no feedback** leaves distances unchanged
+
+This will create a personalized transition network that evolves to match each viewer's preferences while maintaining general compatibility principles.

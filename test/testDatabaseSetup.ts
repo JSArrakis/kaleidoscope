@@ -42,6 +42,7 @@ function createTestDatabaseSchema(db: Database.Database): void {
       path TEXT NOT NULL,
       duration INTEGER,
       durationLimit INTEGER,
+      isHolidayExclusive INTEGER DEFAULT 0,
       createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
       updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
     )
@@ -233,6 +234,7 @@ function createTestDatabaseSchema(db: Database.Database): void {
       duration INTEGER,
       path TEXT NOT NULL,
       type INTEGER,
+      isHolidayExclusive INTEGER DEFAULT 0,
       createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
       updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
     )
@@ -274,6 +276,7 @@ function createTestDatabaseSchema(db: Database.Database): void {
       duration INTEGER,
       path TEXT NOT NULL,
       type INTEGER,
+      isHolidayExclusive INTEGER DEFAULT 0,
       createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
       updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
     )
@@ -289,6 +292,7 @@ function createTestDatabaseSchema(db: Database.Database): void {
       duration INTEGER,
       path TEXT NOT NULL,
       type INTEGER,
+      isHolidayExclusive INTEGER DEFAULT 0,
       createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
       updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
     )
@@ -551,15 +555,15 @@ export function populateTestData(db: Database.Database): void {
   try {
     // Insert sample holiday tags with tagType field
     db.prepare(
-      "INSERT OR IGNORE INTO tags (tagId, name, type) VALUES (?, ?, ?)"
+      "INSERT OR IGNORE INTO tags (tagId, name, type) VALUES (?, ?, ?)",
     ).run("holiday-christmas", "Christmas", "holiday");
 
     db.prepare(
-      "INSERT OR IGNORE INTO tags (tagId, name, type) VALUES (?, ?, ?)"
+      "INSERT OR IGNORE INTO tags (tagId, name, type) VALUES (?, ?, ?)",
     ).run("holiday-halloween", "Halloween", "holiday");
 
     db.prepare(
-      "INSERT OR IGNORE INTO tags (tagId, name, type) VALUES (?, ?, ?)"
+      "INSERT OR IGNORE INTO tags (tagId, name, type) VALUES (?, ?, ?)",
     ).run("holiday-easter", "Easter", "holiday");
 
     // Insert sample movies (more than 500 minutes total = 30,000+ seconds)
@@ -604,7 +608,7 @@ export function populateTestData(db: Database.Database): void {
 
     for (const movie of movies) {
       db.prepare(
-        "INSERT OR IGNORE INTO movies (title, mediaItemId, duration, path) VALUES (?, ?, ?, ?)"
+        "INSERT OR IGNORE INTO movies (title, mediaItemId, duration, path) VALUES (?, ?, ?, ?)",
       ).run(movie.title, movie.id, movie.duration, movie.path);
     }
 
@@ -644,7 +648,7 @@ export function populateTestData(db: Database.Database): void {
 
     for (const assoc of tagAssociations) {
       db.prepare(
-        "INSERT OR IGNORE INTO movie_tags (mediaItemId, tagId, tagType) VALUES (?, ?, ?)"
+        "INSERT OR IGNORE INTO movie_tags (mediaItemId, tagId, tagType) VALUES (?, ?, ?)",
       ).run(assoc.mediaItemId, assoc.tagId, assoc.tagType);
     }
 
@@ -652,7 +656,7 @@ export function populateTestData(db: Database.Database): void {
   } catch (error) {
     console.log(
       "[populateTestData] Error populating data (may already exist):",
-      error
+      error,
     );
   }
 }

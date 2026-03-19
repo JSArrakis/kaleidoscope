@@ -14,7 +14,6 @@ import { MediaBlock } from "../../types/MediaBlock.js";
  */
 export async function buildAdhocStream(
   streamConstructionOptions: StreamConstructionOptions,
-  startTimepoint: number,
   endTimepoint: number,
 ): Promise<[MediaBlock[], string]> {
   return [[], "Adhoc stream builder not yet implemented"];

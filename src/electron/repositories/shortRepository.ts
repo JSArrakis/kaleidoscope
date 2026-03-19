@@ -16,7 +16,7 @@ export class ShortRepository {
         short.title,
         short.mediaItemId,
         short.duration || null,
-        short.path
+        short.path,
       );
       this.insertTags(short.mediaItemId, short.tags);
     });
@@ -40,7 +40,7 @@ export class ShortRepository {
 
   findRandomShort(): Short | null {
     const stmt = this.db.prepare(
-      `SELECT * FROM shorts ORDER BY RANDOM() LIMIT 1`
+      `SELECT * FROM shorts ORDER BY RANDOM() LIMIT 1`,
     );
     const row = stmt.get() as any;
     if (!row) return null;
@@ -62,7 +62,7 @@ export class ShortRepository {
     ageGroupTags: Tag[],
     holidayTags: Tag[],
     specialtyTags: Tag[],
-    maxDuration: number
+    maxDuration: number,
   ): Short[] {
     if (holidayTags.length === 0) {
       return [];
@@ -80,55 +80,7 @@ export class ShortRepository {
       .map((_, i) => `:holiday${i}`)
       .join(",");
 
-    // Query 1: Shorts with holiday + specialty tags (no age group or other specialty)
-    if (specialtyTagIds.length > 0) {
-      const specialtyPlaceholders = specialtyTagIds
-        .map((_, i) => `:specialty${i}`)
-        .join(",");
-      const query1 = `
-        SELECT DISTINCT s.* FROM shorts s
-        JOIN short_tags st ON s.mediaItemId = st.mediaItemId
-        WHERE s.duration IS NOT NULL
-          AND s.duration <= :maxDuration
-          AND st.tagId IN (${holidayPlaceholders})
-          AND EXISTS (
-            SELECT 1 FROM short_tags st2
-            WHERE st2.mediaItemId = s.mediaItemId
-              AND st2.tagId IN (${specialtyPlaceholders})
-          )
-          AND NOT EXISTS (
-            SELECT 1 FROM short_tags st2
-            JOIN tags t ON st2.tagId = t.tagId
-            WHERE st2.mediaItemId = s.mediaItemId
-              AND t.type = 'AgeGroup'
-          )
-          AND NOT EXISTS (
-            SELECT 1 FROM recently_used_media
-            WHERE mediaItemId = s.mediaItemId
-              AND mediaType = 'Short'
-          )
-        ORDER BY s.title
-      `;
-
-      const queryParams1: Record<string, any> = {
-        maxDuration,
-        ...Object.fromEntries(
-          holidayTagIds.map((id, i) => [`:holiday${i}`, id])
-        ),
-        ...Object.fromEntries(
-          specialtyTagIds.map((id, i) => [`:specialty${i}`, id])
-        ),
-      };
-
-      const stmt1 = this.db.prepare(query1);
-      const rows1 = stmt1.all(queryParams1) as any[];
-      rows1.forEach((row) => {
-        const short = this.mapRowToShort(row);
-        shortMap.set(short.mediaItemId, short);
-      });
-    }
-
-    // Query 2: Shorts with holiday + age group + specialty tags
+    // Query 1: Shorts with holiday + age group + specialty tags
     if (ageGroupTagIds.length > 0 && specialtyTagIds.length > 0) {
       const ageGroupPlaceholders = ageGroupTagIds
         .map((_, i) => `:ageGroup${i}`)
@@ -152,30 +104,68 @@ export class ShortRepository {
             WHERE st2.mediaItemId = s.mediaItemId
               AND st2.tagId IN (${specialtyPlaceholders})
           )
-          AND NOT EXISTS (
-            SELECT 1 FROM recently_used_media
-            WHERE mediaItemId = s.mediaItemId
-              AND mediaType = 'Short'
-          )
         ORDER BY s.title
       `;
 
       const queryParams2: Record<string, any> = {
         maxDuration,
         ...Object.fromEntries(
-          holidayTagIds.map((id, i) => [`:holiday${i}`, id])
+          holidayTagIds.map((id, i) => [`:holiday${i}`, id]),
         ),
         ...Object.fromEntries(
-          ageGroupTagIds.map((id, i) => [`:ageGroup${i}`, id])
+          ageGroupTagIds.map((id, i) => [`:ageGroup${i}`, id]),
         ),
         ...Object.fromEntries(
-          specialtyTagIds.map((id, i) => [`:specialty${i}`, id])
+          specialtyTagIds.map((id, i) => [`:specialty${i}`, id]),
         ),
       };
 
       const stmt2 = this.db.prepare(query2);
       const rows2 = stmt2.all(queryParams2) as any[];
       rows2.forEach((row) => {
+        const short = this.mapRowToShort(row);
+        shortMap.set(short.mediaItemId, short);
+      });
+    }
+
+    // Query 2: Shorts with holiday + specialty tags (no age group)
+    if (specialtyTagIds.length > 0) {
+      const specialtyPlaceholders = specialtyTagIds
+        .map((_, i) => `:specialty${i}`)
+        .join(",");
+      const query1 = `
+        SELECT DISTINCT s.* FROM shorts s
+        JOIN short_tags st ON s.mediaItemId = st.mediaItemId
+        WHERE s.duration IS NOT NULL
+          AND s.duration <= :maxDuration
+          AND st.tagId IN (${holidayPlaceholders})
+          AND EXISTS (
+            SELECT 1 FROM short_tags st2
+            WHERE st2.mediaItemId = s.mediaItemId
+              AND st2.tagId IN (${specialtyPlaceholders})
+          )
+          AND NOT EXISTS (
+            SELECT 1 FROM short_tags st2
+            JOIN tags t ON st2.tagId = t.tagId
+            WHERE st2.mediaItemId = s.mediaItemId
+              AND t.type = 'AgeGroup'
+          )
+        ORDER BY s.title
+      `;
+
+      const queryParams1: Record<string, any> = {
+        maxDuration,
+        ...Object.fromEntries(
+          holidayTagIds.map((id, i) => [`:holiday${i}`, id]),
+        ),
+        ...Object.fromEntries(
+          specialtyTagIds.map((id, i) => [`:specialty${i}`, id]),
+        ),
+      };
+
+      const stmt1 = this.db.prepare(query1);
+      const rows1 = stmt1.all(queryParams1) as any[];
+      rows1.forEach((row) => {
         const short = this.mapRowToShort(row);
         shortMap.set(short.mediaItemId, short);
       });
@@ -203,21 +193,16 @@ export class ShortRepository {
             WHERE st2.mediaItemId = s.mediaItemId
               AND t.type = 'Specialty'
           )
-          AND NOT EXISTS (
-            SELECT 1 FROM recently_used_media
-            WHERE mediaItemId = s.mediaItemId
-              AND mediaType = 'Short'
-          )
         ORDER BY s.title
       `;
 
       const queryParams3: Record<string, any> = {
         maxDuration,
         ...Object.fromEntries(
-          holidayTagIds.map((id, i) => [`:holiday${i}`, id])
+          holidayTagIds.map((id, i) => [`:holiday${i}`, id]),
         ),
         ...Object.fromEntries(
-          ageGroupTagIds.map((id, i) => [`:ageGroup${i}`, id])
+          ageGroupTagIds.map((id, i) => [`:ageGroup${i}`, id]),
         ),
       };
 
@@ -241,11 +226,6 @@ export class ShortRepository {
           JOIN tags t ON st2.tagId = t.tagId
           WHERE st2.mediaItemId = s.mediaItemId
             AND (t.type = 'AgeGroup' OR t.type = 'Specialty')
-        )
-        AND NOT EXISTS (
-          SELECT 1 FROM recently_used_media
-          WHERE mediaItemId = s.mediaItemId
-            AND mediaType = 'Short'
         )
       ORDER BY s.title
     `;
@@ -280,6 +260,7 @@ export class ShortRepository {
       JOIN short_tags st ON s.mediaItemId = st.mediaItemId
       WHERE s.duration IS NOT NULL
         AND s.duration <= :maxDuration
+        AND s.isHolidayExclusive = 0
         AND st.tagId IN (${specialtyPlaceholders})
       ORDER BY s.title
     `;
@@ -287,7 +268,7 @@ export class ShortRepository {
     const queryParams: Record<string, any> = {
       maxDuration,
       ...Object.fromEntries(
-        specialtyTagIds.map((id, i) => [`:specialty${i}`, id])
+        specialtyTagIds.map((id, i) => [`:specialty${i}`, id]),
       ),
     };
 
@@ -307,81 +288,64 @@ export class ShortRepository {
     genreTags: Tag[],
     aestheticTags: Tag[],
     ageGroupTags: Tag[],
-    maxDuration: number
+    maxDuration: number,
   ): Short[] {
-    const shortMap = new Map<string, Short>();
-
-    // Build list of all tags to search
-    const allTags = [...genreTags, ...aestheticTags, ...ageGroupTags];
-    if (allTags.length === 0) {
+    const genreAestheticTags = [...genreTags, ...aestheticTags];
+    if (genreAestheticTags.length === 0) {
       return [];
     }
 
-    const allTagIds: string[] = allTags.map((tag) => tag.tagId);
-    const allPlaceholders = allTagIds.map((_, i) => `:tag${i}`).join(",");
+    const genreAestheticTagIds = genreAestheticTags.map((tag) => tag.tagId);
+    const genreAestheticPlaceholders = genreAestheticTagIds
+      .map((_, i) => `:gaTag${i}`)
+      .join(",");
 
-    // Query 1: Any shorts with any of genre/aesthetic/age group tags
-    const query1 = `
+    const params: any = { maxDuration };
+    genreAestheticTagIds.forEach((id, i) => {
+      params[`gaTag${i}`] = id;
+    });
+
+    let query = `
       SELECT DISTINCT s.* FROM shorts s
       JOIN short_tags st ON s.mediaItemId = st.mediaItemId
       WHERE s.duration IS NOT NULL
         AND s.duration <= :maxDuration
-        AND st.tagId IN (${allPlaceholders})
-      ORDER BY s.title
+        AND s.isHolidayExclusive = 0
+        AND st.tagId IN (${genreAestheticPlaceholders})
     `;
 
-    const queryParams1: Record<string, any> = {
-      maxDuration,
-      ...Object.fromEntries(allTagIds.map((id, i) => [`:tag${i}`, id])),
-    };
-
-    const stmt1 = this.db.prepare(query1);
-    const rows1 = stmt1.all(queryParams1) as any[];
-    rows1.forEach((row) => {
-      const short = this.mapRowToShort(row);
-      shortMap.set(short.mediaItemId, short);
-    });
-
-    // Query 2: Shorts with aesthetic/genre tags but NO age group
-    if (aestheticTags.length > 0 || genreTags.length > 0) {
-      const nonAgeTagIds: string[] = [...genreTags, ...aestheticTags].map(
-        (tag) => tag.tagId
-      );
-      const nonAgePlaceholders = nonAgeTagIds
-        .map((_, i) => `:nonAgeTag${i}`)
+    if (ageGroupTags.length > 0) {
+      const ageGroupIds = ageGroupTags.map((tag) => tag.tagId);
+      const ageGroupPlaceholders = ageGroupIds
+        .map((_, i) => `:ageGroup${i}`)
         .join(",");
 
-      const query2 = `
-        SELECT DISTINCT s.* FROM shorts s
-        JOIN short_tags st ON s.mediaItemId = st.mediaItemId
-        WHERE s.duration IS NOT NULL
-          AND s.duration <= :maxDuration
-          AND st.tagId IN (${nonAgePlaceholders})
-          AND NOT EXISTS (
+      query += `
+        AND (
+          EXISTS (
+            SELECT 1 FROM short_tags st2
+            WHERE st2.mediaItemId = s.mediaItemId
+              AND st2.tagId IN (${ageGroupPlaceholders})
+          )
+          OR NOT EXISTS (
             SELECT 1 FROM short_tags st2
             JOIN tags t ON st2.tagId = t.tagId
             WHERE st2.mediaItemId = s.mediaItemId
               AND t.type = 'AgeGroup'
           )
-        ORDER BY s.title
+        )
       `;
 
-      const queryParams2: Record<string, any> = {
-        maxDuration,
-        ...Object.fromEntries(
-          nonAgeTagIds.map((id, i) => [`:nonAgeTag${i}`, id])
-        ),
-      };
-
-      const stmt2 = this.db.prepare(query2);
-      const rows2 = stmt2.all(queryParams2) as any[];
-      rows2.forEach((row) => {
-        const short = this.mapRowToShort(row);
-        shortMap.set(short.mediaItemId, short);
+      ageGroupIds.forEach((id, i) => {
+        params[`ageGroup${i}`] = id;
       });
     }
 
-    return Array.from(shortMap.values());
+    query += ` ORDER BY s.title`;
+
+    const stmt = this.db.prepare(query);
+    const rows = stmt.all(params) as any[];
+    return rows.map((row) => this.mapRowToShort(row));
   }
 
   findByAgeGroupOnly(ageGroupTags: Tag[], maxDuration: number): Short[] {
@@ -398,6 +362,7 @@ export class ShortRepository {
       SELECT DISTINCT s.* FROM shorts s
       WHERE s.duration IS NOT NULL
         AND s.duration <= :maxDuration
+        AND s.isHolidayExclusive = 0
         AND EXISTS (
           SELECT 1 FROM short_tags st
           WHERE st.mediaItemId = s.mediaItemId
@@ -415,7 +380,7 @@ export class ShortRepository {
     const queryParams: Record<string, any> = {
       maxDuration,
       ...Object.fromEntries(
-        ageGroupTagIds.map((id, i) => [`:ageGroup${i}`, id])
+        ageGroupTagIds.map((id, i) => [`:ageGroup${i}`, id]),
       ),
     };
 
@@ -436,6 +401,7 @@ export class ShortRepository {
       SELECT DISTINCT s.* FROM shorts s
       WHERE s.duration IS NOT NULL
         AND s.duration <= :maxDuration
+        AND s.isHolidayExclusive = 0
         AND NOT EXISTS (
           SELECT 1 FROM short_tags st
           JOIN tags t ON st.tagId = t.tagId
@@ -473,7 +439,7 @@ export class ShortRepository {
         short.title,
         short.duration || null,
         short.path,
-        mediaItemId
+        mediaItemId,
       );
       if (result.changes === 0) return null;
 
@@ -502,7 +468,7 @@ export class ShortRepository {
   private insertTags(mediaItemId: string, tags: Tag[]): void {
     if (tags.length === 0) return;
     const stmt = this.db.prepare(
-      `INSERT INTO short_tags (mediaItemId, tagId) VALUES (?, ?)`
+      `INSERT INTO short_tags (mediaItemId, tagId) VALUES (?, ?)`,
     );
     for (const tag of tags) {
       stmt.run(mediaItemId, tag.tagId);
@@ -532,6 +498,7 @@ export class ShortRepository {
       title: row.title,
       path: row.path,
       duration: row.duration,
+      isHolidayExclusive: !!row.isHolidayExclusive,
       type: MediaType.Short,
       tags,
       createdAt: row.createdAt,
@@ -540,72 +507,47 @@ export class ShortRepository {
   }
 
   /**
-   * Finds a random set of shorts and music videos matching the requested count combined
-   * Uses a single query with two CTEs that randomly alternates between shorts and music
-   * Each iteration randomly chooses from either shorts or music pool
-   * Selects items while ensuring total combined duration does not exceed the duration limit
-   * Each item must be individually under maxDuration
+   * Finds a random set of shorts and music videos matching the requested count combined.
+   * Combines all shorts and music with individual duration <= maxDuration into a single pool,
+   * then randomly selects up to `count` items.
+   * Duration budgeting is handled by the caller (selectShortsAndMusic).
    */
   findRandomShortsAndMusicByCount(
     count: number,
     maxDuration: number,
-    duration: number
   ): { shorts: Short[]; music: Music[] } {
-    // Single query with two CTEs for shorts and music
-    // Randomly chooses from either CTE and accumulates duration
     const stmt = this.db.prepare(`
-      WITH shorts_pool AS (
-        SELECT 
+      SELECT type, mediaItemId, title, path, duration, createdAt, updatedAt
+      FROM (
+        SELECT
           'short' as type,
           mediaItemId,
           title,
           path,
           duration,
           createdAt,
-          updatedAt,
-          ROW_NUMBER() OVER (ORDER BY RANDOM()) as row_num
+          updatedAt
         FROM shorts
         WHERE duration <= ?
-      ),
-      music_pool AS (
-        SELECT 
+          AND isHolidayExclusive = 0
+        UNION ALL
+        SELECT
           'music' as type,
           mediaItemId,
           title,
           path,
           duration,
           createdAt,
-          updatedAt,
-          ROW_NUMBER() OVER (ORDER BY RANDOM()) as row_num
+          updatedAt
         FROM music
         WHERE duration <= ?
-      ),
-      combined AS (
-        SELECT * FROM shorts_pool
-        UNION ALL
-        SELECT * FROM music_pool
-      ),
-      randomized AS (
-        SELECT 
-          type,
-          mediaItemId,
-          title,
-          path,
-          duration,
-          createdAt,
-          updatedAt,
-          row_num,
-          SUM(duration) OVER (ORDER BY RANDOM()) as running_total,
-          ROW_NUMBER() OVER (ORDER BY RANDOM()) as pick_order
-        FROM combined
+          AND isHolidayExclusive = 0
       )
-      SELECT * FROM randomized
-      WHERE running_total - duration <= ?
+      ORDER BY RANDOM()
       LIMIT ?
-      ORDER BY type, row_num
     `);
 
-    const rows = stmt.all(maxDuration, maxDuration, duration, count) as any[];
+    const rows = stmt.all(maxDuration, maxDuration, count) as any[];
 
     const shorts: Short[] = [];
     const music: Music[] = [];
@@ -644,6 +586,7 @@ export class ShortRepository {
       title: row.title,
       path: row.path,
       duration: row.duration,
+      isHolidayExclusive: !!row.isHolidayExclusive,
       type: MediaType.Music,
       tags,
       createdAt: row.createdAt,

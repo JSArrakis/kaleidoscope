@@ -62,7 +62,6 @@ type HolidayIntent = {
   totalAvailableMinutes: number; // Total runtime of all holiday content
   threeDayDistribution: [number, number, number]; // [day1, day2, day3] minutes to spread content
   currentRotationDay: 1 | 2 | 3; // Which day of the 3-day cycle we're on
-  lastRotationDate: string; // ISO date when rotation was last calculated
   selectedMinutesToday: number; // Tracks how much we've selected for today
   lastResetDate: string; // ISO date when selectedMinutesToday was last reset
   calculatedAt: number; // Unix timestamp when intent was calculated
@@ -81,6 +80,7 @@ type Movie = {
   path: string;
   duration: number;
   durationLimit: number;
+  isHolidayExclusive: boolean;
   type: MediaType;
   tags: Tag[];
   createdAt?: string;
@@ -125,6 +125,7 @@ type Commercial = {
   title: string;
   path: string;
   duration: number;
+  isHolidayExclusive: boolean;
   type: MediaType;
   tags: Tag[];
   createdAt?: string;
@@ -136,6 +137,7 @@ type Short = {
   title: string;
   path: string;
   duration: number;
+  isHolidayExclusive: boolean;
   type: MediaType;
   tags: Tag[];
   createdAt?: string;
@@ -148,6 +150,7 @@ type Music = {
   artist?: string;
   path: string;
   duration: number;
+  isHolidayExclusive: boolean;
   type: MediaType;
   tags: Tag[];
   createdAt?: string;
@@ -269,12 +272,13 @@ type Mosaic = {
 // ============================================================================
 
 type EpisodeProgression = {
-  episodeProgressionId: string;
+  id?: number;
   showItemId: string;
   streamType: StreamType;
   currentEpisodeNumber?: number;
-  totalEpisodes?: number;
-  lastPlayedDate?: string;
+  lastPlayedTimestamp?: number;
+  nextEpisodeDurationLimit?: number;
+  nextEpisodeOverDuration?: boolean;
   createdAt?: string;
   updatedAt?: string;
 };
@@ -320,15 +324,14 @@ type PrismCurationReference = {
 
 interface MediaBlockData {
   buffer: any[]; // Array of buffer/filler media
-  mainBlock?: Movie | Episode; // Primary media content
+  anchorMedia?: Movie | Episode; // Primary media content
   startTime: number; // Unix timestamp when block starts
 }
 
 type MediaBlock = {
   buffer: (Promo | Music | Short | Commercial | Bumper)[];
-  mainBlock?: Movie | Episode;
+  anchorMedia?: Movie | Episode;
   startTime: number;
-  duration: number; // Calculated duration in seconds
 };
 
 interface IStreamRequest {

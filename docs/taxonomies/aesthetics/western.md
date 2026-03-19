@@ -1,6 +1,6 @@
 # Western
 
-Western serves as the aesthetic framework for narratives that present stories through the lens of American frontier culture, lawlessness, and rugged individualism. It provides the visual, cultural, and tonal identity for stories set in the American Old West, featuring cowboys, outlaws, settlers, and conflicts rooted in frontier justice and survival. While Western creates rich frontier worlds, the specific narrative structure - whether Action, Adventure, Drama, or Romance - is supplied by the underlying story being told within this cultural presentation.
+Western serves as the aesthetic framework for narratives that present stories through the lens of American frontier culture, lawlessness, and rugged individualism. It provides the visual, cultural, and tonal identity for stories set in the American Old West, featuring cowboys, outlaws, settlers, and conflicts rooted in frontier justice and survival. While Western creates rich frontier worlds, the specific narrative structure, whether Action, Adventure, Drama, or Romance, is supplied by the underlying story being told within this cultural presentation.
 
 ## Core Characteristics of Western Aesthetic:
 
@@ -22,11 +22,11 @@ Western presents a world where traditional legal systems are absent or corrupt, 
 
 ### Class Conflict and Social Hierarchy
 
-The aesthetic frequently explores tensions between different social groups - ranchers vs. farmers, settlers vs. Native Americans, law enforcement vs. outlaws, or established power vs. common people. These conflicts reflect broader themes about civilization, progress, and justice.
+The aesthetic frequently explores tensions between different social groups; ranchers vs. farmers, settlers vs. Native Americans, law enforcement vs. outlaws, or established power vs. common people. These conflicts reflect broader themes about civilization, progress, and justice.
 
 ### Harsh Natural Environment
 
-The Western landscape itself becomes a character - deserts, mountains, plains, and frontier towns that test human endurance and determination. The environment shapes character behavior and provides both obstacles and opportunities for the stories being told.
+The Western landscape itself becomes a character; deserts, mountains, plains, and frontier towns that test human endurance and determination. The environment shapes character behavior and provides both obstacles and opportunities for the stories being told.
 
 ## Narrative Genres Layered Over Western Aesthetic
 

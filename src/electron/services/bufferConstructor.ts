@@ -1,16 +1,16 @@
-import { recentlyUsedMediaRepository } from "../repositories/recentlyUsedMediaRepository.js";
 import { promoRepository } from "../repositories/promoRepository.js";
 import { selectBufferMedia } from "../prisms/spectrum.js";
 import { commercialRepository } from "../repositories/commercialRepository.js";
 import { segmentTags } from "../utils/common.js";
+import {
+  addRecentlyUsedCommercial,
+  addRecentlyUsedShort,
+  addRecentlyUsedMusic,
+} from "./streamManager.js";
 
 // Buffer duration thresholds for media selection strategy
 const COMMERCIALS_ONLY_THRESHOLD = 420; // 7 minutes in seconds
 const MEDIUM_BUFFER_THRESHOLD = 900; // 15 minutes in seconds
-
-// Reusage window durations
-const COMMERCIAL_REUSAGE_WINDOW = 2 * 60 * 60; // 2 hours in seconds
-const SHORTS_MUSIC_REUSAGE_WINDOW = 4 * 60 * 60; // 4 hours in seconds
 
 type BufferStrategy = "short" | "medium" | "large";
 
@@ -42,10 +42,18 @@ function splitCountBetweenHalves(totalCount: number): {
   if (totalCount === 0) {
     return { halfA: 0, halfB: 0 };
   }
-  // Randomly decide how to split (could be 50/50, 60/40, etc.)
-  const halfACount = Math.floor(Math.random() * (totalCount + 1));
-  const halfBCount = totalCount - halfACount;
-  return { halfA: halfACount, halfB: halfBCount };
+
+  const baseCount = Math.floor(totalCount / 2);
+  const hasExtraItem = totalCount % 2 === 1;
+
+  if (!hasExtraItem) {
+    return { halfA: baseCount, halfB: baseCount };
+  }
+
+  const extraGoesToHalfA = Math.random() < 0.5;
+  return extraGoesToHalfA
+    ? { halfA: baseCount + 1, halfB: baseCount }
+    : { halfA: baseCount, halfB: baseCount + 1 };
 }
 
 export function createBuffer(
@@ -53,21 +61,12 @@ export function createBuffer(
   halfATags: Tag[],
   halfBTags: Tag[],
   activeHolidayTags: Tag[],
-  timepoint: number
+  timepoint: number,
 ): {
   buffer: (Promo | Music | Short | Commercial)[];
   remainingDuration: number;
 } {
   let buffer: (Promo | Music | Short | Commercial)[] = [];
-
-  // Periodically clean up expired usage records (every ~10th call)
-  if (Math.random() < 0.1) {
-    try {
-      recentlyUsedMediaRepository.deleteExpired(timepoint);
-    } catch (error) {
-      console.warn("Failed to cleanup expired usage records:", error);
-    }
-  }
 
   // Select a random promo - promos are always 15 seconds
   // Promos are like channel idents (NBC, ABC markers) not show/movie promotions
@@ -119,10 +118,10 @@ export function createBuffer(
   }
 
   // Determine buffer strategy and randomize shorts/music count
-  const strategy = determineBufferStrategy(remDur);
-  const shortsMusicsCount = randomizeShortsMusicCount(strategy);
+  const strategy = determineBufferStrategy(remDur); // VERIFIED
+  const shortsMusicsCount = randomizeShortsMusicCount(strategy); // VERIFIED
   const { halfA: halfAShortsMusics, halfB: halfBShortsMusics } =
-    splitCountBetweenHalves(shortsMusicsCount);
+    splitCountBetweenHalves(shortsMusicsCount); // VERIFIED
 
   if (halfADuration === 0) {
     // Get list of commercials, music, and shorts that match the tags of the
@@ -134,8 +133,8 @@ export function createBuffer(
       remDur,
       strategy,
       halfBShortsMusics,
-      timepoint
-    );
+      timepoint,
+    ); // VERIFIED
     // Add the selected media to the buffer
     buffer.push(...selectedB.selectedMedia);
     // Add the promo to the buffer (if available)
@@ -157,8 +156,8 @@ export function createBuffer(
       remDur,
       strategy,
       halfAShortsMusics,
-      timepoint
-    );
+      timepoint,
+    ); // VERIFIED
     // Add the promo to the buffer (if available)
     if (promo) {
       buffer.push(promo);
@@ -179,8 +178,8 @@ export function createBuffer(
       halfADuration,
       strategy,
       halfAShortsMusics,
-      timepoint
-    );
+      timepoint,
+    ); // VERIFIED
     // Add the selected media to the buffer
     buffer.push(...selectedA.selectedMedia);
     // Add the promo to the buffer (if available)
@@ -195,8 +194,8 @@ export function createBuffer(
       halfBDuration + selectedA.remainingDuration,
       strategy,
       halfBShortsMusics,
-      timepoint
-    );
+      timepoint,
+    ); // VERIFIED
     // Add the selected media to the buffer
     buffer.push(...selectedB.selectedMedia);
 
@@ -214,7 +213,7 @@ export function constructBufferHalf(
   duration: number,
   strategy: BufferStrategy,
   targetShortsMusicCount: number,
-  timepoint: number
+  timepoint: number,
 ): {
   selectedMedia: (Commercial | Short | Music)[];
   remainingDuration: number;
@@ -223,19 +222,20 @@ export function constructBufferHalf(
   let remainingDuration = duration;
 
   // Segment Tags for spectrum processing and buffer creation
-  const segmentedTags = segmentTags(tags);
+  const segmentedTags = segmentTags(tags); // VERIFIED
 
   // Get default commercials to use as fallback
   const defaultCommercials =
-    commercialRepository.findByDefaultSpecialtyTag(duration);
+    commercialRepository.findByDefaultSpecialtyTag(duration); // VERIFIED
 
   // Use the spectrum prism to select buffer media based on tags and duration
   const spectrumResult = selectBufferMedia(
     segmentedTags,
     activeHolidayTags,
     duration,
-    targetShortsMusicCount
-  );
+    targetShortsMusicCount,
+    timepoint,
+  ); // VERIFIED
 
   let usedCommercials: Commercial[] = [];
   let usedShorts: Short[] = [];
@@ -243,12 +243,11 @@ export function constructBufferHalf(
 
   if (strategy === "short") {
     const result = selectCommercials(
-      activeHolidayTags,
       segmentedTags.eraTags,
       spectrumResult.commercials,
       defaultCommercials,
-      duration
-    );
+      duration,
+    ); // VERIFIED
     usedCommercials = result.selectedCommercials;
     selectedMedia.push(...result.selectedCommercials);
     remainingDuration = result.remainingDuration;
@@ -258,74 +257,53 @@ export function constructBufferHalf(
       spectrumResult.music,
       spectrumResult.shorts,
       targetShortsMusicCount,
-      duration
+      duration,
     );
     usedShorts = selectedShortsOrMusic.selectedShorts;
     usedMusic = selectedShortsOrMusic.selectedMusic;
     selectedMedia.push(...selectedShortsOrMusic.selected);
     // Fill the remaining duration with commercials
     const commercialsSelection = selectCommercials(
-      activeHolidayTags,
       segmentedTags.eraTags,
       spectrumResult.commercials,
       defaultCommercials,
-      selectedShortsOrMusic.remainingDuration
-    );
+      selectedShortsOrMusic.remainingDuration,
+    ); // VERIFIED
     usedCommercials = commercialsSelection.selectedCommercials;
     selectedMedia.push(...usedCommercials);
+    remainingDuration = commercialsSelection.remainingDuration;
   } else {
     // strategy === "large"
     const selectedShortsOrMusic = selectShortsAndMusic(
       spectrumResult.music,
       spectrumResult.shorts,
       targetShortsMusicCount,
-      duration
+      duration,
     );
     usedShorts = selectedShortsOrMusic.selectedShorts;
     usedMusic = selectedShortsOrMusic.selectedMusic;
     selectedMedia.push(...selectedShortsOrMusic.selected);
     // Fill the remaining duration with commercials
     const commercialsSelection = selectCommercials(
-      activeHolidayTags,
       segmentedTags.eraTags,
       spectrumResult.commercials,
       defaultCommercials,
-      selectedShortsOrMusic.remainingDuration
-    );
+      selectedShortsOrMusic.remainingDuration,
+    ); // VERIFIED
     usedCommercials = commercialsSelection.selectedCommercials;
     selectedMedia.push(...usedCommercials);
+    remainingDuration = commercialsSelection.remainingDuration;
   }
 
-  // Record usage of all selected buffer media to prevent repetition
-  const commercialExpirationTime = new Date(
-    (timepoint + COMMERCIAL_REUSAGE_WINDOW) * 1000
-  ).toISOString();
-  const shortsMusicsExpirationTime = new Date(
-    (timepoint + SHORTS_MUSIC_REUSAGE_WINDOW) * 1000
-  ).toISOString();
-
-  for (const commercial of usedCommercials) {
-    recentlyUsedMediaRepository.recordUsage(
-      commercial.mediaItemId,
-      "commercial",
-      commercialExpirationTime
-    );
+  // Record selected media as recently used so future buffers don't re-select them
+  for (const c of usedCommercials) {
+    addRecentlyUsedCommercial(c.mediaItemId, timepoint);
   }
-
-  for (const short of usedShorts) {
-    recentlyUsedMediaRepository.recordUsage(
-      short.mediaItemId,
-      "short",
-      shortsMusicsExpirationTime
-    );
+  for (const s of usedShorts) {
+    addRecentlyUsedShort(s.mediaItemId, timepoint);
   }
-
-  for (const music of usedMusic) {
-    recentlyUsedMediaRepository.recordUsage(
-      music.mediaItemId,
-      "music",
-      shortsMusicsExpirationTime
-    );
+  for (const m of usedMusic) {
+    addRecentlyUsedMusic(m.mediaItemId, timepoint);
   }
 
   // Shuffle selectedMedia before returning
@@ -338,11 +316,10 @@ export function constructBufferHalf(
 }
 
 export function selectCommercials(
-  activeHolidayTags: Tag[],
   eraTags: Tag[],
   commercials: Commercial[],
   defaultCommercials: Commercial[],
-  duration: number
+  duration: number,
 ): {
   selectedCommercials: Commercial[];
   remainingDuration: number;
@@ -350,6 +327,17 @@ export function selectCommercials(
   let selectedCommercials: Commercial[] = [];
   let candidateCommercials: Commercial[] = [...commercials];
   let remainingDuration = duration;
+
+  // Build a set of era tag IDs for quick lookup
+  const eraTagIds = new Set(eraTags.map((t) => t.tagId));
+
+  // Helper to get the era-matched subset of current candidates
+  const getEraMatched = (): Commercial[] =>
+    eraTagIds.size > 0
+      ? candidateCommercials.filter((c) =>
+          c.tags.some((t) => eraTagIds.has(t.tagId)),
+        )
+      : [];
 
   // Helper function to check if there are commercials that could potentially fill remaining duration
   const hasViableCommercials = (commercials: Commercial[]): boolean => {
@@ -365,51 +353,64 @@ export function selectCommercials(
     let selected = false;
 
     // Try to find a single commercial that exactly fills remaining duration
-    let exactMatch = candidateCommercials.find(
-      (c) => c.duration === remainingDuration
-    );
+    // Prefer era-matched candidates first, then fall back to all candidates
+    const eraMatchedForExact = getEraMatched(); // VERIFIED
+    let exactMatch =
+      eraMatchedForExact.find((c) => c.duration === remainingDuration) ??
+      candidateCommercials.find((c) => c.duration === remainingDuration);
     if (exactMatch) {
       selectedCommercials.push(exactMatch);
       remainingDuration -= exactMatch.duration || 0;
       candidateCommercials = candidateCommercials.filter(
-        (c) => c.mediaItemId !== exactMatch.mediaItemId
+        (c) => c.mediaItemId !== exactMatch.mediaItemId,
       );
       selected = true;
     }
 
     // Try to find two commercials that together fill remaining duration
+    // Try era-matched candidates first, then fall back to all candidates
     if (!selected) {
-      // Create a map: duration -> array of commercials (handle duplicates)
-      const durationMap = new Map<number, Commercial[]>();
-      for (const c of candidateCommercials) {
-        const dur = c.duration || 0;
-        if (!durationMap.has(dur)) {
-          durationMap.set(dur, []);
-        }
-        durationMap.get(dur)!.push(c);
-      }
+      const eraMatchedForPair = getEraMatched(); // VERIFIED
+      const poolsToTry =
+        eraMatchedForPair.length > 0
+          ? [eraMatchedForPair, candidateCommercials]
+          : [candidateCommercials];
 
-      // O(n) search: for each commercial, check if complement exists
-      for (const c1 of candidateCommercials) {
+      for (const pool of poolsToTry) {
         if (selected) break;
-        const dur1 = c1.duration || 0;
-        const needed = remainingDuration - dur1;
 
-        if (needed > 0 && durationMap.has(needed)) {
-          const complements = durationMap.get(needed)!;
-          // Find a complement that's not the same commercial
-          for (const c2 of complements) {
-            if (c1.mediaItemId !== c2.mediaItemId) {
-              selectedCommercials.push(c1);
-              selectedCommercials.push(c2);
-              remainingDuration -= dur1 + needed;
-              candidateCommercials = candidateCommercials.filter(
-                (c) =>
-                  c.mediaItemId !== c1.mediaItemId &&
-                  c.mediaItemId !== c2.mediaItemId
-              );
-              selected = true;
-              break;
+        // Create a map: duration -> array of commercials (handle duplicates)
+        const durationMap = new Map<number, Commercial[]>();
+        for (const c of pool) {
+          const dur = c.duration || 0;
+          if (!durationMap.has(dur)) {
+            durationMap.set(dur, []);
+          }
+          durationMap.get(dur)!.push(c);
+        }
+
+        // O(n) search: for each commercial, check if complement exists
+        for (const c1 of pool) {
+          if (selected) break;
+          const dur1 = c1.duration || 0;
+          const needed = remainingDuration - dur1;
+
+          if (needed > 0 && durationMap.has(needed)) {
+            const complements = durationMap.get(needed)!;
+            // Find a complement that's not the same commercial
+            for (const c2 of complements) {
+              if (c1.mediaItemId !== c2.mediaItemId) {
+                selectedCommercials.push(c1);
+                selectedCommercials.push(c2);
+                remainingDuration -= dur1 + needed;
+                candidateCommercials = candidateCommercials.filter(
+                  (c) =>
+                    c.mediaItemId !== c1.mediaItemId &&
+                    c.mediaItemId !== c2.mediaItemId,
+                );
+                selected = true;
+                break;
+              }
             }
           }
         }
@@ -417,22 +418,36 @@ export function selectCommercials(
     }
 
     // Pick a random commercial from candidates
+    // Prefer era-matched candidates first, then fall back to all candidates
+    // Only consider commercials that fit within remaining duration
     if (!selected && candidateCommercials.length > 0) {
-      const randomIndex = Math.floor(
-        Math.random() * candidateCommercials.length
+      const eraMatchedForRandom = getEraMatched().filter(
+        (c) => (c.duration || 0) <= remainingDuration,
+      ); // VERIFIED
+      const viableCandidates = candidateCommercials.filter(
+        (c) => (c.duration || 0) <= remainingDuration,
       );
-      const randomCommercial = candidateCommercials[randomIndex];
-      selectedCommercials.push(randomCommercial);
-      remainingDuration -= randomCommercial.duration || 0;
-      candidateCommercials.splice(randomIndex, 1);
-      selected = true;
+      const randomPool =
+        eraMatchedForRandom.length > 0 ? eraMatchedForRandom : viableCandidates;
+      if (randomPool.length === 0) {
+        // No viable candidates — fall through to try defaults
+      } else {
+        const randomIndex = Math.floor(Math.random() * randomPool.length);
+        const randomCommercial = randomPool[randomIndex];
+        selectedCommercials.push(randomCommercial);
+        remainingDuration -= randomCommercial.duration || 0;
+        candidateCommercials = candidateCommercials.filter(
+          (c) => c.mediaItemId !== randomCommercial.mediaItemId,
+        );
+        selected = true;
+      }
     }
 
-    // If no candidates left, try default commercials
-    if (!selected && candidateCommercials.length === 0) {
+    // If no viable candidates were selected, try default commercials
+    if (!selected) {
       // Try to find a single default commercial that exactly fills remaining duration
       let exactMatchDefault = defaultCommercials.find(
-        (c) => c.duration === remainingDuration
+        (c) => c.duration === remainingDuration,
       );
       if (exactMatchDefault) {
         selectedCommercials.push(exactMatchDefault);
@@ -474,12 +489,17 @@ export function selectCommercials(
         }
       }
 
-      // Pick a random default commercial
+      // Pick a random default commercial that fits within remaining duration
       if (!selected && defaultCommercials.length > 0) {
-        const randomIndex = Math.floor(
-          Math.random() * defaultCommercials.length
+        const viableDefaults = defaultCommercials.filter(
+          (c) => (c.duration || 0) <= remainingDuration,
         );
-        const randomCommercial = defaultCommercials[randomIndex];
+        if (viableDefaults.length === 0) {
+          // No viable defaults either — loop will exit via hasViableCommercials check
+          break;
+        }
+        const randomIndex = Math.floor(Math.random() * viableDefaults.length);
+        const randomCommercial = viableDefaults[randomIndex];
         selectedCommercials.push(randomCommercial);
         remainingDuration -= randomCommercial.duration || 0;
         selected = true;
@@ -502,7 +522,7 @@ export function selectShortsAndMusic(
   music: Music[],
   shorts: Short[],
   targetCount: number,
-  maxDuration: number
+  maxDuration: number,
 ): {
   selected: (Music | Short)[];
   selectedShorts: Short[];
@@ -529,9 +549,8 @@ export function selectShortsAndMusic(
       selected.push(item);
       totalDuration += itemDuration;
 
-      // Track which type it is by checking if it exists in shorts array
-      const isShort = shorts.some((s) => s.mediaItemId === item.mediaItemId);
-      if (isShort) {
+      // Track which type it is by checking the item's type field
+      if (item.type === MediaType.Short) {
         selectedShorts.push(item as Short);
       } else {
         selectedMusic.push(item as Music);

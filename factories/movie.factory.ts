@@ -13,6 +13,7 @@ export function createMovie(
   durationLimit?: number,
   type?: MediaType,
   tags?: Tag[],
+  isHolidayExclusive?: boolean,
 ): Movie {
   const id = mediaItemId ?? randomUUID();
   return {
@@ -23,6 +24,7 @@ export function createMovie(
     path: path ?? `/media/movies/test-${id.substring(0, 8)}.mp4`,
     duration: duration ?? 7200,
     durationLimit,
+    isHolidayExclusive: isHolidayExclusive ?? false,
     tags: tags ?? [],
     type: type ?? MediaType.Movie,
     createdAt: new Date().toISOString(),

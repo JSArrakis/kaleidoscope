@@ -1,86 +1,98 @@
-# Project TODOs
+# Kaleidoscope — Project TODOs
 
-## Holiday-Specific Media Selection
+High-level feature work that requires design discussion, significant implementation effort, or cross-cutting architectural decisions. These items are tracked here so progress context isn't lost between sessions.
 
-- [ ] Figure out how to make certain media explicit to only being picked during its respective tagged holiday
-  - Context: Previously used `explicitlyHoliday` boolean field on Tag, which was removed. Need alternative approach.
-  - Considerations:
-    - Should media be restricted to specific holidays or holiday seasons?
-    - How should this interact with the existing `holidayDates` and `seasonStartDate`/`seasonEndDate` fields on tags?
-    - Should this be a media-level property or tag-level property?
-    - Need to ensure holiday filtering logic in streamConstructor/bufferEngine respects this constraint
+---
 
-## Episode-Level Tag Signature Adjustment
+## TODO #1 — Design Mosaics
 
-- [ ] Handle shows with episode-specific tags that change the nature of the tag signature
-  - Context: A show may be tagged with sci-fi/fantasy at show level, but a specific episode may also have horror tag, changing the overall signature
-  - Impact: When this episode is selected as main content, the procedural algorithm should account for the modified tag signature when picking subsequent buffer/filler media
-  - Implementation Notes:
-    - Need to merge show-level tags with episode-level tags when evaluating media characteristics
-    - The combined tag set should influence buffer media selection algorithm (e.g., bufferEngine)
-    - Ensure downstream media selection respects the enriched tag signature
+**Status:** 🔲 Not started — requires design discussion
 
-## Promo Duration Validation
+Mosaics are Kaleidoscope's "+1" taxonomy: the musical genre classification system for music videos and audio content. The concept was defined early in development but needs to be fully redesigned now that the rest of the taxonomy system, Prism system, and stream construction pipeline have matured significantly since the original conception.
 
-- [ ] Ensure any promo added to the DB is 15 seconds long, plus or minus 500ms (14.5-15.5 seconds)
-  - Context: Promos have strict duration requirements for broadcast compatibility
-  - Implementation: Add validation in PromoRepository.create() and PromoRepository.update() methods
-  - Error Handling: Reject promos outside the allowed duration range with a clear error message
-  - Affected Files: src/electron/repositories/promoRepository.ts
+This TODO will only be marked complete when explicitly signed off after a full design discussion.
 
-## Age Group Sequence Validation
+**Scope of discussion needed:**
 
-- [ ] Ensure age groups tags do not have a negative number or 0 for the sequence before entering them into the DB
-  - Context: Age group sequences should be positive integers to properly order content restrictions
-  - Implementation: Add validation in TagRepository.create() and TagRepository.update() methods for AgeGroup type tags
-  - Error Handling: Reject age group tags with sequence <= 0 with a clear error message
-  - Affected Files: src/electron/repositories/tagsRepository.ts
+- What role do Musical Genres play in buffer construction vs. anchor selection?
+- How do Mosaics relate to (or bridge between) the existing 6 visual taxonomies?
+- How does the Spectrum buffer system use Musical Genre tags when selecting music videos?
+- What does a "mosaic" actually represent — a single musical genre tag, a relationship between genres, or something else?
+- Where does music video selection fit in the Prism hierarchy?
 
-## Age Group Sequence Integrity
+**Relevant files:**
 
-- [ ] All age group sequence numbers must be filled sequentially with no gaps
-  - Context: Age group sequences define a strict ordering hierarchy. Gaps would break the ordering logic.
-  - Constraints:
-    - Sequence numbers must be continuous (1, 2, 3, ... n) with no gaps
-    - New sequence numbers cannot be set independently
-    - When editing a sequence, two age group sequences must be exchanged/swapped
-    - This ensures the ordering remains intact and predictable
-  - Implementation:
-    - Add validation in TagRepository.update() to enforce swap-only updates for AgeGroup sequences
-    - Prevent direct sequence number assignment; require specifying which two age groups to swap
-    - Validate that the resulting sequence is still continuous after the swap
-  - Affected Files: src/electron/repositories/tagsRepository.ts
+- `docs/mosaic/` — existing concept docs (pre-redesign)
+- `docs/taxonomies/musicalGenres/` — currently empty
+- `src/electron/repositories/musicRepository.ts`
+- `src/electron/prisms/spectrum.ts` — music video selection in buffer construction
 
-## Media Duration Classification & Programmability Warnings
+---
 
-- [ ] Add UI warnings for buffer media management when entries exceed sensible duration limits for the 30-minute scheduling architecture
-  - Context: The stream uses fixed 30-minute scheduling blocks. Filler content (shorts, music videos, commercials) must fit into variable leftover windows (1-29 minutes). Content exceeding certain limits becomes "unprogrammable" (can't fit into any gap).
-  - **Optimized Media Duration Definitions** (for 30-minute block scheduling):
-    - **Promos/Idents**: 5-15 seconds (micro-transitions and branding)
-    - **Commercials**: 1 second - 2 minutes (fine-grained padding, can combine many)
-    - **Music Videos**: 1.5-10 minutes (small filler chunks, most are 3-6 minutes)
-    - **Shorts**: 2-20 minutes (medium filler chunks, MUST stay <20 min to fit any leftover gap)
-    - **Show Episodes (half-hour)**: 20-35 minutes (anchor content: 1 block + variable filler)
-    - **Show Episodes (hour)**: 40-65 minutes (anchor content: 2 blocks + variable filler)
-    - **Movies**: 40 minutes - 4 hours (anchor content: multiple blocks + variable filler)
-    - **Special Episodes**: 60-120 minutes (anchor content: 2-4 blocks)
-  - **Why these limits matter**:
-    - Any filler <20 minutes can fit into every leftover window (1-29 min range)
-    - Shorts >20 minutes risk becoming unprogrammable (e.g., 21+ min shorts won't fit in gaps ≤20 min)
-    - Music videos capped at 10 min prevents fragmenting filler windows
-    - Commercials/promos handle micro-adjustments
-  - **UI Warnings to implement**:
-    - ⚠️ WARN when Music Video duration > 10 minutes (uncommon, may affect scheduling)
-    - ⚠️ WARN when Short duration > 20 minutes (CRITICAL: unprogrammable in many gaps)
-    - ⚠️ WARN when Movie duration < 40 minutes (may be miscategorized as episode)
-    - ⚠️ WARN when Promo duration < 5 or > 15 seconds (outside broadcast standard)
-    - ⚠️ WARN when Commercial duration > 2 minutes (may not fit optimal buffer padding)
-  - **Implementation**:
-    - Add validation in media creation/edit forms before saving
-    - Display warnings but allow override (with confirmation)
-    - Store a "duration_warning_acknowledged" flag if user overrides
-    - Consider adding a "programmability score" UI indicator
-  - **Affected Files**:
-    - UI: All media management screens (shorts, music, commercials editors)
-    - Repositories: May need to add optional warning flags to media types
-    - Services: Consider validation service for duration rules
+## TODO #2 — Player Logging Helper (Test/Verification Mode)
+
+**Status:** 🔲 Not started
+
+Create a test-mode player backend that writes to a log file instead of pushing to the actual player. Should only activate when a specific setting/flag is enabled (e.g. `KALEIDOSCOPE_LOG_PLAYER=true` or a settings toggle).
+
+**Purpose:** Allows end-to-end verification of stream construction output — block timings, buffer content, anchor selection, progression — without requiring a live player or actual media files.
+
+**Requirements:**
+
+- Must be toggleable via a setting, not hardcoded
+- Should log each `MediaBlock` in a structured, human-readable format:
+  - `startTime` (ISO and Unix)
+  - `anchorMedia` title, duration, durationLimit, type, tags
+  - `buffer[]` — each item's title, type, duration
+  - Total block duration
+- Should live in `playerManager.ts` as an additional dispatch target (alongside the existing `electron` stub)
+- Log file path should be configurable or default to a known location in the project
+
+---
+
+## TODO #3 — FFmpeg / Plex Integration
+
+**Status:** 🔲 Not started — requires architectural scoping
+
+Build the interface and helper layer required to transcode and serve the stream through FFmpeg and connect to Plex as a media server backend.
+
+**Scope:**
+
+- Define the FFmpeg command structure for concatenating `MediaBlock` sequences
+- Handle transitions between blocks (gap-free playback)
+- Plex channel/DVR integration — how does Kaleidoscope advertise itself as a source?
+- Handle live stream vs. pre-generated playlist approaches
+- Error handling for missing files, codec mismatches, duration drift
+
+**Relevant existing stub:** `playerManager.ts` already has `ffmpeg-plex` as a planned player type — this TODO is what fleshes that out.
+
+---
+
+## TODO #4 — Facet Learning System (Upvote / Downvote)
+
+**Status:** 🔲 Not started
+
+Implement the upvote/downvote feedback system for facet relationships, allowing the stream to personalize transition probabilities over time based on viewer response.
+
+**How it works (design intent):**
+
+- Positive feedback (upvote) on a transition → decrease the distance between the two facets (make that transition more likely in future selections)
+- Negative feedback (downvote) on a transition → increase the distance (make it less likely)
+- No feedback → distances remain unchanged
+- Changes are persisted to the `facets` / `facet_relationships` tables in the DB
+
+**Requirements:**
+
+- UI controls to upvote/downvote the current On Deck → Upcoming transition
+- A service function (likely in `streamManager.ts` or a new `facetFeedbackService.ts`) that:
+  - Identifies the facet relationship between the current and next anchor media
+  - Applies a delta to the `distance` field of the matching `facet_relationship` row
+  - Clamps distance to [0.0, 1.0]
+- Decide on delta magnitude (fixed step vs. weighted accumulation)
+- Consider: should feedback invalidate the holiday intent cache or affect the Spectrum gates? Probably not — limit scope to facet relationships only.
+
+**Relevant files:**
+
+- `src/electron/prisms/facets.ts` — relationship selection
+- `src/electron/repositories/facetRepository.ts` — DB access
+- `docs/prisms/facets/index.md` — design spec for the learning system

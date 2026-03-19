@@ -1,6 +1,6 @@
 # Noir
 
-Noir serves as the aesthetic framework for narratives that present stories through the lens of moral ambiguity, urban decay, and psychological darkness. It provides the visual, cultural, and tonal identity for stories that embrace shadowy cinematography, morally complex characters, and atmospheric tension rooted in post-war disillusionment and urban cynicism. While Noir creates worlds of moral uncertainty and atmospheric dread, the specific narrative structure - whether Crime, Drama, Thriller, or Romance - is supplied by the underlying story being told within this dark presentation.
+Noir serves as the aesthetic framework for narratives that present stories through the lens of moral ambiguity, urban decay, and psychological darkness. It provides the visual, cultural, and tonal identity for stories that embrace shadowy cinematography, morally complex characters, and atmospheric tension rooted in post-war disillusionment and urban cynicism. While Noir creates worlds of moral uncertainty and atmospheric dread, the specific narrative structure, whether Crime, Drama, Thriller, or Romance, is supplied by the underlying story being told within this dark presentation.
 
 ## Core Characteristics of Noir Aesthetic:
 
@@ -14,7 +14,7 @@ Central to Noir is the absence of clear heroes and villains. Characters operate 
 
 ### Urban Decay and Post-War Disillusionment
 
-The aesthetic emphasizes deteriorating city environments that reflect the psychological state of characters and society. Seedy bars, run-down apartments, empty streets, and corrupt institutions create a world where hope is scarce and cynicism is justified by experience.
+The aesthetic emphasizes deteriorating city environments that reflect the psychological state of characters and society. Seedy bars, run down apartments, empty streets, and corrupt institutions create a world where hope is scarce and cynicism is justified by experience.
 
 ### Fatalism and Inescapable Destiny
 
@@ -26,7 +26,7 @@ The aesthetic prominently features complex female characters who embody both att
 
 ### Hard-boiled Dialogue and Cynical Worldview
 
-Noir employs distinctive dialogue patterns featuring sharp wit, cynical observations, and world-weary commentary that reflects characters' disillusionment with society, institutions, and human nature.
+Noir employs distinctive dialogue patterns featuring sharp wit, cynical observations, and world weary commentary that reflects characters' disillusionment with society, institutions, and human nature.
 
 ## Narrative Genres Layered Over Noir Aesthetic
 
@@ -34,7 +34,7 @@ While Noir provides the dark atmospheric framework, the narrative genre dictates
 
 - **Noir Crime:** Criminal narratives where moral ambiguity complicates traditional law enforcement or criminal stories, focusing on the psychological motivations and ethical complexities of both criminals and those pursuing them.
 
-- **Noir Drama:** Character-driven stories exploring personal relationships, moral choices, and psychological deterioration within the context of urban decay and social disillusionment.
+- **Noir Drama:** Character driven stories exploring personal relationships, moral choices, and psychological deterioration within the context of urban decay and social disillusionment.
 
 - **Noir Thriller:** Suspense narratives where paranoia, conspiracy, and moral uncertainty create psychological tension rather than clear external threats.
 
@@ -44,19 +44,19 @@ While Noir provides the dark atmospheric framework, the narrative genre dictates
 
 ### Sin City:
 
-Demonstrates Noir Crime, where multiple criminal narratives interweave through Basin City's corrupt underworld. The aesthetic emphasizes stark black-and-white visuals, morally ambiguous anti-heroes, and urban decay taken to graphic novel extremes, while maintaining classic noir themes of fatalism, dangerous women, and hard-boiled cynicism in a modern context.
+Demonstrates Noir Crime, where multiple criminal narratives interweave through Basin City's corrupt underworld. The aesthetic emphasizes stark black and white visuals, morally ambiguous antiheroes, and urban decay taken to graphic novel extremes, while maintaining classic noir themes of fatalism, dangerous women, and hard-boiled cynicism in a modern context.
 
 ### Double Indemnity:
 
-Represents Noir Romance-Crime, where an insurance agent's affair with a married woman leads to murder and betrayal. The aesthetic creates a world where love becomes dangerous and where ordinary people are capable of extraordinary moral corruption.
+Represents Noir Romance, where an insurance agent's affair with a married woman leads to murder and betrayal. The aesthetic creates a world where love becomes dangerous and where ordinary people are capable of extraordinary moral corruption.
 
 ### Chinatown:
 
-Shows Noir Drama-Crime, where a private investigator's seemingly simple case reveals deep corruption and personal tragedy. The aesthetic emphasizes the impossibility of true justice and the way personal and political corruption intertwine in urban environments.
+Shows Noir Drama, where a private investigator's seemingly simple case reveals deep corruption and personal tragedy. The aesthetic emphasizes the impossibility of true justice and the way personal and political corruption intertwine in urban environments.
 
 ### Blade Runner:
 
-Exemplifies Neo-Noir Science Fiction, where the traditional noir aesthetic is applied to a futuristic setting, maintaining the themes of moral ambiguity, urban decay, and existential questioning while exploring what it means to be human in a technologically advanced world.
+Exemplifies Noir Science Fiction, where the traditional noir aesthetic is applied to a futuristic setting, maintaining the themes of moral ambiguity, urban decay, and existential questioning while exploring what it means to be human in a technologically advanced world.
 
 ### Drive:
 

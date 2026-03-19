@@ -1,4 +1,4 @@
-type PlayerType = "vlc" | "electron" | "web";
+type PlayerType = "vlc" | "electron" | "web" | "ffmpeg-plex";
 
 let currentPlayerType: PlayerType = "electron"; // Default to electron player
 let isPlayerInitialized: boolean = false;
@@ -38,11 +38,11 @@ export function isPlayerReady(): boolean {
  * TODO: Implement player-specific logic for VLC, Electron, Web players
  */
 export async function addMediaBlockToPlayer(
-  mediaBlock: MediaBlock
+  mediaBlock: MediaBlock,
 ): Promise<void> {
   if (!isPlayerInitialized) {
     console.warn(
-      "[PlayerManager] Player not initialized, queueing media block for later playback"
+      "[PlayerManager] Player not initialized, queueing media block for later playback",
     );
     return;
   }
@@ -59,7 +59,7 @@ export async function addMediaBlockToPlayer(
       case "electron":
         // TODO: Implement Electron player-specific playback logic
         console.log(
-          "[PlayerManager] [Electron] Adding media block to Electron player"
+          "[PlayerManager] [Electron] Adding media block to Electron player",
         );
         // await electronPlayer.addMediaBlock(mediaBlock);
         // await electronPlayer.play();
@@ -72,17 +72,23 @@ export async function addMediaBlockToPlayer(
         // await webPlayer.play();
         break;
 
+      case "ffmpeg-plex":
+        // TODO: Implement FFmpeg/Plex stream output logic
+        console.log("[PlayerManager] [FFmpeg-Plex] Adding media block to FFmpeg-Plex stream");
+        // await ffmpegPlexService.addMediaBlockToStream(mediaBlock);
+        break;
+
       default:
         throw new Error(`Unknown player type: ${currentPlayerType}`);
     }
 
     console.log(
-      `[PlayerManager] Media block queued for immediate playback at ${mediaBlock.startTime}s`
+      `[PlayerManager] Media block queued for immediate playback at ${mediaBlock.startTime}s`,
     );
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     console.error(
-      `[PlayerManager] Failed to add media block to player: ${message}`
+      `[PlayerManager] Failed to add media block to player: ${message}`,
     );
     throw error;
   }
@@ -116,11 +122,17 @@ export async function initializePlayer(playerType?: PlayerType): Promise<void> {
         console.log("[PlayerManager] Initializing web player");
         // await webPlayer.initialize();
         break;
+
+      case "ffmpeg-plex":
+        // TODO: Initialize FFmpeg/Plex stream output
+        console.log("[PlayerManager] Initializing FFmpeg-Plex stream");
+        // await ffmpegPlexService.initialize();
+        break;
     }
 
     setPlayerInitialized(true);
     console.log(
-      `[PlayerManager] Player initialized and ready for playback (${currentPlayerType})`
+      `[PlayerManager] Player initialized and ready for playback (${currentPlayerType})`,
     );
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
@@ -153,6 +165,12 @@ export async function stopPlayer(): Promise<void> {
         console.log("[PlayerManager] Stopping web player");
         // await webPlayer.stop();
         break;
+
+      case "ffmpeg-plex":
+        // TODO: Stop FFmpeg/Plex stream output
+        console.log("[PlayerManager] Stopping FFmpeg-Plex stream");
+        // await ffmpegPlexService.stop();
+        break;
     }
 
     setPlayerInitialized(false);
@@ -174,7 +192,7 @@ export async function stopPlayer(): Promise<void> {
 export async function play(options?: { timeDelta?: number }): Promise<void> {
   if (!isPlayerInitialized) {
     console.warn(
-      "[PlayerManager] Player not initialized, cannot start playback"
+      "[PlayerManager] Player not initialized, cannot start playback",
     );
     return;
   }
@@ -186,7 +204,7 @@ export async function play(options?: { timeDelta?: number }): Promise<void> {
       case "vlc":
         // TODO: Start playback on VLC
         console.log(
-          `[PlayerManager] [VLC] Starting playback (timeDeltaMs: ${timeDeltaMs}ms)`
+          `[PlayerManager] [VLC] Starting playback (timeDeltaMs: ${timeDeltaMs}ms)`,
         );
         // TODO: Pass timeDeltaMs to deviation correction mechanism
         // await vlcService.playVLC();
@@ -195,7 +213,7 @@ export async function play(options?: { timeDelta?: number }): Promise<void> {
       case "electron":
         // TODO: Start playback on Electron player
         console.log(
-          `[PlayerManager] [Electron] Starting playback (timeDeltaMs: ${timeDeltaMs}ms)`
+          `[PlayerManager] [Electron] Starting playback (timeDeltaMs: ${timeDeltaMs}ms)`,
         );
         // TODO: Pass timeDeltaMs to deviation correction mechanism
         // await electronPlayer.play();
@@ -204,7 +222,7 @@ export async function play(options?: { timeDelta?: number }): Promise<void> {
       case "web":
         // TODO: Start playback on web player
         console.log(
-          `[PlayerManager] [Web] Starting playback (timeDeltaMs: ${timeDeltaMs}ms)`
+          `[PlayerManager] [Web] Starting playback (timeDeltaMs: ${timeDeltaMs}ms)`,
         );
         // TODO: Pass timeDeltaMs to deviation correction mechanism
         // await webPlayer.play();
@@ -212,7 +230,7 @@ export async function play(options?: { timeDelta?: number }): Promise<void> {
     }
 
     console.log(
-      `[PlayerManager] Playback started on ${currentPlayerType} player`
+      `[PlayerManager] Playback started on ${currentPlayerType} player`,
     );
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);

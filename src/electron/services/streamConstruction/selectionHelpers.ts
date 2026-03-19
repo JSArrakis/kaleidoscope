@@ -1,6 +1,5 @@
 import { episodeProgressionRepository } from "../../repositories/episodeProgressionRepository.js";
 import { movieRepository } from "../../repositories/movieRepository.js";
-import { recentlyUsedMediaRepository } from "../../repositories/recentlyUsedMediaRepository.js";
 import { showRepository } from "../../repositories/showRepository.js";
 import * as streamManager from "../streamManager.js";
 
@@ -41,13 +40,22 @@ export function isHolidaySeason(
 
   for (const holiday of holidays) {
     if (holiday.seasonStartDate && holiday.seasonEndDate) {
-      // Compare as strings since MM-DD format works lexicographically
-      // e.g., "10-01" <= "12-25" <= "12-31"
-      if (
-        dateString >= holiday.seasonStartDate &&
-        dateString <= holiday.seasonEndDate
-      ) {
-        return true;
+      if (holiday.seasonStartDate <= holiday.seasonEndDate) {
+        // Normal range (e.g., "10-01" to "12-31")
+        if (
+          dateString >= holiday.seasonStartDate &&
+          dateString <= holiday.seasonEndDate
+        ) {
+          return true;
+        }
+      } else {
+        // Year-wrap range (e.g., "11-15" to "01-05")
+        if (
+          dateString >= holiday.seasonStartDate ||
+          dateString <= holiday.seasonEndDate
+        ) {
+          return true;
+        }
       }
     }
   }
@@ -55,13 +63,17 @@ export function isHolidaySeason(
 }
 
 /**
- * Extracts ISO date string from unix timestamp (seconds)
+ * Extracts local calendar date string from unix timestamp (seconds)
+ * Uses local timezone, not UTC
  * @param unixSeconds Unix timestamp in seconds
- * @returns ISO date string in format YYYY-MM-DD
+ * @returns Local date string in format YYYY-MM-DD (user's perceived date)
  */
 export function getDateString(unixSeconds: number): string {
   const date = new Date(unixSeconds * 1000);
-  return date.toISOString().split("T")[0];
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
 }
 
 /**
@@ -106,7 +118,7 @@ export function doesNextEpisodeFitDuration(
     return null;
   }
   // Get the next episode number from stream manager's progression map
-  const progressionMap = streamManager.getStreamManager().getProgressionMap();
+  const progressionMap = streamManager.getProgressionMap();
   const nextEpisodeNum = progressionMap.get(show.mediaItemId) || 1;
 
   // Check if next episode exists
@@ -122,18 +134,6 @@ export function doesNextEpisodeFitDuration(
   }
 
   return nextEpisode.duration <= availableDuration ? nextEpisodeNum : null;
-}
-
-/**
- * Cleans up expired recently-used media records
- * Should be called before media selection to ensure fresh data
- *
- * @param timepoint Unix timestamp in seconds
- * @returns Number of deleted records
- */
-export function cleanupExpiredRecentlyUsed(timepoint: number): number {
-  const unixSeconds = Math.floor(timepoint);
-  return recentlyUsedMediaRepository.deleteExpired(unixSeconds); // VERIFIED
 }
 
 /**
@@ -161,9 +161,7 @@ export function getEpisodeFromShowCandidates(
       const selectedEpisode = show.episodes[nextEpisodeNum - 1];
 
       // Increment progression for next selection AFTER we've identified the episode
-      streamManager
-        .getStreamManager()
-        .updateProgression(show.mediaItemId, nextEpisodeNum); // VERIFIED
+      streamManager.updateProgression(show.mediaItemId, nextEpisodeNum); // VERIFIED
 
       return selectedEpisode;
     }
@@ -172,45 +170,180 @@ export function getEpisodeFromShowCandidates(
   return null;
 }
 
+function trySelectMovie(
+  tags: Tag[],
+  ageGroups: Tag[],
+  duration: number,
+  timepoint: number,
+): Movie | null {
+  const movies = filterRecentlyUsedMovies(
+    movieRepository.findByTagsAndAgeGroupsUnderDuration(
+      tags,
+      ageGroups,
+      duration,
+    ),
+    timepoint,
+  );
+  if (movies.length === 0) return null;
+  return movies.sort(() => 0.5 - Math.random())[0];
+}
+
+function trySelectEpisode(
+  tags: Tag[],
+  ageGroups: Tag[],
+  duration: number,
+): Episode | null {
+  const shows = showRepository.findByTagsAndAgeGroupsUnderDuration(
+    tags,
+    ageGroups,
+    duration,
+  );
+  return getEpisodeFromShowCandidates(shows, duration);
+}
+
 export function selectMovieOrShow(
   tags: Tag[],
   ageGroups: Tag[],
   duration: number,
+  timepoint: number,
 ): Movie | Episode | null {
-  let selectedMedia: Movie | Episode | null = null;
   const tryMovieFirst = Math.random() < 0.5;
 
-  // Try the randomly selected type first, then fall back to the other
-  for (let attempt = 0; attempt < 2; attempt++) {
-    const shouldTryMovie = attempt === 0 ? tryMovieFirst : !tryMovieFirst;
+  if (tryMovieFirst) {
+    return (
+      trySelectMovie(tags, ageGroups, duration, timepoint) ??
+      trySelectEpisode(tags, ageGroups, duration)
+    );
+  } else {
+    return (
+      trySelectEpisode(tags, ageGroups, duration) ??
+      trySelectMovie(tags, ageGroups, duration, timepoint)
+    );
+  }
+}
 
-    if (shouldTryMovie) {
-      // Movie path
-      const movies = movieRepository.findByTagsAndAgeGroupsUnderDuration(
-        tags,
-        ageGroups,
-        duration,
-      );
-      if (movies.length > 0) {
-        // Shuffle movies for randomness
-        const shuffledMovies = movies.sort(() => 0.5 - Math.random());
-        selectedMedia = shuffledMovies[0];
-        break;
-      }
-    } else {
-      // Show path
-      const shows = showRepository.findByTagsAndAgeGroupsUnderDuration(
-        tags,
-        ageGroups,
-        duration,
-      );
-      const episode = getEpisodeFromShowCandidates(shows, duration);
-      if (episode) {
-        selectedMedia = episode;
-        break;
-      }
+const THREE_HOURS_IN_SECONDS = 3 * 60 * 60;
+const TWENTY_FOUR_HOURS_IN_SECONDS = 24 * 60 * 60;
+const TWO_DAYS_IN_SECONDS = 2 * 24 * 60 * 60;
+
+/**
+ * Filters commercials by removing recently used entries from the stream manager,
+ * then returns only commercials that are not in the recently used map.
+ *
+ * 1. Prunes entries from the recentlyUsedCommercials map that are older than
+ *    3 hours before the given timepoint.
+ * 2. Returns commercials whose mediaItemId does not appear in the remaining map.
+ *
+ * @param commercials List of candidate commercials
+ * @param timepoint Unix timestamp in seconds representing the current point in time
+ * @returns Commercials that have not been recently used within the last 3 hours
+ */
+export function filterRecentlyUsedCommercials(
+  commercials: Commercial[],
+  timepoint: number,
+): Commercial[] {
+  const recentlyUsedMap = streamManager.getRecentlyUsedCommercials();
+  const cutoff = timepoint - THREE_HOURS_IN_SECONDS;
+
+  // Remove entries older than 3 hours before the timepoint
+  for (const [key, usedTime] of recentlyUsedMap) {
+    if (usedTime < cutoff) {
+      streamManager.removeRecentlyUsedCommercial(key);
     }
   }
 
-  return selectedMedia;
+  // Return commercials not present in the recently used map
+  return commercials.filter(
+    (commercial) => !recentlyUsedMap.has(commercial.mediaItemId),
+  );
+}
+
+/**
+ * Filters shorts by removing recently used entries from the stream manager,
+ * then returns only shorts that are not in the recently used map.
+ *
+ * 1. Prunes entries from the recentlyUsedShorts map that are older than
+ *    24 hours before the given timepoint.
+ * 2. Returns shorts whose mediaItemId does not appear in the remaining map.
+ *
+ * @param shorts List of candidate shorts
+ * @param timepoint Unix timestamp in seconds representing the current point in time
+ * @returns Shorts that have not been recently used within the last 24 hours
+ */
+export function filterRecentlyUsedShorts(
+  shorts: Short[],
+  timepoint: number,
+): Short[] {
+  const recentlyUsedMap = streamManager.getRecentlyUsedShorts();
+  const cutoff = timepoint - TWENTY_FOUR_HOURS_IN_SECONDS;
+
+  // Remove entries older than 24 hours before the timepoint
+  for (const [key, usedTime] of recentlyUsedMap) {
+    if (usedTime < cutoff) {
+      streamManager.removeRecentlyUsedShort(key);
+    }
+  }
+
+  // Return shorts not present in the recently used map
+  return shorts.filter((short) => !recentlyUsedMap.has(short.mediaItemId));
+}
+
+/**
+ * Filters music by removing recently used entries from the stream manager,
+ * then returns only music that is not in the recently used map.
+ *
+ * 1. Prunes entries from the recentlyUsedMusic map that are older than
+ *    24 hours before the given timepoint.
+ * 2. Returns music whose mediaItemId does not appear in the remaining map.
+ *
+ * @param music List of candidate music items
+ * @param timepoint Unix timestamp in seconds representing the current point in time
+ * @returns Music that has not been recently used within the last 24 hours
+ */
+export function filterRecentlyUsedMusic(
+  music: Music[],
+  timepoint: number,
+): Music[] {
+  const recentlyUsedMap = streamManager.getRecentlyUsedMusic();
+  const cutoff = timepoint - TWENTY_FOUR_HOURS_IN_SECONDS;
+
+  // Remove entries older than 24 hours before the timepoint
+  for (const [key, usedTime] of recentlyUsedMap) {
+    if (usedTime < cutoff) {
+      streamManager.removeRecentlyUsedMusic(key);
+    }
+  }
+
+  // Return music not present in the recently used map
+  return music.filter((item) => !recentlyUsedMap.has(item.mediaItemId));
+}
+
+/**
+ * Filters movies by removing recently used entries from the stream manager,
+ * then returns only movies that are not in the recently used map.
+ *
+ * 1. Prunes entries from the recentlyUsedMovies map that are older than
+ *    24 hours before the given timepoint.
+ * 2. Returns movies whose mediaItemId does not appear in the remaining map.
+ *
+ * @param movies List of candidate movies
+ * @param timepoint Unix timestamp in seconds representing the current point in time
+ * @returns Movies that have not been recently used within the last 24 hours
+ */
+export function filterRecentlyUsedMovies(
+  movies: Movie[],
+  timepoint: number,
+): Movie[] {
+  const recentlyUsedMap = streamManager.getRecentlyUsedMovies();
+  const cutoff = timepoint - TWO_DAYS_IN_SECONDS;
+
+  // Remove entries older than 48 hours before the timepoint
+  for (const [key, usedTime] of recentlyUsedMap) {
+    if (usedTime < cutoff) {
+      streamManager.removeRecentlyUsedMovie(key);
+    }
+  }
+
+  // Return movies not present in the recently used map
+  return movies.filter((movie) => !recentlyUsedMap.has(movie.mediaItemId));
 }

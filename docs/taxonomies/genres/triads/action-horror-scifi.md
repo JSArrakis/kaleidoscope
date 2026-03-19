@@ -42,6 +42,6 @@ In Terminator 2, the T-1000 serves as a chilling example of sci-fi horror within
 
 In The Matrix, Agent Smith stands as an unrelenting, systemic threat to Neo, embodying an unstoppable force much like a horror villain. Smith is omnipresent, able to possess anyone within the Matrix, making him a symbol of inescapable control and oppression. His persistence, cold demeanor, and superhuman abilities create a sense of dread and unease, reminiscent of horror antagonists. The sci-fi element intensifies this feeling by embedding these encounters within a dystopian framework, where survival not only involves physical combat but also the existential threat of remaining trapped within a simulated reality. The action and horror are amplified by the film’s exploration of autonomy, surveillance, and human resilience.
 
-## How Action-Horror-Sci-Fi Stands Alone:
+## How Action-Horror-Sci-Fi Stands Out:
 
 Action-Horror-Sci-Fi stands apart by combining adrenaline, fear, and intellectual engagement. Unlike pure action, which focuses on physical conflict, or horror, which centers on fear, this genre uses both to explore complex, speculative ideas about technology, alien life, and the human condition. The sci-fi elements add layers of meaning and thematic depth, while the horror aspects increase tension, and the action keeps the pace relentless. In this genre, survival is never just about escaping immediate danger—it’s a multifaceted struggle against powerful, often incomprehensible forces that challenge the limits of human resilience and ingenuity.

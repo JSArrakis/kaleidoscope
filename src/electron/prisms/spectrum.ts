@@ -2,7 +2,11 @@ import { tagRepository } from "../repositories/tagsRepository.js";
 import { commercialRepository } from "../repositories/commercialRepository.js";
 import { shortRepository } from "../repositories/shortRepository.js";
 import { musicRepository } from "../repositories/musicRepository.js";
-import { segmentTags } from "../utils/common.js";
+import {
+  filterRecentlyUsedCommercials,
+  filterRecentlyUsedMusic,
+  filterRecentlyUsedShorts,
+} from "../services/streamConstruction/selectionHelpers.js";
 
 interface BufferMediaSelectionResult {
   commercials: Commercial[];
@@ -27,9 +31,32 @@ function shuffleAndHalve<T>(array: T[]): T[] {
   return shuffled.slice(0, Math.ceil(shuffled.length / 2));
 }
 
+function mergeUnique<T extends { mediaItemId: string }>(
+  existing: T[],
+  incoming: T[],
+): void {
+  const seen = new Set(existing.map((item) => item.mediaItemId));
+  for (const item of incoming) {
+    if (!seen.has(item.mediaItemId)) {
+      existing.push(item);
+      seen.add(item.mediaItemId);
+    }
+  }
+}
+
 /**
  * Validates if the current pool of shorts+music+commercials is sufficient
  * to fill buffers without excessive reuse over a 4-hour window.
+ *
+ * Media with invalid durations is excluded from the calculation:
+ * - Commercials under 5 seconds are ignored
+ * - Shorts and music under 2 minutes (120s) are ignored
+ *
+ * The number of estimated buffers is computed from the actual buffer duration
+ * rather than a fixed estimate, ensuring accuracy across varying buffer sizes.
+ *
+ * The usability score for shorts+music is capped at 1.0 so that an abundant
+ * pool never inflates its effective duration beyond its actual total.
  *
  * @param selectedCommercials - Currently selected commercials
  * @param selectedShorts - Currently selected shorts
@@ -41,18 +68,34 @@ export function isBufferMediaPoolValid(
   selectedCommercials: Commercial[],
   selectedShorts: Short[],
   selectedMusic: Music[],
-  halfBufferDuration: number
+  halfBufferDuration: number,
 ): boolean {
   const duration = halfBufferDuration * 2;
   const TWO_HOUR_POOL_SECONDS = 7200;
-  const ESTIMATED_BUFFERS_IN_4_HOURS = 8;
+  const FOUR_HOURS_SECONDS = 14400;
+  const MIN_COMMERCIAL_DURATION = 5;
+  const MIN_SHORT_OR_MUSIC_DURATION = 120;
 
-  // Combine shorts and music
-  const shortsAndMusic = [...selectedShorts, ...selectedMusic];
+  // Compute estimated buffers from actual buffer duration
+  const estimatedBuffers = Math.ceil(FOUR_HOURS_SECONDS / duration);
+
+  // Filter out invalid media (below minimum duration thresholds)
+  const validCommercials = selectedCommercials.filter(
+    (c) => (c.duration || 0) >= MIN_COMMERCIAL_DURATION,
+  );
+  const validShorts = selectedShorts.filter(
+    (s) => (s.duration || 0) >= MIN_SHORT_OR_MUSIC_DURATION,
+  );
+  const validMusic = selectedMusic.filter(
+    (m) => (m.duration || 0) >= MIN_SHORT_OR_MUSIC_DURATION,
+  );
+
+  // Combine valid shorts and music
+  const shortsAndMusic = [...validShorts, ...validMusic];
   const shortsAndMusicCount = shortsAndMusic.length;
   const shortsAndMusicTotalDuration = shortsAndMusic.reduce(
     (sum, item) => sum + (item.duration || 0),
-    0
+    0,
   );
 
   // Calculate usability score
@@ -63,14 +106,15 @@ export function isBufferMediaPoolValid(
 
   const slotsPerBuffer =
     avgDurationPerPiece > 0 ? Math.ceil(duration / avgDurationPerPiece) : 0;
-  const totalSlotsNeeded = ESTIMATED_BUFFERS_IN_4_HOURS * slotsPerBuffer;
+  const totalSlotsNeeded = estimatedBuffers * slotsPerBuffer;
 
+  // Cap at 1.0 so abundant pools don't inflate beyond their actual total duration
   const shortsAndMusicUsabilityScore =
     totalSlotsNeeded > 0
-      ? shortsAndMusicCount / totalSlotsNeeded
+      ? Math.min(shortsAndMusicCount / totalSlotsNeeded, 1.0)
       : shortsAndMusicCount > 0
-      ? 1.0
-      : 0;
+        ? 1.0
+        : 0;
 
   // Calculate usable duration
   const usableShortsAndMusicDuration =
@@ -80,10 +124,10 @@ export function isBufferMediaPoolValid(
   const commercialsNeeded =
     TWO_HOUR_POOL_SECONDS - usableShortsAndMusicDuration;
 
-  // Check if we have enough commercials
-  const commercialsTotalDuration = selectedCommercials.reduce(
+  // Check if we have enough valid commercials
+  const commercialsTotalDuration = validCommercials.reduce(
     (sum, commercial) => sum + (commercial.duration || 0),
-    0
+    0,
   );
 
   return commercialsTotalDuration >= commercialsNeeded;
@@ -93,9 +137,10 @@ export function selectBufferMedia(
   segmentedTags: SegmentedTags,
   activeHolidayTags: Tag[],
   duration: number,
-  shortOrMusicNumber: number
+  shortOrMusicNumber: number,
+  timepoint: number,
 ): BufferMediaSelectionResult {
-  const ageAdjacencyTags = getAgeGroups(segmentedTags.ageGroupTags);
+  const ageAdjacencyTags = getAgeGroups(segmentedTags.ageGroupTags); // VERIFIED
 
   // Start with empty results
   let selectedCommercials: Commercial[] = [];
@@ -108,19 +153,28 @@ export function selectBufferMedia(
       activeHolidayTags,
       ageAdjacencyTags,
       segmentedTags.specialtyTags,
-      duration
+      duration,
+    ); // VERIFIED
+    mergeUnique(
+      selectedCommercials,
+      filterRecentlyUsedCommercials(holidayResults.commercials, timepoint),
     );
-    selectedCommercials.push(...holidayResults.commercials);
-    selectedShorts.push(...holidayResults.shorts);
-    selectedMusic.push(...holidayResults.music);
+    mergeUnique(
+      selectedShorts,
+      filterRecentlyUsedShorts(holidayResults.shorts, timepoint),
+    );
+    mergeUnique(
+      selectedMusic,
+      filterRecentlyUsedMusic(holidayResults.music, timepoint),
+    );
 
     if (
       isBufferMediaPoolValid(
         selectedCommercials,
         selectedShorts,
         selectedMusic,
-        duration
-      )
+        duration,
+      ) // VERIFIED
     ) {
       return {
         commercials: selectedCommercials,
@@ -135,19 +189,28 @@ export function selectBufferMedia(
   if (segmentedTags.specialtyTags.length > 0) {
     const specialtyResults = getSpecialtyBufferMedia(
       segmentedTags.specialtyTags,
-      duration
+      duration,
+    ); // VERIFIED
+    mergeUnique(
+      selectedCommercials,
+      filterRecentlyUsedCommercials(specialtyResults.commercials, timepoint),
     );
-    selectedCommercials.push(...specialtyResults.commercials);
-    selectedShorts.push(...specialtyResults.shorts);
-    selectedMusic.push(...specialtyResults.music);
+    mergeUnique(
+      selectedShorts,
+      filterRecentlyUsedShorts(specialtyResults.shorts, timepoint),
+    );
+    mergeUnique(
+      selectedMusic,
+      filterRecentlyUsedMusic(specialtyResults.music, timepoint),
+    );
 
     if (
       isBufferMediaPoolValid(
         selectedCommercials,
         selectedShorts,
         selectedMusic,
-        duration
-      )
+        duration,
+      ) // VERIFIED
     ) {
       return {
         commercials: selectedCommercials,
@@ -167,18 +230,30 @@ export function selectBufferMedia(
       segmentedTags.genreTags,
       segmentedTags.aestheticTags,
       ageAdjacencyTags,
-      duration
+      duration,
+    ); // VERIFIED
+    mergeUnique(
+      selectedCommercials,
+      filterRecentlyUsedCommercials(
+        genreAndAestheticResults.commercials,
+        timepoint,
+      ),
     );
-    selectedCommercials.push(...genreAndAestheticResults.commercials);
-    selectedShorts.push(...genreAndAestheticResults.shorts);
-    selectedMusic.push(...genreAndAestheticResults.music);
+    mergeUnique(
+      selectedShorts,
+      filterRecentlyUsedShorts(genreAndAestheticResults.shorts, timepoint),
+    );
+    mergeUnique(
+      selectedMusic,
+      filterRecentlyUsedMusic(genreAndAestheticResults.music, timepoint),
+    );
     if (
       isBufferMediaPoolValid(
         selectedCommercials,
         selectedShorts,
         selectedMusic,
-        duration
-      )
+        duration,
+      ) // VERIFIED
     ) {
       return {
         commercials: selectedCommercials,
@@ -190,18 +265,27 @@ export function selectBufferMedia(
   }
 
   //Gate 4: Fallback Buffer Media
-  const ageOnlyResults = getAgeGroupOnlyBufferMedia(ageAdjacencyTags, duration);
-  selectedCommercials.push(...ageOnlyResults.commercials);
-  selectedShorts.push(...ageOnlyResults.shorts);
-  selectedMusic.push(...ageOnlyResults.music);
+  const ageOnlyResults = getAgeGroupOnlyBufferMedia(ageAdjacencyTags, duration); // VERIFIED
+  mergeUnique(
+    selectedCommercials,
+    filterRecentlyUsedCommercials(ageOnlyResults.commercials, timepoint),
+  );
+  mergeUnique(
+    selectedShorts,
+    filterRecentlyUsedShorts(ageOnlyResults.shorts, timepoint),
+  );
+  mergeUnique(
+    selectedMusic,
+    filterRecentlyUsedMusic(ageOnlyResults.music, timepoint),
+  );
 
   if (
     isBufferMediaPoolValid(
       selectedCommercials,
       selectedShorts,
       selectedMusic,
-      duration
-    )
+      duration,
+    ) // VERIFIED
   ) {
     return {
       commercials: selectedCommercials,
@@ -211,10 +295,19 @@ export function selectBufferMedia(
     };
   }
 
-  const untaggedResults = getUntaggedBufferMedia(duration);
-  selectedCommercials.push(...untaggedResults.commercials);
-  selectedShorts.push(...untaggedResults.shorts);
-  selectedMusic.push(...untaggedResults.music);
+  const untaggedResults = getUntaggedBufferMedia(duration); // VERIFIED
+  mergeUnique(
+    selectedCommercials,
+    filterRecentlyUsedCommercials(untaggedResults.commercials, timepoint),
+  );
+  mergeUnique(
+    selectedShorts,
+    filterRecentlyUsedShorts(untaggedResults.shorts, timepoint),
+  );
+  mergeUnique(
+    selectedMusic,
+    filterRecentlyUsedMusic(untaggedResults.music, timepoint),
+  );
 
   if (
     segmentedTags.ageGroupTags.length === 0 &&
@@ -224,19 +317,28 @@ export function selectBufferMedia(
   ) {
     const randomBufferMedia = getRandomBufferMedia(
       duration,
-      shortOrMusicNumber
+      shortOrMusicNumber,
     );
-    selectedCommercials.push(...randomBufferMedia.commercials);
-    selectedShorts.push(...randomBufferMedia.shorts);
-    selectedMusic.push(...randomBufferMedia.music);
+    mergeUnique(
+      selectedCommercials,
+      filterRecentlyUsedCommercials(randomBufferMedia.commercials, timepoint),
+    );
+    mergeUnique(
+      selectedShorts,
+      filterRecentlyUsedShorts(randomBufferMedia.shorts, timepoint),
+    );
+    mergeUnique(
+      selectedMusic,
+      filterRecentlyUsedMusic(randomBufferMedia.music, timepoint),
+    );
   }
 
   const isValid = isBufferMediaPoolValid(
     selectedCommercials,
     selectedShorts,
     selectedMusic,
-    duration
-  );
+    duration,
+  ); // VERIFIED
 
   // If not valid, shuffle and halve all arrays
   // This is to conserve variety in the buffer pool by not loading everything that matches for the
@@ -267,7 +369,7 @@ function getAgeGroups(ageGroupTags: Tag[]): Tag[] {
 
   // Get the lowest age group for viewer 'safety'
   const sortedAgeGroups = ageGroupTags.sort(
-    (a, b) => (a.sequence || 0) - (b.sequence || 0)
+    (a, b) => (a.sequence || 0) - (b.sequence || 0),
   );
   const baseAgeGroup = sortedAgeGroups[0];
   let adjacencyTags: Tag[] = [baseAgeGroup];
@@ -291,26 +393,26 @@ export function getHolidayBufferMedia(
   holidayTags: Tag[],
   ageGroupTags: Tag[],
   specialtyTags: Tag[],
-  duration: number
+  duration: number,
 ): BufferMedia {
   // Get all commercials that match holiday and age group tags from the DB
   const commercials = commercialRepository.findHolidayCommercials(
     ageGroupTags,
     holidayTags,
     specialtyTags,
-    duration
+    duration,
   );
   const shorts = shortRepository.findHolidayShorts(
     ageGroupTags,
     holidayTags,
     specialtyTags,
-    duration
+    duration,
   );
   const music = musicRepository.findHolidayMusic(
     ageGroupTags,
     holidayTags,
     specialtyTags,
-    duration
+    duration,
   );
   return {
     commercials,
@@ -321,12 +423,12 @@ export function getHolidayBufferMedia(
 
 export function getSpecialtyBufferMedia(
   specialtyTags: Tag[],
-  duration: number
+  duration: number,
 ): BufferMedia {
   // Get all commercials that match specialty tags from the DB
   const commercials = commercialRepository.findBySpecialtyTags(
     specialtyTags,
-    duration
+    duration,
   );
   const shorts = shortRepository.findBySpecialtyTags(specialtyTags, duration);
   const music = musicRepository.findBySpecialtyTags(specialtyTags, duration);
@@ -341,20 +443,20 @@ export function getGenreAndAestheticBufferMedia(
   genreTags: Tag[],
   aestheticTags: Tag[],
   ageGroupTags: Tag[],
-  duration: number
+  duration: number,
 ): BufferMedia {
   // Get all commercials that match genre/aesthetic and age group tags from the DB
   const commercials = commercialRepository.findByGenreAestheticAgeGroup(
     genreTags,
     aestheticTags,
     ageGroupTags,
-    duration
+    duration,
   );
   const shorts = shortRepository.findByGenreAestheticAgeGroup(
     genreTags,
     aestheticTags,
     ageGroupTags,
-    duration
+    duration,
   );
 
   //TODO: Music in this function will be picked by mosiac, as genre and aesthetic do not apply
@@ -370,12 +472,12 @@ export function getGenreAndAestheticBufferMedia(
 
 export function getAgeGroupOnlyBufferMedia(
   ageGroupTags: Tag[],
-  duration: number
+  duration: number,
 ) {
   // Get all commercials that match age group tags from the DB
   const commercials = commercialRepository.findByAgeGroupOnly(
     ageGroupTags,
-    duration
+    duration,
   );
   const shorts = shortRepository.findByAgeGroupOnly(ageGroupTags, duration);
   const music = musicRepository.findByAgeGroupOnly(ageGroupTags, duration);
@@ -400,7 +502,7 @@ export function getUntaggedBufferMedia(duration: number): BufferMedia {
 
 export function getRandomBufferMedia(
   duration: number,
-  shortOrMusicNumber: number
+  shortOrMusicNumber: number,
 ): BufferMedia {
   // Get up to 2 hours of random commercials under the passed duration
   const commercials =
@@ -411,7 +513,6 @@ export function getRandomBufferMedia(
   const shortsAndMusic = shortRepository.findRandomShortsAndMusicByCount(
     shortOrMusicNumber,
     duration,
-    duration
   );
 
   return {

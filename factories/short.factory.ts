@@ -9,7 +9,8 @@ export function createShort(
   duration?: number,
   path?: string,
   type?: MediaType,
-  tags?: any[]
+  tags?: any[],
+  isHolidayExclusive?: boolean,
 ): Short {
   const id = mediaItemId ?? randomUUID();
   return {
@@ -17,6 +18,7 @@ export function createShort(
     title: title ?? `Test Short ${id.substring(0, 8)}`,
     path: path ?? `/media/shorts/test-${id.substring(0, 8)}.mp4`,
     duration: duration ?? 300,
+    isHolidayExclusive: isHolidayExclusive ?? false,
     type: type ?? MediaType.Short,
     tags: tags ?? [],
     createdAt: new Date().toISOString(),

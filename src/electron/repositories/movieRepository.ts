@@ -74,10 +74,74 @@ export class MovieRepository {
       SELECT * 
       FROM movies 
       WHERE duration <= :maxDuration 
-      AND mediaItemId NOT IN (SELECT mediaItemId FROM recently_used_movies)
     `;
 
     const params: any = { maxDuration };
+
+    if (ageGroupIds.length > 0) {
+      // Build dynamic named parameters for age group IDs
+      const ageGroupPlaceholders = ageGroupIds
+        .map((_, index) => `:ageGroupId_${index}`)
+        .join(",");
+
+      query += `
+        AND mediaItemId IN (
+          SELECT mediaItemId FROM movie_tags 
+          WHERE tagId IN (${ageGroupPlaceholders})
+          GROUP BY mediaItemId 
+          HAVING COUNT(DISTINCT tagId) = :ageGroupsCount
+        )
+      `;
+
+      // Add each age group ID to params
+      ageGroupIds.forEach((id, index) => {
+        params[`ageGroupId_${index}`] = id;
+      });
+      params.ageGroupsCount = ageGroupIds.length;
+    }
+
+    query += ` ORDER BY RANDOM() LIMIT 1`;
+
+    const stmt = this.db.prepare(query);
+    const row = stmt.get(params) as any;
+    if (!row) return null;
+    return this.mapRowToMovie(row);
+  }
+
+  /**
+   * Find random movie under duration, excluding specified media IDs
+   * @param maxDuration Maximum duration in seconds
+   * @param ageGroups Age group tags to filter by
+   * @param mediaIdsToExclude List of media IDs to exclude from selection
+   * @returns Random movie matching criteria, or null if none available
+   */
+  findRandomMovieUnderDurationExcluding(
+    maxDuration: number,
+    ageGroups: Tag[],
+    mediaIdsToExclude: string[],
+  ): Movie | null {
+    const ageGroupIds = ageGroups.map((ageGroup) => ageGroup.tagId);
+
+    let query = `
+      SELECT * 
+      FROM movies 
+      WHERE duration <= :maxDuration 
+    `;
+
+    const params: any = { maxDuration };
+
+    // Exclude provided media IDs if the list is not empty
+    if (mediaIdsToExclude.length > 0) {
+      const excludePlaceholders = mediaIdsToExclude
+        .map((_, index) => `:excludeId_${index}`)
+        .join(",");
+
+      query += ` AND mediaItemId NOT IN (${excludePlaceholders})`;
+
+      mediaIdsToExclude.forEach((id, index) => {
+        params[`excludeId_${index}`] = id;
+      });
+    }
 
     if (ageGroupIds.length > 0) {
       // Build dynamic named parameters for age group IDs
@@ -173,7 +237,6 @@ export class MovieRepository {
         GROUP BY mediaItemId 
         HAVING COUNT(DISTINCT tagId) = ?
       )
-      AND mediaItemId NOT IN (SELECT mediaItemId FROM recently_used_movies)
       ORDER BY m.title
     `);
     const rows = stmt.all(maxDuration, ...tagIds, tagIds.length) as any[];
@@ -219,7 +282,6 @@ export class MovieRepository {
     }
 
     query += `
-      AND mediaItemId NOT IN (SELECT mediaItemId FROM recently_used_movies)
       ORDER BY m.title
     `;
 
@@ -354,6 +416,7 @@ export class MovieRepository {
       path: row.path,
       duration: row.duration,
       durationLimit: row.durationLimit,
+      isHolidayExclusive: !!row.isHolidayExclusive,
       type: MediaType.Movie,
       tags,
       createdAt: row.createdAt,

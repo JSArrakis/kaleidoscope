@@ -1,10 +1,7 @@
 import { facetRepository } from "../repositories/facetRepository.js";
 import { movieRepository } from "../repositories/movieRepository.js";
 import { showRepository } from "../repositories/showRepository.js";
-import {
-  doesNextEpisodeFitDuration,
-  incrementShowProgression,
-} from "../services/streamConstruction/selectionHelpers.js";
+import { doesNextEpisodeFitDuration } from "../services/streamConstruction/selectionHelpers.js";
 
 /**
  * Selects a facet relationship from a list using weighted distance selection
@@ -47,8 +44,7 @@ export function selectFacetRelationship(
 }
 
 /**
- * Finds matching facets based on genre and aesthetic tags
- * Returns facets and a boolean indicating if they are full genre/aesthetic pairs
+ * Finds matching facets based on genre and aesthetic tag pairings
  *
  * FACETS AS RELATIONSHIP MAPS
  * ===========================
@@ -56,24 +52,17 @@ export function selectFacetRelationship(
  * is Noir (aesthetic) + Sci-Fi (genre). This specific combination creates a unique thematic voice
  * that is recognizable for its narrative themes and subjects and the way it presents those themes or subjects.
  *
- * Facets define relationships between these one signature identity and another at varying distances. A full
+ * Facets define relationships between one signature identity and another at varying distances. A full
  * pairing is required for a meaningful relationship map because the distance is calculated
  * relative to that specific combined identity.
  *
- * BREAKING DETERMINISTIC LOOPS
- * =============================
- * If no full pairings are found, the caller (selectFacetAdjacentMedia) is responsible for
- * fallback logic: finding any media that shares genre OR aesthetic tags directly. This breaks
- * deterministic progressions without compromising the relationship map system.
- *
  * Algorithm:
- * 1. If both genres and aesthetics exist, find facets matching all genre-aesthetic pairings
- * 2. If only genres exist, find facets sharing those genres
- * 3. If only aesthetics exist, find facets sharing those aesthetics
- * 4. Return facets and boolean indicating if they are full pairs
+ * 1. Returns empty array if either genres or aesthetics are missing
+ * 2. Finds all facets matching each genre-aesthetic pairing combination
+ * 3. Returns array of matching facets
  *
  * @param segmentedTags SegmentedTags with genre and aesthetic tag arrays
- * @returns Object with facets array and isFullPair boolean
+ * @returns Array of facets matching the genre-aesthetic pairings, or empty array if insufficient tags
  */
 export function findMatchingFacets(segmentedTags: SegmentedTags): Facet[] {
   // If no genres and no aesthetics, can't find any facets

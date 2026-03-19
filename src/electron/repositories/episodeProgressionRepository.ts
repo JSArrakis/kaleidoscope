@@ -6,31 +6,28 @@ export class EpisodeProgressionRepository {
   }
 
   create(progression: EpisodeProgression): EpisodeProgression {
-    const transaction = this.db.transaction(() => {
-      const stmt = this.db.prepare(`
-        INSERT INTO episode_progressions (episodeProgressionId, showItemId, streamType, currentEpisodeNumber, totalEpisodes, lastPlayedDate)
-        VALUES (?, ?, ?, ?, ?, ?)
-      `);
+    const stmt = this.db.prepare(`
+      INSERT INTO episode_progression (show_media_item_id, stream_type, current_episode, last_played_timestamp, next_episode_duration_limit, next_episode_over_duration)
+      VALUES (?, ?, ?, ?, ?, ?)
+    `);
 
-      stmt.run(
-        progression.episodeProgressionId,
-        progression.showItemId,
-        progression.streamType,
-        progression.currentEpisodeNumber || null,
-        progression.totalEpisodes || null,
-        progression.lastPlayedDate || null,
-      );
-    });
+    const result = stmt.run(
+      progression.showItemId,
+      progression.streamType,
+      progression.currentEpisodeNumber ?? 0,
+      progression.lastPlayedTimestamp ?? 0,
+      progression.nextEpisodeDurationLimit ?? 0,
+      progression.nextEpisodeOverDuration ? 1 : 0,
+    );
 
-    transaction();
-    return this.findByProgressionId(progression.episodeProgressionId)!;
+    return this.findById(result.lastInsertRowid as number)!;
   }
 
-  findByProgressionId(episodeProgressionId: string): EpisodeProgression | null {
+  findById(id: number): EpisodeProgression | null {
     const stmt = this.db.prepare(
-      `SELECT * FROM episode_progressions WHERE episodeProgressionId = ?`,
+      `SELECT * FROM episode_progression WHERE id = ?`,
     );
-    const row = stmt.get(episodeProgressionId) as any;
+    const row = stmt.get(id) as any;
     if (!row) return null;
     return this.mapRowToProgression(row);
   }
@@ -40,7 +37,7 @@ export class EpisodeProgressionRepository {
     streamType: StreamType,
   ): EpisodeProgression | null {
     const stmt = this.db.prepare(
-      `SELECT * FROM episode_progressions WHERE showItemId = ? AND streamType = ?`,
+      `SELECT * FROM episode_progression WHERE show_media_item_id = ? AND stream_type = ?`,
     );
     const row = stmt.get(showItemId, streamType) as any;
     if (!row) return null;
@@ -49,7 +46,7 @@ export class EpisodeProgressionRepository {
 
   findByShow(showItemId: string): EpisodeProgression[] {
     const stmt = this.db.prepare(
-      `SELECT * FROM episode_progressions WHERE showItemId = ? ORDER BY streamType`,
+      `SELECT * FROM episode_progression WHERE show_media_item_id = ? ORDER BY stream_type`,
     );
     const rows = stmt.all(showItemId) as any[];
     return rows.map((row) => this.mapRowToProgression(row));
@@ -57,64 +54,69 @@ export class EpisodeProgressionRepository {
 
   findByStreamType(streamType: StreamType): EpisodeProgression[] {
     const stmt = this.db.prepare(
-      `SELECT * FROM episode_progressions WHERE streamType = :streamType`,
+      `SELECT * FROM episode_progression WHERE stream_type = ?`,
     );
-    const rows = stmt.all({ streamType }) as any[];
+    const rows = stmt.all(streamType) as any[];
     return rows.map((row) => this.mapRowToProgression(row));
   }
 
   findAll(): EpisodeProgression[] {
     const stmt = this.db.prepare(
-      `SELECT * FROM episode_progressions ORDER BY lastPlayedDate DESC`,
+      `SELECT * FROM episode_progression ORDER BY last_played_timestamp DESC`,
     );
     const rows = stmt.all() as any[];
     return rows.map((row) => this.mapRowToProgression(row));
   }
 
   updateEpisodeNumber(
-    episodeProgressionId: string,
+    id: number,
     currentEpisodeNumber: number,
-    totalEpisodes?: number,
   ): EpisodeProgression | null {
-    const transaction = this.db.transaction(() => {
-      const stmt = this.db.prepare(`
-        UPDATE episode_progressions 
-        SET currentEpisodeNumber = ?, lastPlayedDate = CURRENT_TIMESTAMP, updatedAt = CURRENT_TIMESTAMP
-        WHERE episodeProgressionId = ?
-      `);
-
-      stmt.run(currentEpisodeNumber, episodeProgressionId);
-
-      if (totalEpisodes !== undefined) {
-        const totalStmt = this.db.prepare(
-          `UPDATE episode_progressions SET totalEpisodes = ? WHERE episodeProgressionId = ?`,
-        );
-        totalStmt.run(totalEpisodes, episodeProgressionId);
-      }
-    });
-
-    transaction();
-    return this.findByProgressionId(episodeProgressionId);
-  }
-
-  resetProgression(episodeProgressionId: string): EpisodeProgression | null {
     const stmt = this.db.prepare(`
-      UPDATE episode_progressions 
-      SET currentEpisodeNumber = NULL, lastPlayedDate = NULL, updatedAt = CURRENT_TIMESTAMP
-      WHERE episodeProgressionId = ?
+      UPDATE episode_progression 
+      SET current_episode = ?, last_played_timestamp = ?, updated_at = CURRENT_TIMESTAMP
+      WHERE id = ?
     `);
 
-    const result = stmt.run(episodeProgressionId);
-    if (result.changes === 0) return null;
-
-    return this.findByProgressionId(episodeProgressionId);
+    stmt.run(currentEpisodeNumber, Date.now(), id);
+    return this.findById(id);
   }
 
-  delete(episodeProgressionId: string): boolean {
+  upsertByShowAndStreamType(
+    showItemId: string,
+    streamType: StreamType,
+    currentEpisodeNumber: number,
+  ): EpisodeProgression | null {
+    const stmt = this.db.prepare(`
+      INSERT INTO episode_progression (show_media_item_id, stream_type, current_episode, last_played_timestamp)
+      VALUES (?, ?, ?, ?)
+      ON CONFLICT(show_media_item_id, stream_type) DO UPDATE SET
+        current_episode = excluded.current_episode,
+        last_played_timestamp = excluded.last_played_timestamp,
+        updated_at = CURRENT_TIMESTAMP
+    `);
+
+    stmt.run(showItemId, streamType, currentEpisodeNumber, Date.now());
+    return this.findByShowAndStreamType(showItemId, streamType);
+  }
+
+  resetProgression(id: number): EpisodeProgression | null {
+    const stmt = this.db.prepare(`
+      UPDATE episode_progression 
+      SET current_episode = 0, last_played_timestamp = 0, updated_at = CURRENT_TIMESTAMP
+      WHERE id = ?
+    `);
+
+    const result = stmt.run(id);
+    if (result.changes === 0) return null;
+    return this.findById(id);
+  }
+
+  delete(id: number): boolean {
     const stmt = this.db.prepare(
-      `DELETE FROM episode_progressions WHERE episodeProgressionId = ?`,
+      `DELETE FROM episode_progression WHERE id = ?`,
     );
-    const result = stmt.run(episodeProgressionId);
+    const result = stmt.run(id);
     return result.changes > 0;
   }
 
@@ -123,7 +125,7 @@ export class EpisodeProgressionRepository {
     streamType: StreamType,
   ): boolean {
     const stmt = this.db.prepare(
-      `DELETE FROM episode_progressions WHERE showItemId = ? AND streamType = ?`,
+      `DELETE FROM episode_progression WHERE show_media_item_id = ? AND stream_type = ?`,
     );
     const result = stmt.run(showItemId, streamType);
     return result.changes > 0;
@@ -131,7 +133,7 @@ export class EpisodeProgressionRepository {
 
   count(): number {
     const stmt = this.db.prepare(
-      `SELECT COUNT(*) as count FROM episode_progressions`,
+      `SELECT COUNT(*) as count FROM episode_progression`,
     );
     const result = stmt.get() as any;
     return result.count;
@@ -139,14 +141,15 @@ export class EpisodeProgressionRepository {
 
   private mapRowToProgression(row: any): EpisodeProgression {
     return {
-      episodeProgressionId: row.episodeProgressionId,
-      showItemId: row.showItemId,
-      streamType: row.streamType,
-      currentEpisodeNumber: row.currentEpisodeNumber,
-      totalEpisodes: row.totalEpisodes,
-      lastPlayedDate: row.lastPlayedDate,
-      createdAt: row.createdAt,
-      updatedAt: row.updatedAt,
+      id: row.id,
+      showItemId: row.show_media_item_id,
+      streamType: row.stream_type,
+      currentEpisodeNumber: row.current_episode,
+      lastPlayedTimestamp: row.last_played_timestamp,
+      nextEpisodeDurationLimit: row.next_episode_duration_limit,
+      nextEpisodeOverDuration: !!row.next_episode_over_duration,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
     };
   }
 }

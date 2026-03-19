@@ -2,7 +2,6 @@ import { endOfDay } from "date-fns";
 import { tagRepository } from "../../repositories/tagsRepository.js";
 import { findNextCadenceTime, segmentTags } from "../../utils/common.js";
 
-import { recentlyUsedMediaRepository } from "../../repositories/recentlyUsedMediaRepository.js";
 import { createBuffer } from "../bufferConstructor.js";
 import * as playerManager from "../playerManager.js";
 import * as streamManager from "../streamManager.js";
@@ -31,35 +30,29 @@ import { selectRandomShowOrMovie } from "./mediaSelector.js";
  * - Themed FALSE: Random media selection
  *
  * @param streamConstructionOptions Configuration for stream (Cadence, Themed, etc)
- * @param startTimepoint Unix timestamp in seconds (usually current time)
  * @returns Tuple of [MediaBlock[], errorMessage]
  */
 export async function buildContinuousStream(
   streamConstructionOptions: StreamConstructionOptions,
-  startTimepoint: number,
 ): Promise<[MediaBlock[], string]> {
   const streamBlocks: MediaBlock[] = [];
-  const constructionStartTime = Date.now();
   let mediaBlocks: MediaBlock[] = [];
 
   try {
     // Initialize stream data
-    const initData = initializeContinuousStream(
-      startTimepoint,
-      streamConstructionOptions,
-    ); // VERIFIED
+    const initData = initializeContinuousStream(streamConstructionOptions); // VERIFIED
 
     if (!initData.selectedFirstMedia) {
       return [[], "No movies or shows found in database"];
     }
 
-    const dateString = getDateString(startTimepoint); // VERIFIED
+    const dateString = getDateString(initData.startingTimepoint); // VERIFIED
     const todayIsHolidayDate = isHolidayDate(
-      startTimepoint,
+      initData.startingTimepoint,
       initData.activeHolidayTags,
     ); // VERIFIED
     const todayIsHolidaySeason = isHolidaySeason(
-      startTimepoint,
+      initData.startingTimepoint,
       initData.activeHolidayTags,
     ); // VERIFIED
 
@@ -71,13 +64,21 @@ export async function buildContinuousStream(
         dateString,
         todayIsHolidayDate,
         todayIsHolidaySeason,
-        constructionStartTime,
       );
     } else {
       return [[], "Uncadenced continuous streams not yet implemented"];
     }
 
     streamBlocks.push(...mediaBlocks);
+
+    // Mark the stream as active and store the construction args
+    // so the background service's cycleCheck can manage On Deck/Upcoming
+    // and trigger day rollover.
+    streamManager.setContinuousStream(true);
+    streamManager.setContinuousStreamArgs({
+      Cadence: streamConstructionOptions.Cadence,
+      Themed: streamConstructionOptions.Themed,
+    } as IStreamRequest);
 
     console.log(
       `[ContinuousStreamBuilder] Created ${streamBlocks.length} media blocks`,
@@ -97,68 +98,21 @@ export async function buildContinuousStream(
  * Calculates end-of-day timestamp, loads active holidays, gets progression map, selects first media
  */
 function initializeContinuousStream(
-  incomingTimepoint: number,
   streamConstructionOptions: StreamConstructionOptions,
 ): StreamInitializationData {
-  const fullDateString = new Date(incomingTimepoint * 1000)
+  const startingTimepoint = Math.floor(Date.now() / 1000);
+  const fullDateString = new Date(startingTimepoint * 1000)
     .toISOString()
     .substring(0, 10); // Get only YYYY-MM-DD
 
-  // Get all recently used media to from DB
-  const recentlyUsedMedia: RecentlyUsedMedia[] =
-    recentlyUsedMediaRepository.findAll();
-  for (const media of recentlyUsedMedia) {
-    if (media.mediaType === MediaType.Movie) {
-      if (media.lastUsedDate) {
-        const unixTime = Math.floor(
-          new Date(media.lastUsedDate).getTime() / 1000,
-        );
-        // only add movies if theyve been used in the last 48 hours (configurable?)
-        if (unixTime >= incomingTimepoint - 48 * 3600) {
-          streamManager.addRecentlyUsedMovie(media.mediaItemId, unixTime);
-        }
-      }
-    }
-    if (media.mediaType === MediaType.Commercial) {
-      if (media.lastUsedDate) {
-        const unixTime = Math.floor(
-          new Date(media.lastUsedDate).getTime() / 1000,
-        );
-        // only add commercials if theyve been used in the last 3 hours (configurable?)
-        if (unixTime >= incomingTimepoint - 3 * 3600) {
-          streamManager.addRecentlyUsedCommercial(media.mediaItemId, unixTime);
-        }
-      }
-    }
-    if (media.mediaType === MediaType.Short) {
-      if (media.lastUsedDate) {
-        const unixTime = Math.floor(
-          new Date(media.lastUsedDate).getTime() / 1000,
-        );
-        // only add shorts if theyve been used in the last 24 hours (configurable?)
-        if (unixTime >= incomingTimepoint - 24 * 3600) {
-          streamManager.addRecentlyUsedShort(media.mediaItemId, unixTime);
-        }
-      }
-    }
-    if (media.mediaType === MediaType.Music) {
-      if (media.lastUsedDate) {
-        const unixTime = Math.floor(
-          new Date(media.lastUsedDate).getTime() / 1000,
-        );
-        // only add music if theyve been used in the last 24 hours (configurable?)
-        if (unixTime >= incomingTimepoint - 24 * 3600) {
-          streamManager.addRecentlyUsedMusic(media.mediaItemId, unixTime);
-        }
-      }
-    }
-  }
+  // Load recently used movies from DB into stream manager
+  streamManager.loadRecentlyUsedMovies(startingTimepoint);
 
   const activeHolidayTags =
     tagRepository.findActiveHolidaysByDate(fullDateString); // VERIFIED
 
   // Calculate end of day
-  const endOfDayDate = endOfDay(new Date(incomingTimepoint * 1000));
+  const endOfDayDate = endOfDay(new Date(startingTimepoint * 1000));
   const endOfDayUnix = Math.floor(endOfDayDate.getTime() / 1000);
 
   // TODO: Check for scheduled blocks
@@ -176,17 +130,17 @@ function initializeContinuousStream(
 
   // Calculate iteration duration (how many 30-min blocks fit)
   const iterationDuration =
-    Math.floor((endOfTimeWindow - incomingTimepoint) / (30 * 60)) * 30 * 60;
+    Math.floor((endOfTimeWindow - startingTimepoint) / (30 * 60)) * 30 * 60;
 
   // Get progression map for this stream type and set it on the stream manager
   const progressionMap = getProgressionsByStreamType(
     streamConstructionOptions.StreamType,
   ); // VERIFIED
-  streamManager.getStreamManager().setProgressionMap(progressionMap); // VERIFIED
+  streamManager.setProgressionMap(progressionMap); // VERIFIED
 
   // Select first random media as fallback
   const selectedFirstMedia = selectRandomShowOrMovie(
-    incomingTimepoint,
+    startingTimepoint,
     iterationDuration,
     [],
   ); // VERIFIED
@@ -194,7 +148,7 @@ function initializeContinuousStream(
   return {
     activeHolidayTags,
     progressionMap,
-    startingTimepoint: incomingTimepoint,
+    startingTimepoint: startingTimepoint,
     iterationDuration,
     endOfTimeWindow,
     selectedFirstMedia,
@@ -212,7 +166,6 @@ async function buildCadencedContinuousStream(
   dateString: string, // Date without time (YYYY-MM-DD) for holiday tag matching
   todayIsHolidayDate: boolean,
   todayIsHolidaySeason: boolean,
-  constructionStartTime: number,
 ): Promise<MediaBlock[]> {
   const streamBlocks: MediaBlock[] = [];
 
@@ -222,27 +175,25 @@ async function buildCadencedContinuousStream(
   if (nextCadenceTime > initData.startingTimepoint) {
     // CASE 1: Initial buffer needed before cadence point
     streamBlocks.push(
-      ...buildCadencedWithInitialBuffer(
+      ...(await buildCadencedWithInitialBuffer(
         streamConstructionOptions,
         initData,
         dateString,
         todayIsHolidayDate,
         todayIsHolidaySeason,
         nextCadenceTime,
-        constructionStartTime,
-      ),
+      )),
     );
   } else {
     // CASE 2: No initial buffer needed
     streamBlocks.push(
-      ...buildCadencedWithoutInitialBuffer(
+      ...(await buildCadencedWithoutInitialBuffer(
         streamConstructionOptions,
         initData,
         dateString,
         todayIsHolidayDate,
         todayIsHolidaySeason,
-        constructionStartTime,
-      ),
+      )),
     );
   }
 
@@ -254,24 +205,22 @@ async function buildCadencedContinuousStream(
  *
  * Flow:
  * 1. Create initial buffer media block (no mainBlock, just filler content)
- * 2. Push buffer to player immediately (occupies time while constructing)
+ * 2. Push buffer to player immediately — NOT added to On Deck (buffer-only, invisible to user)
  * 3. Create first anchor media block at nextCadenceTime
- * 4. Push first anchor to player
- * 5. Add both to onDeck list
- * 6. Select second anchor (informed by first anchor's tags)
- * 7. Create backfill buffer between first and second anchors
- * 8. Inject backfill into first anchor's buffer array
- * 9. Pass second anchor to stream constructor for remaining blocks
+ * 4. Push first anchor to player immediately (buys construction time)
+ * 5. Add first anchor to On Deck (Slot 1)
+ * 6. Call buildStreamIteration to select all remaining anchors and compute buffers
+ * 7. Wrap backfill buffer and send to player
+ * 8. Add iterationBlocks[0] to On Deck (Slot 2), rest to Upcoming
  */
-function buildCadencedWithInitialBuffer(
+async function buildCadencedWithInitialBuffer(
   streamConstructionOptions: StreamConstructionOptions,
   initData: StreamInitializationData,
   dateString: string, // Date without time (YYYY-MM-DD) for holiday tag matching
   todayIsHolidayDate: boolean,
   todayIsHolidaySeason: boolean,
   nextCadenceTime: number,
-  constructionStartTime: number,
-): MediaBlock[] {
+): Promise<MediaBlock[]> {
   const streamBlocks: MediaBlock[] = [];
 
   // Defensive check: ensure selectedFirstMedia exists
@@ -294,50 +243,81 @@ function buildCadencedWithInitialBuffer(
       firstMediaTags,
       initData.activeHolidayTags,
       initData.startingTimepoint,
-    );
+    ); // VERIFIED
 
     const initialBufferBlock = createMediaBlock(
       initialBufferResult.buffer,
       undefined, // No mainBlock for initial buffer
       initData.startingTimepoint,
-    );
+    ); // VERIFIED
 
-    // STEP 3: Push buffer to player immediately
-    const timeDeltaMs = Date.now() - constructionStartTime;
-    playerManager.addMediaBlockToPlayer(initialBufferBlock);
-    playerManager.play({ timeDelta: timeDeltaMs });
-
-    // STEP 4: Add initial buffer to onDeck
-    streamManager.addItemToOnDeck([initialBufferBlock]);
+    // STEP 3: Push buffer to player immediately so something is playing
+    // while we finish constructing the rest of the day's stream.
+    // Buffer-only blocks are NOT added to On Deck — they are invisible to the user
+    // and have no anchor media. The player handles them directly.
+    await playerManager.addMediaBlockToPlayer(initialBufferBlock);
     streamBlocks.push(initialBufferBlock);
   }
 
-  // STEP 5: Create first anchor media block at cadence point
+  // STEP 4: Create first anchor media block at cadence point
   const firstAnchorMediaBlock = createMediaBlock(
     [],
     initData.selectedFirstMedia as Movie | Episode,
     nextCadenceTime,
-  );
+  ); // VERIFIED
 
-  // STEP 6: Push first anchor to player
-  playerManager.addMediaBlockToPlayer(firstAnchorMediaBlock);
+  // STEP 5: Push first anchor to player — this is the critical buy-time push.
+  // The anchor (22+ min episode) gives us enough time to generate the rest of the day.
+  await playerManager.addMediaBlockToPlayer(firstAnchorMediaBlock);
 
-  // STEP 7: Add first anchor to onDeck
-  streamManager.addItemToOnDeck([firstAnchorMediaBlock]);
-  streamBlocks.push(firstAnchorMediaBlock);
-
-  // STEP 8-12: Use shared logic to select second anchor and build remaining stream
-  const [remainingStreamBlocks] = selectSecondAnchorAndBuildStream(
+  // STEP 6: Use shared logic to select all remaining anchors and build buffers
+  // incomingTimepoint = nextCadenceTime + durationLimit: the first anchor starts at
+  // nextCadenceTime, and advancing by durationLimit places the next block at the correct
+  // cadence boundary so fillStreamBlockBuffers sees the right structural gap.
+  const [backfillBuffer, iterationBlocks] = buildStreamIteration(
+    nextCadenceTime + firstAnchorMediaBlock.anchorMedia!.durationLimit,
+    initData.endOfTimeWindow,
+    initData.activeHolidayTags,
     streamConstructionOptions,
-    initData,
+    firstAnchorMediaBlock,
     dateString,
     todayIsHolidayDate,
     todayIsHolidaySeason,
-    firstAnchorMediaBlock,
-    nextCadenceTime,
   );
 
-  streamBlocks.push(...remainingStreamBlocks);
+  // STEP 7: Wrap backfillBuffer as a buffer-only MediaBlock and send to player.
+  // This is the filler content (commercials, shorts, music) that plays between the
+  // end of the initial buffer and the start of the first anchor. The player already
+  // has the first anchor queued — this slots in before it in the playback sequence.
+  // We do NOT inject this into firstAnchorMediaBlock.buffer because that block has
+  // already been handed to the player; we send this as its own block instead.
+  if (backfillBuffer.length > 0) {
+    const backfillDuration = backfillBuffer.reduce(
+      (sum, item) => sum + (item.duration || 0),
+      0,
+    );
+    const backfillBlock = createMediaBlock(
+      backfillBuffer,
+      undefined, // buffer-only, no anchor media
+      firstAnchorMediaBlock.startTime - backfillDuration,
+    );
+    await playerManager.addMediaBlockToPlayer(backfillBlock);
+    streamBlocks.push(backfillBlock);
+  }
+
+  // STEP 8: Populate On Deck (slots 1 & 2) and Upcoming
+  // Slot 1 — first anchor is already playing, register it as currently on deck
+  streamManager.addItemToOnDeck([firstAnchorMediaBlock]);
+  // Slot 2 — next up (locked in, user cannot change)
+  if (iterationBlocks.length > 0) {
+    streamManager.addItemToOnDeck([iterationBlocks[0]]);
+  }
+  // Upcoming — everything else (user can reorder until the background cycle moves them to On Deck)
+  if (iterationBlocks.length > 1) {
+    streamManager.addToUpcomingStream(iterationBlocks.slice(1));
+  }
+
+  streamBlocks.push(...iterationBlocks);
   return streamBlocks;
 }
 
@@ -346,21 +326,19 @@ function buildCadencedWithInitialBuffer(
  *
  * Flow:
  * 1. Create first anchor media block
- * 2. Push to player immediately (to buy construction time)
- * 3. Add to onDeck list
- * 4. Select second anchor media (themed or random)
- * 5. Create backfill buffer between first and second
- * 6. Inject backfill buffer into first anchor's buffer array
- * 7. Pass second anchor to stream constructor for remaining blocks
+ * 2. Push first anchor to player immediately (buys construction time)
+ * 3. Add first anchor to On Deck (Slot 1)
+ * 4. Call buildStreamIteration to select all remaining anchors and compute buffers
+ * 5. Wrap backfill buffer and send to player
+ * 6. Add iterationBlocks[0] to On Deck (Slot 2), rest to Upcoming
  */
-function buildCadencedWithoutInitialBuffer(
+async function buildCadencedWithoutInitialBuffer(
   streamConstructionOptions: StreamConstructionOptions,
   initData: StreamInitializationData,
   dateString: string,
   todayIsHolidayDate: boolean,
   todayIsHolidaySeason: boolean,
-  constructionStartTime: number,
-): MediaBlock[] {
+): Promise<MediaBlock[]> {
   const streamBlocks: MediaBlock[] = [];
 
   // Defensive check: ensure selectedFirstMedia exists
@@ -378,196 +356,100 @@ function buildCadencedWithoutInitialBuffer(
     initData.startingTimepoint,
   );
 
-  // STEP 2: Push to player immediately to buy construction time
-  const timeDeltaMs = Date.now() - constructionStartTime;
-  playerManager.addMediaBlockToPlayer(firstAnchorMediaBlock);
-  playerManager.play({ timeDelta: timeDeltaMs });
+  // STEP 2: Push first anchor to player immediately to buy construction time.
+  // No initial buffer here — we're already on a cadence mark, so the anchor plays right away.
+  await playerManager.addMediaBlockToPlayer(firstAnchorMediaBlock);
 
-  // STEP 3: Add to onDeck list
+  // STEP 3: Add first anchor to On Deck (Slot 1) — currently playing
   streamManager.addItemToOnDeck([firstAnchorMediaBlock]);
 
   streamBlocks.push(firstAnchorMediaBlock);
 
-  // STEP 4-8: Use shared logic to select second anchor and build remaining stream
-  const [remainingStreamBlocks] = selectSecondAnchorAndBuildStream(
-    streamConstructionOptions,
-    initData,
-    dateString,
-    todayIsHolidayDate,
-    todayIsHolidaySeason,
-    firstAnchorMediaBlock,
-    initData.startingTimepoint,
-  );
-
-  streamBlocks.push(...remainingStreamBlocks);
-  return streamBlocks;
-}
-
-/**
- * Selects second anchor, creates backfill, and constructs remaining stream blocks
- * Shared logic between WITH and WITHOUT initial buffer cases
- *
- * @param firstAnchorMediaBlock The first anchor block (already created)
- * @param firstAnchorTimepoint The start time of the first anchor
- * @returns Tuple of [MediaBlock[], secondAnchorMediaBlock]
- */
-function selectSecondAnchorAndBuildStream(
-  streamConstructionOptions: StreamConstructionOptions,
-  initData: StreamInitializationData,
-  dateString: string,
-  todayIsHolidayDate: boolean,
-  todayIsHolidaySeason: boolean,
-  firstAnchorMediaBlock: MediaBlock,
-  firstAnchorTimepoint: number,
-): [MediaBlock[], MediaBlock | null] {
-  const streamBlocks: MediaBlock[] = [];
-
-  // Defensive check: ensure selectedFirstMedia exists
-  if (!initData.selectedFirstMedia) {
-    console.error(
-      "[ContinuousStreamBuilder] Cannot build stream: no first media selected",
-    );
-    return [streamBlocks, null];
-  }
-
-  // Segment tags and select second anchor media (for buffer creation and stream continuation)
-  const segmentedTags = segmentTags(initData.selectedFirstMedia?.tags || []);
-
-  const secondAnchorMedia = streamConstructionOptions.Themed
-    ? selectThemedMedia(
-        segmentedTags,
-        firstAnchorTimepoint,
-        initData.iterationDuration,
-        initData.activeHolidayTags,
-        todayIsHolidayDate,
-        todayIsHolidaySeason,
-        dateString,
-      )
-    : selectRandomShowOrMovie(
-        firstAnchorTimepoint,
-        initData.iterationDuration,
-        segmentedTags.ageGroupTags,
-      );
-
-  if (!secondAnchorMedia) {
-    console.warn(
-      "[ContinuousStreamBuilder] Could not select second anchor media",
-    );
-    return [streamBlocks, null];
-  }
-
-  // Create second anchor media block (for buffer calculation)
-  const secondAnchorMediaBlock = createMediaBlock(
-    [],
-    secondAnchorMedia as Movie | Episode,
-    firstAnchorTimepoint + firstAnchorMediaBlock.duration,
-  );
-
-  // Create backfill buffer between first and second anchors
-  const backfillBuffer = createBackfillBuffer(
-    firstAnchorMediaBlock,
-    secondAnchorMediaBlock,
-    initData.activeHolidayTags,
-  );
-
-  // Inject backfill buffer into first anchor's buffer array
-  if (backfillBuffer && backfillBuffer.length > 0) {
-    firstAnchorMediaBlock.buffer = backfillBuffer;
-  }
-
-  // Pass second anchor to stream constructor for remaining blocks
-  const remainingStreamBlocks = constructContinuousStreamBlocks(
-    firstAnchorTimepoint + firstAnchorMediaBlock.duration,
+  // STEP 4: Use shared logic to select all remaining anchors and build buffers
+  // incomingTimepoint = startingTimepoint + durationLimit: the first anchor starts at
+  // startingTimepoint (already on cadence), and advancing by durationLimit places the
+  // next block at the correct cadence boundary.
+  const [backfillBuffer, iterationBlocks] = buildStreamIteration(
+    initData.startingTimepoint +
+      firstAnchorMediaBlock.anchorMedia!.durationLimit,
     initData.endOfTimeWindow,
-    initData.selectedFirstMedia.tags || [],
     initData.activeHolidayTags,
     streamConstructionOptions,
-    secondAnchorMediaBlock,
+    firstAnchorMediaBlock,
     dateString,
     todayIsHolidayDate,
     todayIsHolidaySeason,
   );
 
-  streamBlocks.push(...remainingStreamBlocks);
-  return [streamBlocks, secondAnchorMediaBlock];
-}
-
-/**
- * Creates backfill buffer between two anchor media blocks
- * Backfill is the difference between the media's actual duration and its duration slot
- *
- * @param mediaBlockA First anchor media block
- * @param mediaBlockB Second anchor media block (used for tag selection)
- * @param activeHolidayTags Active holiday tags for buffer theming
- * @returns Array of buffer media items (commercials, shorts, music)
- */
-function createBackfillBuffer(
-  mediaBlockA: MediaBlock,
-  mediaBlockB: MediaBlock,
-  activeHolidayTags: Tag[],
-): any[] {
-  let backfillDuration: number = 0;
-
-  if (
-    mediaBlockA.mainBlock &&
-    mediaBlockA.mainBlock.duration &&
-    mediaBlockA.mainBlock.durationLimit
-  ) {
-    backfillDuration =
-      mediaBlockA.mainBlock.durationLimit - mediaBlockA.mainBlock.duration;
+  // STEP 5: Wrap backfillBuffer as a buffer-only MediaBlock and send to player.
+  // This is the filler content that plays between the stream start and the first anchor.
+  // The player already has the first anchor queued — this slots in before it.
+  // We do NOT inject this into firstAnchorMediaBlock.buffer because that block has
+  // already been handed to the player; we send this as its own block instead.
+  if (backfillBuffer.length > 0) {
+    const backfillDuration = backfillBuffer.reduce(
+      (sum, item) => sum + (item.duration || 0),
+      0,
+    );
+    const backfillBlock = createMediaBlock(
+      backfillBuffer,
+      undefined, // buffer-only, no anchor media
+      firstAnchorMediaBlock.startTime - backfillDuration,
+    );
+    await playerManager.addMediaBlockToPlayer(backfillBlock);
+    streamBlocks.push(backfillBlock);
   }
 
-  if (backfillDuration <= 0) {
-    return [];
+  // STEP 6: Populate On Deck (Slot 2) and Upcoming
+  // Slot 2 — next up (locked in, user cannot change)
+  if (iterationBlocks.length > 0) {
+    streamManager.addItemToOnDeck([iterationBlocks[0]]);
+  }
+  // Upcoming — everything else (user can reorder until the background cycle moves them to On Deck)
+  if (iterationBlocks.length > 1) {
+    streamManager.addToUpcomingStream(iterationBlocks.slice(1));
   }
 
-  const tagsA = mediaBlockA.mainBlock?.tags || [];
-  const tagsB = mediaBlockB.mainBlock?.tags || [];
-  const backfillBufferResult = createBuffer(
-    backfillDuration,
-    tagsA,
-    tagsB,
-    activeHolidayTags,
-    mediaBlockA.startTime,
-  );
-
-  return backfillBufferResult.buffer;
+  streamBlocks.push(...iterationBlocks);
+  return streamBlocks;
 }
 
 /**
  * Constructs remaining media blocks for continuous stream until end of day
  * Handles themed vs random selection with holiday content awareness
+ * Returns both the blocks and any unfilled time remainder from buffer creation
  *
  * TODO: This is adapted from legacy streamConstructor.constructStream
  * Should be kept in sync with that logic until we fully migrate
+ *
+ * @returns Tuple of [(Promo | Music | Short | Commercial)[], MediaBlock[]]
  */
-function constructContinuousStreamBlocks(
+function buildStreamIteration(
   incomingTimepoint: number,
-  endOfTimeWindow: number,
-  firstMediaTags: Tag[],
+  endofTimeWindow: number,
   activeHolidayTags: Tag[],
   streamConstructionOptions: StreamConstructionOptions,
-  iterationFirstMediaBlock: MediaBlock,
+  precedingMediaBlock: MediaBlock,
   dateString: string,
   todayIsHolidayDate: boolean,
   todayIsHolidaySeason: boolean,
-): MediaBlock[] {
-  // Create a copy of progressionMap to avoid mutating the original
-
+): [(Promo | Music | Short | Commercial)[], MediaBlock[]] {
   const iterationBlocks: MediaBlock[] = [];
-  iterationBlocks.push(iterationFirstMediaBlock);
 
-  let timepoint = incomingTimepoint + iterationFirstMediaBlock.duration;
+  let timepoint = incomingTimepoint;
+  let previousAnchorType: MediaType | undefined =
+    precedingMediaBlock.anchorMedia?.type;
 
-  const segmentedTags = segmentTags(firstMediaTags);
+  let tags = precedingMediaBlock.anchorMedia?.tags || [];
 
-  while (timepoint < endOfTimeWindow) {
-    const remainingDuration = endOfTimeWindow - timepoint;
+  while (timepoint < endofTimeWindow) {
+    const segmentedTags = segmentTags(tags); // VERIFIED
+    const remainingDuration = endofTimeWindow - timepoint;
     if (remainingDuration <= 0) {
       break;
     }
 
-    const nextMedia = streamConstructionOptions.Themed
+    const selectedAnchor = streamConstructionOptions.Themed
       ? selectThemedMedia(
           segmentedTags,
           timepoint,
@@ -576,24 +458,227 @@ function constructContinuousStreamBlocks(
           todayIsHolidayDate,
           todayIsHolidaySeason,
           dateString,
-        )
+          previousAnchorType,
+        ) // VERIFIED
       : selectRandomShowOrMovie(
           timepoint,
           remainingDuration,
           segmentedTags.ageGroupTags,
-        );
+        ); // VERIFIED
 
-    if (!nextMedia) {
+    if (!selectedAnchor) {
       console.warn(
         `[ContinuousStreamBuilder] Could not select media at timepoint ${timepoint}`,
       );
       break;
     }
 
-    const block = createMediaBlock([], nextMedia as Movie | Episode, timepoint);
+    const block = createMediaBlock(
+      [],
+      selectedAnchor as Movie | Episode,
+      timepoint,
+    ); // VERIFIED
     iterationBlocks.push(block);
-    timepoint += block.duration;
+    previousAnchorType = selectedAnchor.type;
+    tags = selectedAnchor.tags || [];
+
+    // Track movies as recently used in-memory to avoid re-selection within this stream session
+    if (selectedAnchor.type === MediaType.Movie) {
+      streamManager.addRecentlyUsedMovie(selectedAnchor.mediaItemId, timepoint);
+    }
+
+    // Advance by durationLimit so the next block's startTime is at the cadence boundary.
+    // This creates the structural gap (durationLimit - duration) that fillStreamBlockBuffers
+    // uses to compute the buffer budget for each block.
+    timepoint += selectedAnchor.durationLimit;
   }
 
-  return iterationBlocks;
+  if (streamConstructionOptions.Cadence) {
+    const previousRemainderTime = streamManager.getRemainderTimeInSeconds();
+
+    const previousBuffer = createBuffer(
+      (precedingMediaBlock.anchorMedia?.durationLimit || 0) -
+        (precedingMediaBlock.anchorMedia?.duration || 0) +
+        previousRemainderTime,
+      precedingMediaBlock.anchorMedia?.tags || [],
+      iterationBlocks[0]?.anchorMedia?.tags || [],
+      activeHolidayTags,
+      precedingMediaBlock.startTime,
+    );
+
+    const finalRemainder = fillStreamBlockBuffers(
+      previousBuffer.remainingDuration,
+      iterationBlocks,
+      activeHolidayTags,
+    );
+
+    streamManager.setRemainderTimeInSeconds(finalRemainder);
+
+    return [previousBuffer.buffer, iterationBlocks];
+  }
+
+  return [[], iterationBlocks];
+}
+
+/**
+ * Fills buffer arrays for all media blocks in the iteration
+ * Creates filler content (commercials, shorts, music) between anchor media
+ *
+ * In cadenced mode, each block's startTime is placed at its cadence boundary:
+ * startTime advances by durationLimit, not anchor.duration. This creates a structural
+ * gap of (durationLimit - duration) between the end of the anchor and the start of the
+ * next block — that gap is the buffer slot. Any seconds the buffer constructor couldn't
+ * fill cascade forward as remainder to the next buffer.
+ *
+ * Algorithm:
+ * For each media block from 0 to length-2 (skip last block):
+ *   1. Calculate structural gap: nextBlock.startTime - (currentBlock.startTime + anchorDuration)
+ *      = durationLimit - duration (e.g. 1800 - 1320 = 480s for a 22-min show in a 30-min slot)
+ *   2. Combine gap with any carried-over remainder from previous buffer
+ *   3. Skip only if both are 0 (nothing to fill)
+ *   4. Create buffer using current and next block's tags
+ *   5. Attach buffer to current block's buffer array
+ *   6. Carry remainder forward to next iteration
+ *
+ * The last block has no buffer (the day rollover will backfill it when it triggers
+ * next-day generation — see STREAM_RUNTIME_DESIGN.md)
+ *
+ * @param timeRemainder Remaining duration from the preceding buffer to cascade in
+ * @param iterationBlocks Array of media blocks to fill buffers for
+ * @param activeHolidayTags Active holiday tags for themed buffer selection
+ * @returns Final remaining duration after all buffers created (carried to next cycle)
+ */
+function fillStreamBlockBuffers(
+  timeRemainder: number,
+  iterationBlocks: MediaBlock[],
+  activeHolidayTags: Tag[],
+): number {
+  let cumulativeRemainder = timeRemainder;
+
+  // Need at least 2 blocks to have a buffer between them
+  if (iterationBlocks.length < 2) {
+    return 0;
+  }
+
+  for (let i = 0; i < iterationBlocks.length - 1; i++) {
+    const currentBlock = iterationBlocks[i];
+    const nextBlock = iterationBlocks[i + 1];
+
+    // Calculate structural gap between end of current anchor and start of next block.
+    // Since timepoint advances by durationLimit, this equals (durationLimit - duration)
+    // for each block — e.g. 480s for a 22-min show in a 30-min slot.
+    const currentAnchorEndTime =
+      currentBlock.startTime + (currentBlock.anchorMedia?.duration || 0);
+    const bufferDuration = Math.max(
+      0,
+      nextBlock.startTime - currentAnchorEndTime,
+    );
+
+    // Total budget = structural gap + whatever remainder cascaded from the previous buffer.
+    // Skip only if there is truly nothing to fill.
+    const totalBufferDuration = bufferDuration + cumulativeRemainder;
+    if (totalBufferDuration <= 0) {
+      continue;
+    }
+
+    // Get tags from both anchor media for themed buffer creation
+    const tagsA = currentBlock.anchorMedia?.tags || [];
+    const tagsB = nextBlock.anchorMedia?.tags || [];
+
+    // Create buffer using both anchor media's tags
+    const bufferResult = createBuffer(
+      totalBufferDuration,
+      tagsA,
+      tagsB,
+      activeHolidayTags,
+      currentBlock.startTime,
+    );
+
+    // Attach buffer to current block
+    currentBlock.buffer = bufferResult.buffer;
+
+    // Carry remainder forward to next iteration
+    cumulativeRemainder = bufferResult.remainingDuration;
+  }
+
+  return cumulativeRemainder;
+}
+
+/**
+ * Rolls over the stream to the next day.
+ * Called by the background service when Upcoming is down to its last block
+ * (which has no buffer yet because it was the terminal block of the previous
+ * buildStreamIteration call — fillStreamBlockBuffers skips the last element).
+ *
+ * What this does:
+ * 1. Uses the last Upcoming block as `precedingMediaBlock` for continuity
+ * 2. Calls buildStreamIteration with the next day's timepoints
+ * 3. Backfills the last Upcoming block's `.buffer` with the returned backfillBuffer
+ *    (safe because this block has not yet moved to On Deck)
+ * 4. Appends all new anchor blocks to Upcoming
+ *
+ * This is the ONLY place where an existing Upcoming block's `.buffer` is mutated.
+ *
+ * @param streamConstructionOptions Options from the running stream (Cadence, Themed, StreamType)
+ * @param tomorrowTimepoint Unix timestamp for midnight of the next day
+ */
+export function rolloverToNextDay(
+  streamConstructionOptions: StreamConstructionOptions,
+  tomorrowTimepoint: number,
+): void {
+  const upcoming = streamManager.getUpcomingStream();
+
+  if (upcoming.length === 0) {
+    console.warn(
+      "[ContinuousStreamBuilder] rolloverToNextDay called but Upcoming is empty — skipping",
+    );
+    return;
+  }
+
+  // The last Upcoming block becomes the preceding context for the new day's iteration
+  const lastUpcomingBlock = upcoming[upcoming.length - 1];
+
+  // Compute next-day time window and date metadata
+  const tomorrowEndDate = endOfDay(new Date(tomorrowTimepoint * 1000));
+  const tomorrowEndUnix = Math.floor(tomorrowEndDate.getTime() / 1000);
+  const tomorrowDateString = new Date(tomorrowTimepoint * 1000)
+    .toISOString()
+    .substring(0, 10);
+
+  const activeHolidayTags =
+    tagRepository.findActiveHolidaysByDate(tomorrowDateString);
+  const tomorrowIsHolidayDate = isHolidayDate(
+    tomorrowTimepoint,
+    activeHolidayTags,
+  );
+  const tomorrowIsHolidaySeason = isHolidaySeason(
+    tomorrowTimepoint,
+    activeHolidayTags,
+  );
+
+  const [backfillBuffer, iterationBlocks] = buildStreamIteration(
+    tomorrowTimepoint,
+    tomorrowEndUnix,
+    activeHolidayTags,
+    streamConstructionOptions,
+    lastUpcomingBlock,
+    tomorrowDateString,
+    tomorrowIsHolidayDate,
+    tomorrowIsHolidaySeason,
+  );
+
+  // Backfill the last Upcoming block's buffer (it was skipped by fillStreamBlockBuffers
+  // as the terminal block of the previous day's iteration)
+  if (backfillBuffer.length > 0) {
+    lastUpcomingBlock.buffer = backfillBuffer;
+  }
+
+  // Append the new day's anchor blocks to Upcoming
+  if (iterationBlocks.length > 0) {
+    streamManager.addToUpcomingStream(iterationBlocks);
+  }
+
+  console.log(
+    `[ContinuousStreamBuilder] Day rollover complete — added ${iterationBlocks.length} blocks for ${tomorrowDateString}`,
+  );
 }
