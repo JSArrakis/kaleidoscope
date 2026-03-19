@@ -1,6 +1,6 @@
 # Wuxia
 
-Wuxia serves as the aesthetic framework for narratives that present stories through the lens of Chinese martial arts culture, honor codes, and stylized combat. It provides the visual, cultural, and tonal identity for stories set in ancient or imperial China, featuring martial artists with extraordinary abilities, codes of honor, and conflicts rooted in traditional Chinese philosophy and social structures. While Wuxia creates rich martial arts worlds, the specific narrative structure - whether Action, Adventure, Drama, or Romance - is supplied by the underlying story being told within this cultural presentation.
+Wuxia serves as the aesthetic framework for narratives that present stories through the lens of Chinese martial arts culture, honor codes, and stylized combat. It provides the visual, cultural, and tonal identity for stories set in ancient or imperial China, featuring martial artists with extraordinary abilities, codes of honor, and conflicts rooted in traditional Chinese philosophy and social structures. While Wuxia creates rich martial arts worlds the specific narrative structure, whether Action, Adventure, Drama, or Romance, is supplied by the underlying story being told within this cultural presentation.
 
 ## Core Characteristics of Wuxia Aesthetic:
 
@@ -18,7 +18,7 @@ Wuxia is deeply rooted in Chinese history and culture, typically set in imperial
 
 ### Stylized Combat and Supernatural Abilities
 
-Combat in Wuxia is highly stylized and often incorporates supernatural elements - characters can leap great distances, run on water, or channel internal energy (qi) for extraordinary feats. These abilities are grounded in martial arts tradition and philosophy rather than pure fantasy magic.
+Combat in Wuxia is highly stylized and often incorporates supernatural elements; characters can leap great distances, run on water, or channel internal energy (qi) for extraordinary feats. These abilities are grounded in martial arts tradition and philosophy rather than pure fantasy magic.
 
 ### Themes of Justice and Vengeance
 
@@ -26,7 +26,7 @@ Wuxia frequently explores themes of justice, revenge, and the struggle between g
 
 ### Brotherhood and Mentorship
 
-The aesthetic emphasizes relationships between martial artists - master and student, sworn brothers, rival schools, or allies united by common cause. These relationships drive character development and provide emotional stakes beyond individual conflicts.
+The aesthetic emphasizes relationships between martial artists; master and student, sworn brothers, rival schools, or allies united by common cause. These relationships drive character development and provide emotional stakes beyond individual conflicts.
 
 ## Narrative Genres Layered Over Wuxia Aesthetic
 
@@ -56,7 +56,7 @@ Exemplifies Wuxia Action-Adventure, where the protagonist's journey to confront 
 
 ### Kung Fu Panda:
 
-Shows Wuxia Adventure with Comedy elements, where Po's journey to become the Dragon Warrior follows classic martial arts training and self-discovery themes. The film uses Wuxia aesthetic elements - martial arts mastery, ancient Chinese setting, honor codes - while presenting them through an accessible, family-friendly lens.
+Shows Wuxia Adventure with Comedy elements, where Po's journey to become the Dragon Warrior follows classic martial arts training and self-discovery themes. The film uses Wuxia aesthetic elements - martial arts mastery, ancient Chinese setting, honor codes while presenting them through an accessible, family-friendly lens.
 
 ## As an Aesthetic Framework
 

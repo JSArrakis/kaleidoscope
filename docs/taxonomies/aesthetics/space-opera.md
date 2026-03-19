@@ -1,6 +1,6 @@
 # Space Opera
 
-(Meta) Space Opera serves as the overarching framework for expansive, high-stakes narratives set against the backdrop of space. It provides a canvas for exploring epic conflicts, technological advancements, and the fate of civilizations, but the specific narrative tropes—such as Heroic Journeys, clear moral arcs, and binary morality—are supplied by the narrative genres layered on top of the Space Opera framework.
+(Meta) Space Opera serves as the overarching framework for expansive, high-stakes narratives set against the backdrop of space. It provides a canvas for exploring epic conflicts, technological advancements, and the fate of civilizations, but the specific narrative tropes such as Heroic Journeys, clear moral arcs, and binary morality are supplied by the narrative genres layered on top of the Space Opera framework.
 
 ## Core Characteristics of Meta Space Opera:
 

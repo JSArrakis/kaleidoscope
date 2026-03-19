@@ -1,6 +1,6 @@
 # Musical
 
-Musical serves as the aesthetic framework for narratives that present stories through the integration of songs, choreography, and musical performance as primary storytelling devices. It provides the visual, cultural, and tonal identity for stories that embrace musical expression, choreographed movement, and lyrical storytelling as natural extensions of character development and plot advancement. While Musical creates distinctive performance-oriented environments and artistic expression, the specific narrative structure - whether Romance, Comedy, Drama, or Adventure - is supplied by the underlying story being told within this musical framework.
+Musical serves as the aesthetic framework for narratives that present stories through the integration of songs, choreography, and musical performance as primary storytelling devices. It provides the visual, cultural, and tonal identity for stories that embrace musical expression, choreographed movement, and lyrical storytelling as natural extensions of character development and plot advancement. While Musical creates distinctive performance-oriented environments and artistic expression, the specific narrative structure, whether Romance, Comedy, Drama, or Adventure, is supplied by the underlying story being told within this musical framework.
 
 ## Core Characteristics of Musical Aesthetic:
 
@@ -36,7 +36,7 @@ While Musical provides the performance framework, the narrative genre dictates h
 
 - **Musical Comedy:** Humorous stories that use songs and dance numbers to create comedic situations, character humor, and entertaining spectacle while maintaining lighthearted narrative goals.
 
-- **Musical Drama:** Character-driven stories where musical numbers reveal internal conflicts, emotional growth, and serious themes while using songs to deepen dramatic impact.
+- **Musical Drama:** Character driven stories where musical numbers reveal internal conflicts, emotional growth, and serious themes while using songs to deepen dramatic impact.
 
 - **Musical Adventure:** Quest narratives where songs accompany journeys, express heroic themes, and create excitement around exploration and discovery through musical storytelling.
 

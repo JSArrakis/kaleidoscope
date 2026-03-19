@@ -1,6 +1,6 @@
 # Military
 
-Military serves as the aesthetic framework for narratives that present stories through the institutional culture, hierarchical structures, and operational environments of armed forces. It provides the visual, cultural, and tonal identity for stories that embrace military discipline, chain of command, and the codes of conduct that define military life. While Military creates distinctive institutional environments and warrior cultures, the specific narrative structure - whether Action, Drama, Thriller, or Romance - is supplied by the underlying story being told within this military framework.
+Military serves as the aesthetic framework for narratives that present stories through the institutional culture, hierarchical structures, and operational environments of armed forces. It provides the visual, cultural, and tonal identity for stories that embrace military discipline, chain of command, and the codes of conduct that define military life. While Military creates distinctive institutional environments and warrior cultures, the specific narrative structure, whether Action, Drama, Thriller, or Romance, is supplied by the underlying story being told within this military framework.
 
 ## Core Characteristics of Military Aesthetic:
 

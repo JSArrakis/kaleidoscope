@@ -1,6 +1,6 @@
 # Sports
 
-Sports serves as the aesthetic framework for narratives that present stories through the lens of athletic competition, physical performance, and the cultural environments surrounding organized sports. It provides the visual, cultural, and tonal identity for stories that embrace competitive dynamics, team structures, training regimens, and the pursuit of athletic excellence. While Sports creates distinctive competitive environments and performance-focused cultures, the specific narrative structure - whether Drama, Romance, Action, or Thriller - is supplied by the underlying story being told within this athletic framework.
+Sports serves as the aesthetic framework for narratives that present stories through the lens of athletic competition, physical performance, and the cultural environments surrounding organized sports. It provides the visual, cultural, and tonal identity for stories that embrace competitive dynamics, team structures, training regimens, and the pursuit of athletic excellence. While Sports creates distinctive competitive environments and performance-focused cultures, the specific narrative structure, whether Drama, Romance, Action, or Thriller, is supplied by the underlying story being told within this athletic framework.
 
 ## Core Characteristics of Sports Aesthetic:
 
@@ -10,19 +10,19 @@ Sports is defined by its focus on physical performance, competitive events, and 
 
 ### Team Dynamics and Coaching Relationships
 
-Central to Sports aesthetics are the interpersonal relationships formed through athletic collaboration - teammate bonds, coach-player mentorship, rivalry dynamics, and the cultural hierarchies that develop within sports organizations and training environments.
+Central to Sports aesthetics are the interpersonal relationships formed through athletic collaboration; teammate bonds, coach-player mentorship, rivalry dynamics, and the cultural hierarchies that develop within sports organizations and training environments.
 
 ### Training and Preparation Rituals
 
-The aesthetic emphasizes the disciplined lifestyle required for athletic success - practice routines, physical conditioning, dietary restrictions, and the mental preparation that defines athletic culture across all competitive sports.
+The aesthetic emphasizes the disciplined lifestyle required for athletic success; practice routines, physical conditioning, dietary restrictions, and the mental preparation that defines athletic culture across all competitive sports.
 
 ### Competitive Environments and Athletic Venues
 
-Sports stories utilize specific athletic environments - stadiums, tracks, gyms, pools, racing circuits - that create distinctive visual and acoustic experiences while establishing the high-stakes atmosphere of competitive performance.
+Sports stories utilize specific athletic environments (stadiums, tracks, gyms, pools, racing circuits) that create distinctive visual and acoustic experiences while establishing the high-stakes atmosphere of competitive performance.
 
 ### Performance Pressure and Achievement Culture
 
-The aesthetic explores the psychological and social pressures of competitive athletics - public scrutiny, performance anxiety, the drive for records and championships, and the cultural significance placed on athletic achievement.
+The aesthetic explores the psychological and social pressures of competitive athletics such as public scrutiny, performance anxiety, the drive for records and championships, and the cultural significance placed on athletic achievement.
 
 ### Physical Risk and Injury Consequences
 
@@ -44,7 +44,7 @@ While Sports provides the competitive framework, the narrative genre dictates ho
 
 ### Rocky:
 
-Demonstrates Sports Drama, where boxing provides the framework for a working-class story about perseverance, self-respect, and personal achievement. The aesthetic uses training montages and boxing culture to explore themes of determination and dignity.
+Demonstrates Sports Drama, where boxing provides the framework for a working-class story about perseverance, self respect, and personal achievement. The aesthetic uses training montages and boxing culture to explore themes of determination and dignity.
 
 ### Days of Thunder:
 
@@ -56,7 +56,7 @@ Shows Sports Drama, where martial arts training becomes a framework for mentorsh
 
 ### Any Given Sunday:
 
-Exemplifies Sports Drama, where professional football provides the context for examining team dynamics, aging athletes, and the commercialization of sports. The aesthetic uses locker room culture and game-day pressure to explore character relationships.
+Exemplifies Sports Drama, where professional football provides the context for examining team dynamics, aging athletes, and the commercialization of sports. The aesthetic uses locker room culture and game day pressure to explore character relationships.
 
 ### Rush:
 

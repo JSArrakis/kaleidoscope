@@ -1,6 +1,6 @@
 # Superhero
 
-(Meta) Superhero serves as the overarching framework for narratives centered on extraordinary individuals with unique abilities or circumstances. It explores themes of power, responsibility, and identity within a context of heightened stakes and conflicts. While many superhero stories include elements like binary morality and the Hero’s Journey, these are narrative layers rather than intrinsic features of the framework. The meta-genre of Superhero provides the canvas, while specific narrative genres shape its moral and thematic focus.
+Superhero serves as the overarching framework for narratives centered on extraordinary individuals with unique abilities or circumstances. It explores themes of power, responsibility, and identity within a context of heightened stakes and conflicts. While many superhero stories include elements like binary morality and the Hero’s Journey, these are narrative layers rather than intrinsic features of the framework. The meta-genre of Superhero provides the canvas, while specific narrative genres shape its moral and thematic focus.
 
 ## Core Characteristics of Meta Superhero
 
@@ -18,7 +18,7 @@ Many superhero stories explore the tension between the hero’s public persona a
 
 ### Moral and Ethical Exploration
 
-Superhero stories often grapple with ethical questions—what it means to do good, the limits of power, and the impact of individual actions on society. While some stories operate within binary moral frameworks, others delve into gray areas, challenging traditional notions of heroism.
+Superhero stories often grapple with ethical questions such as what it means to do good, the limits of power, and the impact of individual actions on society. While some stories operate within binary moral frameworks, others delve into gray areas, challenging traditional notions of heroism.
 
 ## Narrative Genres Layered Over Superhero
 

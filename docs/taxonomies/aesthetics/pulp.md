@@ -1,12 +1,12 @@
 # Pulp
 
-Pulp serves as the aesthetic framework for narratives that present stories through the lens of exaggerated heroics, heightened reality, and larger-than-life adventure. It provides the visual, cultural, and tonal identity for stories that embrace bold spectacle, clear moral frameworks, and dramatic presentation reminiscent of early 20th century pulp magazines and serials. While Pulp creates worlds of heightened drama and adventure, the specific narrative structure - whether Action, Adventure, Horror, or Romance - is supplied by the underlying story being told within this spectacular presentation.
+Pulp serves as the aesthetic framework for narratives that present stories through the lens of exaggerated heroics, heightened reality, and larger-than-life adventure. It provides the visual, cultural, and tonal identity for stories that embrace bold spectacle, clear moral frameworks, and dramatic presentation reminiscent of early 20th century pulp magazines and serials. While Pulp creates worlds of heightened drama and adventure, the specific narrative structure, whether Action, Adventure, Horror, or Romance, is supplied by the underlying story being told within this spectacular presentation.
 
 ## Core Characteristics of Pulp Aesthetic:
 
 ### Exaggerated Heroics and Larger-than-Life Characters
 
-Pulp is rooted in bold, dramatic character archetypes - dashing heroes, dastardly villains, and colorful supporting characters who operate at heightened emotional and physical levels. The aesthetic emphasizes spectacular feats, dramatic gestures, and characters who embody clear virtues or vices without subtle ambiguity.
+Pulp is rooted in bold, dramatic character archetypes; dashing heroes, dastardly villains, and colorful supporting characters who operate at heightened emotional and physical levels. The aesthetic emphasizes spectacular feats, dramatic gestures, and characters who embody clear virtues or vices without subtle ambiguity.
 
 ### Heightened Reality and Spectacular Presentation
 
@@ -56,7 +56,7 @@ Shows Pulp Adventure with retro-futuristic elements, where the 1930s pulp vision
 
 ### The Mummy (1999):
 
-Exemplifies Pulp Adventure-Horror, where the resurrection of an ancient Egyptian priest creates opportunities for spectacular action, exotic locations, and larger-than-life supernatural threats presented with adventure serial pacing and heroic protagonists.
+Exemplifies Pulp Adventure-Horror, where the resurrection of an ancient Egyptian priest creates opportunities for spectacular action, exotic locations, and larger than life supernatural threats presented with adventure serial pacing and heroic protagonists.
 
 ### Kill Bill:
 

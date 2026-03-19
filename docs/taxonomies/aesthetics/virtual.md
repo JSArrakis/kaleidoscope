@@ -10,23 +10,23 @@ Virtual worlds operate by computer-based rules rather than physical reality - pr
 
 ### Interface and System Elements
 
-The aesthetic incorporates visual elements from computer interfaces - menus, icons, data streams, code fragments, system diagnostics, and digital displays that remind audiences of the technological nature of the environment.
+The aesthetic incorporates visual elements from computer interfaces; menus, icons, data streams, code fragments, system diagnostics, and digital displays that remind audiences of the technological nature of the environment.
 
 ### Avatar and Digital Identity
 
-Characters exist as digital representations - whether as programs with personalities, users controlling avatars, or consciousness transferred into digital form - with visual design that emphasizes their artificial nature while maintaining character authenticity.
+Characters exist as digital representations - whether as programs with personalities, users controlling avatars, or consciousness transferred into digital form with visual design that emphasizes their artificial nature while maintaining character authenticity.
 
 ### Virtual Space Architecture
 
-Environments are constructed rather than natural - geometric patterns, impossible architectures, spaces that can be modified by code or user permissions, with visual design that reflects digital construction rather than physical building.
+Environments are constructed rather than natural; geometric patterns, impossible architectures, spaces that can be modified by code or user permissions, with visual design that reflects digital construction rather than physical building.
 
 ### System-Based Conflicts and Solutions
 
-Problems and resolutions follow computer logic - debugging code, system crashes, viral infections, permission access, file corruption, with obstacles that are uniquely digital rather than physical in nature.
+Problems and resolutions follow computer logic; debugging code, system crashes, viral infections, permission access, file corruption, with obstacles that are uniquely digital rather than physical in nature.
 
 ### Technological Metaphor Integration
 
-Abstract computer concepts are visualized through metaphorical representation - firewalls as actual walls, viruses as monsters, data processing as physical transportation, making intangible digital processes tangible for storytelling.
+Abstract computer concepts are visualized through metaphorical representation; firewalls as actual walls, viruses as monsters, data processing as physical transportation, making intangible digital processes tangible for storytelling.
 
 ## Narrative Genres Layered Over Virtual Aesthetic
 
