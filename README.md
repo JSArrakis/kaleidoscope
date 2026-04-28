@@ -78,7 +78,9 @@ Kaleidoscope classifies media across six dimensions instead of relying on a sing
 
 Musical genres for music and music videos get their own separate dimension because they operate differently from visual media.
 
-The [full taxonomy documentation](docs/taxonomies/index.md) goes into much more depth on each of these, including why the definitions are drawn the way they are. I would recommend reading through this as there are things that might surprise you such as why Star Wars is not Science Fiction, even though there are spaceships. The documentation proves why.
+The [full taxonomy documentation](docs/taxonomies/index.md) goes into much more depth on each of these, including why the definitions are drawn the way they are. I would recommend reading through this as there are things that might surprise you, one example as why I believe Star Wars is not Science Fiction, even though there are spaceships. The documentation proves why.
+
+The inclusion of my specific definitions of different taxonomies in the documentation however are unimportant to the operation of the application. None of the taxonomies listed in my documentation are codified in any way into Kaleidoscope and should be considered a detailed guide on how to best utilize the system under conventional means. A user may create any taxonomy they wish based on their own idiom, whims and definitions. The taxonomies serve as examples and as optional default tags which are described below in the Proofs section.
 
 ---
 
