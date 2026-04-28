@@ -6,7 +6,7 @@
 
 [![CC BY-NC-SA 4.0][cc-by-nc-sa-shield]][cc-by-nc-sa]
 
-> **This project is a work in progress.** Core stream construction and media management are functional, but several features are still being built out. Documentation is actively being written alongside the codebase.
+> **This project is still in active development, but the core app is already usable.** Media management, taxonomy editing, prism tooling, continuous and ad hoc stream construction, and local playback-oriented scheduling are all implemented. Documentation is being updated alongside the codebase.
 
 ---
 
@@ -14,9 +14,24 @@
 
 Kaleidoscope is a personal television network simulator. You point it at your media library, and it builds a continuous broadcast channel from what you already own. Shows start on the hour or half-hour. "Commercials" (or any short form media lasting between 10 seconds and 2 minutes), shorts, and music videos fill the gaps between them. Promos and bumpers give the channel its own identity. It runs all day, every day, and rolls over at midnight into the next day's schedule without any intervention.
 
-None of this has to be running at full capacity. Anchors can play back-to-back without any buffer content between them, content can run in free sequence without being locked to the top or bottom of the hour, and the "taxonomy"-guided selection can be set aside entirely if you'd rather the stream just pull from your library without that kind of steering.
+None of this has to be running at full capacity. Anchors can play back-to-back without any buffer content between them, content can run in free sequence without being locked to the top or bottom of the hour, and the taxonomy-guided selection can be set aside entirely if you'd rather the stream just pull from your library without that kind of steering.
 
 The short version is that it tries to recreate what it felt like to turn on the TV in the 90s and early 2000s and just watch whatever was on, except everything on the channel belongs to you.
+
+---
+
+## Current Feature Set
+
+As of the current codebase, Kaleidoscope includes:
+
+- **Library management for core media types** — movies, shows, shorts, music, commercials, promos, bumpers, and collections all have dedicated management flows in the app.
+- **Taxonomy management** — genres, aesthetics, eras, specialties, holidays, age groups, and musical genres can be created and maintained in-app.
+- **Prism tooling** — Facets and Mosaic management screens are implemented, including facet relationship editing and facet-to-musical-genre mapping.
+- **Continuous and ad hoc streams** — both stream types support cadenced and uncadenced playback, as well as themed and random selection.
+- **Procedural theme walking** — streams can transition using taxonomies, facet relationships, holiday logic, and age-group-aware filtering instead of pure random shuffle.
+- **Collection-aware movie sequencing** — movie selections can continue through collections with scope-aware progression for continuous streams and programming blocks.
+- **Scheduled programming block insertion** — the stream builder can now inject scheduled Curated Movie Marathon, Tag Themed, and Show Order block segments directly into the generated stream timeline.
+- **SQLite-backed persistence** — core media, tags, collections, prisms, stream progressions, and collection progression state are persisted locally.
 
 ---
 
@@ -48,7 +63,7 @@ Kaleidoscope builds its streams around a few core ideas.
 
 ## The Taxonomy System
 
-The taxonomy system is the part of this project I've spent the most time thinking about, and where a majority of my work for this project has been centered. 
+The taxonomy system is the part of this project I've spent the most time thinking about, and where a majority of my work for this project has been centered.
 
 Standard genre labels are too blurry to be useful for thematic curation. "Science Fiction" covers everything from Arrival to Guardians of the Galaxy to Short Circuit, and those films have almost nothing in common as viewing experiences.
 
@@ -71,11 +86,11 @@ The [full taxonomy documentation](docs/taxonomies/index.md) goes into much more 
 
 The Prism system is how Kaleidoscope actually uses the taxonomies to make decisions. Taxonomies describe media. Prisms decide what to do with those descriptions.
 
-The core of it is called **Facets**: every combination of Genre and Aesthetic tags forms a facet, and the system maintains a distance matrix between facets so it knows which ones transition naturally into which others. When the stream needs to move from one anchor to the next, it looks at the source facet, consults the distance matrix, and selects a destination that feels adjacent rather than random. These distances start at a mid way point when a new facet is created between all other facets, and the user can manually adjust this value afterward. The user will also have the option to do an adjustment during the stream from the main UI as an upvote and downvote system to help do minor adjustments to a facet distance.
+The core of it is called **Facets**: every combination of Genre and Aesthetic tags forms a facet, and the system maintains a distance matrix between facets so it knows which ones transition naturally into which others. When the stream needs to move from one anchor to the next, it looks at the source facet, consults the distance matrix, and selects a destination that feels adjacent rather than random. New facet relationships begin at a neutral midpoint and can then be refined by the user through the Facets management UI.
 
-**Spectrum** handles the selection logic for buffer media to theme it closely to it's adjacent anchor media, weighting candidates based on how close they are to the current thematic position of the stream.
+**Spectrum** handles the selection logic for buffer media, weighting candidates based on how close they are to the current thematic position of the stream.
 
-**Mosaic** handles music. It maps facets to musical genres, so the music, music videos, and scored content that appear in a buffer can match the tone of the content around them.
+**Mosaic** handles music. It maps facets to musical genres, so the music, music videos, and scored content that appear in a buffer can match the tone of the content around them. The Mosaic editor is now part of the current UI, including facet selection, musical genre assignment, and in-modal search/filtering for genre selection.
 
 The [Prism documentation](docs/prisms/) is still being written, but the [Facets overview](docs/prisms/facets/index.md) covers some of these core concepts thoroughly.
 
@@ -83,11 +98,13 @@ The [Prism documentation](docs/prisms/) is still being written, but the [Facets 
 
 ## Taxonomy Proofs
 
-One of the more unusual pieces of this project is a growing library of proof files for individual movies and shows. Each proof is a written argument for why a specific piece of media deserves the taxonomy tags assigned to it, using the same definitions Kaleidoscope uses internally.
+One of the more unique pieces of documentation I have decided to include in this project is a growing library of proof files for individual movies and shows. Each proof is a written argument for why a specific piece of media deserves the taxonomy tags assigned to it, using the same definitions Kaleidoscope uses internally.
 
-This serves two purposes: it keeps the tagging honest and consistent, and it creates a paper trail for decisions that might otherwise feel arbitrary. The proofs are in [docs/proofs/](docs/proofs/) if you want to see how the classification reasoning works in practice in order to add your own and use the taxonomy system effectively.
+This serves two purposes: it keeps the tagging honest and consistent, and it creates a paper trail for decisions that might otherwise feel arbitrary. The proofs are in [docs/proofs/](docs/proofs/) if you want to see how the classification reasoning works in practice in order to add your own and use the taxonomy system effectively. This can be cross referenced with the description of the taxonomies found in the documentation located at [docs/taxonomies](docs/taxonomies/index.md)
 
-These proofs also serve as explanations for the preset taxonomies Kaleidoscope will automatically add to certain pieces of popular media when they are added to it's media pool. These taxonomies after they are automatically added can be adjusted or removed entirely.
+These proofs also serve as explanations for the preset taxonomies Kaleidoscope will automatically add to certain pieces of popular media when they are added to it's media pool and are linked by their IMDB tag (Star Wars: A New Hope having the tag tt0076759 as an example, which can be seen as part of the URL https://www.imdb.com/title/tt0076759/). These taxonomies after they are automatically added can be adjusted or removed entirely.
+
+It should be noted that these taxonomies are my own interpretation of the classification of genres and aesthetics and are not specifically codified in Kaleidoscope in any way other than the defaults that can be added with the IMDB link. If you disagree with any or all of my interpretations I encourage you to come up with your own classifications that will work within the system. Indeed there are many ways to classify taxonomies that exploit the system that I have created in unique and creative ways. Refer to the Backend Architecture documentation to learn how the Gate system works in selecting shows and movies if you wish to use the taxonomy system in unique ways outside of normal classification conventions.
 
 ---
 
@@ -146,15 +163,15 @@ npm test
 
 Kaleidoscope is functional but not finished. Here's what's actively in progress or coming up next.
 
-**Remote streaming via Plex, Jellyfin, and VLC.** Right now the channel plays locally. The plan is to pipe the output through ffmpeg into Plex, Jellyfin, and VLC so the stream can be watched on other devices or shared over a local network without sitting in front of the machine running it.
+**Remote streaming and broader playback targets.** Right now the channel is still fundamentally local-first. The next major step is pushing the constructed stream more cleanly into external targets such as Plex, Jellyfin, VLC, or other network-viewable outputs.
 
-**Mosaic completion.** The Mosaic system, which maps narrative facets to musical genres so music videos fit the tone of whatever surrounds them in the buffer, is partially implemented. Finishing it means music video selection in the buffer will be as thematically grounded as everything else.
+**Advanced programming block tooling.** Scheduled block execution is now in the backend, but block CRUD, fuller authoring workflows, richer schedule editing, and some of the more advanced edge policies still need to be finished in the app layer.
 
-**MP3 support with visualizer.** Buffer media is currently video-only. Adding MP3 support would let audio tracks (scored pieces, ambient tracks, anything without a video component) slot into the buffer using ffmpeg's built-in audio visualizer to generate something watchable while the music plays.
+**MP3 support with visualizer.** Buffer media is still effectively video-first. Adding MP3 support would allow scored pieces, ambient tracks, and audio-only media to enter the buffer through a generated visual layer.
 
-**Stream visualization UI.** There's no good way to see the full shape of an upcoming stream at a glance right now. The planned UI work is a proper timeline view of the day's schedule, showing anchors, buffers, and programming blocks laid out so you can see what's coming and make adjustments before it plays.
+**Stream visualization UI.** There's still no great bird's-eye view of the upcoming channel. A proper timeline view for anchors, buffers, and scheduled programming blocks is still planned.
 
-**Programming blocks.** The blocks system described in the docs is not yet fully implemented. When it is, you'll be able to designate stretches of the day as named, repeating blocks on a daily, weekly, monthly, or yearly schedule, each with their own rules for what runs inside them. Think Saturday morning cartoons, a weekly Friday night action block, or a late-night comedy rotation that fires every weeknight at 11. The block's identity comes from the combination of shows, movies, and supporting media you put inside it or the taxonomies that you imprint on the block.
+**Live tuning and curation polish.** Facets, Mosaic, and related prism tools are now in place, but there is still room for more runtime tuning controls, faster refinement workflows, and higher-level curation tools while the stream is already running.
 
 ---
 
@@ -165,6 +182,8 @@ The [docs folder](docs/) is the main reference for understanding how Kaleidoscop
 - [Project Overview](docs/index.md)
 - [Taxonomy System](docs/taxonomies/index.md)
 - [Prism System](docs/prisms/)
+- [Collections](docs/collections/index.md)
+- [Programming Blocks](docs/programmingBlocks/index.md)
 - [Backend Architecture](docs/BackendArchitecture.md)
 
 ---
