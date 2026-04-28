@@ -1,4 +1,5 @@
 import { getDB } from "../db/sqlite.js";
+import { MediaType } from "../models.js";
 
 export class BumperRepository {
   private get db() {
@@ -16,7 +17,7 @@ export class BumperRepository {
         bumper.title,
         bumper.mediaItemId,
         bumper.duration || null,
-        bumper.path
+        bumper.path,
       );
       this.insertTags(bumper.mediaItemId, bumper.tags);
     });
@@ -40,7 +41,7 @@ export class BumperRepository {
 
   findRandomBumper(): Bumper | null {
     const stmt = this.db.prepare(
-      `SELECT * FROM bumpers ORDER BY RANDOM() LIMIT 1`
+      `SELECT * FROM bumpers ORDER BY RANDOM() LIMIT 1`,
     );
     const row = stmt.get() as any;
     if (!row) return null;
@@ -70,7 +71,7 @@ export class BumperRepository {
         bumper.title,
         bumper.duration || null,
         bumper.path,
-        mediaItemId
+        mediaItemId,
       );
       if (result.changes === 0) return null;
 
@@ -99,7 +100,7 @@ export class BumperRepository {
   private insertTags(mediaItemId: string, tags: Tag[]): void {
     if (tags.length === 0) return;
     const stmt = this.db.prepare(
-      `INSERT INTO bumper_tags (mediaItemId, tagId) VALUES (?, ?)`
+      `INSERT INTO bumper_tags (mediaItemId, tagId) VALUES (?, ?)`,
     );
     for (const tag of tags) {
       stmt.run(mediaItemId, tag.tagId);

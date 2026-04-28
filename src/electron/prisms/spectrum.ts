@@ -2,6 +2,8 @@ import { tagRepository } from "../repositories/tagsRepository.js";
 import { commercialRepository } from "../repositories/commercialRepository.js";
 import { shortRepository } from "../repositories/shortRepository.js";
 import { musicRepository } from "../repositories/musicRepository.js";
+import { mosaicRepository } from "../repositories/mosaicRepository.js";
+import { facetRepository } from "../repositories/facetRepository.js";
 import {
   filterRecentlyUsedCommercials,
   filterRecentlyUsedMusic,
@@ -230,6 +232,7 @@ export function selectBufferMedia(
       segmentedTags.genreTags,
       segmentedTags.aestheticTags,
       ageAdjacencyTags,
+      segmentedTags.musicalGenreTags,
       duration,
     ); // VERIFIED
     mergeUnique(
@@ -431,7 +434,15 @@ export function getSpecialtyBufferMedia(
     duration,
   );
   const shorts = shortRepository.findBySpecialtyTags(specialtyTags, duration);
-  const music = musicRepository.findBySpecialtyTags(specialtyTags, duration);
+
+  // Coin-flip: 50% chance to skip specialty music selection.
+  // Prevents predictable repetition when a user has only a few
+  // specialty-tagged music items (e.g. during a show marathon).
+  const music =
+    Math.random() < 0.5
+      ? musicRepository.findBySpecialtyTags(specialtyTags, duration)
+      : [];
+
   return {
     commercials,
     shorts,
@@ -443,6 +454,7 @@ export function getGenreAndAestheticBufferMedia(
   genreTags: Tag[],
   aestheticTags: Tag[],
   ageGroupTags: Tag[],
+  musicalGenreTags: Tag[],
   duration: number,
 ): BufferMedia {
   // Get all commercials that match genre/aesthetic and age group tags from the DB
@@ -459,9 +471,45 @@ export function getGenreAndAestheticBufferMedia(
     duration,
   );
 
-  //TODO: Music in this function will be picked by mosiac, as genre and aesthetic do not apply
-  // to music.
-  const music: Music[] = [];
+  // Music selection: direct musical genre tags win over mosaic resolution.
+  // Path 1: Anchor has direct MusicalGenre tags → query music by those tagIds
+  let music: Music[] = [];
+  if (musicalGenreTags.length > 0) {
+    const directTagIds = musicalGenreTags.map((t) => t.tagId);
+    music = musicRepository.findByMusicalGenreTagIds(directTagIds, duration);
+  }
+
+  // Path 2: No direct tags → resolve facet → mosaic → musical genre tagIds
+  if (music.length === 0 && genreTags.length > 0 && aestheticTags.length > 0) {
+    const genreTagIds = genreTags.map((t) => t.tagId);
+    const aestheticTagIds = aestheticTags.map((t) => t.tagId);
+
+    // Find facets for all genre-aesthetic pairings, then look up mosaics
+    const mosaicTagIds: Set<string> = new Set();
+    for (const genreTagId of genreTagIds) {
+      for (const aestheticTagId of aestheticTagIds) {
+        const facet = facetRepository.findByGenreAndAestheticId(
+          genreTagId,
+          aestheticTagId,
+        );
+        if (facet) {
+          const mosaics = mosaicRepository.findByFacetId(facet.facetId);
+          for (const mosaic of mosaics) {
+            for (const tagId of mosaic.musicalGenres) {
+              mosaicTagIds.add(tagId);
+            }
+          }
+        }
+      }
+    }
+
+    if (mosaicTagIds.size > 0) {
+      music = musicRepository.findByMusicalGenreTagIds(
+        Array.from(mosaicTagIds),
+        duration,
+      );
+    }
+  }
 
   return {
     commercials,

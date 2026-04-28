@@ -1,4 +1,5 @@
 import { getDB } from "../db/sqlite.js";
+import { MediaType } from "../models.js";
 
 export class MusicRepository {
   private get db() {
@@ -270,6 +271,52 @@ export class MusicRepository {
       maxDuration,
       ...Object.fromEntries(
         specialtyTagIds.map((id, i) => [`:specialty${i}`, id]),
+      ),
+    };
+
+    const stmt = this.db.prepare(query);
+    const rows = stmt.all(queryParams) as any[];
+    const musicMap = new Map<string, Music>();
+
+    rows.forEach((row) => {
+      const music = this.mapRowToMusic(row);
+      musicMap.set(music.mediaItemId, music);
+    });
+
+    return Array.from(musicMap.values());
+  }
+
+  /**
+   * Find music by musical genre tagIds
+   * Used by spectrum Gate 3 for direct musical genre tags on anchor media
+   * or for mosaic-resolved musical genre tagIds from a facet
+   */
+  findByMusicalGenreTagIds(
+    musicalGenreTagIds: string[],
+    maxDuration: number,
+  ): Music[] {
+    if (musicalGenreTagIds.length === 0) {
+      return [];
+    }
+
+    const placeholders = musicalGenreTagIds
+      .map((_, i) => `:mgTag${i}`)
+      .join(",");
+
+    const query = `
+      SELECT DISTINCT m.* FROM music m
+      JOIN music_tags mt ON m.mediaItemId = mt.mediaItemId
+      WHERE m.duration IS NOT NULL
+        AND m.duration <= :maxDuration
+        AND m.isHolidayExclusive = 0
+        AND mt.tagId IN (${placeholders})
+      ORDER BY m.title
+    `;
+
+    const queryParams: Record<string, any> = {
+      maxDuration,
+      ...Object.fromEntries(
+        musicalGenreTagIds.map((id, i) => [`mgTag${i}`, id]),
       ),
     };
 

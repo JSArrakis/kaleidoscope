@@ -22,7 +22,7 @@ It is important to note that many films have multiple genres, and the combinatio
 
 Aesthetics define the visual, cultural, and tonal identity of media - the 'surface flavor' of how a story is presented. Unlike genres, aesthetics are not about the core plot structure, but about how that plot is dressed, framed, and delivered to the audience.
 
-Some Examples include Western, Wuxia, Space Opera, Mecha, Noir, Cyberpunk, Gothic, Fairy Tale, Fantasy, High Seas (Nautical), Post-Apocalyptic, and Mythic.
+Some Examples include Western, Wuxia, Martial Arts, Space Opera, Mecha, Noir, Cyberpunk, Gothic, Fairy Tale, Fantasy, High Seas (Nautical), Post-Apocalyptic, and Mythic.
 
 Aesthetics can cut across genres - Science Fiction media can be presented as a Space Opera (The Expanse), Post Apocalyptic (Interstellar), Mecha (Gundam), etc. By tracking aesthetics independently from narrative genre, Kaleidoscope can group thematically similar works even when their genres differ.
 
@@ -48,7 +48,7 @@ Age Groups ensure The Rescuers doesn’t play back-to-back with Annihilation - e
 
 ## 4 - Eras
 
-Eras define the time period in which media was produced. This gives Kaleidoscope the ability to group works by production style specifically surrounding where the media was produced. 
+Eras define the time period in which media was produced. This gives Kaleidoscope the ability to group works by production style specifically surrounding where the media was produced.
 
 What it is not:
 For users searching for a thematic continuity, viewers who want to experience a particular time period that is explicitly presented in the media such as things like "Ancient World" (Ben-Hur, Troy, 300), "Medieval" (A Knight's Tale, The Name of the Rose, Robin Hood), "Colonial America" (The Last of the Mohicans, The Patriot, Sleepy Hollow), etc - these specific types of 'era settings' are primarily meant for the Aesthetic taxonomy, the Eras taxonomy is something different.
@@ -104,4 +104,4 @@ Musical Genres apply exclusively to music videos and are not part of the core si
 
 Some Examples include: Rock, Synthwave, Fusion, Pop, Hip-Hop, Power Metal, Jazz, G-Funk, Country, Grunge, Electronic, and Classical.
 
-For Musical Genres in Kaleidoscope I have created a specific feature in which I call Mosaic. The core concept of Kaleidoscope is that the continuity of the stream of media should not be jarring to the experience. Thus to incoporate music videos as media to buffer the time between shows and movies, I needed a way to associate music to the other 6 taxonomies in some way. To accomplish this, Mosaic is designed to pick music based on an approximation of emotional correlation between a piece of music and the overall look, feel, and subject of the media that it is buffering. More on Mosaics **here**
+For Musical Genres in Kaleidoscope I have created a specific feature in which I call Mosaic. The core concept of Kaleidoscope is that the continuity of the stream of media should not be jarring to the experience. Thus to incoporate music videos as media to buffer the time between shows and movies, I needed a way to associate music to the other 6 taxonomies in some way. To accomplish this, Mosaic is designed to pick music based on an approximation of emotional correlation between a piece of music and the overall look, feel, and subject of the media that it is buffering. More on [Mosaics](../prisms/mosaics/index.md)

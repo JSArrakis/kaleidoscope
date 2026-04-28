@@ -1,4 +1,5 @@
 import { FC } from "react";
+import { TagType } from "../../../models";
 import { HolidaysViewModel } from "./Holidays.viewmodel";
 import styles from "./Holidays.module.css";
 import TagList from "../../../components/TagList/TagList";

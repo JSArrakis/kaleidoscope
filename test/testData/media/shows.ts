@@ -1,6 +1,12 @@
 import { createShow } from "../../../factories/show.factory";
 import { createEpisode } from "../../../factories/episode.factory";
-import { ageGroupTags, aestheticTags, eraTags, genreTags } from "../tags";
+import {
+  ageGroupTags,
+  aestheticTags,
+  eraTags,
+  genreTags,
+  specialtyTags,
+} from "../tags";
 
 export const sailormoon = createShow(
   "Sailor Moon",
@@ -34,7 +40,7 @@ export const sailormoon = createShow(
       1800,
       false,
       MediaType.Episode,
-      []
+      [],
     ),
     createEpisode(
       "1",
@@ -48,7 +54,7 @@ export const sailormoon = createShow(
       1800,
       false,
       MediaType.Episode,
-      []
+      [],
     ),
     createEpisode(
       "1",
@@ -62,7 +68,7 @@ export const sailormoon = createShow(
       1800,
       false,
       MediaType.Episode,
-      []
+      [],
     ),
     createEpisode(
       "1",
@@ -76,7 +82,7 @@ export const sailormoon = createShow(
       1800,
       false,
       MediaType.Episode,
-      []
+      [],
     ),
     createEpisode(
       "1",
@@ -90,9 +96,9 @@ export const sailormoon = createShow(
       1800,
       false,
       MediaType.Episode,
-      []
+      [],
     ),
-  ]
+  ],
 );
 export const reboot = createShow(
   "Reboot",
@@ -125,7 +131,7 @@ export const reboot = createShow(
       1800,
       false,
       MediaType.Episode,
-      []
+      [],
     ),
     createEpisode(
       "1",
@@ -139,7 +145,7 @@ export const reboot = createShow(
       1800,
       false,
       MediaType.Episode,
-      []
+      [],
     ),
     createEpisode(
       "1",
@@ -153,7 +159,7 @@ export const reboot = createShow(
       1800,
       false,
       MediaType.Episode,
-      []
+      [],
     ),
     createEpisode(
       "1",
@@ -167,7 +173,7 @@ export const reboot = createShow(
       1800,
       false,
       MediaType.Episode,
-      []
+      [],
     ),
     createEpisode(
       "1",
@@ -181,9 +187,9 @@ export const reboot = createShow(
       1800,
       false,
       MediaType.Episode,
-      []
+      [],
     ),
-  ]
+  ],
 );
 export const dragonballz = createShow(
   "Dragon Ball Z",
@@ -217,7 +223,7 @@ export const dragonballz = createShow(
       1800,
       false,
       MediaType.Episode,
-      []
+      [],
     ),
     createEpisode(
       "1",
@@ -231,7 +237,7 @@ export const dragonballz = createShow(
       1800,
       false,
       MediaType.Episode,
-      []
+      [],
     ),
     createEpisode(
       "1",
@@ -245,7 +251,7 @@ export const dragonballz = createShow(
       1800,
       false,
       MediaType.Episode,
-      []
+      [],
     ),
     createEpisode(
       "1",
@@ -259,7 +265,7 @@ export const dragonballz = createShow(
       1800,
       false,
       MediaType.Episode,
-      []
+      [],
     ),
     createEpisode(
       "1",
@@ -273,9 +279,9 @@ export const dragonballz = createShow(
       1800,
       false,
       MediaType.Episode,
-      []
+      [],
     ),
-  ]
+  ],
 );
 export const gundamwing = createShow(
   "Gundam Wing",
@@ -310,7 +316,7 @@ export const gundamwing = createShow(
       1800,
       false,
       MediaType.Episode,
-      []
+      [],
     ),
     createEpisode(
       "1",
@@ -324,7 +330,7 @@ export const gundamwing = createShow(
       1800,
       false,
       MediaType.Episode,
-      []
+      [],
     ),
     createEpisode(
       "1",
@@ -338,7 +344,7 @@ export const gundamwing = createShow(
       1800,
       false,
       MediaType.Episode,
-      []
+      [],
     ),
     createEpisode(
       "1",
@@ -352,7 +358,7 @@ export const gundamwing = createShow(
       1800,
       false,
       MediaType.Episode,
-      []
+      [],
     ),
     createEpisode(
       "1",
@@ -366,9 +372,9 @@ export const gundamwing = createShow(
       1800,
       false,
       MediaType.Episode,
-      []
+      [],
     ),
-  ]
+  ],
 );
 export const tenchimuyo = createShow(
   "Tenchi Muyo",
@@ -401,7 +407,7 @@ export const tenchimuyo = createShow(
       1800,
       false,
       MediaType.Episode,
-      []
+      [],
     ),
     createEpisode(
       "1",
@@ -415,7 +421,7 @@ export const tenchimuyo = createShow(
       1800,
       false,
       MediaType.Episode,
-      []
+      [],
     ),
     createEpisode(
       "1",
@@ -429,7 +435,7 @@ export const tenchimuyo = createShow(
       1800,
       false,
       MediaType.Episode,
-      []
+      [],
     ),
     createEpisode(
       "1",
@@ -443,7 +449,7 @@ export const tenchimuyo = createShow(
       3600,
       true,
       MediaType.Episode,
-      []
+      [],
     ),
     createEpisode(
       "2",
@@ -457,9 +463,9 @@ export const tenchimuyo = createShow(
       1800,
       false,
       MediaType.Episode,
-      []
+      [],
     ),
-  ]
+  ],
 );
 export const batmantheanimatedseries = createShow(
   "Batman: The Animated Series",
@@ -494,7 +500,7 @@ export const batmantheanimatedseries = createShow(
       1800,
       false,
       MediaType.Episode,
-      []
+      [],
     ),
     createEpisode(
       "1",
@@ -508,7 +514,7 @@ export const batmantheanimatedseries = createShow(
       1800,
       false,
       MediaType.Episode,
-      []
+      [],
     ),
     createEpisode(
       "1",
@@ -522,7 +528,7 @@ export const batmantheanimatedseries = createShow(
       1800,
       false,
       MediaType.Episode,
-      []
+      [],
     ),
     createEpisode(
       "1",
@@ -536,7 +542,7 @@ export const batmantheanimatedseries = createShow(
       1800,
       false,
       MediaType.Episode,
-      []
+      [],
     ),
     createEpisode(
       "1",
@@ -550,9 +556,9 @@ export const batmantheanimatedseries = createShow(
       1800,
       false,
       MediaType.Episode,
-      []
+      [],
     ),
-  ]
+  ],
 );
 export const startrekthenextgeneration = createShow(
   "Star Trek: The Next Generation",
@@ -585,7 +591,7 @@ export const startrekthenextgeneration = createShow(
       7200,
       true,
       MediaType.Episode,
-      []
+      [],
     ),
     createEpisode(
       "1",
@@ -599,7 +605,7 @@ export const startrekthenextgeneration = createShow(
       3600,
       false,
       MediaType.Episode,
-      []
+      [],
     ),
     createEpisode(
       "1",
@@ -613,7 +619,7 @@ export const startrekthenextgeneration = createShow(
       3600,
       false,
       MediaType.Episode,
-      []
+      [],
     ),
     createEpisode(
       "1",
@@ -627,7 +633,7 @@ export const startrekthenextgeneration = createShow(
       3600,
       false,
       MediaType.Episode,
-      []
+      [],
     ),
     createEpisode(
       "1",
@@ -641,9 +647,9 @@ export const startrekthenextgeneration = createShow(
       3600,
       false,
       MediaType.Episode,
-      []
+      [],
     ),
-  ]
+  ],
 );
 
 export const farscape = createShow(
@@ -677,7 +683,7 @@ export const farscape = createShow(
       3600,
       false,
       MediaType.Episode,
-      []
+      [],
     ),
     createEpisode(
       "1",
@@ -691,7 +697,7 @@ export const farscape = createShow(
       3600,
       false,
       MediaType.Episode,
-      []
+      [],
     ),
     createEpisode(
       "1",
@@ -705,7 +711,7 @@ export const farscape = createShow(
       3600,
       false,
       MediaType.Episode,
-      []
+      [],
     ),
     createEpisode(
       "1",
@@ -719,7 +725,7 @@ export const farscape = createShow(
       3600,
       false,
       MediaType.Episode,
-      []
+      [],
     ),
     createEpisode(
       "1",
@@ -733,9 +739,9 @@ export const farscape = createShow(
       3600,
       false,
       MediaType.Episode,
-      []
+      [],
     ),
-  ]
+  ],
 );
 
 export const talespin = createShow(
@@ -769,7 +775,7 @@ export const talespin = createShow(
       1800,
       false,
       MediaType.Episode,
-      []
+      [],
     ),
     createEpisode(
       "1",
@@ -783,7 +789,7 @@ export const talespin = createShow(
       1800,
       false,
       MediaType.Episode,
-      []
+      [],
     ),
     createEpisode(
       "1",
@@ -797,7 +803,7 @@ export const talespin = createShow(
       1800,
       false,
       MediaType.Episode,
-      []
+      [],
     ),
     createEpisode(
       "1",
@@ -811,7 +817,7 @@ export const talespin = createShow(
       1800,
       false,
       MediaType.Episode,
-      []
+      [],
     ),
     createEpisode(
       "1",
@@ -825,7 +831,260 @@ export const talespin = createShow(
       1800,
       false,
       MediaType.Episode,
-      []
+      [],
     ),
-  ]
+  ],
 );
+
+function makeEpisodes(
+  showId: string,
+  season: string,
+  entries: Array<{
+    title: string;
+    slug: string;
+    duration: number;
+    durationLimit?: number;
+  }>,
+): Episode[] {
+  return entries.map((entry, index) => {
+    const durationLimit =
+      entry.durationLimit ?? (entry.duration > 1800 ? 3600 : 1800);
+    return createEpisode(
+      season,
+      String(index + 1),
+      index + 1,
+      `/path/shows/${showId}/${entry.slug}.mp4`,
+      entry.title,
+      `${showId}-${entry.slug}`,
+      showId,
+      entry.duration,
+      durationLimit,
+      entry.duration > durationLimit,
+      MediaType.Episode,
+      [],
+    );
+  });
+}
+
+const xFilesEpisodes = makeEpisodes("xfiles", "1", [
+  { title: "Pilot", slug: "pilot", duration: 2870, durationLimit: 3600 },
+  {
+    title: "Deep Throat",
+    slug: "deep-throat",
+    duration: 2710,
+    durationLimit: 3600,
+  },
+  { title: "Squeeze", slug: "squeeze", duration: 2720, durationLimit: 3600 },
+  { title: "Conduit", slug: "conduit", duration: 2715, durationLimit: 3600 },
+  {
+    title: "The Jersey Devil",
+    slug: "the-jersey-devil",
+    duration: 2700,
+    durationLimit: 3600,
+  },
+]);
+
+export const xFiles = createShow(
+  "The X-Files",
+  "xfiles",
+  "x-files",
+  "tt0106179",
+  3600,
+  false,
+  [
+    genreTags.scifi,
+    genreTags.mystery,
+    genreTags.thriller,
+    genreTags.drama,
+    aestheticTags.contemporary,
+    aestheticTags.supernatural,
+    aestheticTags.urban,
+    ageGroupTags.mature,
+    eraTags.nineties,
+  ],
+  [],
+  MediaType.Show,
+  xFilesEpisodes.length,
+  xFilesEpisodes,
+);
+
+const twilightZoneEpisodes = makeEpisodes("twilightzone", "1", [
+  { title: "Where Is Everybody?", slug: "where-is-everybody", duration: 1500 },
+  { title: "One for the Angels", slug: "one-for-the-angels", duration: 1510 },
+  {
+    title: "Mr. Denton on Doomsday",
+    slug: "mr-denton-on-doomsday",
+    duration: 1515,
+  },
+  {
+    title: "The Sixteen-Millimeter Shrine",
+    slug: "sixteen-millimeter-shrine",
+    duration: 1505,
+  },
+  { title: "Walking Distance", slug: "walking-distance", duration: 1510 },
+]);
+
+export const twilightZone = createShow(
+  "The Twilight Zone",
+  "twilightzone",
+  "twilight-zone",
+  "tt0052520",
+  1800,
+  false,
+  [
+    genreTags.scifi,
+    genreTags.mystery,
+    genreTags.drama,
+    aestheticTags.noir,
+    aestheticTags.gothic,
+    ageGroupTags.youngAdult,
+    eraTags.sixties,
+  ],
+  [],
+  MediaType.Show,
+  twilightZoneEpisodes.length,
+  twilightZoneEpisodes,
+);
+
+const andorEpisodes = makeEpisodes("andor", "1", [
+  { title: "Kassa", slug: "kassa", duration: 2390, durationLimit: 3600 },
+  {
+    title: "That Would Be Me",
+    slug: "that-would-be-me",
+    duration: 2470,
+    durationLimit: 3600,
+  },
+  {
+    title: "Reckoning",
+    slug: "reckoning",
+    duration: 2460,
+    durationLimit: 3600,
+  },
+  { title: "Aldhani", slug: "aldhani", duration: 2910, durationLimit: 3600 },
+  {
+    title: "The Axe Forgets",
+    slug: "the-axe-forgets",
+    duration: 2860,
+    durationLimit: 3600,
+  },
+]);
+
+export const andor = createShow(
+  "Andor",
+  "andor",
+  "andor",
+  "tt9253284",
+  3600,
+  false,
+  [
+    genreTags.scifi,
+    genreTags.drama,
+    genreTags.thriller,
+    aestheticTags.spaceOpera,
+    aestheticTags.military,
+    aestheticTags.dystopian,
+    ageGroupTags.youngAdult,
+    eraTags.twentytwenties,
+    specialtyTags.starwars,
+  ],
+  [],
+  MediaType.Show,
+  andorEpisodes.length,
+  andorEpisodes,
+);
+
+const onePieceEpisodes = makeEpisodes("onepiece", "1", [
+  { title: "I'm Luffy!", slug: "im-luffy", duration: 1430 },
+  {
+    title: "Enter the Great Swordsman",
+    slug: "great-swordsman",
+    duration: 1430,
+  },
+  { title: "Morgan versus Luffy", slug: "morgan-vs-luffy", duration: 1430 },
+  { title: "Luffy's Past", slug: "luffys-past", duration: 1430 },
+  {
+    title: "A Terrifying Mysterious Power",
+    slug: "mysterious-power",
+    duration: 1430,
+  },
+]);
+
+export const onePiece = createShow(
+  "One Piece",
+  "onepiece",
+  "one-piece",
+  "tt0388629",
+  1800,
+  false,
+  [
+    genreTags.adventure,
+    genreTags.action,
+    genreTags.comedy,
+    aestheticTags.anime,
+    aestheticTags.pirate,
+    aestheticTags.fantasy,
+    ageGroupTags.family,
+    eraTags.twothousands,
+  ],
+  [],
+  MediaType.Show,
+  onePieceEpisodes.length,
+  onePieceEpisodes,
+);
+
+const misterRogersEpisodes = makeEpisodes("misterrogers", "1", [
+  { title: "The Flying Kites", slug: "the-flying-kites", duration: 1690 },
+  { title: "A Visit to a Bakery", slug: "visit-to-a-bakery", duration: 1690 },
+  {
+    title: "How People Make Crayons",
+    slug: "how-people-make-crayons",
+    duration: 1690,
+  },
+  { title: "Caring for Pets", slug: "caring-for-pets", duration: 1690 },
+  {
+    title: "Trees and Neighborhood Parks",
+    slug: "trees-and-parks",
+    duration: 1690,
+  },
+]);
+
+export const misterRogersNeighborhood = createShow(
+  "Mister Rogers' Neighborhood",
+  "misterrogersneighborhood",
+  "mister-rogers-neighborhood",
+  "tt0062588",
+  1800,
+  false,
+  [
+    genreTags.educational,
+    genreTags.drama,
+    aestheticTags.contemporary,
+    ageGroupTags.kids,
+    eraTags.seventies,
+  ],
+  [],
+  MediaType.Show,
+  misterRogersEpisodes.length,
+  misterRogersEpisodes,
+);
+
+export const realisticShows = [
+  xFiles,
+  twilightZone,
+  andor,
+  onePiece,
+  misterRogersNeighborhood,
+];
+
+export const shows: Show[] = [
+  sailormoon,
+  reboot,
+  dragonballz,
+  gundamwing,
+  tenchimuyo,
+  batmantheanimatedseries,
+  startrekthenextgeneration,
+  farscape,
+  talespin,
+  ...realisticShows,
+];

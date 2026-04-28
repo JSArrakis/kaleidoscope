@@ -1,10 +1,9 @@
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route } from "react-router-dom";
 import {
   Aesthetics,
   AgeGroups,
   Blocks,
   Bumpers,
-  Cascade,
   Collections,
   Commercials,
   Eras,
@@ -17,14 +16,15 @@ import {
   Movies,
   Music,
   MusicGenres,
+  Player,
   Promos,
   Settings,
   Shorts,
   Shows,
   Specialties,
   Splash,
-} from '../screens';
-import MainLayout from '../layouts/Main/MainLayout';
+} from "../screens";
+import MainLayout from "../layouts/Main/MainLayout";
 
 function RootStackNavigator() {
   return (
@@ -35,7 +35,6 @@ function RootStackNavigator() {
         <Route path="/age-groups" element={<AgeGroups />} />
         <Route path="/blocks" element={<Blocks />} />
         <Route path="/bumpers" element={<Bumpers />} />
-        <Route path="/cascade" element={<Cascade />} />
         <Route path="/collections" element={<Collections />} />
         <Route path="/commercials" element={<Commercials />} />
         <Route path="/eras" element={<Eras />} />
@@ -48,6 +47,7 @@ function RootStackNavigator() {
         <Route path="/movies" element={<Movies />} />
         <Route path="/music" element={<Music />} />
         <Route path="/music-genres" element={<MusicGenres />} />
+        <Route path="/player" element={<Player />} />
         <Route path="/promos" element={<Promos />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="/shorts" element={<Shorts />} />

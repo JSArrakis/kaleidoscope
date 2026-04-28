@@ -4,17 +4,17 @@ import Modal from "../Modal/Modal";
 import CurationItem from "./CurationItem/CurationItem";
 import CurationEditForm from "../CurationEditForm/CurationEditForm";
 interface CurationItemListProps {
-  curationItem: PrismCurationObj;
-  curationList: PrismCurationObj[];
+  curationItem: Collection;
+  curationList: Collection[];
   formType: string;
   itemType: string;
   mediaList: Movie[];
   isEditModalOpen: boolean;
   onAddItem: () => void;
-  onEdit: (item: PrismCurationObj) => void;
-  onSave: (item: PrismCurationObj) => void;
-  onSaveNew: (item: PrismCurationObj) => void;
-  onRemove: (item: PrismCurationObj) => void;
+  onEdit: (item: Collection) => void;
+  onSave: (item: Collection) => void;
+  onSaveNew: (item: Collection) => void;
+  onRemove: (item: Collection) => void;
 }
 
 const CurationItemList: FC<CurationItemListProps> = ({
@@ -33,7 +33,7 @@ const CurationItemList: FC<CurationItemListProps> = ({
   const [curationListSearchTerm, setCurationListSearchTerm] = useState("");
   const searchCurationItemsRef = useRef<HTMLInputElement>(null);
   const [filteredCurationList, setFilterCurationList] =
-    useState<PrismCurationObj[]>(curationList);
+    useState<Collection[]>(curationList);
 
   useEffect(() => {
     setFilterCurationList(curationList);
@@ -49,7 +49,7 @@ const CurationItemList: FC<CurationItemListProps> = ({
     const debouncedSearch = setTimeout(() => {
       const searchTerm = curationListSearchTerm.toLowerCase();
       const filteredList = curationList.filter(
-        (item) => item.title && item.title.toLowerCase().includes(searchTerm)
+        (item) => item.title && item.title.toLowerCase().includes(searchTerm),
       );
       setFilterCurationList(filteredList);
     }, 600);
@@ -79,7 +79,7 @@ const CurationItemList: FC<CurationItemListProps> = ({
       <div className={styles.mediaList}>
         {filteredCurationList.map((item) => (
           <CurationItem
-            key={item.mediaItemId}
+            key={item.collectionId}
             item={item}
             onEdit={onEdit}
             onSaveNew={onSaveNew}

@@ -244,9 +244,10 @@ function createTestDatabaseSchema(db: Database.Database): void {
   db.exec(`
     CREATE TABLE IF NOT EXISTS collections (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      mediaItemId TEXT UNIQUE NOT NULL,
+      collectionId TEXT UNIQUE NOT NULL,
       title TEXT NOT NULL,
       description TEXT,
+      itemCount INTEGER DEFAULT 0,
       createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
       updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
     )
@@ -256,14 +257,142 @@ function createTestDatabaseSchema(db: Database.Database): void {
   db.exec(`
     CREATE TABLE IF NOT EXISTS collection_items (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
+      collectionItemId TEXT UNIQUE NOT NULL,
       collectionId TEXT NOT NULL,
       mediaItemId TEXT NOT NULL,
-      mediaItemTitle TEXT NOT NULL,
       sequence INTEGER NOT NULL,
       createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (collectionId) REFERENCES collections (mediaItemId) ON DELETE CASCADE,
+      updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (collectionId) REFERENCES collections (collectionId) ON DELETE CASCADE,
       UNIQUE(collectionId, mediaItemId),
       UNIQUE(collectionId, sequence)
+    )
+  `);
+
+  // Programming blocks table
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS programming_blocks (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      programmingBlockId TEXT UNIQUE NOT NULL,
+      name TEXT NOT NULL,
+      type TEXT NOT NULL,
+      durationMinutes INTEGER NOT NULL,
+      active INTEGER DEFAULT 1,
+      specialtyTagId TEXT,
+      movieMode TEXT,
+      createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (specialtyTagId) REFERENCES tags(tagId)
+    )
+  `);
+
+  // Programming block schedules
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS programming_block_schedules (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      programmingBlockId TEXT NOT NULL,
+      recurrence TEXT NOT NULL,
+      year INTEGER,
+      month INTEGER,
+      dayOfMonth INTEGER,
+      daysOfWeek TEXT,
+      timeOfDay TEXT NOT NULL,
+      createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (programmingBlockId) REFERENCES programming_blocks(programmingBlockId) ON DELETE CASCADE,
+      UNIQUE(programmingBlockId)
+    )
+  `);
+
+  // Programming block ordered show members
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS programming_block_show_items (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      programmingBlockItemId TEXT UNIQUE NOT NULL,
+      programmingBlockId TEXT NOT NULL,
+      showItemId TEXT NOT NULL,
+      sequence INTEGER NOT NULL,
+      createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (programmingBlockId) REFERENCES programming_blocks(programmingBlockId) ON DELETE CASCADE,
+      FOREIGN KEY (showItemId) REFERENCES shows(mediaItemId) ON DELETE CASCADE,
+      UNIQUE(programmingBlockId, showItemId),
+      UNIQUE(programmingBlockId, sequence)
+    )
+  `);
+
+  // Programming block ordered movie members
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS programming_block_movie_items (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      programmingBlockItemId TEXT UNIQUE NOT NULL,
+      programmingBlockId TEXT NOT NULL,
+      movieItemId TEXT NOT NULL,
+      sequence INTEGER NOT NULL,
+      createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (programmingBlockId) REFERENCES programming_blocks(programmingBlockId) ON DELETE CASCADE,
+      FOREIGN KEY (movieItemId) REFERENCES movies(mediaItemId) ON DELETE CASCADE,
+      UNIQUE(programmingBlockId, movieItemId),
+      UNIQUE(programmingBlockId, sequence)
+    )
+  `);
+
+  // Programming block thematic tags
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS programming_block_tags (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      programmingBlockId TEXT NOT NULL,
+      tagId TEXT NOT NULL,
+      createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (programmingBlockId) REFERENCES programming_blocks(programmingBlockId) ON DELETE CASCADE,
+      FOREIGN KEY (tagId) REFERENCES tags(tagId) ON DELETE CASCADE,
+      UNIQUE(programmingBlockId, tagId)
+    )
+  `);
+
+  // Programming block bumper pools
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS programming_block_bumpers (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      programmingBlockId TEXT NOT NULL,
+      bumperItemId TEXT NOT NULL,
+      scope TEXT NOT NULL,
+      sequence INTEGER,
+      createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (programmingBlockId) REFERENCES programming_blocks(programmingBlockId) ON DELETE CASCADE,
+      FOREIGN KEY (bumperItemId) REFERENCES bumpers(mediaItemId) ON DELETE CASCADE,
+      UNIQUE(programmingBlockId, bumperItemId, scope)
+    )
+  `);
+
+  // Block-scoped progression table
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS programming_block_episode_progression (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      programmingBlockId TEXT NOT NULL,
+      showItemId TEXT NOT NULL,
+      currentEpisode INTEGER DEFAULT 0,
+      lastPlayedTimestamp INTEGER DEFAULT 0,
+      createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (programmingBlockId) REFERENCES programming_blocks(programmingBlockId) ON DELETE CASCADE,
+      FOREIGN KEY (showItemId) REFERENCES shows(mediaItemId) ON DELETE CASCADE,
+      UNIQUE(programmingBlockId, showItemId)
+    )
+  `);
+
+  // Block movie history table
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS programming_block_movie_history (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      programmingBlockId TEXT NOT NULL,
+      movieItemId TEXT NOT NULL,
+      playedAt INTEGER NOT NULL,
+      scheduledDate TEXT NOT NULL,
+      createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (programmingBlockId) REFERENCES programming_blocks(programmingBlockId) ON DELETE CASCADE,
+      FOREIGN KEY (movieItemId) REFERENCES movies(mediaItemId) ON DELETE CASCADE
     )
   `);
 
@@ -499,10 +628,27 @@ function createTestDatabaseIndexes(db: Database.Database): void {
     CREATE INDEX IF NOT EXISTS idx_commercials_mediaItemId ON commercials(mediaItemId);
     CREATE INDEX IF NOT EXISTS idx_commercial_tags_mediaItemId ON commercial_tags(mediaItemId);
     CREATE INDEX IF NOT EXISTS idx_commercial_tags_tagId ON commercial_tags(tagId);
-    CREATE INDEX IF NOT EXISTS idx_collections_mediaItemId ON collections(mediaItemId);
+    CREATE INDEX IF NOT EXISTS idx_collections_collectionId ON collections(collectionId);
     CREATE INDEX IF NOT EXISTS idx_collection_items_collectionId ON collection_items(collectionId);
     CREATE INDEX IF NOT EXISTS idx_collection_items_mediaItemId ON collection_items(mediaItemId);
     CREATE INDEX IF NOT EXISTS idx_collection_items_sequence ON collection_items(sequence);
+    CREATE INDEX IF NOT EXISTS idx_programming_blocks_programmingBlockId ON programming_blocks(programmingBlockId);
+    CREATE INDEX IF NOT EXISTS idx_programming_blocks_type ON programming_blocks(type);
+    CREATE INDEX IF NOT EXISTS idx_programming_block_schedules_programmingBlockId ON programming_block_schedules(programmingBlockId);
+    CREATE INDEX IF NOT EXISTS idx_programming_block_schedules_recurrence ON programming_block_schedules(recurrence);
+    CREATE INDEX IF NOT EXISTS idx_programming_block_show_items_programmingBlockId ON programming_block_show_items(programmingBlockId);
+    CREATE INDEX IF NOT EXISTS idx_programming_block_show_items_showItemId ON programming_block_show_items(showItemId);
+    CREATE INDEX IF NOT EXISTS idx_programming_block_movie_items_programmingBlockId ON programming_block_movie_items(programmingBlockId);
+    CREATE INDEX IF NOT EXISTS idx_programming_block_movie_items_movieItemId ON programming_block_movie_items(movieItemId);
+    CREATE INDEX IF NOT EXISTS idx_programming_block_tags_programmingBlockId ON programming_block_tags(programmingBlockId);
+    CREATE INDEX IF NOT EXISTS idx_programming_block_tags_tagId ON programming_block_tags(tagId);
+    CREATE INDEX IF NOT EXISTS idx_programming_block_bumpers_programmingBlockId ON programming_block_bumpers(programmingBlockId);
+    CREATE INDEX IF NOT EXISTS idx_programming_block_bumpers_scope ON programming_block_bumpers(scope);
+    CREATE INDEX IF NOT EXISTS idx_programming_block_episode_progression_programmingBlockId ON programming_block_episode_progression(programmingBlockId);
+    CREATE INDEX IF NOT EXISTS idx_programming_block_episode_progression_showItemId ON programming_block_episode_progression(showItemId);
+    CREATE INDEX IF NOT EXISTS idx_programming_block_movie_history_programmingBlockId ON programming_block_movie_history(programmingBlockId);
+    CREATE INDEX IF NOT EXISTS idx_programming_block_movie_history_movieItemId ON programming_block_movie_history(movieItemId);
+    CREATE INDEX IF NOT EXISTS idx_programming_block_movie_history_playedAt ON programming_block_movie_history(playedAt);
     CREATE INDEX IF NOT EXISTS idx_shorts_mediaItemId ON shorts(mediaItemId);
     CREATE INDEX IF NOT EXISTS idx_short_tags_mediaItemId ON short_tags(mediaItemId);
     CREATE INDEX IF NOT EXISTS idx_short_tags_tagId ON short_tags(tagId);

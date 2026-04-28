@@ -1,20 +1,34 @@
 import { endOfDay } from "date-fns";
+import { movieRepository } from "../../repositories/movieRepository.js";
+import { showRepository } from "../../repositories/showRepository.js";
+import { collectionRepository } from "../../repositories/collectionRepository.js";
 import { tagRepository } from "../../repositories/tagsRepository.js";
 import { findNextCadenceTime, segmentTags } from "../../utils/common.js";
+import { MediaType, TagType } from "../../models.js";
 
 import { createBuffer } from "../bufferConstructor.js";
 import * as playerManager from "../playerManager.js";
 import * as streamManager from "../streamManager.js";
-import { createMediaBlock } from "../../../../factories/mediaBlock.factory.js";
+import { createMediaBlock } from "../../factories/mediaBlock.factory.js";
 import { MediaBlock } from "../../types/MediaBlock.js";
 import {
   getDateString,
+  doesNextEpisodeFitDuration,
+  getEpisodeFromShowCandidates,
   getProgressionsByStreamType,
   isHolidayDate,
   isHolidaySeason,
 } from "./selectionHelpers.js";
+import {
+  findActiveScheduledBlock,
+  findNextScheduledBlock,
+} from "../programmingBlocks/blockScheduler.js";
+import { buildScheduledProgrammingBlockSegment } from "./programmingBlockSegmentBuilder.js";
+import { getScheduledProgrammingBlockAppointmentStarts } from "./programmingBlockSegmentBuilder.js";
+import { programmingBlockRepository } from "../../repositories/programmingBlockRepository.js";
 import { selectThemedMedia } from "./mediaSelector.js";
 import { selectRandomShowOrMovie } from "./mediaSelector.js";
+import { resolveCollectionAwareAnchorSelection } from "./collectionProgressionSelector.js";
 
 /**
  * Builds a continuous stream
@@ -66,7 +80,16 @@ export async function buildContinuousStream(
         todayIsHolidaySeason,
       );
     } else {
-      return [[], "Uncadenced continuous streams not yet implemented"];
+      // UNCADENCED MODE: Anchors play back-to-back with no buffers and no clock alignment
+      // Both Themed:true and Themed:false are handled here — the selection fork lives
+      // inside buildStreamIteration and is driven by streamConstructionOptions.Themed.
+      mediaBlocks = await buildUncadencedContinuousStream(
+        streamConstructionOptions,
+        initData,
+        dateString,
+        todayIsHolidayDate,
+        todayIsHolidaySeason,
+      );
     }
 
     streamBlocks.push(...mediaBlocks);
@@ -115,18 +138,27 @@ function initializeContinuousStream(
   const endOfDayDate = endOfDay(new Date(startingTimepoint * 1000));
   const endOfDayUnix = Math.floor(endOfDayDate.getTime() / 1000);
 
-  // TODO: Check for scheduled blocks
-  const nextScheduledBlock: ScheduledBlock | null = null;
+  const scheduledBlocks = programmingBlockRepository.findAllActiveDefinitions();
 
-  // Calculate end of timewindow
-  let endOfTimeWindow = endOfDayUnix;
-  // TODO: Check for scheduled blocks
-  // if (
-  //   nextScheduledBlock &&
-  //   nextScheduledBlock.scheduledStartTime < endOfDayUnix
-  // ) {
-  //   endOfTimeWindow = nextScheduledBlock.scheduledStartTime;
-  // }
+  const activeScheduledBlock = findActiveScheduledBlock(
+    scheduledBlocks,
+    startingTimepoint,
+  );
+
+  const activeScheduledDefinition = activeScheduledBlock?.programmingBlockId
+    ? programmingBlockRepository.findDefinitionById(
+        activeScheduledBlock.programmingBlockId,
+      )
+    : null;
+
+  const nextScheduledBlock = findNextScheduledBlock(
+    scheduledBlocks,
+    startingTimepoint,
+    endOfDayUnix,
+  );
+
+  // Build through end of day. Scheduled blocks are inserted during iteration.
+  const endOfTimeWindow = endOfDayUnix;
 
   // Calculate iteration duration (how many 30-min blocks fit)
   const iterationDuration =
@@ -137,6 +169,12 @@ function initializeContinuousStream(
     streamConstructionOptions.StreamType,
   ); // VERIFIED
   streamManager.setProgressionMap(progressionMap); // VERIFIED
+
+  if (streamConstructionOptions.StreamType === StreamType.Cont) {
+    streamManager.loadCollectionProgressionForScope(
+      `stream:${StreamType.Cont}`,
+    );
+  }
 
   // Select first random media as fallback
   const selectedFirstMedia = selectRandomShowOrMovie(
@@ -153,7 +191,83 @@ function initializeContinuousStream(
     endOfTimeWindow,
     selectedFirstMedia,
     nextScheduledBlock,
+    activeScheduledBlock,
+    activeScheduledDefinition,
   };
+}
+
+/**
+ * Builds uncadenced continuous stream (no buffers, no clock alignment)
+ *
+ * Anchors play directly back-to-back. Each block's startTime is the exact end
+ * time of the previous anchor (startTime + duration), not a :00/:30 boundary.
+ * No buffer content is constructed between anchors.
+ *
+ * Both Themed and Random selection are handled by buildStreamIteration internally.
+ *
+ * Flow:
+ * 1. Create first anchor at startingTimepoint
+ * 2. Push to player immediately
+ * 3. Add to On Deck (Slot 1)
+ * 4. Call buildStreamIteration — advances by duration, returns no backfill buffer
+ * 5. Add iterationBlocks[0] to On Deck (Slot 2), rest to Upcoming
+ */
+async function buildUncadencedContinuousStream(
+  streamConstructionOptions: StreamConstructionOptions,
+  initData: StreamInitializationData,
+  dateString: string,
+  todayIsHolidayDate: boolean,
+  todayIsHolidaySeason: boolean,
+): Promise<MediaBlock[]> {
+  const streamBlocks: MediaBlock[] = [];
+
+  if (!initData.selectedFirstMedia) {
+    console.error(
+      "[ContinuousStreamBuilder] No media available for stream construction",
+    );
+    return streamBlocks;
+  }
+
+  // STEP 1: First anchor starts immediately — no cadence alignment, no initial buffer
+  const firstAnchorMediaBlock = createMediaBlock(
+    [],
+    initData.selectedFirstMedia as Movie | Episode,
+    initData.startingTimepoint,
+  );
+
+  // STEP 2: Push to player immediately to buy construction time
+  await playerManager.addMediaBlockToPlayer(firstAnchorMediaBlock);
+
+  // STEP 3: Register as On Deck Slot 1 (currently playing)
+  streamManager.addItemToOnDeck([firstAnchorMediaBlock]);
+  streamBlocks.push(firstAnchorMediaBlock);
+
+  // STEP 4: Build the rest of the day's blocks.
+  // incomingTimepoint advances by actual duration so each anchor starts right
+  // where the previous one ends. buildStreamIteration continues advancing by
+  // duration (not durationLimit) throughout the loop because Cadence is false.
+  // No backfill buffer is returned for uncadenced streams.
+  const [, iterationBlocks] = buildStreamIteration(
+    initData.startingTimepoint + firstAnchorMediaBlock.anchorMedia!.duration,
+    initData.endOfTimeWindow,
+    initData.activeHolidayTags,
+    streamConstructionOptions,
+    firstAnchorMediaBlock,
+    dateString,
+    todayIsHolidayDate,
+    todayIsHolidaySeason,
+  );
+
+  // STEP 5: Populate On Deck (Slot 2) and Upcoming
+  if (iterationBlocks.length > 0) {
+    streamManager.addItemToOnDeck([iterationBlocks[0]]);
+  }
+  if (iterationBlocks.length > 1) {
+    streamManager.addToUpcomingStream(iterationBlocks.slice(1));
+  }
+
+  streamBlocks.push(...iterationBlocks);
+  return streamBlocks;
 }
 
 /**
@@ -259,6 +373,25 @@ async function buildCadencedWithInitialBuffer(
     streamBlocks.push(initialBufferBlock);
   }
 
+  const shouldUseActiveBlockBridge =
+    !!initData.activeScheduledBlock &&
+    !!initData.activeScheduledDefinition &&
+    resolveBridgeEndTimeForActiveBlock(initData, nextCadenceTime) -
+      nextCadenceTime >
+      30 * 60;
+
+  if (shouldUseActiveBlockBridge) {
+    return await buildCadencedWithActiveBlockBridge(
+      streamConstructionOptions,
+      initData,
+      dateString,
+      todayIsHolidayDate,
+      todayIsHolidaySeason,
+      nextCadenceTime,
+      streamBlocks,
+    );
+  }
+
   // STEP 4: Create first anchor media block at cadence point
   const firstAnchorMediaBlock = createMediaBlock(
     [],
@@ -321,6 +454,351 @@ async function buildCadencedWithInitialBuffer(
   return streamBlocks;
 }
 
+async function buildCadencedWithActiveBlockBridge(
+  streamConstructionOptions: StreamConstructionOptions,
+  initData: StreamInitializationData,
+  dateString: string,
+  todayIsHolidayDate: boolean,
+  todayIsHolidaySeason: boolean,
+  nextCadenceTime: number,
+  prebuiltBlocks: MediaBlock[],
+): Promise<MediaBlock[]> {
+  const streamBlocks: MediaBlock[] = [...prebuiltBlocks];
+
+  if (!initData.activeScheduledBlock || !initData.activeScheduledDefinition) {
+    return streamBlocks;
+  }
+
+  const bridgeEnd = resolveBridgeEndTimeForActiveBlock(
+    initData,
+    nextCadenceTime,
+  );
+
+  const bridgeBlocks = buildActiveBlockBridgeBlocks(
+    initData.activeScheduledDefinition,
+    nextCadenceTime,
+    bridgeEnd,
+    initData.activeHolidayTags,
+    dateString,
+    todayIsHolidayDate,
+    todayIsHolidaySeason,
+  );
+
+  if (bridgeBlocks.length === 0) {
+    return await buildCadencedFallbackFromNextCadence(
+      streamConstructionOptions,
+      initData,
+      dateString,
+      todayIsHolidayDate,
+      todayIsHolidaySeason,
+      nextCadenceTime,
+      streamBlocks,
+    );
+  }
+
+  await playerManager.addMediaBlockToPlayer(bridgeBlocks[0]);
+
+  const bridgeRemainder = fillStreamBlockBuffers(
+    0,
+    bridgeBlocks,
+    initData.activeHolidayTags,
+  );
+  streamManager.setRemainderTimeInSeconds(bridgeRemainder);
+
+  const lastBridgeBlock = bridgeBlocks[bridgeBlocks.length - 1];
+  const [backfillBuffer, iterationBlocks] = buildStreamIteration(
+    lastBridgeBlock.startTime +
+      (lastBridgeBlock.anchorMedia?.durationLimit || 30 * 60),
+    initData.endOfTimeWindow,
+    initData.activeHolidayTags,
+    streamConstructionOptions,
+    lastBridgeBlock,
+    dateString,
+    todayIsHolidayDate,
+    todayIsHolidaySeason,
+  );
+
+  if (backfillBuffer.length > 0) {
+    const backfillDuration = backfillBuffer.reduce(
+      (sum, item) => sum + (item.duration || 0),
+      0,
+    );
+    const backfillBlock = createMediaBlock(
+      backfillBuffer,
+      undefined,
+      lastBridgeBlock.startTime +
+        (lastBridgeBlock.anchorMedia?.duration || 0) -
+        backfillDuration,
+    );
+    await playerManager.addMediaBlockToPlayer(backfillBlock);
+    streamBlocks.push(backfillBlock);
+  }
+
+  const fullAnchorSequence = [...bridgeBlocks, ...iterationBlocks];
+  streamManager.setOnDeck(fullAnchorSequence.slice(0, 2));
+  streamManager.setUpcoming(fullAnchorSequence.slice(2));
+
+  streamBlocks.push(...bridgeBlocks);
+  streamBlocks.push(...iterationBlocks);
+  return streamBlocks;
+}
+
+async function buildCadencedFallbackFromNextCadence(
+  streamConstructionOptions: StreamConstructionOptions,
+  initData: StreamInitializationData,
+  dateString: string,
+  todayIsHolidayDate: boolean,
+  todayIsHolidaySeason: boolean,
+  nextCadenceTime: number,
+  prebuiltBlocks: MediaBlock[],
+): Promise<MediaBlock[]> {
+  const streamBlocks: MediaBlock[] = [...prebuiltBlocks];
+
+  if (!initData.selectedFirstMedia) {
+    return streamBlocks;
+  }
+
+  const firstAnchorMediaBlock = createMediaBlock(
+    [],
+    initData.selectedFirstMedia as Movie | Episode,
+    nextCadenceTime,
+  );
+  await playerManager.addMediaBlockToPlayer(firstAnchorMediaBlock);
+
+  const [backfillBuffer, iterationBlocks] = buildStreamIteration(
+    nextCadenceTime + firstAnchorMediaBlock.anchorMedia!.durationLimit,
+    initData.endOfTimeWindow,
+    initData.activeHolidayTags,
+    streamConstructionOptions,
+    firstAnchorMediaBlock,
+    dateString,
+    todayIsHolidayDate,
+    todayIsHolidaySeason,
+  );
+
+  if (backfillBuffer.length > 0) {
+    const backfillDuration = backfillBuffer.reduce(
+      (sum, item) => sum + (item.duration || 0),
+      0,
+    );
+    const backfillBlock = createMediaBlock(
+      backfillBuffer,
+      undefined,
+      firstAnchorMediaBlock.startTime - backfillDuration,
+    );
+    await playerManager.addMediaBlockToPlayer(backfillBlock);
+    streamBlocks.push(backfillBlock);
+  }
+
+  streamManager.addItemToOnDeck([firstAnchorMediaBlock]);
+  if (iterationBlocks.length > 0) {
+    streamManager.addItemToOnDeck([iterationBlocks[0]]);
+  }
+  if (iterationBlocks.length > 1) {
+    streamManager.addToUpcomingStream(iterationBlocks.slice(1));
+  }
+
+  streamBlocks.push(...iterationBlocks);
+  return streamBlocks;
+}
+
+function resolveBridgeEndTimeForActiveBlock(
+  initData: StreamInitializationData,
+  cadenceStartTime: number,
+): number {
+  if (!initData.activeScheduledBlock || !initData.activeScheduledDefinition) {
+    return cadenceStartTime;
+  }
+
+  const deterministicAppointment =
+    resolveNextInternalAppointmentTimeForActiveBlock(
+      initData.activeScheduledDefinition,
+      initData.activeScheduledBlock,
+      cadenceStartTime,
+    );
+
+  const rawEnd =
+    deterministicAppointment ?? initData.activeScheduledBlock.scheduledEndTime;
+  return Math.min(rawEnd, initData.endOfTimeWindow);
+}
+
+function resolveNextInternalAppointmentTimeForActiveBlock(
+  definition: ProgrammingBlockDefinition,
+  activeScheduledBlock: ScheduledBlock,
+  cadenceStartTime: number,
+): number | null {
+  if (
+    definition.type === "CuratedMovieMarathon" ||
+    definition.type === "ShowOrder"
+  ) {
+    const starts = getScheduledProgrammingBlockAppointmentStarts(
+      definition,
+      activeScheduledBlock.scheduledStartTime,
+      StreamType.Cont,
+    );
+    return (
+      starts.find((start) => start > cadenceStartTime) ??
+      activeScheduledBlock.scheduledEndTime
+    );
+  }
+
+  return null;
+}
+
+function buildActiveBlockBridgeBlocks(
+  definition: ProgrammingBlockDefinition,
+  bridgeStartTime: number,
+  bridgeEndTime: number,
+  activeHolidayTags: Tag[],
+  dateString: string,
+  todayIsHolidayDate: boolean,
+  todayIsHolidaySeason: boolean,
+): MediaBlock[] {
+  const bridgeBlocks: MediaBlock[] = [];
+
+  let slotStart = bridgeStartTime;
+  let previousAnchorType: MediaType | undefined;
+  while (slotStart + 30 * 60 <= bridgeEndTime) {
+    const episode = selectBridgeEpisodeForActiveBlock(
+      definition,
+      slotStart,
+      activeHolidayTags,
+      dateString,
+      todayIsHolidayDate,
+      todayIsHolidaySeason,
+      previousAnchorType,
+    );
+
+    if (!episode) {
+      break;
+    }
+
+    bridgeBlocks.push(createMediaBlock([], episode, slotStart));
+    previousAnchorType = episode.type;
+    slotStart += 30 * 60;
+  }
+
+  return bridgeBlocks;
+}
+
+function selectBridgeEpisodeForActiveBlock(
+  definition: ProgrammingBlockDefinition,
+  slotStartTime: number,
+  activeHolidayTags: Tag[],
+  dateString: string,
+  todayIsHolidayDate: boolean,
+  todayIsHolidaySeason: boolean,
+  previousAnchorType?: MediaType,
+): Episode | null {
+  const seedTags: Tag[] = [];
+
+  if (definition.specialtyTagId) {
+    const specialty = tagRepository.findByTagId(definition.specialtyTagId);
+    if (specialty) {
+      seedTags.push(specialty);
+    }
+  }
+
+  if (definition.type === "TagThemed") {
+    const config = programmingBlockRepository.findTagThemedConfig(
+      definition.programmingBlockId,
+    );
+    for (const tagId of config.tagIds) {
+      const tag = tagRepository.findByTagId(tagId);
+      if (tag) {
+        seedTags.push(tag);
+      }
+    }
+  }
+
+  if (definition.type === "ShowOrder") {
+    const orderedShowIds = programmingBlockRepository.findOrderedShowIds(
+      definition.programmingBlockId,
+    );
+    for (const showId of orderedShowIds) {
+      const show = showRepository.findByMediaItemId(showId);
+      if (show?.tags?.length) {
+        seedTags.push(...show.tags);
+      }
+    }
+  }
+
+  if (definition.type === "CuratedMovieMarathon") {
+    const orderedMovieIds = programmingBlockRepository.findOrderedMovieIds(
+      definition.programmingBlockId,
+    );
+    const firstMovie = orderedMovieIds[0]
+      ? movieRepository.findByMediaItemId(orderedMovieIds[0])
+      : null;
+    if (firstMovie?.tags?.length) {
+      seedTags.push(...firstMovie.tags);
+    }
+  }
+
+  const dedupedTagMap = new Map<string, Tag>();
+  for (const tag of seedTags) {
+    dedupedTagMap.set(tag.tagId, tag);
+  }
+  const dedupedTags = Array.from(dedupedTagMap.values());
+
+  if (dedupedTags.length > 0) {
+    const segmented = segmentTags(dedupedTags);
+
+    if (dedupedTags.some((tag) => tag.type === TagType.Specialty)) {
+      const showCandidates =
+        showRepository.findByTagsAndDurationWithProgressionCheck(
+          dedupedTags.map((tag) => tag.tagId),
+          StreamType.Cont,
+          30 * 60,
+        );
+
+      for (const show of showCandidates) {
+        const nextEpisodeNumber = doesNextEpisodeFitDuration(show, 30 * 60);
+        if (!nextEpisodeNumber) {
+          continue;
+        }
+        const episode = show.episodes[nextEpisodeNumber - 1];
+        if (!episode) {
+          continue;
+        }
+        streamManager.updateProgression(show.mediaItemId, nextEpisodeNumber);
+        return episode;
+      }
+    }
+
+    const themedPick = selectThemedMedia(
+      segmented,
+      slotStartTime,
+      30 * 60,
+      activeHolidayTags,
+      todayIsHolidayDate,
+      todayIsHolidaySeason,
+      dateString,
+      previousAnchorType,
+    );
+
+    if (themedPick && "showItemId" in themedPick) {
+      return themedPick;
+    }
+  }
+
+  const fallbackShows = showRepository.findAllShowsUnderDuration(30 * 60);
+  for (const show of fallbackShows) {
+    const nextEpisodeNumber = doesNextEpisodeFitDuration(show, 30 * 60);
+    if (!nextEpisodeNumber) {
+      continue;
+    }
+    const episode = show.episodes[nextEpisodeNumber - 1];
+    if (!episode) {
+      continue;
+    }
+    streamManager.updateProgression(show.mediaItemId, nextEpisodeNumber);
+    return episode;
+  }
+
+  return null;
+}
+
 /**
  * Builds cadenced stream without initial buffer (starts exactly at cadence point)
  *
@@ -340,6 +818,25 @@ async function buildCadencedWithoutInitialBuffer(
   todayIsHolidaySeason: boolean,
 ): Promise<MediaBlock[]> {
   const streamBlocks: MediaBlock[] = [];
+
+  const shouldUseActiveBlockBridge =
+    !!initData.activeScheduledBlock &&
+    !!initData.activeScheduledDefinition &&
+    resolveBridgeEndTimeForActiveBlock(initData, initData.startingTimepoint) -
+      initData.startingTimepoint >
+      30 * 60;
+
+  if (shouldUseActiveBlockBridge) {
+    return await buildCadencedWithActiveBlockBridge(
+      streamConstructionOptions,
+      initData,
+      dateString,
+      todayIsHolidayDate,
+      todayIsHolidaySeason,
+      initData.startingTimepoint,
+      streamBlocks,
+    );
+  }
 
   // Defensive check: ensure selectedFirstMedia exists
   if (!initData.selectedFirstMedia) {
@@ -424,7 +921,7 @@ async function buildCadencedWithoutInitialBuffer(
  *
  * @returns Tuple of [(Promo | Music | Short | Commercial)[], MediaBlock[]]
  */
-function buildStreamIteration(
+export function buildStreamIteration(
   incomingTimepoint: number,
   endofTimeWindow: number,
   activeHolidayTags: Tag[],
@@ -435,6 +932,8 @@ function buildStreamIteration(
   todayIsHolidaySeason: boolean,
 ): [(Promo | Music | Short | Commercial)[], MediaBlock[]] {
   const iterationBlocks: MediaBlock[] = [];
+  const activeBlockDefinitions =
+    programmingBlockRepository.findAllActiveDefinitions();
 
   let timepoint = incomingTimepoint;
   let previousAnchorType: MediaType | undefined =
@@ -443,13 +942,81 @@ function buildStreamIteration(
   let tags = precedingMediaBlock.anchorMedia?.tags || [];
 
   while (timepoint < endofTimeWindow) {
+    const nextScheduledBlock = findNextScheduledBlock(
+      activeBlockDefinitions,
+      timepoint,
+      endofTimeWindow,
+    );
+
+    if (
+      nextScheduledBlock &&
+      nextScheduledBlock.scheduledStartTime === timepoint
+    ) {
+      if (!nextScheduledBlock.programmingBlockId) {
+        timepoint = nextScheduledBlock.scheduledEndTime;
+        continue;
+      }
+
+      const definition = programmingBlockRepository.findDefinitionById(
+        nextScheduledBlock.programmingBlockId,
+      );
+
+      if (!definition) {
+        console.warn(
+          `[ContinuousStreamBuilder] Scheduled block definition missing for id ${nextScheduledBlock.programmingBlockId}`,
+        );
+        timepoint = nextScheduledBlock.scheduledEndTime;
+        continue;
+      }
+
+      const [segmentBlocks, segmentError] =
+        buildScheduledProgrammingBlockSegment(definition, {
+          parentStreamType: streamConstructionOptions.StreamType,
+          scheduledStartTime: nextScheduledBlock.scheduledStartTime,
+          cadence: streamConstructionOptions.Cadence,
+        });
+
+      if (segmentError || segmentBlocks.length === 0) {
+        console.warn(
+          `[ContinuousStreamBuilder] Scheduled block insertion failed for ${definition.name}: ${segmentError || "no playable items"}`,
+        );
+        timepoint = nextScheduledBlock.scheduledEndTime;
+        continue;
+      }
+
+      iterationBlocks.push(...segmentBlocks);
+
+      for (const block of segmentBlocks) {
+        const anchor = block.anchorMedia;
+        if (anchor?.type === MediaType.Movie) {
+          streamManager.addRecentlyUsedMovie(
+            anchor.mediaItemId,
+            block.startTime,
+          );
+        }
+      }
+
+      const lastSegmentBlock = segmentBlocks[segmentBlocks.length - 1];
+      previousAnchorType = lastSegmentBlock.anchorMedia?.type;
+      tags = lastSegmentBlock.anchorMedia?.tags || tags;
+      timepoint =
+        lastSegmentBlock.startTime +
+        (streamConstructionOptions.Cadence
+          ? lastSegmentBlock.anchorMedia?.durationLimit || 0
+          : lastSegmentBlock.anchorMedia?.duration || 0);
+      continue;
+    }
+
     const segmentedTags = segmentTags(tags); // VERIFIED
-    const remainingDuration = endofTimeWindow - timepoint;
+    const selectionWindowEnd = nextScheduledBlock
+      ? Math.min(endofTimeWindow, nextScheduledBlock.scheduledStartTime)
+      : endofTimeWindow;
+    const remainingDuration = selectionWindowEnd - timepoint;
     if (remainingDuration <= 0) {
       break;
     }
 
-    const selectedAnchor = streamConstructionOptions.Themed
+    const rawSelectedAnchor = streamConstructionOptions.Themed
       ? selectThemedMedia(
           segmentedTags,
           timepoint,
@@ -466,12 +1033,52 @@ function buildStreamIteration(
           segmentedTags.ageGroupTags,
         ); // VERIFIED
 
-    if (!selectedAnchor) {
+    if (!rawSelectedAnchor) {
       console.warn(
         `[ContinuousStreamBuilder] Could not select media at timepoint ${timepoint}`,
       );
       break;
     }
+
+    const scopeKey = `stream:${streamConstructionOptions.StreamType}`;
+    const selectedAnchor = resolveCollectionAwareAnchorSelection({
+      selectedAnchor: rawSelectedAnchor,
+      scopeKey,
+      streamTimepoint: timepoint,
+      remainingDuration,
+      enforceWithinSeconds: 12 * 60 * 60,
+      selectFallbackMovieOutsideCollection: (collectionId: string) => {
+        const excludedIds = collectionRepository
+          .findItemsByCollectionId(collectionId)
+          .map((item) => item.mediaItemId);
+
+        return movieRepository.findRandomMovieUnderDurationExcluding(
+          remainingDuration,
+          segmentedTags.ageGroupTags,
+          excludedIds,
+        );
+      },
+      selectFallbackEpisode: () => {
+        const nonAgeTags = [
+          ...segmentedTags.genreTags,
+          ...segmentedTags.aestheticTags,
+          ...segmentedTags.specialtyTags,
+        ];
+
+        const candidates = streamConstructionOptions.Themed
+          ? showRepository.findByTagsAndAgeGroupsUnderDuration(
+              nonAgeTags,
+              segmentedTags.ageGroupTags,
+              remainingDuration,
+            )
+          : showRepository.findAllShowsUnderDuration(
+              remainingDuration,
+              segmentedTags.ageGroupTags,
+            );
+
+        return getEpisodeFromShowCandidates(candidates, remainingDuration);
+      },
+    });
 
     const block = createMediaBlock(
       [],
@@ -487,10 +1094,12 @@ function buildStreamIteration(
       streamManager.addRecentlyUsedMovie(selectedAnchor.mediaItemId, timepoint);
     }
 
-    // Advance by durationLimit so the next block's startTime is at the cadence boundary.
-    // This creates the structural gap (durationLimit - duration) that fillStreamBlockBuffers
-    // uses to compute the buffer budget for each block.
-    timepoint += selectedAnchor.durationLimit;
+    // Cadenced: advance by durationLimit so the next block's startTime lands on a :00/:30
+    // boundary. The gap (durationLimit - duration) is the buffer slot.
+    // Uncadenced: advance by actual duration so anchors play back-to-back with no gap.
+    timepoint += streamConstructionOptions.Cadence
+      ? selectedAnchor.durationLimit
+      : selectedAnchor.duration || 0;
   }
 
   if (streamConstructionOptions.Cadence) {
@@ -656,8 +1265,16 @@ export function rolloverToNextDay(
     activeHolidayTags,
   );
 
+  // Cadenced: next day starts at midnight (tomorrowTimepoint — already a :00 mark).
+  // Uncadenced: next day starts at the exact moment the last block of today ends,
+  // so content is continuous across the day boundary with no gap.
+  const incomingTimepoint = streamConstructionOptions.Cadence
+    ? tomorrowTimepoint
+    : lastUpcomingBlock.startTime +
+      (lastUpcomingBlock.anchorMedia?.duration || 0);
+
   const [backfillBuffer, iterationBlocks] = buildStreamIteration(
-    tomorrowTimepoint,
+    incomingTimepoint,
     tomorrowEndUnix,
     activeHolidayTags,
     streamConstructionOptions,

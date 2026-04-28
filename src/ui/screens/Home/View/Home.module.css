@@ -41,8 +41,53 @@
 .screenFormBodyContainer {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  justify-content: flex-start;
+  align-items: stretch;
+  justify-content: center;
   width: 100%;
   flex-grow: 1;
+  padding: 24px;
+  box-sizing: border-box;
+}
+
+.heroCard {
+  max-width: 680px;
+  padding: 28px;
+  border-radius: 18px;
+  background:
+    radial-gradient(
+      circle at top right,
+      rgba(248, 123, 77, 0.18),
+      transparent 28%
+    ),
+    linear-gradient(180deg, #171a20 0%, #0f1116 100%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 22px 56px rgba(0, 0, 0, 0.24);
+}
+
+.eyebrow {
+  margin: 0 0 10px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #f18d58;
+}
+
+.heroTitle {
+  margin: 0 0 12px;
+  font-size: 30px;
+  color: #f6f7fb;
+}
+
+.heroBody {
+  margin: 0 0 20px;
+  max-width: 56ch;
+  color: #bac3cf;
+  line-height: 1.6;
+}
+
+.playerButton {
+  background: linear-gradient(135deg, #f87b4d, #ffbe6b);
+  color: #091219;
+  font-weight: 700;
 }

@@ -45,4 +45,384 @@
   justify-content: flex-start;
   width: 100%;
   flex-grow: 1;
+  border-radius: 4px;
+}
+
+.itemHeader {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(90deg, #5500aa, #8000ff);
+  color: white;
+  border-radius: 5px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.addItem {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-self: center;
+  cursor: pointer;
+  background: linear-gradient(330deg, #bb00ff, #8000ff, #5d00ff);
+  height: 24px;
+  width: 24px;
+  border-radius: 5px;
+  margin-right: 10px;
+  margin-left: 6px;
+}
+
+.addItem:hover {
+  background: deepskyblue;
+}
+
+.searchContainer {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  align-items: center;
+  width: 100%;
+  padding: 5px;
+  box-sizing: border-box;
+}
+
+.searchField {
+  margin-right: 2px;
+}
+
+.searchInput {
+  background: #1c272d;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  height: 20px;
+  width: 300px;
+  padding: 3px;
+  text-align: left;
+}
+
+.searchInput::placeholder {
+  color: white;
+  opacity: 1;
+  text-align: center;
+}
+
+.searchInput:focus {
+  outline: none;
+}
+
+.searchInput:focus::placeholder {
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
+}
+
+.statusMessage {
+  margin: 8px 6px;
+  color: #86d7ff;
+  font-size: 13px;
+}
+
+.listContainer {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: stretch;
+  background: linear-gradient(
+    200.96deg,
+    #090c0e -29.09%,
+    #1c272d 81.77%,
+    #202e36 129.35%
+  );
+  flex-grow: 1;
+  width: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  box-sizing: border-box;
+  border-radius: 5px;
+}
+
+.listContainer::-webkit-scrollbar {
+  width: 12px;
+}
+
+.listContainer::-webkit-scrollbar-track {
+  background: #121517;
+  border-radius: 5px;
+}
+
+.listContainer::-webkit-scrollbar-thumb {
+  background: #5d00ff;
+  border-radius: 5px;
+}
+
+.listContainer::-webkit-scrollbar-thumb:hover {
+  background: deepskyblue;
+}
+
+.listItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  width: 100%;
+  padding: 12px;
+  box-sizing: border-box;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.listItemMain {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.listItemTitle {
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.inlineActions {
+  display: flex;
+  gap: 8px;
+}
+
+.description {
+  margin: 0;
+  color: #c4ccda;
+  font-size: 13px;
+}
+
+.tagWrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.tagChip {
+  font-size: 12px;
+  border-radius: 999px;
+  padding: 4px 8px;
+  background: rgba(119, 221, 194, 0.16);
+  color: #c8fff0;
+}
+
+.modalBody {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-width: 680px;
+  max-height: calc(100vh - 120px);
+  overflow: auto;
+  background: #1c272d;
+  color: white;
+  padding: 10px 10px 0;
+  border-radius: 5px;
+  box-sizing: border-box;
+}
+
+.editModalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.editModalCardTitle {
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.closeModalBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  background: linear-gradient(330deg, #8000ff, #ff00b3);
+  height: 24px;
+  width: 24px;
+  border-radius: 5px;
+}
+
+.closeModalBtn:hover {
+  background: deepskyblue;
+}
+
+.label {
+  display: block;
+  margin: 8px 0 3px;
+  font-size: 14px;
+  font-weight: 600;
+  color: white;
+}
+
+.select,
+.input,
+.textarea {
+  width: 100%;
+  border: none;
+  background: #2e3b44;
+  color: white;
+  border-radius: 5px;
+  box-sizing: border-box;
+}
+
+.select,
+.input {
+  height: 25px;
+  padding: 0 5px;
+}
+
+.textarea {
+  resize: vertical;
+  min-height: 75px;
+  padding: 6px;
+}
+
+.select:focus,
+.input:focus,
+.textarea:focus {
+  outline: none;
+}
+
+.genreHeader {
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.genreHeaderLabel {
+  font-size: 14px;
+  font-weight: 600;
+  color: white;
+}
+
+.genreSearchInput {
+  height: 25px;
+  width: 220px;
+  border: none;
+  background: #2e3b44;
+  color: white;
+  border-radius: 5px;
+  padding: 0 6px;
+  box-sizing: border-box;
+}
+
+.genreSearchInput::placeholder {
+  color: white;
+  opacity: 1;
+  text-align: center;
+}
+
+.genreSearchInput:focus {
+  outline: none;
+}
+
+.genreSearchInput:focus::placeholder {
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
+}
+
+.genreGrid {
+  margin-top: 6px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  min-height: 180px;
+  max-height: 220px;
+  overflow: auto;
+  padding: 6px;
+  border-radius: 5px;
+  background: #2e3b44;
+}
+
+.genreGrid::-webkit-scrollbar {
+  width: 12px;
+}
+
+.genreGrid::-webkit-scrollbar-track {
+  background: #2e3b44;
+  border-radius: 5px;
+}
+
+.genreGrid::-webkit-scrollbar-thumb {
+  background: #5d00ff;
+  border-radius: 5px;
+}
+
+.genreGrid::-webkit-scrollbar-thumb:hover {
+  background: deepskyblue;
+}
+
+.genreChip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: none;
+  border-radius: 5px;
+  min-height: 34px;
+  padding: 8px;
+  background: linear-gradient(90deg, #c52afe, #8000ff);
+  color: white;
+  font-size: 13px;
+}
+
+.buttonRow {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.createButtonRow {
+  margin-bottom: 12px;
+}
+
+.actionButton {
+  background: linear-gradient(330deg, #8000ff, #aa00aa);
+  color: white;
+  font-weight: bold;
+  border: none;
+  border-radius: 5px;
+  height: 25px;
+  padding: 0 16px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.actionButton:hover {
+  background: deepskyblue;
+}
+
+.linkButton {
+  background: #28486b;
+  color: #fff;
+}
+
+.linkButton:hover {
+  background: #1f3752;
+}
+
+.dangerButton {
+  background: #7a2d33;
+  color: #fff;
+}
+
+.dangerButton:hover {
+  background: #612127;
+}
+
+.emptyState {
+  margin: 12px;
+  color: #9ba8bf;
+  font-size: 13px;
+}
+
+.meta {
+  margin: 0;
+  font-size: 12px;
+  color: #9ba8bf;
 }

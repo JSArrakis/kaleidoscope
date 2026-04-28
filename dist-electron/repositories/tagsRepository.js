@@ -11,8 +11,8 @@ export class TagRepository {
             throw new Error(`Tag name "${tag.name}" already exists`);
         }
         const insertTagStmt = this.db.prepare(`
-      INSERT INTO tags (tagId, name, type, seasonStartDate, seasonEndDate, explicitlyHoliday, sequence)
-      VALUES (?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO tags (tagId, name, type, seasonStartDate, seasonEndDate, sequence)
+      VALUES (?, ?, ?, ?, ?, ?)
     `);
         const insertHolidayDateStmt = this.db.prepare(`
       INSERT INTO holiday_dates (tagId, holidayDate)
@@ -24,7 +24,7 @@ export class TagRepository {
     `);
         try {
             const transaction = this.db.transaction(() => {
-                insertTagStmt.run(tag.tagId, tag.name, tag.type, tag.seasonStartDate || null, tag.seasonEndDate || null, tag.explicitlyHoliday ? 1 : 0, tag.sequence || null);
+                insertTagStmt.run(tag.tagId, tag.name, tag.type, tag.seasonStartDate || null, tag.seasonEndDate || null, tag.sequence || null);
                 if (tag.type === "Holiday" &&
                     tag.holidayDates &&
                     tag.holidayDates.length > 0) {
@@ -120,6 +120,16 @@ export class TagRepository {
         return rows.map((row) => this.mapRowToTag(row));
     }
     /**
+     * Find an AgeGroup tag by sequence number
+     */
+    findAgeGroupBySequence(sequence) {
+        const stmt = this.db.prepare(`SELECT * FROM tags WHERE type = ? AND sequence = ?`);
+        const row = stmt.get("AgeGroup", sequence);
+        if (!row)
+            return null;
+        return this.mapRowToTag(row);
+    }
+    /**
      * Update tag
      */
     update(tagId, tag) {
@@ -127,10 +137,10 @@ export class TagRepository {
             const stmt = this.db.prepare(`
         UPDATE tags 
         SET name = ?, type = ?, seasonStartDate = ?, seasonEndDate = ?, 
-            explicitlyHoliday = ?, sequence = ?, updatedAt = CURRENT_TIMESTAMP
+            sequence = ?, updatedAt = CURRENT_TIMESTAMP
         WHERE tagId = ?
       `);
-            const result = stmt.run(tag.name, tag.type, tag.seasonStartDate || null, tag.seasonEndDate || null, tag.explicitlyHoliday ? 1 : 0, tag.sequence || null, tagId);
+            const result = stmt.run(tag.name, tag.type, tag.seasonStartDate || null, tag.seasonEndDate || null, tag.sequence || null, tagId);
             if (result.changes === 0)
                 return null;
             // Handle holiday dates
@@ -182,6 +192,37 @@ export class TagRepository {
         return rows.map((row) => this.mapRowToTag(row));
     }
     /**
+     * Find all active holiday tags for a given date
+     * Matches holidays where:
+     * - The date matches an exact holiday date (by month-day), OR
+     * - The date falls within the seasonStartDate and seasonEndDate range (by month-day)
+     */
+    findActiveHolidaysByDate(date) {
+        const inputMonthDay = date.substring(5); // Extract "MM-DD"
+        const allHolidays = this.findByType("Holiday");
+        const activeHolidays = allHolidays.filter((holiday) => {
+            // Check if the date matches any specific holiday dates (by month-day)
+            if (holiday.holidayDates?.some((hd) => hd.substring(5) === inputMonthDay)) {
+                return true;
+            }
+            // If not a specific holiday date, check season range
+            if (holiday.seasonStartDate && holiday.seasonEndDate) {
+                const seasonStart = holiday.seasonStartDate.substring(5);
+                const seasonEnd = holiday.seasonEndDate.substring(5);
+                if (seasonStart <= seasonEnd) {
+                    // No wrap-around: simple range check
+                    return inputMonthDay >= seasonStart && inputMonthDay <= seasonEnd;
+                }
+                else {
+                    // Wrap-around: date >= start OR date <= end
+                    return inputMonthDay >= seasonStart || inputMonthDay <= seasonEnd;
+                }
+            }
+            return false;
+        });
+        return activeHolidays.sort((a, b) => a.name.localeCompare(b.name));
+    }
+    /**
      * Count total tags
      */
     count() {
@@ -199,7 +240,6 @@ export class TagRepository {
             type: row.type,
             seasonStartDate: row.seasonStartDate,
             seasonEndDate: row.seasonEndDate,
-            explicitlyHoliday: row.explicitlyHoliday === 1,
             sequence: row.sequence,
         };
         // Load holiday dates if this is a holiday tag

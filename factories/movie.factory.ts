@@ -26,6 +26,7 @@ export function createMovie(
     durationLimit: durationLimit ?? 0,
     isHolidayExclusive: isHolidayExclusive ?? false,
     tags: tags ?? [],
+    collections: [],
     type: type ?? MediaType.Movie,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),

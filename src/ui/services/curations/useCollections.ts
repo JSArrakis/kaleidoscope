@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 export const useGetAllCollections = () => {
   return useQuery({
     queryKey: ["collections"],
-    queryFn: async () => {
+    queryFn: async (): Promise<Collection[]> => {
       return await window.electron.getCollectionsHandler();
     },
     staleTime: 6 * 60 * 60 * 1000, // 6 hours
@@ -15,7 +15,7 @@ export const useCreateCollection = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (
-      body: PrismCurationObj
+      body: Collection,
     ): Promise<{ message: string; status: number }> => {
       return await window.electron.createCollectionHandler(body);
     },
@@ -30,7 +30,7 @@ export const useDeleteCollection = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (
-      body: PrismCurationObj
+      body: Collection,
     ): Promise<{ message: string; status: number }> => {
       return await window.electron.deleteCollectionHandler(body);
     },
@@ -45,7 +45,7 @@ export const useUpdateCollection = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (
-      body: PrismCurationObj
+      body: Collection,
     ): Promise<{ message: string; status: number }> => {
       return await window.electron.updateCollectionHandler(body);
     },

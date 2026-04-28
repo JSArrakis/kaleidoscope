@@ -1,5 +1,6 @@
 import * as streamManager from "./streamManager.js";
 import { rolloverToNextDay } from "./streamConstruction/continuousStreamBuilder.js";
+import { rolloverAdhocToNextDay } from "./streamConstruction/adhocStreamBuilder.js";
 import { StreamType } from "../types/StreamType.js";
 import { existsSync } from "fs";
 
@@ -141,12 +142,13 @@ async function cycleCheck(): Promise<void> {
   // --- Prune expired On Deck blocks ---
   // When Slot 2's startTime has passed, Slot 1 has finished — remove it.
   // Loop in case multiple slots expired between cycles (e.g. after a long pause).
-  if (streamManager.isContinuousStream()) {
+  if (streamManager.isActiveStream()) {
     while (onDeck.length > 1 && currentUnixTimestamp >= onDeck[1].startTime) {
       const expired = streamManager.removeFirstItemFromOnDeck();
       if (expired) {
         streamManager.recordPlayedMovie(expired);
         streamManager.recordPlayedEpisodeProgression(expired);
+        streamManager.recordPlayedCollectionProgression(expired);
       }
       console.log(
         `[Cycle Check] Removed expired On Deck block: "${
@@ -197,6 +199,33 @@ async function cycleCheck(): Promise<void> {
       rolloverToNextDay(options, tomorrow);
       console.log(
         "[Cycle Check] Day rollover triggered — next day's stream built",
+      );
+    }
+  }
+
+  const shouldAdhocRollover =
+    streamManager.isAdhocStream() &&
+    lastUpcoming !== null &&
+    upcoming.length === 1 &&
+    lastUpcoming.buffer.length === 0 &&
+    tomorrow < streamManager.getAdhocStreamEndTimepoint();
+
+  if (shouldAdhocRollover) {
+    const args = streamManager.getContinuousStreamArgs();
+    if (args) {
+      const options: StreamConstructionOptions = {
+        Cadence: args.Cadence ?? true,
+        Themed: args.Themed ?? false,
+        StreamType: StreamType.Adhoc,
+        AdhocStartFromBeginning: args.AdhocStartFromBeginning ?? true,
+      };
+      rolloverAdhocToNextDay(
+        options,
+        tomorrow,
+        streamManager.getAdhocStreamEndTimepoint(),
+      );
+      console.log(
+        "[Cycle Check] Adhoc day rollover triggered — next day's stream built",
       );
     }
   }

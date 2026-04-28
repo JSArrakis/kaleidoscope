@@ -1,0 +1,351 @@
+.screen {
+  min-height: 100vh;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 20px;
+  background:
+    radial-gradient(
+      circle at top left,
+      rgba(255, 145, 77, 0.22),
+      transparent 28%
+    ),
+    radial-gradient(
+      circle at top right,
+      rgba(98, 197, 255, 0.18),
+      transparent 24%
+    ),
+    linear-gradient(180deg, #15171b 0%, #090a0c 100%);
+  color: #f3f5f7;
+}
+
+.shell {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-height: calc(100vh - 40px);
+}
+
+.topBar {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.eyebrow,
+.queueEyebrow,
+.nowPlayingLabel {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #f6a05f;
+}
+
+.screenTitle,
+.nowPlayingTitle,
+.queueTitle {
+  margin: 0;
+  font-weight: 700;
+}
+
+.screenTitle {
+  font-size: 40px;
+}
+
+.topBarActions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.playerGrid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1.9fr) minmax(280px, 0.95fr);
+  gap: 18px;
+  min-height: 0;
+}
+
+.stagePanel,
+.queuePanel {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 18px;
+  background: rgba(14, 16, 20, 0.9);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.34);
+  overflow: hidden;
+}
+
+.stagePanel {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+}
+
+.stageHeader,
+.queueHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 18px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), transparent);
+}
+
+.filePath {
+  margin: 0;
+  color: #a8afb7;
+  font-size: 13px;
+  word-break: break-all;
+}
+
+.probeStatus {
+  margin: 0;
+  font-size: 12px;
+  color: #7cc7ff;
+}
+
+.metaGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.metaCell {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.metaLabel {
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #8f9ba6;
+}
+
+.metaValue {
+  font-size: 13px;
+  font-weight: 600;
+  color: #e6ebf1;
+}
+
+.stageSurface {
+  min-height: 0;
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  background:
+    linear-gradient(135deg, rgba(250, 155, 89, 0.08), transparent 40%),
+    linear-gradient(315deg, rgba(72, 162, 255, 0.08), transparent 40%), #060709;
+}
+
+.emptyStage,
+.audioStage {
+  width: 100%;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 32px;
+  box-sizing: border-box;
+  text-align: center;
+}
+
+.emptyIcon {
+  width: 78px;
+  height: 78px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #f87b4d, #ffbe6b);
+  color: #0c1117;
+  font-size: 26px;
+  font-weight: 700;
+}
+
+.emptyTitle {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.emptyBody,
+.audioHint,
+.supportMessage,
+.queueEmpty {
+  margin: 0;
+  color: #b8c0c7;
+  line-height: 1.55;
+}
+
+.mediaElement {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: #000;
+}
+
+.audioBadge {
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(248, 123, 77, 0.14);
+  border: 1px solid rgba(248, 123, 77, 0.28);
+  color: #ffd0b7;
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.audioArtwork {
+  width: 152px;
+  height: 152px;
+  display: grid;
+  place-items: center;
+  border-radius: 24px;
+  background: linear-gradient(135deg, #252b33, #101317);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 48px;
+  font-weight: 700;
+  color: #f7c18b;
+}
+
+.audioElement {
+  width: min(520px, 100%);
+}
+
+.transportBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 20px 18px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.transportButtons {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.queuePanel {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+}
+
+.queueList {
+  overflow: auto;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.queueItem {
+  width: 100%;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  padding: 12px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.02);
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.queueItem:hover,
+.queueItemActive {
+  border-color: rgba(248, 123, 77, 0.55);
+  background: rgba(248, 123, 77, 0.1);
+}
+
+.queueIndex,
+.queueKind {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #f0a570;
+}
+
+.queueText {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.queueName {
+  font-weight: 700;
+}
+
+.queuePath {
+  color: #93a0ac;
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.primaryButton,
+.transportPrimary {
+  background: linear-gradient(135deg, #f87b4d, #ffbe6b);
+  color: #081118;
+  font-weight: 700;
+}
+
+.ghostButton,
+.transportButton {
+  background: rgba(255, 255, 255, 0.06);
+  color: #f3f5f7;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+@media (max-width: 1100px) {
+  .playerGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .metaGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .transportBar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 700px) {
+  .screen {
+    padding: 12px;
+  }
+
+  .shell {
+    min-height: calc(100vh - 24px);
+  }
+
+  .screenTitle {
+    font-size: 32px;
+  }
+
+  .topBar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .metaGrid {
+    grid-template-columns: 1fr;
+  }
+}

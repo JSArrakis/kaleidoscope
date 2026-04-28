@@ -11,7 +11,7 @@ export function createCollectionItem(
   title?: string,
   path?: string,
   duration?: number,
-  tags?: any[]
+  tags?: any[],
 ): CollectionItem {
   const id = collectionItemId ?? randomUUID();
   const colId = collectionId ?? randomUUID();
@@ -27,4 +27,18 @@ export function createCollectionItem(
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   };
+}
+
+/**
+ * Factory function to create multiple CollectionItems
+ */
+export function createCollectionItems(
+  count: number,
+  mediaItemIds?: string[],
+  collectionId?: string,
+): CollectionItem[] {
+  const colId = collectionId ?? randomUUID();
+  return Array.from({ length: count }, (_, i) =>
+    createCollectionItem(undefined, colId, mediaItemIds?.[i], i + 1),
+  );
 }

@@ -1,0 +1,84 @@
+Programming blocks will be any content that is segmented to a span of schedule-able time that will play specifically curated things by the user in some form or fashion
+
+Programming blocks will be represented by objects in the system. 
+
+Each programming block will will have 
+
+1.  An Id
+2   A Name
+3.  A type
+4.  A duration in multiples of 30 minutes
+    4a. A duration can be as little as 30 minutes up to 24 hours. (With one exception being the curated movie marathon programming block described below)
+5.  A scheduled time
+    5a. Scheduled times can be daily, weekly, monthly or yearly.
+    5b. Scheduled times will also be set a a specific time of day either on the :00 or :30 mark of any hour of the day
+    5c. For yearly schedules, they will be set on a specific calendar day
+    5d. For Monthly schedules they will be set on a specific day of the month
+    5e. For weekly schedules they will be set on one or more specific days of the week
+    5f. for daily schedules they will be set for every day
+    5g. A programming block can also be a one time scheduled block. The dont necessisarily have to be recurring.
+    5h. If a programming block is scheduled, and the stream is running in non-cadenced mode, the stream constructor will take this into account and after the show or movie that appears before the stream will have a buffer to align the start of the block at the proper time. This will be the only time an uncadenced stream has a buffer.
+
+There are several different types of programming blocks that we will have to account for (I dont know what the names of the types should be but I will describe each)
+
+1.  The start of this whole project was because I wanted to recreate toonami, especially the summer of 2000 toonami, so that will be the first type of programming block. It should have the following capabilities:
+    1a. This type of block will be able to be themed. Theming in this context means:
+        - there will be a specialty tag that is attached to the programming block object, and all commercials, music videos and shorts that have the specialty tag will be chosen reliably and first before anything else for buffer media
+        - The gate fall through will be different for buffer media, specialty will always win, above anything else, for this type of programming block holiday will only beat specialty for buffer media when both the specialty and the holiday tag match, the rest of the buffer media will follow through the gates in the same manner as other non-programming block buffers.
+        - Every anchor media has the option of a user designating a bumper before the anchor media, and after the anchor media. The user will give each anchor media a pool of starting bumpers and ending buffers to include (size of pool can be zero, meaning there are no bumpers for this anchor media).
+        - The programming block also has an option for a pool of bumpers, both starting buffers and ending buffers. One the start bumper would play at the start of the programming block, and the end bumper will play right after the end bumper of the last show (before the normal buffer media at the end of a media block). The pool size can be zero for both
+        - bumpers will be considered part of the duration of anchor media when calculating the programming block for the day's stream. The beginning bumper will start not in the previous buffer, but at the start of the media block for that anchor media (at the :00 or :30 mark)
+        - the start bumper and the end bumper will hug the anchor media, and the sum duration of all 3 will determine the time amount for the buffer media
+        - Bumpers will be restricted to be at max 15 seconds to be entered into the DB as a bumper when the time of the piece of media is analyzed by FFMPEG (check other db insert functionality for this pattern)
+    1b. The user will pick N amount of shows to play during the programming block and set the order of these shows. 
+        - These shows will appear in order and follow episode progession that is coupled to the programming block, we will need to make sure we can do programming block specific episode tracking that is persisted in the DB after the show plays in the programming block.
+        - If the last show has any episode where adding 30 seconds to the run time would make the episode over duration, it may not be picked for the last show in the programming block
+        - No show that has an overduration episode may be picked as the last show of a programming block (I will explain why in the next section)
+    1c. There is a special write up I did when I was originally designing this 3 years ago (this particular is specifically contextual to this type of programming block), here is that write up:
+        If the show runs longer than the alloted time block for that show, skip the show following it. Time remaining will be filled with buffer media.
+        A good example of this is with the summer 2000 broadcast of Toonami with Tenchi Muyo.
+        Tenchi has a few episodes that are weirdly 45 minutes instead of 30 minutes randomly with no real rhyme
+        or reason. To handle this randomness, Toonami in it's original broadcast pulled the episode of Batman the
+        Animated series which usually followed Tenchi specifically for that day only and populated the remainder of the
+        15 minutes that would have normally been Batman with Power Puff Girl episodes instead. This allowed
+        Toonami to keep the fidelity of a 3 hour block run time and decreasing dead time and keeping interest of the
+        audience while staying within theme (Toonami being a series of mostly violence driven animated shows)
+        in which the only Cartoon Network licensed property that fit in the alloted time slot that was also
+        themed correctly was PPG
+        (This is also why no show with over duration episodes can be the last show of the programming block, the programming block itself can never be over duration)
+    1d. This type of programming block will only be able to be selected for streams in cadenced mode
+
+2.  The second type of programming block is a tag themed block. A user will pick movie mode, show mode, or movie and show mode. A user will also pick a duration of the tag themed block.
+    2a. This type of block will be able to be themed. Theming in this context means:
+        - there will be a specialty tag that is attached to the programming block object, and all commercials, music videos and shorts that have the specialty tag will be chosen reliably and first before anything else for buffer media
+        - The gate fall through will be different for buffer media, specialty will always win, above anything else, for this type of programming block holiday will only beat specialty for buffer media when both the specialty and the holiday tag match, the rest of the buffer media will follow through the gates in the same manner as other non-programming block buffers.
+        - A general pool of start bumpers and a separate general pool of end bumpers will be available for use at the start and the end of each anchor media (this is a general pool, not like programming block type 1 where each show picked has its own bumper pool specific to it)
+        - The programming block also has an option for a pool of bumpers, both starting buffers and ending buffers. One the start bumper would play at the start of the programming block, and the end bumper will play right after the end bumper of the last show (before the normal buffer media at the end of a media block). The pool size can be zero for both
+        - bumpers will be considered part of the duration of anchor media when calculating the programming block for the day's stream. The beginning bumper will start not in the previous buffer, but at the start of the media block for that anchor media (at the :00 or :30 mark)
+        - the start bumper and the end bumper will hug the anchor media, and the sum duration of all 3 will determine the time amount for the buffer media
+        - Bumpers will be restricted to be at max 15 seconds to be entered into the DB as a bumper when the time of the piece of media is analyzed by FFMPEG (check other db insert functionality for this pattern)
+    2b. If Movie mode:
+        - Kaleidoscope will attempt to fill the entire duration with movies that fit the remaining duration after each one is picked.
+        - If it is a daily programming block, 3 days will have to pass before the same movie is played, with the exception being that if there are no other movies left to pick that have the selected tags.
+        - If it is a weekly programming block with 1 day a week or 2 days a week, 3 weeks will have had to pass before the same movie is selected, with the exception being that if there are no other movies left to pick that have the selected tags.
+        - If it is a weekly programming block with 3 days a week or more, 1 week will have had to pass before the same movie is selected, with the exception being that if there are no other movies left to pick that have the selected tags.
+        - If when movies are picked and there are no more that fit within the remaining duration, pick shows with no over duration episodes to finish out the programming block
+        - If there are no shows that that fit in the remaining time of the block then buffer media is picked with the speciality matches picked first to the programming block, then specialties matching the movies that were selected for the programming block, then the rest of the normal gates that any buffer follows.
+        - This type of programming block will be aware of any collections a movie has. It will also look back at the movies that were selected, in the last two days. From this information it will do two things, It will change and replace any movie picked for the programming block in the same collection in the order of that collection. If the movies picked to replace the originals picked to keep collection order end up being longer than the duration alotted to them then a coin will be flipped to either replace the last movie selected for that collection in "today's" programming block with something else that conforms to the tags of the programming block or instead force out one of the other movies and then fill the rest of the duration left with another movie or shows within the duration.
+    2c. If Show mode:
+        - Kaleidoscope will pick shows fit within the remaining duration and has the tags set by the programming block, and pick a show with no over duration episodes to be the last show in the programming block
+        - If there are no shows that that fit in the remaining time of the block then buffer media is picked with the speciality matches picked first to the programming block, then specialties matching the movies that were selected for the programming block, then the rest of the normal gates that any buffer follows.
+    2d. If Show and Movie mode: 
+        - Kaleidoscope will attempt to fill the entire duration by flipping a coin between a movie and a show that has the tags and that fits the remaining duration after each one is picked.
+        - If it is a daily programming block, 3 days will have to pass before the same movie is played, with the exception being that if there are no other movies left to pick that have the selected tags.
+        - If it is a weekly programming block with 1 day a week or 2 days a week, 3 weeks will have had to pass before the same movie is selected, with the exception being that if there are no other movies left to pick that have the selected tags.
+        - If it is a weekly programming block with 3 days a week or more, 1 week will have had to pass before the same movie is selected, with the exception being that if there are no other movies left to pick that have the selected tags.
+        - If when movies are picked and there are no more that fit within the remaining duration, pick shows with no over duration episodes to finish out the programming block
+        - If there are no shows that that fit in the remaining time of the block then buffer media is picked with the speciality matches picked first to the programming block, then specialties matching the movies that were selected for the programming block, then the rest of the normal gates that any buffer follows.
+        - This type of programming block will be aware of any collections a movie has. It will also look back at the movies that were selected, in the last two days. From this information it will do two things, It will change and replace any movie picked for the programming block in the same collection in the order of that collection. If the movies picked to replace the originals picked to keep collection order end up being longer than the duration alotted to them then a coin will be flipped to either replace the last movie selected for that collection in "today's" programming block with something else that conforms to the tags of the programming block or instead force out one of the other movies and then fill the rest of the duration left with another movie or shows within the duration.
+    2e. This programming block will match cadenced or uncadenced mode of the stream it is scheduled in.
+    
+3.  Curated Movie Marathon. This programming block type is a selection of movies added and ordered by the user to run in a specific order.
+    3a. This programming block will match cadenced or uncadenced mode of the stream it is scheduled in.
+
+There will be several more types of programming blocks, but lets start with this.

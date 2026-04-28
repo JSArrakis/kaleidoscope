@@ -9,4 +9,5 @@ export interface IStreamRequest {
   StartTime?: number;
   Cadence?: boolean;
   Themed?: boolean;
+  AdhocStartFromBeginning?: boolean;
 }

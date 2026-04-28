@@ -24,3 +24,11 @@ export {
   EpisodeProgressionRepository,
   episodeProgressionRepository,
 } from "./episodeProgressionRepository.js";
+export {
+  CollectionMovieProgressionRepository,
+  collectionMovieProgressionRepository,
+} from "./collectionMovieProgressionRepository.js";
+export {
+  ProgrammingBlockRepository,
+  programmingBlockRepository,
+} from "./programmingBlockRepository.js";

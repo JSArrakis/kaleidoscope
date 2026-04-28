@@ -1,4 +1,5 @@
-import { FC } from "react";
+﻿import { FC } from "react";
+import { MediaType } from "../../../models";
 import { MoviesViewModel } from "./Movies.viewmodel";
 import styles from "./Movies.module.css";
 import MediaItemList from "../../../components/MediaItemList/MediaItemList";
@@ -19,6 +20,7 @@ const MoviesView: FC<MoviesViewProps> = ({ viewModel }) => {
         isHolidayExclusive: false,
         type: MediaType.Movie,
         tags: [] as Tag[],
+        collections: [],
       };
 
   return (

@@ -2,12 +2,21 @@ const electron = require("electron");
 
 electron.contextBridge.exposeInMainWorld("electron", {
   openFileDialogHandler: async () => await ipcInvoke("openFileDialog"),
+  probeMediaMetadataHandler: async (filePath: string) =>
+    await ipcInvoke("probeMediaMetadata", filePath),
+  getPlayerStateHandler: async () => await ipcInvoke("getPlayerState"),
+  replacePlayerQueueHandler: async (filePaths: string[]) =>
+    await ipcInvoke("replacePlayerQueue", filePaths),
+  playerSelectQueueItemHandler: async (index: number) =>
+    await ipcInvoke("playerSelectQueueItem", index),
+  playerPlayPreviousHandler: async () => await ipcInvoke("playerPlayPrevious"),
+  playerPlayNextHandler: async () => await ipcInvoke("playerPlayNext"),
   getCollectionsHandler: async () => await ipcInvoke("getCollections"),
-  createCollectionHandler: async (collection: PrismCurationObj) =>
+  createCollectionHandler: async (collection: Collection) =>
     await ipcInvoke("createCollection", collection),
-  deleteCollectionHandler: async (collection: PrismCurationObj) =>
+  deleteCollectionHandler: async (collection: Collection) =>
     await ipcInvoke("deleteCollection", collection),
-  updateCollectionHandler: async (collection: PrismCurationObj) =>
+  updateCollectionHandler: async (collection: Collection) =>
     await ipcInvoke("updateCollection", collection),
   getMoviesHandler: async () => await ipcInvoke("getMovies"),
   createMovieHandler: async (movie: Movie) =>
@@ -92,6 +101,24 @@ electron.contextBridge.exposeInMainWorld("electron", {
     await ipcInvoke("createMusicGenre", tag),
   deleteMusicGenreHandler: async (tag: Tag) =>
     await ipcInvoke("deleteMusicGenre", tag),
+  getFacetsHandler: async () => await ipcInvoke("getFacets"),
+  createFacetHandler: async (genre: Tag | null, aesthetic: Tag | null) =>
+    await ipcInvoke("createFacet", genre, aesthetic),
+  deleteFacetHandler: async (facetId: string) =>
+    await ipcInvoke("deleteFacet", facetId),
+  addFacetRelationshipHandler: async (request: FacetRelationshipRequest) =>
+    await ipcInvoke("addFacetRelationship", request),
+  deleteFacetRelationshipHandler: async (
+    request: FacetRelationshipDeleteRequest,
+  ) => await ipcInvoke("deleteFacetRelationship", request),
+  getMosaicsHandler: async () => await ipcInvoke("getMosaics"),
+  createMosaicHandler: async (
+    mosaic: Omit<Mosaic, "mosaicId" | "createdAt" | "updatedAt">,
+  ) => await ipcInvoke("createMosaic", mosaic),
+  updateMosaicHandler: async (mosaic: Mosaic) =>
+    await ipcInvoke("updateMosaic", mosaic),
+  deleteMosaicHandler: async (mosaicId: string) =>
+    await ipcInvoke("deleteMosaic", mosaicId),
 } satisfies Window["electron"]);
 
 function ipcInvoke<Key extends keyof EventPayloadMapping>(
@@ -103,9 +130,9 @@ function ipcInvoke<Key extends keyof EventPayloadMapping>(
 
 function ipcOn<Key extends keyof EventPayloadMapping>(
   key: Key,
-  callback: (payload: EventPayloadMapping[Key]) => void
+  callback: (payload: EventPayloadMapping[Key]) => void,
 ) {
   electron.ipcRenderer.on(key, (_: any, payload: EventPayloadMapping[Key]) =>
-    callback(payload)
+    callback(payload),
   );
 }

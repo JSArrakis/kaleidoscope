@@ -89,6 +89,28 @@ import {
   deleteMusicGenreHandler,
   getMusicGenresHandler,
 } from "./handlers/musicGenreHandlers.js";
+import { probeMediaMetadataHandler } from "./handlers/mediaProbeHandlers.js";
+import {
+  addFacetRelationshipHandler,
+  createFacetHandler,
+  deleteFacetHandler,
+  deleteFacetRelationshipHandler,
+  getFacetsHandler,
+} from "./handlers/facetHandlers.js";
+import {
+  createMosaicHandler,
+  deleteMosaicHandler,
+  getMosaicsHandler,
+  updateMosaicHandler,
+} from "./handlers/mosaicHandlers.js";
+import {
+  getPlayerStateSnapshot,
+  initializePlayer,
+  playNextInPlayerQueue,
+  playPreviousInPlayerQueue,
+  replacePlayerQueueFromFilePaths,
+  selectPlayerQueueItem,
+} from "./services/playerManager.js";
 
 app.on("ready", async () => {
   // Initialize database first
@@ -100,6 +122,8 @@ app.on("ready", async () => {
     console.error("Failed to connect to database:", error);
     // Continue anyway to allow app to start
   }
+
+  await initializePlayer("electron");
 
   const mainWindow = new BrowserWindow({
     width: 1024,
@@ -121,26 +145,47 @@ app.on("ready", async () => {
   ipcMainHandle("openFileDialog", async () => {
     return await openFileDialogHandler(mainWindow);
   });
+  ipcMainHandle("probeMediaMetadata", async (_event: any, filePath: string) => {
+    return await probeMediaMetadataHandler(filePath);
+  });
+  ipcMainHandle("getPlayerState", async () => {
+    return getPlayerStateSnapshot();
+  });
+  ipcMainHandle(
+    "replacePlayerQueue",
+    async (_event: any, filePaths: string[]) => {
+      return replacePlayerQueueFromFilePaths(filePaths);
+    },
+  );
+  ipcMainHandle("playerSelectQueueItem", async (_event: any, index: number) => {
+    return selectPlayerQueueItem(index);
+  });
+  ipcMainHandle("playerPlayPrevious", async () => {
+    return playPreviousInPlayerQueue();
+  });
+  ipcMainHandle("playerPlayNext", async () => {
+    return playNextInPlayerQueue();
+  });
   ipcMainHandle("getCollections", async () => {
     return await getCollectionsHandler();
   });
   ipcMainHandle(
     "createCollection",
-    async (_event: any, collection: PrismCurationObj) => {
+    async (_event: any, collection: Collection) => {
       return await createCollectionHandler(collection);
-    }
+    },
   );
   ipcMainHandle(
     "deleteCollection",
-    async (_event: any, collection: PrismCurationObj) => {
+    async (_event: any, collection: Collection) => {
       return await deleteCollectionHandler(collection);
-    }
+    },
   );
   ipcMainHandle(
     "updateCollection",
-    async (_event: any, collection: PrismCurationObj) => {
+    async (_event: any, collection: Collection) => {
       return await updateCollectionHandler(collection);
-    }
+    },
   );
   ipcMainHandle("getMovies", async () => {
     return await getMoviesHandler();
@@ -197,19 +242,19 @@ app.on("ready", async () => {
     "createCommercial",
     async (_event: any, commercial: Commercial) => {
       return await createCommercialHandler(commercial);
-    }
+    },
   );
   ipcMainHandle(
     "deleteCommercial",
     async (_event: any, commercial: Commercial) => {
       return await deleteCommercialHandler(commercial);
-    }
+    },
   );
   ipcMainHandle(
     "updateCommercial",
     async (_event: any, commercial: Commercial) => {
       return await updateCommercialHandler(commercial);
-    }
+    },
   );
   ipcMainHandle("getPromos", async () => {
     return await getPromosHandler();
@@ -303,5 +348,47 @@ app.on("ready", async () => {
   });
   ipcMainHandle("deleteMusicGenre", async (_event: any, tag: Tag) => {
     return await deleteMusicGenreHandler(tag);
+  });
+  ipcMainHandle("getFacets", async () => {
+    return getFacetsHandler();
+  });
+  ipcMainHandle(
+    "createFacet",
+    async (_event: any, genre: Tag | null, aesthetic: Tag | null) => {
+      return createFacetHandler(genre, aesthetic);
+    },
+  );
+  ipcMainHandle("deleteFacet", async (_event: any, facetId: string) => {
+    return deleteFacetHandler(facetId);
+  });
+  ipcMainHandle(
+    "addFacetRelationship",
+    async (_event: any, request: FacetRelationshipRequest) => {
+      return addFacetRelationshipHandler(request);
+    },
+  );
+  ipcMainHandle(
+    "deleteFacetRelationship",
+    async (_event: any, request: FacetRelationshipDeleteRequest) => {
+      return deleteFacetRelationshipHandler(request);
+    },
+  );
+  ipcMainHandle("getMosaics", async () => {
+    return getMosaicsHandler();
+  });
+  ipcMainHandle(
+    "createMosaic",
+    async (
+      _event: any,
+      mosaic: Omit<Mosaic, "mosaicId" | "createdAt" | "updatedAt">,
+    ) => {
+      return createMosaicHandler(mosaic);
+    },
+  );
+  ipcMainHandle("updateMosaic", async (_event: any, mosaic: Mosaic) => {
+    return updateMosaicHandler(mosaic);
+  });
+  ipcMainHandle("deleteMosaic", async (_event: any, mosaicId: string) => {
+    return deleteMosaicHandler(mosaicId);
   });
 });

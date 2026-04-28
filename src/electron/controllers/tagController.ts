@@ -4,7 +4,7 @@ import { tagRepository } from "../repositories/tagsRepository.js";
  * Create a new tag
  */
 export async function createTag(
-  tag: Tag
+  tag: Tag,
 ): Promise<{ message: string; status: number }> {
   try {
     console.log("[tagController] Creating tag:", tag.tagId, "type:", tag.type);
@@ -23,7 +23,7 @@ export async function createTag(
       "Specialty",
       "Holiday",
       "AgeGroup",
-      "MusicGenre",
+      "MusicalGenre",
     ];
     if (!validTypes.includes(tag.type)) {
       return { message: `Invalid tag type: ${tag.type}`, status: 400 };
@@ -70,7 +70,7 @@ export function getTagsByType(type: string): Tag[] {
     "Specialty",
     "Holiday",
     "AgeGroup",
-    "MusicGenre",
+    "MusicalGenre",
   ];
   if (!validTypes.includes(type)) {
     throw new Error(`Invalid tag type: ${type}`);
@@ -103,7 +103,7 @@ export function getTag(tagId: string): Tag | null {
  */
 export function updateTag(
   tagId: string,
-  updates: Partial<Tag>
+  updates: Partial<Tag>,
 ): { message: string; status: number } {
   try {
     if (!tagId) {

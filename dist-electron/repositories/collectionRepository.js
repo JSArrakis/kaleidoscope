@@ -89,15 +89,31 @@ export class CollectionRepository {
         return this.findCollectionItemById(collectionItemId);
     }
     updateCollection(collectionId, collection) {
-        const stmt = this.db.prepare(`
-      UPDATE collections 
-      SET title = ?, description = ?, updatedAt = CURRENT_TIMESTAMP
-      WHERE collectionId = ?
-    `);
-        const result = stmt.run(collection.title, collection.description || null, collectionId);
-        if (result.changes === 0)
-            return null;
-        return this.findByCollectionId(collectionId);
+        const transaction = this.db.transaction(() => {
+            const collectionUpdateStmt = this.db.prepare(`
+        UPDATE collections
+        SET title = ?, description = ?, itemCount = ?, updatedAt = CURRENT_TIMESTAMP
+        WHERE collectionId = ?
+      `);
+            const updateResult = collectionUpdateStmt.run(collection.title, collection.description || null, collection.items.length, collectionId);
+            if (updateResult.changes === 0) {
+                return null;
+            }
+            this.db
+                .prepare(`DELETE FROM collection_items WHERE collectionId = ?`)
+                .run(collectionId);
+            if (collection.items.length > 0) {
+                const insertItemStmt = this.db.prepare(`
+          INSERT INTO collection_items (collectionItemId, collectionId, mediaItemId, sequence)
+          VALUES (?, ?, ?, ?)
+        `);
+                for (const item of collection.items) {
+                    insertItemStmt.run(item.collectionItemId, collectionId, item.mediaItemId, item.sequence);
+                }
+            }
+            return this.findByCollectionId(collectionId);
+        });
+        return transaction();
     }
     deleteCollection(collectionId) {
         const transaction = this.db.transaction(() => {

@@ -1,4 +1,5 @@
 import { getDB } from "../db/sqlite.js";
+import { MediaType } from "../models.js";
 
 export class PromoRepository {
   private get db() {
@@ -16,7 +17,7 @@ export class PromoRepository {
         promo.title,
         promo.mediaItemId,
         promo.duration || null,
-        promo.path
+        promo.path,
       );
       this.insertTags(promo.mediaItemId, promo.tags);
     });
@@ -40,7 +41,7 @@ export class PromoRepository {
 
   findRandomPromo(): Promo | null {
     const stmt = this.db.prepare(
-      `SELECT * FROM promos ORDER BY RANDOM() LIMIT 1`
+      `SELECT * FROM promos ORDER BY RANDOM() LIMIT 1`,
     );
     const row = stmt.get() as any;
     if (!row) return null;
@@ -70,7 +71,7 @@ export class PromoRepository {
         promo.title,
         promo.duration || null,
         promo.path,
-        mediaItemId
+        mediaItemId,
       );
       if (result.changes === 0) return null;
 
@@ -99,7 +100,7 @@ export class PromoRepository {
   private insertTags(mediaItemId: string, tags: Tag[]): void {
     if (tags.length === 0) return;
     const stmt = this.db.prepare(
-      `INSERT INTO promo_tags (mediaItemId, tagId) VALUES (?, ?)`
+      `INSERT INTO promo_tags (mediaItemId, tagId) VALUES (?, ?)`,
     );
     for (const tag of tags) {
       stmt.run(mediaItemId, tag.tagId);

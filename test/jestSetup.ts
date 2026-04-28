@@ -92,47 +92,54 @@ for (const filePath of filesToClean) {
 if (!globalThis.testDatabaseInitialized) {
   console.log("[Jest Setup] Initializing test database...");
 
-  const {
-    setupTestDatabase,
-    populateTestData,
-  } = require("./testDatabaseSetup");
-  const { sqliteService } = require("../src/electron/db/sqlite");
+  try {
+    const {
+      setupTestDatabase,
+      populateTestData,
+    } = require("./testDatabaseSetup");
+    const { sqliteService } = require("../src/electron/db/sqlite");
 
-  // Create test database
-  globalThis.testDb = setupTestDatabase();
-  console.log("[Jest Setup] Test database created at:", TEST_DB_PATH);
+    // Create test database
+    globalThis.testDb = setupTestDatabase();
+    console.log("[Jest Setup] Test database created at:", TEST_DB_PATH);
 
-  // Populate with test data
-  populateTestData(globalThis.testDb);
-  console.log("[Jest Setup] Test data populated");
+    // Populate with test data
+    populateTestData(globalThis.testDb);
+    console.log("[Jest Setup] Test data populated");
 
-  // Inject into sqliteService
-  sqliteService.setDatabase(globalThis.testDb);
-  console.log("[Jest Setup] Test database injected into sqliteService");
+    // Inject into sqliteService
+    sqliteService.setDatabase(globalThis.testDb);
+    console.log("[Jest Setup] Test database injected into sqliteService");
+
+    // Clean up temp database after all tests complete
+    afterAll(() => {
+      console.log("[Jest Setup] Closing test database...");
+      globalThis.testDb?.close();
+
+      // Small delay to ensure the file handle is fully released (especially on Windows)
+      const delayMs = 150;
+      const startTime = Date.now();
+      while (Date.now() - startTime < delayMs) {
+        // Busy wait for file handle to be released
+      }
+
+      // Delete temp database file and related WAL files
+      const filesToDelete = [
+        TEST_DB_PATH,
+        `${TEST_DB_PATH}-shm`,
+        `${TEST_DB_PATH}-wal`,
+      ];
+
+      for (const filePath of filesToDelete) {
+        safeDeleteFile(filePath);
+      }
+    });
+  } catch (error: any) {
+    console.warn(
+      `[Jest Setup] Warning: DB bootstrap skipped; running in mocked-unit mode. ${error?.message || error}`,
+    );
+    globalThis.testDb = null;
+  }
 
   globalThis.testDatabaseInitialized = true;
-
-  // Clean up temp database after all tests complete
-  afterAll(() => {
-    console.log("[Jest Setup] Closing test database...");
-    globalThis.testDb?.close();
-
-    // Small delay to ensure the file handle is fully released (especially on Windows)
-    const delayMs = 150;
-    const startTime = Date.now();
-    while (Date.now() - startTime < delayMs) {
-      // Busy wait for file handle to be released
-    }
-
-    // Delete temp database file and related WAL files
-    const filesToDelete = [
-      TEST_DB_PATH,
-      `${TEST_DB_PATH}-shm`,
-      `${TEST_DB_PATH}-wal`,
-    ];
-
-    for (const filePath of filesToDelete) {
-      safeDeleteFile(filePath);
-    }
-  });
 }

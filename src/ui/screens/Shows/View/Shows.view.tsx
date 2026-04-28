@@ -1,4 +1,5 @@
-import { FC } from "react";
+﻿import { FC } from "react";
+import { MediaType } from "../../../models";
 import { ShowsViewModel } from "./Shows.viewmodel";
 import styles from "./Shows.module.css";
 import MediaItemList from "../../../components/MediaItemList/MediaItemList";

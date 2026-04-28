@@ -10,6 +10,7 @@ import {
   selectMovieOrShow,
 } from "./selectionHelpers.js";
 import * as streamManager from "../streamManager.js";
+import { MediaType } from "../../models.js";
 /**
  * Selects random anchor media (movies or shows)
  * Randomly chooses between shows and movies, respecting episode progression

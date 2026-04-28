@@ -117,9 +117,29 @@ export function doesNextEpisodeFitDuration(
   if (show.episodes.length === 0) {
     return null;
   }
-  // Get the next episode number from stream manager's progression map
+
   const progressionMap = streamManager.getProgressionMap();
-  const nextEpisodeNum = progressionMap.get(show.mediaItemId) || 1;
+  const existingProgression = progressionMap.get(show.mediaItemId);
+
+  // For adhoc streams with random episode start: if this show has no progression
+  // entry yet (first encounter this session), pick randomly among episodes that
+  // fit the duration. The duration filter is the overduration guard — no episode
+  // exceeding availableDuration can be selected.
+  if (
+    streamManager.isRandomEpisodeStart() &&
+    existingProgression === undefined
+  ) {
+    const fittingEpisodes = show.episodes.filter(
+      (ep) => ep.duration <= availableDuration,
+    );
+    if (fittingEpisodes.length === 0) return null;
+    const randomEp =
+      fittingEpisodes[Math.floor(Math.random() * fittingEpisodes.length)];
+    return randomEp.episodeNumber;
+  }
+
+  const nextEpisodeNum = existingProgression || 1;
+  let selectedEpisodeNum = nextEpisodeNum;
 
   // Check if next episode exists
   let nextEpisode = show.episodes[nextEpisodeNum - 1];
@@ -127,13 +147,14 @@ export function doesNextEpisodeFitDuration(
   // If next episode doesn't exist, we're wrapping back to episode 1
   if (!nextEpisode) {
     nextEpisode = show.episodes[0];
+    selectedEpisodeNum = 1;
   }
 
   if (!nextEpisode) {
     return null;
   }
 
-  return nextEpisode.duration <= availableDuration ? nextEpisodeNum : null;
+  return nextEpisode.duration <= availableDuration ? selectedEpisodeNum : null;
 }
 
 /**

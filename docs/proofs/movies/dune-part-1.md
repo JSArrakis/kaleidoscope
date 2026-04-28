@@ -4,8 +4,6 @@ Denis Villeneuve's Dune: Part One tells the story of Paul Atreides, heir to Hous
 
 At its core, this is a film about the weight of inheritance. Not just political inheritance, but genetic, ecological, and prophetic inheritance: the question of what happens when a young man discovers that the forces shaping his life were set in motion centuries before he was born, and that every choice he makes may already be predetermined.
 
----
-
 ## Genre: Drama · Science Fiction
 
 Dune: Part One operates at the intersection of Drama and Science Fiction, where the speculative framework is inseparable from the character-driven narrative. The film's philosophical questions can only exist because of its speculative elements, and its speculative elements only matter because they are filtered through deeply human relationships and moral complexity.
@@ -28,8 +26,6 @@ The Bene Gesserit breeding program raises equally pointed questions about geneti
 
 Spice itself is the material foundation for the film's exploration of resource dependency, ecological exploitation, and the relationship between consciousness and environment. The entire interstellar civilization depends on a substance produced by the ecosystem of a single planet, and the film asks what systems of power and oppression emerge from that dependency. This is speculative economics and ecology driving philosophical inquiry: the hallmark of Science Fiction as a narrative genre.
 
----
-
 ## Aesthetics: Space Opera · Political
 
 The film presents its Drama and Science Fiction narrative through two layered aesthetic frameworks that work in concert: the cosmic scale and interstellar grandeur of Space Opera, and the institutional power dynamics and governance systems of the Political aesthetic.
@@ -48,8 +44,6 @@ The Bene Gesserit operate as a political institution in their own right, enginee
 
 Power structures, institutional rivalries, and governance systems are not background texture; they are the aesthetic vocabulary through which every scene is presented. Characters speak in terms of alliances, obligations, and political consequences. The film's visual language reinforces this: palatial receiving halls, formal ceremonies of transfer, military parades that function as political displays. The dressing is institutional, deliberate, and concerned at every level with how power is acquired, maintained, and lost.
 
----
-
 ## Era: 2020s
 
 The Eras taxonomy captures production-period storytelling DNA: not when a film is set, but how a film tells its story based on when it was made. Dune: Part One was produced and released in 2021, and its storytelling approach reflects a paradigm that has emerged in the 2020s: the auteur blockbuster as contemplative experience.
@@ -59,8 +53,6 @@ The film trusts its audience with deliberate, meditative pacing in a franchise c
 This is a blockbuster designed as a sensory experience. The IMAX photography, Hans Zimmer's tactile sound design, and the sheer physical scale of the imagery are not spectacle for its own sake; they are the storytelling medium itself. The film communicates Paul's smallness against destiny through the visual language of a human figure dwarfed by desert, by architecture, by sandworm. The 2020s paradigm invests in immersion over information.
 
 The film also tells only half the story by design, not as a cliffhanger or franchise tease, but as a structural commitment to giving the material the space it requires. This reflects a production-era confidence that audiences will accept incomplete narrative arcs if the storytelling quality justifies the patience.
-
----
 
 ## Age Group: Mature
 

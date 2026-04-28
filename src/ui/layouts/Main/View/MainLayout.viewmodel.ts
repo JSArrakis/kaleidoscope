@@ -51,9 +51,6 @@ const useMainLayoutViewModel = (): MainLayoutViewModel => {
       case "bumpers":
         navigate("/bumpers");
         break;
-      case "cascade":
-        navigate("/cascade");
-        break;
       case "collections":
         navigate("/collections");
         break;

@@ -1,4 +1,5 @@
 import { getDB } from "../db/sqlite.js";
+import { MediaType } from "../models.js";
 
 export class CommercialRepository {
   private get db() {

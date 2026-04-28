@@ -1,10 +1,17 @@
 import { FC, useRef } from "react";
 import styles from "./AddedMediaItem.module.css";
 
+type EditableCollectionItem = Omit<CollectionItem, "sequence"> & {
+  sequence?: number;
+};
+
 interface AddedMediaItemProps {
-  item: PrismCurationItem;
-  onRemove: (item: PrismCurationItem) => void;
-  onUpdateSequence: (item: PrismCurationItem, sequence: number | null) => void;
+  item: EditableCollectionItem;
+  onRemove: (item: EditableCollectionItem) => void;
+  onUpdateSequence: (
+    item: EditableCollectionItem,
+    sequence: number | null,
+  ) => void;
 }
 
 const AddedMediaItem: FC<AddedMediaItemProps> = ({
@@ -28,7 +35,7 @@ const AddedMediaItem: FC<AddedMediaItemProps> = ({
         <span className="material-symbols-rounded">close</span>
       </div>
       <div className={styles.itemContent}>
-        <div className={styles.itemTitle}>{item.mediaItemTitle}</div>
+        <div className={styles.itemTitle}>{item.title}</div>
       </div>
       <div className={styles.sequenceContainer}>
         <div className={styles.sequenceLabel}> SEQ #</div>

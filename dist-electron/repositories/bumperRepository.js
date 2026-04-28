@@ -1,4 +1,5 @@
 import { getDB } from "../db/sqlite.js";
+import { MediaType } from "../models.js";
 export class BumperRepository {
     get db() {
         return getDB();
@@ -94,7 +95,6 @@ export class BumperRepository {
             type: tagRow.type,
             seasonStartDate: tagRow.seasonStartDate,
             seasonEndDate: tagRow.seasonEndDate,
-            explicitlyHoliday: tagRow.explicitlyHoliday === 1,
             sequence: tagRow.sequence,
         }));
         return {
@@ -102,6 +102,7 @@ export class BumperRepository {
             title: row.title,
             path: row.path,
             duration: row.duration,
+            type: MediaType.Bumper,
             tags,
             createdAt: row.createdAt,
             updatedAt: row.updatedAt,

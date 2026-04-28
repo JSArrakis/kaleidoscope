@@ -1,11 +1,12 @@
-import { FC, useState, useRef, useEffect } from "react";
+﻿import { FC, useState, useRef, useEffect } from "react";
+import { MediaType } from "../../models";
 import styles from "./MediaEditForm.module.css";
 import { getFileName, normalizeItem } from "../../common/helpers";
 import {
   EPISODE_SEARCH_CATEGORIES,
   TAG_CATEGORIES,
 } from "../../common/constants";
-import CurationItem from "./CurationItem/CurationItem";
+import CurationItem, { CurationDisplayItem } from "./CurationItem/CurationItem";
 import Episode from "./Episode/Episode";
 import { useGetAllAestheticTags } from "../../services/tags/useAestheticTags";
 import { useGetAllEraTags } from "../../services/tags/useEraTags";
@@ -592,8 +593,8 @@ const MediaEditForm: FC<MediaEditFormProps> = ({
             <div className={styles.curationList} ref={curationListRef}>
               {itemType === "show"
                 ? "blocks" in item && item.blocks
-                  ? (item.blocks as PrismCurationReference[])?.map(
-                      (curationItem: PrismCurationReference) => (
+                  ? (item.blocks as CurationDisplayItem[])?.map(
+                      (curationItem: CurationDisplayItem) => (
                         <CurationItem
                           key={curationItem.curationRefId}
                           curationItem={curationItem}
@@ -602,14 +603,16 @@ const MediaEditForm: FC<MediaEditFormProps> = ({
                     )
                   : null
                 : "collections" in item && item.collections
-                  ? (item.collections as PrismCurationReference[])?.map(
-                      (collection: PrismCurationReference) => (
-                        <CurationItem
-                          key={collection.curationRefId}
-                          curationItem={collection}
-                        />
-                      ),
-                    )
+                  ? item.collections.map((collection) => (
+                      <CurationItem
+                        key={collection.collectionId}
+                        curationItem={{
+                          curationRefId: collection.collectionId,
+                          title: collection.name,
+                          sequence: collection.sequence,
+                        }}
+                      />
+                    ))
                   : null}
             </div>
           </div>

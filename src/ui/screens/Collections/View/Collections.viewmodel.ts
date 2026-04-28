@@ -13,22 +13,21 @@ interface CollectionsData {
   isEditModalOpen: boolean;
 }
 interface CollectionsActions {
-  selectedCollection: PrismCurationObj | null;
-  collections: PrismCurationObj[];
+  selectedCollection: Collection | null;
+  collections: Collection[];
   movies: Movie[];
   addCollection: () => void;
-  onEdit: (item: PrismCurationObj) => void;
-  onSave: (item: PrismCurationObj) => void;
-  onSaveNew: (item: PrismCurationObj) => void;
-  onRemove: (item: PrismCurationObj) => void;
+  onEdit: (item: Collection) => void;
+  onSave: (item: Collection) => void;
+  onSaveNew: (item: Collection) => void;
+  onRemove: (item: Collection) => void;
 }
 
 export interface CollectionsViewModel
-  extends CollectionsData,
-    CollectionsActions {}
+  extends CollectionsData, CollectionsActions {}
 
 const useCollectionsViewModel = (
-  navigate: ReturnType<typeof useRootStack>
+  navigate: ReturnType<typeof useRootStack>,
 ): CollectionsViewModel => {
   const $getCollections = useGetAllCollections();
   const $createCollection = useCreateCollection();
@@ -37,15 +36,11 @@ const useCollectionsViewModel = (
   const $movies = useGetAllMovies();
 
   const [isEditModalOpen, setEditModalState] = useState(false);
-  const [savedCollections, setSavedCollections] = useState<PrismCurationObj[]>(
-    []
-  );
-  const [newCollection, setNewCollection] = useState<PrismCurationObj | null>(
-    null
-  );
-  const [collections, setCollections] = useState<PrismCurationObj[]>([]);
+  const [savedCollections, setSavedCollections] = useState<Collection[]>([]);
+  const [newCollection, setNewCollection] = useState<Collection | null>(null);
+  const [collections, setCollections] = useState<Collection[]>([]);
   const [selectedCollection, setSelectedCollection] =
-    useState<PrismCurationObj | null>(null);
+    useState<Collection | null>(null);
   const [movies, setMovies] = useState<Movie[]>([]);
 
   useEffect(() => {
@@ -61,14 +56,14 @@ const useCollectionsViewModel = (
   }, [$movies.data]);
 
   useEffect(() => {
-    let currentCollections: PrismCurationObj[] = [];
+    let currentCollections: Collection[] = [];
     currentCollections = newCollection
       ? [newCollection, ...savedCollections]
       : [...savedCollections];
     setCollections(currentCollections);
   }, [newCollection, savedCollections]);
 
-  const onEdit = (collection: PrismCurationObj) => {
+  const onEdit = (collection: Collection) => {
     if (isEditModalOpen) {
       setSelectedCollection(null);
       setEditModalState(false);
@@ -76,7 +71,7 @@ const useCollectionsViewModel = (
     }
 
     const collectionToEdit = collections.find(
-      (m) => m.mediaItemId === collection.mediaItemId
+      (m) => m.collectionId === collection.collectionId,
     );
     if (!collectionToEdit) {
       console.error("Collection not found:", collection);
@@ -88,16 +83,16 @@ const useCollectionsViewModel = (
     setEditModalState(true);
   };
 
-  const onSaveNew = (item: PrismCurationObj) => {
+  const onSaveNew = (item: Collection) => {
     $createCollection.mutate(item);
     setNewCollection(null);
     setEditModalState(false);
   };
 
-  const onSave = (item: PrismCurationObj) => {
+  const onSave = (item: Collection) => {
     const deepCopiedSelectedCollection = JSON.parse(JSON.stringify(item));
     const existingCollection = collections.find(
-      (c) => c.mediaItemId === deepCopiedSelectedCollection.mediaItemId
+      (c) => c.collectionId === deepCopiedSelectedCollection.collectionId,
     );
     if (existingCollection) {
       $updateCollection.mutate(deepCopiedSelectedCollection);
@@ -112,8 +107,8 @@ const useCollectionsViewModel = (
     setEditModalState(false);
   };
 
-  const onRemove = (item: PrismCurationObj) => {
-    if (item.mediaItemId === newCollection?.mediaItemId) {
+  const onRemove = (item: Collection) => {
+    if (item.collectionId === newCollection?.collectionId) {
       setNewCollection(null);
       return;
     } else {
@@ -125,11 +120,12 @@ const useCollectionsViewModel = (
     if (newCollection) {
       return;
     }
-    const tempCollection: PrismCurationObj = {
-      mediaItemId: uuidv4(),
+    const tempCollection: Collection = {
+      collectionId: uuidv4(),
       title: "",
       description: "",
       items: [],
+      itemCount: 0,
     };
     setNewCollection(tempCollection);
   };

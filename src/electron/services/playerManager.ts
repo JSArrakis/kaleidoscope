@@ -2,6 +2,160 @@ type PlayerType = "vlc" | "electron" | "web" | "ffmpeg-plex";
 
 let currentPlayerType: PlayerType = "electron"; // Default to electron player
 let isPlayerInitialized: boolean = false;
+let electronPlayerQueue: PlayerQueueItem[] = [];
+let electronPlayerCurrentIndex = -1;
+let electronPlayerUpdatedAt = 0;
+let nextQueueItemSequence = 1;
+
+function touchElectronPlayerState(): void {
+  electronPlayerUpdatedAt = Date.now();
+}
+
+function getFallbackTitle(filePath: string): string {
+  const segments = filePath.split(/[/\\]/);
+  return segments[segments.length - 1] || filePath;
+}
+
+function clampElectronPlayerIndex(index: number): number {
+  if (electronPlayerQueue.length === 0) {
+    return -1;
+  }
+
+  if (index < 0) {
+    return 0;
+  }
+
+  if (index >= electronPlayerQueue.length) {
+    return electronPlayerQueue.length - 1;
+  }
+
+  return index;
+}
+
+function createQueueItem(
+  mediaItem: Movie | Episode | Promo | Music | Short | Commercial | Bumper,
+  mediaBlock: MediaBlock,
+  positionInBlock: number,
+  isBuffer: boolean,
+): PlayerQueueItem | null {
+  if (!("path" in mediaItem) || !mediaItem.path) {
+    return null;
+  }
+
+  return {
+    queueItemId: `player-item-${nextQueueItemSequence++}`,
+    mediaItemId: mediaItem.mediaItemId,
+    title: mediaItem.title || getFallbackTitle(mediaItem.path),
+    filePath: mediaItem.path,
+    mediaType: mediaItem.type,
+    startTime: mediaBlock.startTime,
+    blockStartTime: mediaBlock.startTime,
+    positionInBlock,
+    isBuffer,
+    sourceContext: mediaBlock.sourceContext,
+  };
+}
+
+function flattenMediaBlockToQueueItems(
+  mediaBlock: MediaBlock,
+): PlayerQueueItem[] {
+  const queueItems = mediaBlock.buffer
+    .map((mediaItem, index) =>
+      createQueueItem(mediaItem, mediaBlock, index, true),
+    )
+    .filter((item): item is PlayerQueueItem => item !== null);
+
+  if (mediaBlock.anchorMedia) {
+    const anchorQueueItem = createQueueItem(
+      mediaBlock.anchorMedia,
+      mediaBlock,
+      queueItems.length,
+      false,
+    );
+
+    if (anchorQueueItem) {
+      queueItems.push(anchorQueueItem);
+    }
+  }
+
+  return queueItems;
+}
+
+function ensureElectronPlayerReadyState(): void {
+  if (electronPlayerQueue.length === 0) {
+    electronPlayerCurrentIndex = -1;
+    return;
+  }
+
+  electronPlayerCurrentIndex = clampElectronPlayerIndex(
+    electronPlayerCurrentIndex,
+  );
+}
+
+function enqueueElectronMediaBlock(mediaBlock: MediaBlock): void {
+  const queueItems = flattenMediaBlockToQueueItems(mediaBlock);
+
+  if (queueItems.length === 0) {
+    console.warn(
+      "[PlayerManager] [Electron] Ignoring media block with no playable file paths",
+    );
+    return;
+  }
+
+  electronPlayerQueue.push(...queueItems);
+  ensureElectronPlayerReadyState();
+  touchElectronPlayerState();
+}
+
+export function getPlayerStateSnapshot(): ElectronPlayerState {
+  return {
+    playerType: currentPlayerType,
+    isInitialized: isPlayerInitialized,
+    currentIndex: electronPlayerCurrentIndex,
+    queue: [...electronPlayerQueue],
+    updatedAt: electronPlayerUpdatedAt,
+  };
+}
+
+export function replacePlayerQueueFromFilePaths(
+  filePaths: string[],
+): ElectronPlayerState {
+  electronPlayerQueue = filePaths.map((filePath, index) => ({
+    queueItemId: `player-item-${nextQueueItemSequence++}`,
+    title: getFallbackTitle(filePath),
+    filePath,
+    startTime: 0,
+    blockStartTime: 0,
+    positionInBlock: index,
+    isBuffer: false,
+  }));
+  electronPlayerCurrentIndex = electronPlayerQueue.length > 0 ? 0 : -1;
+  touchElectronPlayerState();
+
+  return getPlayerStateSnapshot();
+}
+
+export function selectPlayerQueueItem(index: number): ElectronPlayerState {
+  electronPlayerCurrentIndex = clampElectronPlayerIndex(index);
+  touchElectronPlayerState();
+  return getPlayerStateSnapshot();
+}
+
+export function playNextInPlayerQueue(): ElectronPlayerState {
+  electronPlayerCurrentIndex = clampElectronPlayerIndex(
+    electronPlayerCurrentIndex + 1,
+  );
+  touchElectronPlayerState();
+  return getPlayerStateSnapshot();
+}
+
+export function playPreviousInPlayerQueue(): ElectronPlayerState {
+  electronPlayerCurrentIndex = clampElectronPlayerIndex(
+    electronPlayerCurrentIndex - 1,
+  );
+  touchElectronPlayerState();
+  return getPlayerStateSnapshot();
+}
 
 /**
  * Set the current player type being used
@@ -41,10 +195,14 @@ export async function addMediaBlockToPlayer(
   mediaBlock: MediaBlock,
 ): Promise<void> {
   if (!isPlayerInitialized) {
-    console.warn(
-      "[PlayerManager] Player not initialized, queueing media block for later playback",
-    );
-    return;
+    if (currentPlayerType === "electron") {
+      await initializePlayer("electron");
+    } else {
+      console.warn(
+        "[PlayerManager] Player not initialized, queueing media block for later playback",
+      );
+      return;
+    }
   }
 
   try {
@@ -57,12 +215,10 @@ export async function addMediaBlockToPlayer(
         break;
 
       case "electron":
-        // TODO: Implement Electron player-specific playback logic
         console.log(
           "[PlayerManager] [Electron] Adding media block to Electron player",
         );
-        // await electronPlayer.addMediaBlock(mediaBlock);
-        // await electronPlayer.play();
+        enqueueElectronMediaBlock(mediaBlock);
         break;
 
       case "web":
@@ -74,7 +230,9 @@ export async function addMediaBlockToPlayer(
 
       case "ffmpeg-plex":
         // TODO: Implement FFmpeg/Plex stream output logic
-        console.log("[PlayerManager] [FFmpeg-Plex] Adding media block to FFmpeg-Plex stream");
+        console.log(
+          "[PlayerManager] [FFmpeg-Plex] Adding media block to FFmpeg-Plex stream",
+        );
         // await ffmpegPlexService.addMediaBlockToStream(mediaBlock);
         break;
 
@@ -112,9 +270,8 @@ export async function initializePlayer(playerType?: PlayerType): Promise<void> {
         break;
 
       case "electron":
-        // TODO: Initialize Electron player
         console.log("[PlayerManager] Initializing Electron player");
-        // await electronPlayer.initialize();
+        ensureElectronPlayerReadyState();
         break;
 
       case "web":
@@ -155,9 +312,10 @@ export async function stopPlayer(): Promise<void> {
         break;
 
       case "electron":
-        // TODO: Stop Electron player
         console.log("[PlayerManager] Stopping Electron player");
-        // await electronPlayer.stop();
+        electronPlayerQueue = [];
+        electronPlayerCurrentIndex = -1;
+        touchElectronPlayerState();
         break;
 
       case "web":
@@ -211,12 +369,13 @@ export async function play(options?: { timeDelta?: number }): Promise<void> {
         break;
 
       case "electron":
-        // TODO: Start playback on Electron player
         console.log(
           `[PlayerManager] [Electron] Starting playback (timeDeltaMs: ${timeDeltaMs}ms)`,
         );
-        // TODO: Pass timeDeltaMs to deviation correction mechanism
-        // await electronPlayer.play();
+        if (electronPlayerQueue.length > 0 && electronPlayerCurrentIndex < 0) {
+          electronPlayerCurrentIndex = 0;
+          touchElectronPlayerState();
+        }
         break;
 
       case "web":
@@ -237,4 +396,13 @@ export async function play(options?: { timeDelta?: number }): Promise<void> {
     console.error(`[PlayerManager] Failed to start playback: ${message}`);
     throw error;
   }
+}
+
+export function resetPlayerStateForTests(): void {
+  currentPlayerType = "electron";
+  isPlayerInitialized = false;
+  electronPlayerQueue = [];
+  electronPlayerCurrentIndex = -1;
+  electronPlayerUpdatedAt = 0;
+  nextQueueItemSequence = 1;
 }

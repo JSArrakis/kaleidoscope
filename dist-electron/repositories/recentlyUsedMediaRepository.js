@@ -6,10 +6,10 @@ export class RecentlyUsedMediaRepository {
     create(media) {
         const transaction = this.db.transaction(() => {
             const stmt = this.db.prepare(`
-        INSERT INTO recently_used_media (recentlyUsedMediaId, mediaItemId, mediaType, lastUsedDate, usageCount, expirationDate)
-        VALUES (?, ?, ?, ?, ?, ?)
+        INSERT INTO recently_used_media (recentlyUsedMediaId, mediaItemId, mediaType, lastUsedDate, expirationDate)
+        VALUES (?, ?, ?, ?, ?)
       `);
-            stmt.run(media.recentlyUsedMediaId, media.mediaItemId, media.mediaType, media.lastUsedDate, media.usageCount, media.expirationDate || null);
+            stmt.run(media.recentlyUsedMediaId, media.mediaItemId, media.mediaType, media.lastUsedDate, media.expirationDate || null);
         });
         transaction();
         return this.findById(media.recentlyUsedMediaId);
@@ -59,7 +59,7 @@ export class RecentlyUsedMediaRepository {
     incrementUsage(recentlyUsedMediaId) {
         const stmt = this.db.prepare(`
       UPDATE recently_used_media 
-      SET usageCount = usageCount + 1, lastUsedDate = CURRENT_TIMESTAMP, updatedAt = CURRENT_TIMESTAMP
+      SET lastUsedDate = CURRENT_TIMESTAMP, updatedAt = CURRENT_TIMESTAMP
       WHERE recentlyUsedMediaId = ?
     `);
         const result = stmt.run(recentlyUsedMediaId);
@@ -73,8 +73,7 @@ export class RecentlyUsedMediaRepository {
             // Update existing record
             const stmt = this.db.prepare(`
         UPDATE recently_used_media 
-        SET usageCount = usageCount + 1, lastUsedDate = CURRENT_TIMESTAMP, 
-            expirationDate = ?, updatedAt = CURRENT_TIMESTAMP
+        SET lastUsedDate = CURRENT_TIMESTAMP, expirationDate = ?, updatedAt = CURRENT_TIMESTAMP
         WHERE recentlyUsedMediaId = ?
       `);
             stmt.run(expirationDate || null, existing.recentlyUsedMediaId);
@@ -88,7 +87,6 @@ export class RecentlyUsedMediaRepository {
                 mediaItemId,
                 mediaType,
                 lastUsedDate: new Date().toISOString(),
-                usageCount: 1,
                 expirationDate: expirationDate || undefined,
             });
         }
@@ -120,12 +118,22 @@ export class RecentlyUsedMediaRepository {
         const result = stmt.run(recentlyUsedMediaId);
         return result.changes > 0;
     }
-    deleteExpired() {
+    deleteExpired(referenceUnixTimeSeconds) {
+        let comparisonTime;
+        if (referenceUnixTimeSeconds !== undefined) {
+            // Convert unix timestamp (seconds) to ISO string
+            const referenceDate = new Date(referenceUnixTimeSeconds * 1000);
+            comparisonTime = referenceDate.toISOString();
+        }
+        else {
+            // Use current timestamp
+            comparisonTime = new Date().toISOString();
+        }
         const stmt = this.db.prepare(`
       DELETE FROM recently_used_media 
-      WHERE expirationDate IS NOT NULL AND expirationDate <= CURRENT_TIMESTAMP
+      WHERE expirationDate IS NOT NULL AND expirationDate <= :comparisonTime
     `);
-        const result = stmt.run();
+        const result = stmt.run({ comparisonTime });
         return result.changes;
     }
     count() {
@@ -139,7 +147,6 @@ export class RecentlyUsedMediaRepository {
             mediaItemId: row.mediaItemId,
             mediaType: row.mediaType,
             lastUsedDate: row.lastUsedDate,
-            usageCount: row.usageCount,
             expirationDate: row.expirationDate,
             createdAt: row.createdAt,
             updatedAt: row.updatedAt,

@@ -24,7 +24,7 @@ Genres can combine - and when they do, they create new thematic territories that
 
 ## Kaleidoscope's Default Genres
 
-**[Action](singles/action.md)** | **[Adventure](singles/adventure.md)** | **[Comedy](singles/comedy.md)** | **[Drama](singles/drama.md)** | **[Horror](singles/horror.md)** | **[Mystery](singles/mystery.md)** | **[Romance](singles/romance.md)** | **[Science Fiction](singles/scifi.md)** | **[Thriller](singles/thriller.md)**
+**[Action](singles/action.md)** | **[Adventure](singles/adventure.md)** | **[Comedy](singles/comedy.md)** | **[Drama](singles/drama.md)** | **[Horror](singles/horror.md)** | **[Mystery](singles/mystery.md)** | **[Non-Narrative](singles/non-narrative.md)** | **[Romance](singles/romance.md)** | **[Science Fiction](singles/scifi.md)** | **[Thriller](singles/thriller.md)**
 
 ## Examples of Common Genre Combinations
 

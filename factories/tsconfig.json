@@ -4,6 +4,7 @@
     "target": "ESNext",
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
+    "rootDir": "..",
     "outDir": "../dist-factories",
     "skipLibCheck": true,
     "lib": ["ES2020"],

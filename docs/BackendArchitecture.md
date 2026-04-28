@@ -12,8 +12,11 @@
 1. [Purpose & Philosophy](#1-purpose--philosophy)
 2. [High-Level Architecture](#2-high-level-architecture)
 3. [Type System & Data Model](#3-type-system--data-model)
+   3b. [Collections Model](#3b-collections-model)
 4. [Stream Construction Entry Point](#4-stream-construction-entry-point)
 5. [Continuous Stream Builder — Full Lifecycle](#5-continuous-stream-builder--full-lifecycle)
+   5b. [Adhoc Stream Builder — One-Shot Sessions](#5b-adhoc-stream-builder--one-shot-sessions)
+   5c. [Programming Block Architecture](#5c-programming-block-architecture)
 6. [Anchor Media Selection — Themed vs Random](#6-anchor-media-selection--themed-vs-random)
 7. [The Prism System — Facets & Spectrum](#7-the-prism-system--facets--spectrum)
 8. [Buffer Construction — The Commercial Break Engine](#8-buffer-construction--the-commercial-break-engine)
@@ -22,7 +25,7 @@
 11. [Recently-Used Media — Deduplication & Eviction](#11-recently-used-media--deduplication--eviction)
 12. [Stream Manager — Singleton State Hub](#12-stream-manager--singleton-state-hub)
 13. [Background Service — Runtime Lifecycle Loop](#13-background-service--runtime-lifecycle-loop)
-14. [Day Rollover — Infinite Continuous Streams](#14-day-rollover--infinite-continuous-streams)
+14. [Day Rollover — Continuous and Adhoc](#14-day-rollover--continuous-and-adhoc)
 15. [Player Manager — Playback Abstraction](#15-player-manager--playback-abstraction)
 16. [Database & Repository Layer](#16-database--repository-layer)
 17. [Appendix A: Complete File Map](#appendix-a-complete-file-map)
@@ -74,18 +77,18 @@ Layer 1 - UI
   v [IPC messages via preload.cjs]
   |
 Layer 2 - Controllers
-  | (movie, show, commercial, short, music, promo, bumper, tag)
+  | (movie, show, commercial, short, music, promo, bumper, tag, collection)
   |
 Layer 3 - Stream Service
   | (createStream dispatcher)
-  +-- Continuous Builder (main pipeline, fully implemented)
-  +-- Adhoc Builder (stub, future adhoc streams)
+  +-- Continuous Builder (cadenced/uncadenced × themed/random, fully implemented)
+  +-- Adhoc Builder (cadenced/uncadenced × themed/random, fully implemented)
   |
 Layer 4 - Stream Construction Pipeline
   | Services that build the stream during initialization
   +-- Media Selector (themed vs random anchor selection)
   +-- Buffer Constructor (commercial breaks: Half-A/Promo/Half-B)
-  +-- Prism System (facets, spectrum)
+  +-- Prism System (facets, spectrum, mosaic)
   |
 Layer 5 - Runtime Layer
   | Services that manage playback lifecycle
@@ -96,7 +99,7 @@ Layer 5 - Runtime Layer
 Layer 6 - Data Layer
   | Persistence and repositories
   +-- SQLite Database (30 tables, better-sqlite3)
-  +-- Repositories (movie, show, episode, commercial, short, music, promo, tag, facet)
+  +-- Repositories (movie, show, episode, commercial, short, music, promo, tag, facet, mosaic, collection)
 ```
 
 ### Request Flow
@@ -161,6 +164,52 @@ All types are declared globally in `types.d.ts`. This is the single source of tr
 
 **Episode** — belongs to a show. Has `showItemId`, `episodeNumber`, `duration`, `overDuration` flag, `durationLimit`, `tags`. The `overDuration` flag indicates this episode exceeds the show's standard `durationLimit` (e.g. a 2-hour special in a normally 30-minute show).
 
+### 3b. Collections Model
+
+Collections provide optional sequence metadata for movies so higher-level schedulers
+(for example, future programming blocks) can preserve curated ordering.
+
+**Movie collection reference (lightweight):**
+
+```typescript
+type MovieCollectionEntry = {
+  collectionId: string;
+  name: string;
+  sequence: number;
+};
+
+type Movie = {
+  // ...existing movie fields
+  collections: MovieCollectionEntry[];
+};
+```
+
+This keeps movie payloads lightweight while still exposing collection membership/order
+to selection logic. The canonical source of truth remains in normalized DB tables.
+
+**Normalized persistence model:**
+
+```typescript
+type Collection = {
+  collectionId: string;
+  title: string;
+  description?: string;
+  itemCount: number;
+  items: CollectionItem[];
+};
+
+type CollectionItem = {
+  collectionItemId: string;
+  collectionId: string;
+  mediaItemId: string;
+  sequence: number;
+};
+```
+
+`movieRepository.mapRowToMovie()` hydrates `Movie.collections` via
+`collection_items JOIN collections`, so stream-time consumers get ordering metadata
+without having to query collection tables directly.
+
 ### Buffer Media Types
 
 **Commercial** — short media (~5-120s). Tagged for themed matching.
@@ -211,12 +260,17 @@ type SegmentedTags = {
   eraTags: Tag[]; // e.g. "1980s", "2000s"
   specialtyTags: Tag[]; // e.g. "Cult Classics", "Criterion", "MCU Movies", "Nickelodeon"
   ageGroupTags: Tag[]; // e.g. "Kids", "Teens", "Adults"
+  musicalGenreTags: Tag[]; // e.g. "Jazz", "Synthwave", "Classical"
 };
 ```
 
 The `segmentTags()` function in `common.ts` performs this segmentation. It filters the
 raw tag array by `tag.type` and returns the structured object. This is called at every
 point where tags need to be analyzed — media selection, buffer creation, prism matching.
+
+**Note:** `MusicalGenre` tags were previously dropped by `segmentTags()` because genre/aesthetic
+matching doesn't apply to music. They are now extracted and used exclusively at Spectrum Gate 3
+for music selection via direct tags or Mosaic resolution (see §7.2, §7.3).
 
 ### Facets
 
@@ -234,6 +288,25 @@ Facet = { genre: "Sci-Fi", aesthetic: "Noir" }
 
 The `distance` field (0.0 to 1.0) indicates how thematically far the relationship is. Lower = closer. Facet relationships allow the stream to "walk" from one thematic identity to another, selecting media that feels connected but not identical.
 
+### Mosaics
+
+A Mosaic maps a Facet to a set of musical genre tagIds. Because genre and aesthetic tags
+describe visual/narrative qualities that don't apply to music, Mosaics bridge the gap:
+
+```
+Mosaic = {
+  mosaicId: string,
+  facetId: string,              // FK to a Facet (genre + aesthetic pairing)
+  musicalGenres: string[],      // tagIds of MusicalGenre tags
+  name?: string,
+  description?: string
+}
+```
+
+**Example:** A facet for Sci-Fi + Noir might have a Mosaic linking it to `["Synthwave", "Jazz", "Ambient"]` musical genre tagIds. When the stream is playing Blade Runner, the buffer music can be thematically matched through this Mosaic rather than being random.
+
+Mosaics are only consulted at Spectrum Gate 3 when anchor media has no direct `MusicalGenre` tags (see §7.3).
+
 ---
 
 ## 4. Stream Construction Entry Point
@@ -250,11 +323,11 @@ export async function createStream(
 
 This is the single entry point for all stream creation. It routes based on `StreamType`:
 
-| StreamType | Builder                   | Status                             |
-| ---------- | ------------------------- | ---------------------------------- |
-| `Cont`     | `buildContinuousStream()` | **Active** — full implementation   |
-| `Adhoc`    | `buildAdhocStream()`      | **Stub** — requires `endTimepoint` |
-| default    | Returns error             | Catch-all                          |
+| StreamType | Builder                   | Status                               |
+| ---------- | ------------------------- | ------------------------------------ |
+| `Cont`     | `buildContinuousStream()` | **Active** — full implementation     |
+| `Adhoc`    | `buildAdhocStream()`      | **Active** — requires `endTimepoint` |
+| default    | Returns error             | Catch-all                            |
 
 The return is always `[MediaBlock[], errorMessage]`. An empty string means success.
 
@@ -265,17 +338,20 @@ interface StreamConstructionOptions {
   Cadence: boolean; // true = align to :00/:30 with buffers, false = back-to-back
   Themed: boolean; // true = use Prism system, false = random selection
   StreamType: StreamType;
+  AdhocStartFromBeginning?: boolean; // adhoc only: true = ep 1 (default), false = random start episode
 }
 ```
 
 These three booleans create four possible stream modes:
 
-| Cadence | Themed | Behavior                                                    |
-| ------- | ------ | ----------------------------------------------------------- |
-| true    | true   | **Full TV simulation** — cadenced, themed, holiday-aware    |
-| true    | false  | **Cadenced random** — aligned to :00/:30 but random content |
-| false   | true   | Not yet implemented (returns error)                         |
-| false   | false  | Not yet implemented (returns error)                         |
+| Cadence | Themed | Behavior                                                       |
+| ------- | ------ | -------------------------------------------------------------- |
+| true    | true   | **Full TV simulation** — cadenced, themed, holiday-aware       |
+| true    | false  | **Cadenced random** — aligned to :00/:30 but random content    |
+| false   | true   | **Uncadenced themed** — back-to-back anchors, prism-guided     |
+| false   | false  | **Uncadenced random** — back-to-back anchors, random selection |
+
+All four mode combinations are implemented for both `Cont` and `Adhoc` stream types.
 
 ---
 
@@ -380,7 +456,34 @@ Step-by-step:
 Nearly identical to the above, but skips Steps 1-3 (no initial buffer needed). The first
 anchor block starts at `startingTimepoint` immediately. Everything else follows the same flow.
 
-### buildStreamIteration() — The Main Loop
+### buildUncadencedContinuousStream() — Back-to-Back Playback
+
+When `Cadence: false`, this path is taken instead of the cadenced paths. No buffers are
+created, no clock alignment happens, and `durationLimit` is irrelevant.
+
+```
+Time: 2:17 PM         Time: 2:39 PM (22 min later)   Time: 4:09 PM (90 min later)
+      │                      │                              │
+      ▼                      ▼                              ▼
+┌──────────────────┐  ┌──────────────────┐  ┌──────────────────────────────────┐
+│   FIRST ANCHOR   │  │  SECOND ANCHOR   │  │         THIRD ANCHOR ...         │
+│  22-min episode  │  │  90-min movie    │  │                                  │
+│  On Deck: Slot 1 │  │  On Deck: Slot 2 │  │  Upcoming                        │
+└──────────────────┘  └──────────────────┘  └──────────────────────────────────┘
+```
+
+Step-by-step:
+
+1. **Create first anchor** at `startingTimepoint` — no cadence check, no initial buffer.
+2. **Push to player immediately** — buys construction time while the first piece plays.
+3. **Register as On Deck Slot 1.**
+4. **Call `buildStreamIteration()`** with `incomingTimepoint = startingTimepoint + firstAnchor.duration`. The loop advances by `anchor.duration` on every iteration so each anchor's `startTime` is the exact end of the previous one.
+5. **No backfill buffer** — `buildStreamIteration` returns `[[], iterationBlocks]` for uncadenced streams.
+6. **Register On Deck Slot 2** and push remainder to **Upcoming**.
+
+Both `Themed: true` and `Themed: false` are handled by this path — the selection fork lives inside `buildStreamIteration` and is driven by the `Themed` flag.
+
+### buildStreamIteration() — The Main Loop (Shared)
 
 This is the core loop that fills the rest of the day with anchor media and buffers.
 
@@ -403,7 +506,8 @@ buildStreamIteration(incomingTimepoint, endOfTimeWindow, ...)
     │    │
     │    ├── tags = selectedAnchor.tags            ← carry tags forward for next iteration
     │    │
-    │    └── timepoint += anchor.durationLimit     ← advance to next cadence boundary
+    │    └── Cadenced?  YES → timepoint += anchor.durationLimit  (next :00/:30 boundary)
+    │                   NO  → timepoint += anchor.duration       (exact end of anchor)
     │
     │  END WHILE
     │
@@ -412,12 +516,336 @@ buildStreamIteration(incomingTimepoint, endOfTimeWindow, ...)
     │    ├── fillStreamBlockBuffers()              ← buffers for all iteration blocks
     │    └── Store remainder time on streamManager
     │
-    └── RETURN [backfillBuffer, iterationBlocks]
+    └── RETURN Cadenced ? [backfillBuffer, iterationBlocks] : [[], iterationBlocks]
 ```
 
-**Critical detail:** In cadenced mode, `timepoint` advances by `anchor.durationLimit`, NOT by `anchor.duration`. Each block's `startTime` is placed at a cadence boundary (`:00` or `:30`). The gap between the end of the anchor (`startTime + duration`) and the start of the next block (`startTime + durationLimit`) is exactly `durationLimit - duration` — that gap is the buffer slot. `fillStreamBlockBuffers` reads this structural gap directly from the block timestamps to compute each buffer's budget. Any seconds the buffer constructor can't fill cascade forward as remainder to the next buffer. See §8 for details.
+**`buildStreamIteration` is exported** and shared between `continuousStreamBuilder` and `adhocStreamBuilder`. Both stream types drive through identical iteration, selection, and buffer logic — the only differences are what calls it and what `endOfTimeWindow` is set to.
+
+**Critical detail — Cadenced mode:** `timepoint` advances by `anchor.durationLimit`, NOT by `anchor.duration`. Each block's `startTime` is placed at a cadence boundary (`:00` or `:30`). The gap between the end of the anchor (`startTime + duration`) and the start of the next block (`startTime + durationLimit`) is exactly `durationLimit - duration` — that gap is the buffer slot. `fillStreamBlockBuffers` reads this structural gap directly from the block timestamps to compute each buffer's budget. Any seconds the buffer constructor can't fill cascade forward as remainder to the next buffer. See §8 for details.
+
+**Critical detail — Uncadenced mode:** `timepoint` advances by `anchor.duration`. Blocks are placed exactly end-to-end with no gap. `fillStreamBlockBuffers` is never called. The function returns `[[], iterationBlocks]`.
 
 **Why `tags` carry forward:** Each iteration uses the previous anchor's tags to seed the next selection. This creates the "theme walking" effect — the stream flows from Sci-Fi Noir to something related, which flows to something related to that, and so on.
+
+---
+
+## 5b. Adhoc Stream Builder — One-Shot Sessions
+
+**File:** `src/electron/services/streamConstruction/adhocStreamBuilder.ts`
+
+An adhoc stream is a one-off session with a user-defined end time. It supports all four
+mode combinations (Cadenced/Uncadenced × Themed/Random) and can span multiple days via
+day-by-day rollover. Unlike continuous streams, adhoc progressions are **ephemeral** —
+nothing is ever written to the DB, and the slate is wiped clean when the stream ends.
+
+### Entry Point: `buildAdhocStream()`
+
+```
+buildAdhocStream(streamConstructionOptions, endTimepoint)
+    │
+    ├── initializeAdhocStream()
+    │     ├── startingTimepoint = now
+    │     ├── loadRecentlyUsedMovies()
+    │     ├── findActiveHolidaysByDate()
+    │     ├── endOfTimeWindow = min(endOfDay, endTimepoint)
+    │     │     Caps today's window. If endTimepoint is beyond today,
+    │     │     rollover extends the stream day-by-day.
+    │     ├── setProgressionMap(new Map())   ← EMPTY — no DB load for adhoc
+    │     ├── setRandomEpisodeStart(!AdhocStartFromBeginning)
+    │     └── selectRandomShowOrMovie()      ← initial media seed
+    │
+    ├── Cadence? ─YES─▶ buildCadencedAdhocStream()
+    │           └─NO─▶ buildUncadencedAdhocStream()
+    │
+    │     Both paths mirror their continuous counterparts exactly,
+    │     calling buildStreamIteration() with endOfTimeWindow as the fence.
+    │
+    ├── setContinuousStream(false)
+    ├── setAdhocStream(true)
+    ├── setAdhocStreamEndTimepoint(endTimepoint)
+    └── setContinuousStreamArgs({ Cadence, Themed, AdhocStartFromBeginning })
+          Stored so rollover can reconstruct identical options for subsequent days.
+```
+
+### Ephemeral Episode Progression
+
+Adhoc streams start with a **fresh, empty progression map**. There is no DB load and no
+DB write at any point during the session.
+
+- **Within-session consistency** is maintained normally: `updateProgression()` writes to
+  the in-memory map after each episode selection, so the same show cannot repeat an episode
+  within the same adhoc session (or across multi-day rollovers).
+- **When the stream ends**, `reset()` clears the map entirely. The DB `episode_progression`
+  table retains only continuous-stream rows and is never touched by adhoc.
+
+### `AdhocStartFromBeginning` and Random Episode Start
+
+The `AdhocStartFromBeginning` flag (on both `IStreamRequest` and `StreamConstructionOptions`,
+default `true`) controls the **first** episode picked for each show encountered during
+the adhoc session:
+
+| `AdhocStartFromBeginning` | Behavior                                                                    |
+| ------------------------- | --------------------------------------------------------------------------- |
+| `true` (default)          | Episode 1 is selected on first encounter (same as continuous streams)       |
+| `false`                   | A random episode that fits the duration slot is selected on first encounter |
+
+Once a show has a progression entry (it has appeared at least once this session), both
+modes continue sequentially from where the last episode left off — the random start
+only applies to the **first pick per show per session**.
+
+The duration-fit filter is applied **before** the random selection: only episodes whose
+`duration <= availableDuration` are candidates. This is the same overduration guard used
+by the normal progression path. See `doesNextEpisodeFitDuration()` in §10.
+
+### `rolloverAdhocToNextDay()`
+
+When the background service detects that an adhoc stream's Upcoming queue is nearly
+exhausted but `tomorrow < adhocEndTimepoint`, it calls `rolloverAdhocToNextDay()`:
+
+```
+rolloverAdhocToNextDay(options, tomorrowTimepoint, adhocEndTimepoint)
+    │
+    ├── Get last block from Upcoming (terminal block, no buffer)
+    │
+    ├── endOfTimeWindow = min(endOfDay(tomorrow), adhocEndTimepoint)
+    │     Each day is capped at its own end-of-day OR the user's end time,
+    │     whichever comes first. The final day naturally stops at endTimepoint.
+    │
+    ├── Detect tomorrow's holiday state
+    │
+    ├── buildStreamIteration(incomingTimepoint, endOfTimeWindow, ...)
+    │     Cadenced: incomingTimepoint = tomorrowTimepoint (midnight is a :00 mark)
+    │     Uncadenced: incomingTimepoint = lastBlock.startTime + lastBlock.anchorMedia.duration
+    │
+    ├── Backfill: assign backfillBuffer to lastUpcomingBlock.buffer
+    └── Append iterationBlocks to Upcoming
+```
+
+The in-memory progression map carries forward across rollovers (it is never cleared
+mid-stream), so shows continued from yesterday resume at the correct next episode.
+
+---
+
+## 5c. Programming Block Architecture
+
+Programming blocks are scheduled, user-curated windows that can override normal
+procedural selection for a bounded span of time. They are modeled separately from
+Continuous and Adhoc stream generation, but integrate with both.
+
+### Core Block Contract
+
+Every programming block definition contains:
+
+1. `programmingBlockId`
+2. `name`
+3. `type`
+4. `durationMinutes` in 30-minute multiples
+5. recurrence schedule (`OneTime`, `Daily`, `Weekly`, `Monthly`, `Yearly`)
+6. cadence-compatible start time (`HH:mm` restricted to `:00` or `:30`)
+
+Duration target is generally 30 minutes to 24 hours. Curated movie marathons are the
+exception and may exceed a single day window in future phases.
+
+### Recurrence and Schedule Resolution
+
+**File:** `src/electron/services/programmingBlocks/blockScheduler.ts`
+
+`findNextScheduledBlock(blocks, windowStart, windowEnd)` resolves the earliest active
+occurrence in a construction window by evaluating recurrence rules against wall-clock dates.
+
+Resolution rules:
+
+- `OneTime`: exact year + month + day
+- `Daily`: every day at `timeOfDay`
+- `Weekly`: one-or-more weekdays (`0-6`)
+- `Monthly`: specific day-of-month
+- `Yearly`: specific month/day
+
+If a scheduled occurrence lands within the current continuous construction window,
+`initializeContinuousStream()` clips `endOfTimeWindow` to the scheduled start so normal
+procedural generation stops exactly where block generation should begin.
+
+### Stream-Mode Integration
+
+Programming block cadence compatibility is explicit:
+
+- **ShowOrder** blocks are `CadencedOnly`
+- **TagThemed** and **CuratedMovieMarathon** blocks are `MatchStreamMode`
+
+When a block is scheduled inside an uncadenced stream, the pre-block transition gets a
+single alignment buffer so the block starts at the exact scheduled boundary. This is the
+only uncadenced case where explicit clock-alignment buffering is introduced.
+
+### Block Types
+
+#### Type 1: ShowOrder Block (Toonami-style)
+
+Purpose: fixed ordered show lineup with block identity.
+
+Rules:
+
+- User selects `N` shows in strict order.
+- Episode progression is persisted **per block** (isolated from main stream progression).
+- Last-slot constraints prevent overrun:
+  - final show cannot contain overDuration episodes
+  - if selected show has episodes where adding 30s would overflow slot, it is disallowed in final position
+- Overrun handling inside the block:
+  - if one episode overruns, skip the next show for that day only
+  - fill the recovered time with themed buffer media
+
+Theming/buffer behavior:
+
+- block specialty tag has highest priority
+- holiday only beats specialty when holiday+specialty both match
+- fallback after specialty/holiday follows standard gate sequence
+
+Bumpers:
+
+- per-anchor start/end bumper pools
+- optional block-level start/end bumpers
+- bumpers hug anchor media and count toward occupied slot runtime
+- bumper duration max: 15 seconds
+
+#### Type 2: TagThemed Block
+
+Purpose: fill a scheduled window using tags in one of three modes:
+
+- `Movie`
+- `Show`
+- `MovieAndShow`
+
+Rules:
+
+- picks content that fits remaining runtime at each step
+- same specialty-first buffer priority override as ShowOrder
+- uses general start/end bumper pools plus optional block-level bumpers
+
+Movie cooldown policy (derived from recurrence):
+
+- daily blocks: 3-day cooldown
+- weekly blocks with 1-2 scheduled days: 3-week cooldown
+- weekly blocks with 3+ scheduled days: 1-week cooldown
+
+Collection-aware behavior:
+
+- movie picks inspect collection membership
+- selection looks back 2 days for sequence continuity
+- replacement strategy preserves collection order when possible
+- if replacement causes overflow, a coin-flip strategy decides whether to
+  replace the latest collection pick or evict another pick and refill
+
+#### Type 3: CuratedMovieMarathon
+
+Purpose: run a user-ordered list of movies as authored.
+
+Rules:
+
+- strictly follows user-defined order
+- cadence compatibility follows parent stream mode (`MatchStreamMode`)
+- extends naturally with buffer fill only when runtime gap exists
+
+### Persistence Model (Block Layer)
+
+Programming blocks require separate persistence from normal stream progression:
+
+- block definitions + schedules
+- block-item membership/order
+- block-scoped episode progression (`programmingBlockId + showItemId`)
+- block movie cooldown history
+
+This prevents cross-contamination between continuous progression and block progression,
+which is a hard design requirement.
+
+### Stream-Construction Implementation (Current)
+
+The block and collection systems are now integrated directly into the shared
+stream iteration loop (`buildStreamIteration`), so both Continuous and Adhoc
+streams honor scheduled block appointments.
+
+#### A. How scheduled programming blocks are inserted
+
+At each iteration step:
+
+1. `buildStreamIteration` asks `findNextScheduledBlock(...)` for the next
+   appointment inside the current construction window.
+2. If `scheduledStartTime === current timepoint`, normal anchor selection is paused.
+3. The block definition is loaded via `programmingBlockRepository.findDefinitionById(...)`.
+4. The segment is built through
+   `buildScheduledProgrammingBlockSegment(definition, { parentStreamType, scheduledStartTime, cadence })`.
+5. Returned segment `MediaBlock[]` entries are appended to the iteration output,
+   and the iteration cursor advances to the end of the segment.
+
+If a scheduled block is misconfigured or yields no playable anchors, construction
+does not abort: the scheduler logs a warning and jumps to that block's end time,
+then continues normal stream generation.
+
+#### B. Executed block types and data sources
+
+- **CuratedMovieMarathon**
+  - Reads ordered movie membership from `programming_block_movie_items`.
+  - Fills block duration budget with playable movies in authored order semantics.
+
+- **TagThemed**
+  - Reads mode (`Movie`, `Show`, `MovieAndShow`) from `programming_blocks.movieMode`.
+  - Reads theme tags from `programming_block_tags`.
+  - Selects anchors that fit remaining budget using themed movie/show selectors.
+
+- **ShowOrder**
+  - Reads ordered show membership from `programming_block_show_items`.
+  - Enforces cadenced-only execution.
+  - Uses isolated in-memory episode progression for block-local continuity.
+
+All block-built anchors include `sourceContext.programmingBlockId`, which is
+critical for scoped progression behavior downstream.
+
+#### C. Collection-aware anchor selection inside stream construction
+
+Collection continuity is resolved by `resolveCollectionAwareAnchorSelection(...)`
+in two places:
+
+1. **Normal stream anchor selection** (`buildStreamIteration`) using scope key:
+   - `stream:Cont` for continuous streams
+   - `stream:Adhoc` for adhoc streams
+2. **Scheduled block segment selection** (`programmingBlockSegmentBuilder`) using:
+   - `programmingBlock:<programmingBlockId>`
+
+Resolver behavior for movie anchors:
+
+1. Detect the movie's primary collection (`Movie.collections` sorted by sequence).
+2. Read progression state for that `{scopeKey, collectionId}`.
+3. If a recent play exists within an enforcement window, force next-in-collection
+   when duration allows; otherwise fallback to non-collection movie/episode selectors.
+4. Track selected movie back into collection progression map with timestamp.
+
+Default enforcement window in normal stream iteration is 12 hours.
+Block builders can override this window (for example `Number.MAX_SAFE_INTEGER`
+for stricter same-block continuity).
+
+#### D. Collection progression scope + persistence model
+
+Collection progression is scoped and persisted by playback context:
+
+- **Continuous stream anchors**
+  - Scope: `stream:Cont`
+  - Persisted: yes (`collection_movie_progression`)
+
+- **Adhoc stream anchors**
+  - Scope: `stream:Adhoc`
+  - Persisted: no (in-memory only)
+
+- **Programming block anchors**
+  - Scope: `programmingBlock:<id>`
+  - Persisted: yes (`collection_movie_progression`, scopeType=`ProgrammingBlock`)
+
+Hydration/reset behavior used by constructors:
+
+- Continuous initialization loads `stream:Cont` progression into memory.
+- Adhoc initialization clears `stream:Adhoc` progression scope in memory.
+- Programming block segment build loads its own `programmingBlock:<id>` scope
+  before selecting anchors.
+
+This prevents cross-contamination: a block marathon can continue its own collection
+sequence without mutating the main stream's collection trajectory.
 
 ---
 
@@ -540,6 +968,10 @@ while guaranteeing _something_ is always returned (as long as the database has c
 
 The Prism system is Kaleidoscope's themed content matching engine. It has three components:
 
+- **Facets** (§7.1) — relationship graph between thematic identities for anchor media walking
+- **Spectrum** (§7.2) — gated pool expansion for buffer media (commercials, shorts, music)
+- **Mosaic** (§7.3) — bridges facets to musical genre tagIds for music selection at Gate 3
+
 ### 7.1 Facets (`prisms/facets.ts`)
 
 Facets are the relationship graph between thematic identities.
@@ -606,11 +1038,21 @@ selectBufferMedia(segmentedTags, activeHolidayTags, duration, shortOrMusicNumber
     │
     ├── GATE 2: Specialty Media
     │     ├── getSpecialtyBufferMedia(specialtyTags, duration)
+    │     │     Commercials and shorts always selected.
+    │     │     Music: 50% coin-flip — skipped half the time to prevent
+    │     │     repetitive selection when specialty music pool is small.
     │     ├── Filter recently-used, mergeUnique into pool
     │     └── isBufferMediaPoolValid()? → RETURN
     │
-    ├── GATE 3: Genre/Aesthetic Media
-    │     ├── getGenreAndAestheticBufferMedia(genreTags, aestheticTags, ageGroups, duration)
+    ├── GATE 3: Genre/Aesthetic Media + Music (via Mosaic)
+    │     ├── getGenreAndAestheticBufferMedia(genreTags, aestheticTags, ageGroups, musicalGenreTags, duration)
+    │     │     Commercials & shorts: matched by genre/aesthetic/ageGroup as before.
+    │     │     Music selection (two-path priority):
+    │     │       PATH 1 — Direct: anchor has MusicalGenre tags → query music by those tagIds.
+    │     │       PATH 2 — Mosaic: no direct tags → resolve facets from genre×aesthetic
+    │     │                → look up mosaics for those facets → collect musical genre tagIds
+    │     │                → query music by mosaic-resolved tagIds.
+    │     │       Direct tags always win; mosaic is the fallback.
     │     ├── Filter recently-used, mergeUnique into pool
     │     └── isBufferMediaPoolValid()? → RETURN
     │
@@ -652,6 +1094,52 @@ A diagnostic service that determines if the facet system is sufficiently connect
 - Uses DFS to find the largest connected component
 - Returns `true` if the largest component contains ≥ `percentile`% of all facets (default: 80%)
 - Used to validate that themed mode will actually work before enabling it
+
+### 7.3 Mosaic (`repositories/mosaicRepository.ts`)
+
+Mosaics bridge the gap between the visual/narrative tag system (genre, aesthetic) and musical genres. Genre and aesthetic tags describe qualities of film and television — they don't map to music. Mosaics solve this by associating each Facet (genre + aesthetic pairing) with a curated set of musical genre tagIds.
+
+**How Mosaics are used (at Spectrum Gate 3):**
+
+```
+getGenreAndAestheticBufferMedia(genreTags, aestheticTags, ageGroups, musicalGenreTags, duration)
+    │
+    ├── Commercials & Shorts: standard genre/aesthetic/ageGroup matching (unchanged)
+    │
+    ├── Music PATH 1 — Direct Musical Genre Tags
+    │     ├── Anchor media has MusicalGenre tags? (musicalGenreTags.length > 0)
+    │     │     These are tags placed directly on the movie or show.
+    │     │     e.g. A show about a jazz club might have a "Jazz" MusicalGenre tag.
+    │     │
+    │     └── musicRepository.findByMusicalGenreTagIds(directTagIds, duration)
+    │           Query music_tags junction for music matching these tagIds.
+    │           If results found → use them. DONE.
+    │
+    └── Music PATH 2 — Mosaic Resolution (fallback)
+          ├── Need BOTH genre AND aesthetic tags (same as facet matching)
+          │
+          ├── For each genreTagId × aestheticTagId pairing:
+          │     ├── facetRepository.findByGenreAndAestheticId(genre, aesthetic)
+          │     └── mosaicRepository.findByFacetId(facet.facetId)
+          │           Each mosaic's musicalGenres[] contains tagIds
+          │
+          ├── Collect all unique tagIds from all resolved mosaics
+          │
+          └── musicRepository.findByMusicalGenreTagIds(mosaicTagIds, duration)
+                Returns music tagged with any of the mosaic-resolved genres.
+```
+
+**Three Music Selection Paths Summary:**
+
+| Path                  | Where          | Trigger                                                | Source                                                                 |
+| --------------------- | -------------- | ------------------------------------------------------ | ---------------------------------------------------------------------- |
+| Specialty tags        | Gate 2         | Anchor has Specialty tags                              | `musicRepository.findBySpecialtyTags()` — 50% coin-flip skip           |
+| Direct musical genres | Gate 3, Path 1 | Anchor has MusicalGenre tags                           | `musicRepository.findByMusicalGenreTagIds()`                           |
+| Mosaic resolution     | Gate 3, Path 2 | No direct MusicalGenre tags, but genre+aesthetic exist | Facet → Mosaic → tagIds → `musicRepository.findByMusicalGenreTagIds()` |
+
+**Priority:** Direct musical genre tags on anchor media always win over Mosaic resolution. If the anchor has explicit `MusicalGenre` tags, those are used and Mosaic is never consulted. This lets specific media override the broader facet-level mapping.
+
+**Why the specialty coin-flip?** If a user marathons a show with a specialty tag (e.g. "Nickelodeon") and only has 3-4 specialty-tagged music items, those same tracks would play in every buffer. The 50% skip lets other gates contribute music roughly half the time, adding variety.
 
 ---
 
@@ -950,6 +1438,25 @@ When episode 62 finishes:
     → Wrap back to episode 1
 ```
 
+### Stream Type Separation
+
+Episode progressions are stored per stream type. Each stream type maintains its own
+independent progression so watching a show in an adhoc session does not affect where
+the continuous stream picks up.
+
+**Continuous streams** (`StreamType.Cont`):
+
+- Load from DB at stream start via `getProgressionsByStreamType(StreamType.Cont)`
+- Persist to DB when a block is pruned from On Deck (proof of playback)
+- Survive app restarts
+
+**Adhoc streams** (`StreamType.Adhoc`):
+
+- Start with an **empty** progression map — no DB load
+- Never write to the DB — `recordPlayedEpisodeProgression()` returns immediately if `isAdhoc()` is true
+- Within-session consistency is maintained entirely in-memory
+- Cleared when `reset()` is called at stream end
+
 ### Two-Phase Tracking
 
 **Phase 1: In-Memory (during construction)**
@@ -972,12 +1479,20 @@ When episode 62 finishes:
 ```
 doesNextEpisodeFitDuration(show, availableDuration)
     │
-    ├── Get nextEpisodeNum from progressionMap (default: 1)
+    ├── progressionMap.get(show.mediaItemId) → existingProgression
     │
-    ├── Check if episode exists
-    │     └── If not → wrap to episode[0]
+    ├── isRandomEpisodeStart() AND existingProgression === undefined?
+    │     ├── YES (adhoc, first encounter, random start mode):
+    │     │     Filter show.episodes to those with duration <= availableDuration
+    │     │     Pick randomly from fitting episodes
+    │     │     ← This filter IS the overduration guard for random starts
+    │     │
+    │     └── NO (normal path):
+    │           nextEpisodeNum = existingProgression ?? 1
+    │           Check if episode exists (wrap to ep 1 if past end)
+    │           episode.duration <= availableDuration? → episodeNum : null
     │
-    └── episode.duration <= availableDuration? → return episodeNum : null
+    └── Return selected episode number or null
 ```
 
 ---
@@ -1056,21 +1571,24 @@ nervous system of the backend.
 
 ### State Fields
 
-| Field                     | Type                               | Purpose                                |
-| ------------------------- | ---------------------------------- | -------------------------------------- |
-| `upcoming`                | `MediaBlock[]`                     | Ordered queue of future blocks         |
-| `onDeck`                  | `MediaBlock[]`                     | Currently playing + next 1-2 blocks    |
-| `continuousStream`        | `boolean`                          | Whether a continuous stream is active  |
-| `args`                    | `IStreamRequest`                   | Original stream construction arguments |
-| `streamVarianceInSeconds` | `number`                           | Reserved for future drift tracking     |
-| `nextIterationTimepoint`  | `number`                           | Reserved for future use                |
-| `nextIterationFirstMedia` | `Episode \| Movie`                 | Reserved for future use                |
-| `progressionMap`          | `Map<string, number \| undefined>` | Show → next episode number             |
-| `recentlyUsedMovies`      | `Map<string, number>`              | movieId → timestamp                    |
-| `recentlyUsedCommercials` | `Map<string, number>`              | commercialId → timestamp               |
-| `recentlyUsedShorts`      | `Map<string, number>`              | shortId → timestamp                    |
-| `recentlyUsedMusic`       | `Map<string, number>`              | musicId → timestamp                    |
-| `remainderTimeInSeconds`  | `number`                           | Cascaded buffer remainder              |
+| Field                     | Type                               | Purpose                                                    |
+| ------------------------- | ---------------------------------- | ---------------------------------------------------------- |
+| `upcoming`                | `MediaBlock[]`                     | Ordered queue of future blocks                             |
+| `onDeck`                  | `MediaBlock[]`                     | Currently playing + next 1-2 blocks                        |
+| `continuousStream`        | `boolean`                          | Whether a continuous stream is active                      |
+| `adhocStream`             | `boolean`                          | Whether an adhoc stream is active                          |
+| `adhocEndTimepoint`       | `number`                           | Unix seconds when the adhoc stream stops                   |
+| `randomEpisodeStart`      | `boolean`                          | Adhoc: pick random start episode on first show encounter   |
+| `args`                    | `IStreamRequest`                   | Original stream construction arguments (used for rollover) |
+| `streamVarianceInSeconds` | `number`                           | Reserved for future drift tracking                         |
+| `nextIterationTimepoint`  | `number`                           | Reserved for future use                                    |
+| `nextIterationFirstMedia` | `Episode \| Movie`                 | Reserved for future use                                    |
+| `progressionMap`          | `Map<string, number \| undefined>` | Show → next episode number (empty for adhoc streams)       |
+| `recentlyUsedMovies`      | `Map<string, number>`              | movieId → timestamp                                        |
+| `recentlyUsedCommercials` | `Map<string, number>`              | commercialId → timestamp                                   |
+| `recentlyUsedShorts`      | `Map<string, number>`              | shortId → timestamp                                        |
+| `recentlyUsedMusic`       | `Map<string, number>`              | musicId → timestamp                                        |
+| `remainderTimeInSeconds`  | `number`                           | Cascaded buffer remainder                                  |
 
 ### On Deck / Upcoming Model
 
@@ -1149,13 +1667,22 @@ cycleCheck()                          [every 5 minutes, aligned]
     │     If onDeck < 3 items AND Upcoming has items:
     │       └── Move first Upcoming item to On Deck
     │
-    ├── DAY ROLLOVER CHECK
+    ├── CONTINUOUS ROLLOVER CHECK
     │     Conditions (ALL must be true):
     │       ├── isContinuousStream()
     │       ├── Upcoming.length === 1
     │       └── Last Upcoming block has no buffer (terminal block)
     │
     │       └── Trigger: rolloverToNextDay(options, tomorrowTimestamp)
+    │
+    ├── ADHOC ROLLOVER CHECK
+    │     Conditions (ALL must be true):
+    │       ├── isAdhocStream()
+    │       ├── Upcoming.length === 1
+    │       ├── Last Upcoming block has no buffer (terminal block)
+    │       └── tomorrow < adhocEndTimepoint  ← stream hasn't ended yet
+    │
+    │       └── Trigger: rolloverAdhocToNextDay(options, tomorrowTimestamp, adhocEndTimepoint)
     │
     ├── UPDATE MARKERS
     │     ├── If passed tomorrow → recalculate setTomorrow()
@@ -1182,9 +1709,10 @@ it measures from when the callback finishes, not from a fixed reference point.
 
 ---
 
-## 14. Day Rollover — Infinite Continuous Streams
+## 14. Day Rollover — Continuous and Adhoc
 
-**File:** `continuousStreamBuilder.ts` → `rolloverToNextDay()`
+**File:** `continuousStreamBuilder.ts` → `rolloverToNextDay()`  
+**File:** `adhocStreamBuilder.ts` → `rolloverAdhocToNextDay()`
 
 Day rollover is what makes continuous streams truly infinite. When today's content is
 nearly exhausted, this function generates tomorrow's entire schedule.
@@ -1238,6 +1766,19 @@ TODAY'S LAST BLOCK          |  TOMORROW'S FIRST BLOCK
          )
 ```
 
+### Adhoc Rollover vs Continuous Rollover
+
+The two rollover functions are structurally identical except for one key difference:
+adhoc rollover caps each new day at `min(endOfDay(tomorrow), adhocEndTimepoint)`, so
+the final day naturally stops exactly when the user's end time arrives.
+
+| Property          | `rolloverToNextDay`             | `rolloverAdhocToNextDay`                          |
+| ----------------- | ------------------------------- | ------------------------------------------------- |
+| `endOfTimeWindow` | `endOfDay(tomorrow)`            | `min(endOfDay(tomorrow), adhocEndTimepoint)`      |
+| Called when       | `isContinuousStream() === true` | `isAdhocStream() && tomorrow < adhocEndTimepoint` |
+| After final day?  | Never stops (infinite)          | Stops once `tomorrow >= adhocEndTimepoint`        |
+| Progression map   | Loaded from DB at stream start  | Empty, in-memory only, never persisted            |
+
 ---
 
 ## 15. Player Manager — Playback Abstraction
@@ -1270,23 +1811,33 @@ to minimize the time between user clicking "Start" and seeing content play.
 
 ### Key Tables
 
-| Table                  | Purpose                        | Persists Across Restarts |
-| ---------------------- | ------------------------------ | ------------------------ |
-| `movies`               | Movie library                  | Yes                      |
-| `shows`                | Show library                   | Yes                      |
-| `episodes`             | Episode library                | Yes                      |
-| `commercials`          | Commercial library             | Yes                      |
-| `shorts`               | Short film library             | Yes                      |
-| `music`                | Music video library            | Yes                      |
-| `promos`               | Channel idents                 | Yes                      |
-| `bumpers`              | Transition clips               | Yes                      |
-| `tags`                 | Tag definitions                | Yes                      |
-| `facets`               | Thematic relationships         | Yes                      |
-| `mosaics`              | Musical genre groupings        | Yes                      |
-| `episode_progression`  | Show tracking per stream type  | **Yes**                  |
-| `recently_used_movies` | Movie dedup across restarts    | **Yes**                  |
-| `media_tags`           | Media↔Tag junction             | Yes                      |
-| `facet_relationships`  | Facet relationship definitions | Yes                      |
+| Table                                   | Purpose                                               | Persists Across Restarts |
+| --------------------------------------- | ----------------------------------------------------- | ------------------------ |
+| `movies`                                | Movie library                                         | Yes                      |
+| `shows`                                 | Show library                                          | Yes                      |
+| `episodes`                              | Episode library                                       | Yes                      |
+| `commercials`                           | Commercial library                                    | Yes                      |
+| `shorts`                                | Short film library                                    | Yes                      |
+| `music`                                 | Music video library                                   | Yes                      |
+| `promos`                                | Channel idents                                        | Yes                      |
+| `bumpers`                               | Transition clips                                      | Yes                      |
+| `tags`                                  | Tag definitions                                       | Yes                      |
+| `facets`                                | Thematic relationships                                | Yes                      |
+| `mosaics`                               | Facet→musical genre tagId maps                        | Yes                      |
+| `collections`                           | Collection headers/metadata                           | Yes                      |
+| `collection_items`                      | Collection membership + order                         | Yes                      |
+| `programming_blocks`                    | Block definitions (type, duration, active, specialty) | Yes                      |
+| `programming_block_schedules`           | Recurrence + wall-clock schedule for each block       | Yes                      |
+| `programming_block_show_items`          | Ordered show members for ShowOrder blocks             | Yes                      |
+| `programming_block_movie_items`         | Ordered movie members for CuratedMovieMarathon blocks | Yes                      |
+| `programming_block_tags`                | Thematic tags for TagThemed blocks                    | Yes                      |
+| `programming_block_bumpers`             | Block/general bumper pool membership                  | Yes                      |
+| `programming_block_episode_progression` | Block-scoped show progression                         | Yes                      |
+| `programming_block_movie_history`       | Block movie play history for cooldown rules           | Yes                      |
+| `episode_progression`                   | Show tracking per stream type                         | **Yes**                  |
+| `recently_used_movies`                  | Movie dedup across restarts                           | **Yes**                  |
+| `media_tags`                            | Media↔Tag junction                                    | Yes                      |
+| `facet_relationships`                   | Facet relationship definitions                        | Yes                      |
 
 ### Repository Pattern
 
@@ -1296,6 +1847,11 @@ Repositories provide:
 - CRUD operations
 - Specialized query methods (e.g. `findByTagsAndAgeGroupsUnderDuration`)
 - Direct `better-sqlite3` prepared statements (no ORM)
+
+For collections specifically:
+
+- `collectionRepository` manages `collections` and `collection_items`
+- `movieRepository` enriches movie reads with `collections[]` references for downstream scheduling logic
 
 ### The Timepoint Model
 
@@ -1319,21 +1875,33 @@ The only exceptions are:
 
 ### Stream Construction Pipeline
 
-| File                                                     | Lines | Purpose                                               |
-| -------------------------------------------------------- | ----- | ----------------------------------------------------- |
-| `services/streamService.ts`                              | ~40   | Entry point, routes by StreamType                     |
-| `services/streamConstruction/continuousStreamBuilder.ts` | ~700  | Full pipeline: init, cadence, iteration, rollover     |
-| `services/streamConstruction/adhocStreamBuilder.ts`      | ~10   | Stub for future adhoc streams                         |
-| `services/streamConstruction/mediaSelector.ts`           | ~310  | Themed/random/holiday/specialty/facet selection       |
-| `services/streamConstruction/selectionHelpers.ts`        | ~420  | Episode fitting, progression, recently-used filtering |
-| `services/bufferConstructor.ts`                          | ~600  | Buffer creation, half-A/B split, commercial fill      |
+| File                                                            | Lines | Purpose                                               |
+| --------------------------------------------------------------- | ----- | ----------------------------------------------------- |
+| `services/streamService.ts`                                     | ~40   | Entry point, routes by StreamType                     |
+| `services/streamConstruction/continuousStreamBuilder.ts`        | ~700  | Full pipeline: init, cadence, iteration, rollover     |
+| `services/streamConstruction/adhocStreamBuilder.ts`             | ~420  | Adhoc stream: all 4 modes, multi-day rollover         |
+| `services/streamConstruction/programmingBlockSegmentBuilder.ts` | ~20   | Scheduled programming block segment construction seam |
+| `services/streamConstruction/mediaSelector.ts`                  | ~310  | Themed/random/holiday/specialty/facet selection       |
+| `services/streamConstruction/selectionHelpers.ts`               | ~420  | Episode fitting, progression, recently-used filtering |
+| `services/bufferConstructor.ts`                                 | ~600  | Buffer creation, half-A/B split, commercial fill      |
+| `services/programmingBlocks/blockScheduler.ts`                  | ~180  | Recurrence resolver for next scheduled block windows  |
+| `repositories/programmingBlockRepository.ts`                    | ~160  | Active block definition read + schedule upsert        |
 
 ### Prism System
 
-| File                 | Lines | Purpose                                          |
-| -------------------- | ----- | ------------------------------------------------ |
-| `prisms/spectrum.ts` | ~560  | Buffer media pool selection (gated expansion)    |
-| `prisms/facets.ts`   | ~100  | Facet relationship matching + weighted selection |
+| File                               | Lines | Purpose                                            |
+| ---------------------------------- | ----- | -------------------------------------------------- |
+| `prisms/spectrum.ts`               | ~560  | Buffer media pool selection (gated expansion)      |
+| `prisms/facets.ts`                 | ~100  | Facet relationship matching + weighted selection   |
+| `repositories/mosaicRepository.ts` | ~170  | Mosaic CRUD + facet→musical genre tagId resolution |
+
+### Collections
+
+| File                                   | Lines | Purpose                                                        |
+| -------------------------------------- | ----- | -------------------------------------------------------------- |
+| `repositories/collectionRepository.ts` | ~220  | Collection CRUD + ordered collection item management           |
+| `controllers/collectionController.ts`  | ~140  | Collection validation + response shaping for IPC               |
+| `handlers/collectionHandlers.ts`       | ~70   | Collection IPC handler wrappers used by main-process IPC setup |
 
 ### Runtime
 
@@ -1359,31 +1927,34 @@ The only exceptions are:
 
 ## Appendix B: Glossary
 
-| Term                   | Definition                                                                                    |
-| ---------------------- | --------------------------------------------------------------------------------------------- |
-| **Anchor Media**       | The primary show or movie in a MediaBlock. What the viewer is "watching."                     |
-| **Buffer**             | Filler content (commercials, shorts, music, promos) between anchor media.                     |
-| **Cadence**            | Alignment of anchor media to :00 and :30 marks on the clock.                                  |
-| **Cadence Mark**       | A :00 or :30 time boundary.                                                                   |
-| **Duration**           | Actual runtime of media in seconds.                                                           |
-| **DurationLimit**      | Maximum allowed duration for this time slot (e.g. 1800 for a 30-min show).                    |
-| **Facet**              | A genre + aesthetic pairing that defines a thematic identity (e.g. Sci-Fi Noir).              |
-| **Facet Relationship** | Connection between two facets with a `distance` (0.0 = identical, 1.0 = unrelated).           |
-| **Facet Walking**      | The process of selecting thematically related media through facet relationships.              |
-| **Gate (Buffer)**      | A level in the spectrum pool expansion where more media is added if the pool is insufficient. |
-| **Half A / Half B**    | The two halves of a buffer, themed to the preceding and upcoming anchor respectively.         |
-| **Holiday Date**       | An exact date when a holiday occurs (e.g. Dec 25). Triggers saturation mode.                  |
-| **Holiday Season**     | A date range around a holiday (e.g. Dec 1-31). Triggers budgeted mode.                        |
-| **Iteration**          | One pass through the main `while` loop in `buildStreamIteration()`.                           |
-| **On Deck**            | The 2-3 blocks that are currently playing or about to play. Managed by background service.    |
-| **overDuration**       | An episode that exceeds its show's normal `durationLimit`.                                    |
-| **Prism System**       | Collective name for the facets and spectrum modules that handle themed selection.             |
-| **Promo**              | A 15-second channel ident (like a network logo bumper). One per buffer.                       |
-| **Recently Used**      | Media that has played within its eviction window and should be avoided.                       |
-| **Remainder**          | Leftover seconds from a buffer that couldn't be perfectly filled. Cascades forward.           |
-| **Rollover**           | Generation of the next day's stream when today's Upcoming is nearly exhausted.                |
-| **Smart Shuffle**      | Holiday date mode's 80/20 alternation to prevent movie→movie or episode→episode streaks.      |
-| **Spectrum**           | The buffer media selection system (gated pool expansion with validation).                     |
-| **Theme Walking**      | Carrying tags forward from one anchor to the next to maintain thematic coherence.             |
-| **Timepoint**          | A moment in time expressed as Unix seconds (not milliseconds).                                |
-| **Upcoming**           | Ordered queue of future blocks. User can reorder. Background service promotes to On Deck.     |
+| Term                   | Definition                                                                                          |
+| ---------------------- | --------------------------------------------------------------------------------------------------- |
+| **Anchor Media**       | The primary show or movie in a MediaBlock. What the viewer is "watching."                           |
+| **Buffer**             | Filler content (commercials, shorts, music, promos) between anchor media.                           |
+| **Cadence**            | Alignment of anchor media to :00 and :30 marks on the clock.                                        |
+| **Cadence Mark**       | A :00 or :30 time boundary.                                                                         |
+| **Collection**         | A curated ordered set of movies, persisted as `collections` + `collection_items`.                   |
+| **Duration**           | Actual runtime of media in seconds.                                                                 |
+| **DurationLimit**      | Maximum allowed duration for this time slot (e.g. 1800 for a 30-min show).                          |
+| **Facet**              | A genre + aesthetic pairing that defines a thematic identity (e.g. Sci-Fi Noir).                    |
+| **Facet Relationship** | Connection between two facets with a `distance` (0.0 = identical, 1.0 = unrelated).                 |
+| **Facet Walking**      | The process of selecting thematically related media through facet relationships.                    |
+| **Gate (Buffer)**      | A level in the spectrum pool expansion where more media is added if the pool is insufficient.       |
+| **Half A / Half B**    | The two halves of a buffer, themed to the preceding and upcoming anchor respectively.               |
+| **Holiday Date**       | An exact date when a holiday occurs (e.g. Dec 25). Triggers saturation mode.                        |
+| **Holiday Season**     | A date range around a holiday (e.g. Dec 1-31). Triggers budgeted mode.                              |
+| **Iteration**          | One pass through the main `while` loop in `buildStreamIteration()`.                                 |
+| **Mosaic**             | Maps a Facet to a set of MusicalGenre tagIds. Bridges genre/aesthetic (visual) to music.            |
+| **On Deck**            | The 2-3 blocks that are currently playing or about to play. Managed by background service.          |
+| **overDuration**       | An episode that exceeds its show's normal `durationLimit`.                                          |
+| **Programming Block**  | A scheduled, bounded, curated stream window with its own recurrence, selection rules, and identity. |
+| **Prism System**       | Collective name for the facets, spectrum, and mosaic modules that handle themed selection.          |
+| **Promo**              | A 15-second channel ident (like a network logo bumper). One per buffer.                             |
+| **Recently Used**      | Media that has played within its eviction window and should be avoided.                             |
+| **Remainder**          | Leftover seconds from a buffer that couldn't be perfectly filled. Cascades forward.                 |
+| **Rollover**           | Generation of the next day's stream when today's Upcoming is nearly exhausted.                      |
+| **Smart Shuffle**      | Holiday date mode's 80/20 alternation to prevent movie→movie or episode→episode streaks.            |
+| **Spectrum**           | The buffer media selection system (gated pool expansion with validation).                           |
+| **Theme Walking**      | Carrying tags forward from one anchor to the next to maintain thematic coherence.                   |
+| **Timepoint**          | A moment in time expressed as Unix seconds (not milliseconds).                                      |
+| **Upcoming**           | Ordered queue of future blocks. User can reorder. Background service promotes to On Deck.           |

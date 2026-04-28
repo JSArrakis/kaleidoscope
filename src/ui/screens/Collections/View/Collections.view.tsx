@@ -10,7 +10,7 @@ interface CollectionsViewProps {
 const CollectionsView: FC<CollectionsViewProps> = ({ viewModel }) => {
   const selectedCollection = viewModel.selectedCollection
     ? viewModel.selectedCollection
-    : { mediaItemId: "", title: "", description: "", items: [] };
+    : { collectionId: "", title: "", description: "", itemCount: 0, items: [] };
 
   return (
     <div className={styles.screen}>

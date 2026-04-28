@@ -2,6 +2,7 @@ import { promoRepository } from "../repositories/promoRepository.js";
 import { selectBufferMedia } from "../prisms/spectrum.js";
 import { commercialRepository } from "../repositories/commercialRepository.js";
 import { segmentTags } from "../utils/common.js";
+import { MediaType } from "../models.js";
 import {
   addRecentlyUsedCommercial,
   addRecentlyUsedShort,

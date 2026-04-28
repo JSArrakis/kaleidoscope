@@ -1,0 +1,19 @@
+Movie collections are pretty simple, Each movie has a collection array on its object.
+
+A movie can have zero, one, or N collections.
+
+A collection object should have a collection Id, a name, and a number
+
+The collection id and name will be shared amongst all objects for that collection on multiple movies.
+
+The number for each collection object is the order in which the movie should appear in that collection.
+
+For instance:
+    The Phantom Menace would be 1
+    Attack of the Clones would be 2
+    Revenge of the Sith would be 3
+    Solo would be 4
+    Rogue One would be 5
+    A New hope would be 6
+
+    and so on.

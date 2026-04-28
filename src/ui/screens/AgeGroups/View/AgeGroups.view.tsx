@@ -1,4 +1,5 @@
 import { FC } from "react";
+import { TagType } from "../../../models";
 import { AgeGroupsViewModel } from "./AgeGroups.viewmodel";
 import styles from "./AgeGroups.module.css";
 import TagList from "../../../components/TagList/TagList";

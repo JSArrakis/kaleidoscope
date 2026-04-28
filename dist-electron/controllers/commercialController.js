@@ -1,4 +1,4 @@
-import { commercialRepository, } from "../repositories/commercialRepository.js";
+import { commercialRepository } from "../repositories/commercialRepository.js";
 export async function createCommercial(commercial) {
     try {
         if (!commercial.mediaItemId) {

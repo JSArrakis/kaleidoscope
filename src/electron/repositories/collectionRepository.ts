@@ -16,7 +16,7 @@ export class CollectionRepository {
         collection.collectionId,
         collection.title,
         collection.description || null,
-        collection.itemCount
+        collection.itemCount,
       );
 
       if (collection.items.length > 0) {
@@ -30,7 +30,7 @@ export class CollectionRepository {
             item.collectionItemId,
             collection.collectionId,
             item.mediaItemId,
-            item.sequence
+            item.sequence,
           );
         }
       }
@@ -42,7 +42,7 @@ export class CollectionRepository {
 
   findByCollectionId(collectionId: string): Collection | null {
     const stmt = this.db.prepare(
-      `SELECT * FROM collections WHERE collectionId = ?`
+      `SELECT * FROM collections WHERE collectionId = ?`,
     );
     const row = stmt.get(collectionId) as any;
     if (!row) return null;
@@ -69,7 +69,7 @@ export class CollectionRepository {
     collectionItemId: string,
     collectionId: string,
     mediaItemId: string,
-    sequence: number
+    sequence: number,
   ): CollectionItem {
     const transaction = this.db.transaction(() => {
       const stmt = this.db.prepare(`
@@ -82,7 +82,7 @@ export class CollectionRepository {
       // Update item count
       this.db
         .prepare(
-          `UPDATE collections SET itemCount = itemCount + 1 WHERE collectionId = ?`
+          `UPDATE collections SET itemCount = itemCount + 1 WHERE collectionId = ?`,
         )
         .run(collectionId);
     });
@@ -94,21 +94,21 @@ export class CollectionRepository {
   removeItemFromCollection(collectionItemId: string): boolean {
     const transaction = this.db.transaction(() => {
       const itemStmt = this.db.prepare(
-        `SELECT collectionId FROM collection_items WHERE collectionItemId = ?`
+        `SELECT collectionId FROM collection_items WHERE collectionItemId = ?`,
       );
       const item = itemStmt.get(collectionItemId) as any;
 
       if (!item) return false;
 
       const deleteStmt = this.db.prepare(
-        `DELETE FROM collection_items WHERE collectionItemId = ?`
+        `DELETE FROM collection_items WHERE collectionItemId = ?`,
       );
       const result = deleteStmt.run(collectionItemId);
 
       if (result.changes > 0) {
         this.db
           .prepare(
-            `UPDATE collections SET itemCount = itemCount - 1 WHERE collectionId = ?`
+            `UPDATE collections SET itemCount = itemCount - 1 WHERE collectionId = ?`,
           )
           .run(item.collectionId);
         return true;
@@ -122,7 +122,7 @@ export class CollectionRepository {
 
   updateCollectionItem(
     collectionItemId: string,
-    sequence: number
+    sequence: number,
   ): CollectionItem | null {
     const stmt = this.db.prepare(`
       UPDATE collection_items 
@@ -138,22 +138,50 @@ export class CollectionRepository {
 
   updateCollection(
     collectionId: string,
-    collection: Collection
+    collection: Collection,
   ): Collection | null {
-    const stmt = this.db.prepare(`
-      UPDATE collections 
-      SET title = ?, description = ?, updatedAt = CURRENT_TIMESTAMP
-      WHERE collectionId = ?
-    `);
+    const transaction = this.db.transaction(() => {
+      const collectionUpdateStmt = this.db.prepare(`
+        UPDATE collections
+        SET title = ?, description = ?, itemCount = ?, updatedAt = CURRENT_TIMESTAMP
+        WHERE collectionId = ?
+      `);
 
-    const result = stmt.run(
-      collection.title,
-      collection.description || null,
-      collectionId
-    );
-    if (result.changes === 0) return null;
+      const updateResult = collectionUpdateStmt.run(
+        collection.title,
+        collection.description || null,
+        collection.items.length,
+        collectionId,
+      );
 
-    return this.findByCollectionId(collectionId);
+      if (updateResult.changes === 0) {
+        return null;
+      }
+
+      this.db
+        .prepare(`DELETE FROM collection_items WHERE collectionId = ?`)
+        .run(collectionId);
+
+      if (collection.items.length > 0) {
+        const insertItemStmt = this.db.prepare(`
+          INSERT INTO collection_items (collectionItemId, collectionId, mediaItemId, sequence)
+          VALUES (?, ?, ?, ?)
+        `);
+
+        for (const item of collection.items) {
+          insertItemStmt.run(
+            item.collectionItemId,
+            collectionId,
+            item.mediaItemId,
+            item.sequence,
+          );
+        }
+      }
+
+      return this.findByCollectionId(collectionId);
+    });
+
+    return transaction();
   }
 
   deleteCollection(collectionId: string): boolean {
@@ -162,7 +190,7 @@ export class CollectionRepository {
         .prepare(`DELETE FROM collection_items WHERE collectionId = ?`)
         .run(collectionId);
       const stmt = this.db.prepare(
-        `DELETE FROM collections WHERE collectionId = ?`
+        `DELETE FROM collections WHERE collectionId = ?`,
       );
       const result = stmt.run(collectionId);
       return result.changes > 0;
@@ -178,10 +206,10 @@ export class CollectionRepository {
   }
 
   private findCollectionItemById(
-    collectionItemId: string
+    collectionItemId: string,
   ): CollectionItem | null {
     const stmt = this.db.prepare(
-      `SELECT * FROM collection_items WHERE collectionItemId = ?`
+      `SELECT * FROM collection_items WHERE collectionItemId = ?`,
     );
     const row = stmt.get(collectionItemId) as any;
     if (!row) return null;

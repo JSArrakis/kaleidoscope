@@ -2,10 +2,10 @@ import { FC, useEffect, useState } from "react";
 import styles from "./CurationItem.module.css";
 
 interface CurationItemProps {
-  item: PrismCurationObj;
-  onEdit: (item: PrismCurationObj) => void;
-  onSaveNew: (item: PrismCurationObj) => void;
-  onRemove: (item: PrismCurationObj) => void;
+  item: Collection;
+  onEdit: (item: Collection) => void;
+  onSaveNew: (item: Collection) => void;
+  onRemove: (item: Collection) => void;
 }
 
 const CurationItem: FC<CurationItemProps> = ({
@@ -36,9 +36,11 @@ const CurationItem: FC<CurationItemProps> = ({
       setTimeout(() => setFlashRed(false), 1000);
       return;
     }
-    const mediaItemId = title.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
-    console.log("New Media Item:", { ...item, title, mediaItemId });
-    onSaveNew({ ...item, title, mediaItemId });
+    onSaveNew({
+      ...item,
+      title,
+      itemCount: item.items.length,
+    });
   };
 
   const handleUndo = () => {

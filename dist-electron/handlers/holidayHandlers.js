@@ -1,9 +1,10 @@
+import { TagType } from "../models.js";
 import * as tagController from "../controllers/tagController.js";
 export async function getHolidaysHandler() {
-    return tagController.getTagsByType("Holiday");
+    return tagController.getTagsByType(TagType.Holiday);
 }
 export async function createHolidayHandler(holiday) {
-    return tagController.createTag({ ...holiday, type: "Holiday" });
+    return tagController.createTag({ ...holiday, type: TagType.Holiday });
 }
 export async function deleteHolidayHandler(holiday) {
     return tagController.deleteTag(holiday.tagId);
@@ -11,6 +12,6 @@ export async function deleteHolidayHandler(holiday) {
 export async function updateHolidayHandler(holiday) {
     return tagController.updateTag(holiday.tagId, {
         ...holiday,
-        type: "Holiday",
+        type: TagType.Holiday,
     });
 }

@@ -1,13 +1,17 @@
 import { FC } from "react";
 import styles from "./curationItem.module.css";
 
-interface CurationItemProps {
-  curationItem: PrismCurationReference;
+export interface CurationDisplayItem {
+  curationRefId: string;
+  title: string;
+  sequence: number;
 }
 
-const CurationItem: FC<CurationItemProps> = ({
-  curationItem,
-}) => {
+interface CurationItemProps {
+  curationItem: CurationDisplayItem;
+}
+
+const CurationItem: FC<CurationItemProps> = ({ curationItem }) => {
   return (
     <div className={styles.curationItem}>
       <div className={styles.curationName}>{curationItem.title}</div>

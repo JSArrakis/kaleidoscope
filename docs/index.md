@@ -1,8 +1,20 @@
 # Kaleidoscope
 
+## Foreword From the Author
+
+As a young child in the 90s, I was practically raised by what is considered the golden age of broadcast and cable television. Cable networks were expanding to include more and broader content, we had the advent of the Disney Channel, Cartoon Network, and Nickelodeon became something that was more directly dedicated toward kids.
+
+Television became more of a thing that people scheduled their lives around to make sure they saw their favorite show. Rights to movies became easier to obtain so TV channels ramped up both mid day movies and special feature movies on Fridays. As a kid, it was wondrous.
+
+After the advent of on demand streaming, a lot of that same magic has left for me. I no longer feel any real excitement to catch a new episode for a show, and I find myself spending 30 or so minutes scrolling through movies and shows to find one that perfectly fits my current mood... and then ultimately becoming disappointed in my decision. After so many disappointments, I tend to just watch the same things I always watch; the same movies, the same shows.
+
+I miss coming home from school to catch the new episodes of Reboot, or Dragon Ball Z. I miss waking up earlier than my parents to start watching Saturday morning cartoons. I miss not having to think about what I want to watch beyond what was actually playing on television at the current time.
+
+Curating these experiences by hand takes away a lot of the "magic" of that; a lot of days I just want to consume media, I don't want to curate it. A few years ago I realized that it would be possible to create these same experiences that had disappeared from my life, and I started to devise Kaleidoscope.
+
 ## Overview
 
-Kaleidoscope is a desktop media streaming assistant built to recreate the experience of a curated broadcast channel using the user’s own media library with the main goal of creating an always-on continuous stream either based on a set of rules for procedural selection or specifically designated and scheduled media in the form of adhoc one off selections or patterned reoccuring media blocks reminiscient of Tv Programming Blocks such as Fox Kids, Toonami, Nick Jr., UPN Afternoon, SNICK etc.
+Kaleidoscope is a desktop media streaming assistant built to recreate the experience of a curated broadcast channel using the user’s own media library with the main goal of creating an always-on continuous stream either based on a set of rules for procedural selection or specifically designated and scheduled media in the form of adhoc one off selections or patterned reoccuring media blocks reminiscient of Tv Programming Blocks such as Fox Kids, TGI Fridays, Toonami, Nick Jr., UPN Afternoon, SNICK etc.
 
 ## The Core Problem
 

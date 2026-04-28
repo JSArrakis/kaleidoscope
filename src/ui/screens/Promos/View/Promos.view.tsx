@@ -1,4 +1,5 @@
-import { FC } from "react";
+﻿import { FC } from "react";
+import { MediaType } from "../../../models";
 import { PromosViewModel } from "./Promos.viewmodel";
 import styles from "./Promos.module.css";
 import BufferItemList from "../../../components/BufferItemList/BufferItemList";

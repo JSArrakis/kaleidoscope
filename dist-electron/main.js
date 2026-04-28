@@ -19,15 +19,22 @@ import { createSpecialtyTagHandler, deleteSpecialtyTagHandler, getSpecialtyTagsH
 import { createAgeGroupHandler, deleteAgeGroupHandler, getAgeGroupsHandler, updateAgeGroupHandler, } from "./handlers/ageGroupHandlers.js";
 import { createHolidayHandler, deleteHolidayHandler, getHolidaysHandler, updateHolidayHandler, } from "./handlers/holidayHandlers.js";
 import { createMusicGenreHandler, deleteMusicGenreHandler, getMusicGenresHandler, } from "./handlers/musicGenreHandlers.js";
+import { probeMediaMetadataHandler } from "./handlers/mediaProbeHandlers.js";
+import { addFacetRelationshipHandler, createFacetHandler, deleteFacetHandler, deleteFacetRelationshipHandler, getFacetsHandler, } from "./handlers/facetHandlers.js";
+import { createMosaicHandler, deleteMosaicHandler, getMosaicsHandler, updateMosaicHandler, } from "./handlers/mosaicHandlers.js";
+import { getPlayerStateSnapshot, initializePlayer, playNextInPlayerQueue, playPreviousInPlayerQueue, replacePlayerQueueFromFilePaths, selectPlayerQueueItem, } from "./services/playerManager.js";
 app.on("ready", async () => {
     // Initialize database first
     try {
+        console.log("Connecting to database...");
         await connectToDB();
+        console.log("Database connected.");
     }
     catch (error) {
         console.error("Failed to connect to database:", error);
         // Continue anyway to allow app to start
     }
+    await initializePlayer("electron");
     const mainWindow = new BrowserWindow({
         width: 1024,
         height: 728,
@@ -46,6 +53,24 @@ app.on("ready", async () => {
     // Menu.setApplicationMenu(null);
     ipcMainHandle("openFileDialog", async () => {
         return await openFileDialogHandler(mainWindow);
+    });
+    ipcMainHandle("probeMediaMetadata", async (_event, filePath) => {
+        return await probeMediaMetadataHandler(filePath);
+    });
+    ipcMainHandle("getPlayerState", async () => {
+        return getPlayerStateSnapshot();
+    });
+    ipcMainHandle("replacePlayerQueue", async (_event, filePaths) => {
+        return replacePlayerQueueFromFilePaths(filePaths);
+    });
+    ipcMainHandle("playerSelectQueueItem", async (_event, index) => {
+        return selectPlayerQueueItem(index);
+    });
+    ipcMainHandle("playerPlayPrevious", async () => {
+        return playPreviousInPlayerQueue();
+    });
+    ipcMainHandle("playerPlayNext", async () => {
+        return playNextInPlayerQueue();
     });
     ipcMainHandle("getCollections", async () => {
         return await getCollectionsHandler();
@@ -211,5 +236,32 @@ app.on("ready", async () => {
     });
     ipcMainHandle("deleteMusicGenre", async (_event, tag) => {
         return await deleteMusicGenreHandler(tag);
+    });
+    ipcMainHandle("getFacets", async () => {
+        return getFacetsHandler();
+    });
+    ipcMainHandle("createFacet", async (_event, genre, aesthetic) => {
+        return createFacetHandler(genre, aesthetic);
+    });
+    ipcMainHandle("deleteFacet", async (_event, facetId) => {
+        return deleteFacetHandler(facetId);
+    });
+    ipcMainHandle("addFacetRelationship", async (_event, request) => {
+        return addFacetRelationshipHandler(request);
+    });
+    ipcMainHandle("deleteFacetRelationship", async (_event, request) => {
+        return deleteFacetRelationshipHandler(request);
+    });
+    ipcMainHandle("getMosaics", async () => {
+        return getMosaicsHandler();
+    });
+    ipcMainHandle("createMosaic", async (_event, mosaic) => {
+        return createMosaicHandler(mosaic);
+    });
+    ipcMainHandle("updateMosaic", async (_event, mosaic) => {
+        return updateMosaicHandler(mosaic);
+    });
+    ipcMainHandle("deleteMosaic", async (_event, mosaicId) => {
+        return deleteMosaicHandler(mosaicId);
     });
 });

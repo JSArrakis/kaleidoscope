@@ -1,3 +1,4 @@
+import { TagType } from "../models.js";
 import * as tagController from "../controllers/tagController.js";
 
 export async function getAgeGroupsHandler(): Promise<Tag[]> {

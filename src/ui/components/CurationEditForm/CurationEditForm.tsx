@@ -3,13 +3,17 @@ import styles from "./CurationEditForm.module.css";
 import MediaItem from "./MediaItem/MediaItem";
 import AddedMediaItem from "./AddedMediaItem/AddedMediaItem";
 
+type EditableCollectionItem = Omit<CollectionItem, "sequence"> & {
+  sequence?: number;
+};
+
 interface CurationEditFormProps {
-  curationItem: PrismCurationObj;
+  curationItem: Collection;
   mediaList: Movie[];
   formType: string;
   itemType: string;
-  onCancel: (item: PrismCurationObj) => void;
-  onSave: (item: PrismCurationObj) => void;
+  onCancel: (item: Collection) => void;
+  onSave: (item: Collection) => void;
 }
 
 const CurationEditForm: FC<CurationEditFormProps> = ({
@@ -28,7 +32,7 @@ const CurationEditForm: FC<CurationEditFormProps> = ({
 
   const [title, setTitle] = useState(curationItem.title);
   const [currentItemCurationList, setCurrentItemCurationList] = useState<
-    PrismCurationItem[]
+    EditableCollectionItem[]
   >([]);
   const [filteredMediaList, setFilteredMediaList] = useState<Movie[]>([]);
   const titleRef = useRef<HTMLInputElement>(null);
@@ -50,19 +54,16 @@ const CurationEditForm: FC<CurationEditFormProps> = ({
   // ========== Initial State Setters ==========
 
   useEffect(() => {
-    const incomingItems: PrismCurationItem[] = curationItem.items.map(
-      (item) => {
-        return {
-          mediaItemId: item.mediaItemId,
-          mediaItemTitle: item.mediaItemTitle,
-          sequence: item.sequence,
-        };
-      }
+    const incomingItems: EditableCollectionItem[] = curationItem.items.map(
+      (item) => ({
+        ...item,
+        title: item.title ?? "",
+      }),
     );
 
     const filteredMediaList = mediaList.filter(
       (media) =>
-        !incomingItems.some((item) => item.mediaItemId === media.mediaItemId)
+        !incomingItems.some((item) => item.mediaItemId === media.mediaItemId),
     );
 
     setCurrentItemCurationList(incomingItems);
@@ -73,8 +74,8 @@ const CurationEditForm: FC<CurationEditFormProps> = ({
     const filteredMediaList = mediaList.filter(
       (media) =>
         !currentItemCurationList.some(
-          (item) => item.mediaItemId === media.mediaItemId
-        )
+          (item) => item.mediaItemId === media.mediaItemId,
+        ),
     );
     if (mediaListSearchTerm.trim() === "") {
       setFilteredMediaList(filteredMediaList);
@@ -82,7 +83,7 @@ const CurationEditForm: FC<CurationEditFormProps> = ({
     } else {
       const searchTerm = mediaListSearchTerm.toLowerCase();
       const filteredList = filteredMediaList.filter(
-        (item) => item.title && item.title.toLowerCase().includes(searchTerm)
+        (item) => item.title && item.title.toLowerCase().includes(searchTerm),
       );
       setFilteredMediaList(filteredList);
     }
@@ -91,30 +92,33 @@ const CurationEditForm: FC<CurationEditFormProps> = ({
   // ============== List Controls ==============
 
   const onAdd = (item: Movie) => {
-    const newCurationItemList: PrismCurationItem[] = [
+    const newCurationItemList: EditableCollectionItem[] = [
       ...currentItemCurationList,
       {
+        collectionItemId: `${curationItem.collectionId}:${item.mediaItemId}`,
+        collectionId: curationItem.collectionId,
         mediaItemId: item.mediaItemId,
-        mediaItemTitle: item.title || "",
+        title: item.title || "",
+        sequence: currentItemCurationList.length + 1,
       },
     ];
 
     const newFilteredMediaList: Movie[] = filteredMediaList.filter(
-      (media) => media.mediaItemId !== item.mediaItemId
+      (media) => media.mediaItemId !== item.mediaItemId,
     );
 
     setCurrentItemCurationList(newCurationItemList);
     setFilteredMediaList(newFilteredMediaList);
   };
 
-  const onRemove = (item: PrismCurationItem) => {
-    const newCurationItemList: PrismCurationItem[] =
+  const onRemove = (item: EditableCollectionItem) => {
+    const newCurationItemList: EditableCollectionItem[] =
       currentItemCurationList.filter(
-        (media) => media.mediaItemId !== item.mediaItemId
+        (media) => media.mediaItemId !== item.mediaItemId,
       );
 
     const mediaItemToAddBack = mediaList.find(
-      (media) => media.mediaItemId === item.mediaItemId
+      (media) => media.mediaItemId === item.mediaItemId,
     );
 
     if (!mediaItemToAddBack) {
@@ -132,14 +136,14 @@ const CurationEditForm: FC<CurationEditFormProps> = ({
   };
 
   const onUpdateSequence = (
-    item: PrismCurationItem,
-    sequence: number | null
+    item: EditableCollectionItem,
+    sequence: number | null,
   ) => {
-    const newCurationItemList: PrismCurationItem[] =
+    const newCurationItemList: EditableCollectionItem[] =
       currentItemCurationList.map((originalItem) =>
         originalItem.mediaItemId === item.mediaItemId
           ? { ...originalItem, sequence: sequence ?? undefined }
-          : originalItem
+          : originalItem,
       );
 
     setCurrentItemCurationList(newCurationItemList);
@@ -151,8 +155,8 @@ const CurationEditForm: FC<CurationEditFormProps> = ({
     const currentFilteredMediaList = mediaList.filter(
       (media) =>
         !currentItemCurationList.some(
-          (item) => item.mediaItemId === media.mediaItemId
-        )
+          (item) => item.mediaItemId === media.mediaItemId,
+        ),
     );
     if (mediaListSearchTerm.trim() === "") {
       setFilteredMediaList(currentFilteredMediaList);
@@ -162,7 +166,7 @@ const CurationEditForm: FC<CurationEditFormProps> = ({
     const debouncedSearch = setTimeout(() => {
       const searchTerm = mediaListSearchTerm.toLowerCase();
       const filteredList = currentFilteredMediaList.filter(
-        (item) => item.title && item.title.toLowerCase().includes(searchTerm)
+        (item) => item.title && item.title.toLowerCase().includes(searchTerm),
       );
       setFilteredMediaList(filteredList);
     }, 600);
@@ -177,32 +181,40 @@ const CurationEditForm: FC<CurationEditFormProps> = ({
       (item) =>
         Number.isNaN(item.sequence) ||
         item.sequence === null ||
-        item.sequence === undefined
+        item.sequence === undefined,
     );
     const itemsWithDuplicateSequence = currentItemCurationList.filter(
       (item, index, self) =>
-        self.findIndex((t) => t.sequence === item.sequence) !== index
+        self.findIndex((t) => t.sequence === item.sequence) !== index,
     );
     if (itemsWithoutSequence.length > 0) {
       setWarningModalMessage(
-        "Some items are missing a sequence. Please add sequences before saving."
+        "Some items are missing a sequence. Please add sequences before saving.",
       );
       setShowWarningModal(true);
       setTimeout(() => setShowWarningModal(false), 2000);
       return;
     } else if (itemsWithDuplicateSequence.length > 0) {
       setWarningModalMessage(
-        "Some items have duplicate sequences. Please update sequences before saving."
+        "Some items have duplicate sequences. Please update sequences before saving.",
       );
       setShowWarningModal(true);
       setTimeout(() => setShowWarningModal(false), 2000);
       return;
     } else {
-      const updatedItem: PrismCurationObj = {
+      const updatedItem: Collection = {
+        collectionId: curationItem.collectionId,
         title: title,
-        mediaItemId: title.replace(/[^a-zA-Z0-9]/g, "").toLowerCase(),
-        description: "",
-        items: currentItemCurationList,
+        description: curationItem.description,
+        itemCount: currentItemCurationList.length,
+        items: currentItemCurationList.map((item, index) => ({
+          ...item,
+          collectionItemId:
+            item.collectionItemId ||
+            `${curationItem.collectionId}:${item.mediaItemId}:${item.sequence ?? index + 1}`,
+          collectionId: curationItem.collectionId,
+          sequence: item.sequence ?? index + 1,
+        })),
       };
 
       onSave(updatedItem);

@@ -37,3 +37,12 @@
   max-width: 500px;
   width: 100%;
 }
+
+.resizable {
+  resize: both;
+  overflow: auto;
+  min-width: 420px;
+  min-height: 320px;
+  max-width: calc(100vw - 80px);
+  max-height: calc(100vh - 80px);
+}

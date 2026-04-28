@@ -1,8 +1,40 @@
-# ReBoot - Taxonomic Proof
+# ReBoot (1994)
 
-## Overview
+Inside the computer system called Mainframe, sprites and binomes live alongside programs in a functioning digital city. Games fall from the sky in the form of large purple cubes that engulf entire sectors, and the residents inside them must play against the User or lose the sector to null-space. Only Guardians can reliably compete in the games and win the sector back. Bob is Mainframe's Guardian, tasked with protecting the city; Dot Matrix is its chief administrator and de facto civilian leader; Enzo is Dot's younger brother, a kid growing up in a city where every game could be his last. The recurring antagonists are Megabyte and Hexadecimal, sibling viruses who each want to claim Mainframe for different purposes. Megabyte wants to expand his territory and ultimately escape into the Net; Hexadecimal wants chaos, which she pursues unpredictably and with genuine delight.
 
-ReBoot (1994-2001) is set inside a computer system called Mainframe, following Guardian Bob and his friends Dot Matrix and Enzo as they defend their digital city from viruses, system crashes, and hostile programs while users play games that threaten to destroy sectors of their world. This proof examines the show's fundamental taxonomic classifications with specific evidence from the series.
+At its core, this is a show about a city under constant existential siege and the people responsible for defending it who have built actual lives there. The game cube conceit is one of the most effective threat-delivery mechanisms in animated television: random, total, inescapable, and resolvable only by winning. Between games, Megabyte works to undermine Mainframe's stability through military expansion and political manipulation. The series begins as an episodic adventure and builds across its run toward a genuine serialized drama, ending its third season on a cliffhanger that committed fully to long-term narrative stakes.
+
+## Genre: Adventure
+
+The Adventure genre names itself through its structural commitment to characters moving through unfamiliar environments and confronting challenges that cannot be predicted from prior experience. ReBoot does this twice per episode in structure: the outer world of Mainframe presents ongoing threats from Megabyte and Hexadecimal that must be navigated with available resources and improvisation, and the inner world of each game presents a completely different environmental logic, weapon system, and set of physical rules that Bob must master before the User beats him. The game cube sequences are pure Adventure genre in concentrated form: Bob enters an unknown space with no preparation, reads the environment, identifies what the game demands, and attempts to win it before the clock runs out.
+
+The Adventure genre does not require its characters to be on a continuous journey with a fixed destination, and ReBoot uses the settled-home model of Adventure instead: the characters are defending a place they care about rather than seeking one. This is still Adventure because the terrain is unstable and unknown. Mainframe as a location is not static; Megabyte expands into new sectors, the Net beyond the city is largely unexplored and dangerous, and each game delivers entirely new environments. The series also allows Adventure to scale: later seasons send characters into the Web itself, a chaotic and hostile environment beyond the boundaries of any organized system, and the Adventure genre accommodates this escalation naturally.
+
+## Aesthetics: CGI · Virtual
+
+Both aesthetics are genuinely present in ReBoot and serve distinct functions. CGI names the production technique and its visible formal results. Virtual names the thematic and philosophical framework that shapes what the series is actually about.
+
+### CGI
+
+ReBoot was the first fully computer-generated animated television series, a fact not merely of historical record but of ongoing aesthetic consequence for everything about how the show looks and moves. The CGI aesthetic is built from hard surfaces, geometric environments, and the specific visual grammar that emerges from rendering three-dimensional models with artificial lighting. Mainframe as an environment is built from polygons: buildings have visible angles, characters have smooth surfaces that reflect light differently than hand-drawn animation allows, and the color palette is saturated in ways specific to early 3D rendering. This is not a limitation of the aesthetic but its texture and character.
+
+The game cube sequences demonstrate CGI's specific capability with rapid environmental transformation. When the cube lands, the entire visual grammar changes: a medieval game has different lighting, different terrain geometry, and different character costume models that snap into place without a transition. The speed and totality of this transformation is only practically achievable in CGI, and ReBoot clearly understood this and used the game mechanic to put the aesthetic's formal capabilities on display. The show is doing something with CGI that it could not do any other way.
+
+### Virtual
+
+The Virtual aesthetic organizes itself around digital space as a setting with its own physical laws, visual logic, and existential stakes. ReBoot is premised entirely on a world inside a computer, and the Virtual aesthetic is not a surface layer applied to the setting but the show's entire metaphysical framework. Mainframe has physics that derive from computational logic: programs can be deleted, viruses infect and corrupt, data is wealth, and the User is a godlike external force whose games override the reality of everyone inside. The residents of Mainframe do not know they are inside a computer in any experiential sense, but the audience knows, and the Virtual aesthetic keeps this knowledge structurally present in every element of the world design.
+
+The game cube conceit is the Virtual aesthetic made literal. The games are real video games from the User's perspective, playable and completable, and from Mainframe's perspective they are catastrophic incursions of external reality into the city. Bob winning the game and returning the sector to normal is both a version of a game being reset and a Guardian protecting his people. The Virtual aesthetic holds both of these interpretations simultaneously, and the series allows both to be emotionally real: the residents who nearly became nulls are genuinely saved, and they were saved by a character in a game played by someone who will never know they exist.
+
+## Era: 1990s
+
+ReBoot is a 1990s production in its earnestness and in its specific relationship to technology. The series takes the computer world seriously as a place worth caring about and does not position that premise as inherently comic or absurd. This is a 1990s attitude toward digital space: the decade in which the internet became culturally visible and in which there was widespread genuine excitement about what computation would change about the world. Mainframe is built with the confidence that a world inside a computer is interesting on its own terms, not as a parody of the real world but as an alternate world with its own culture, politics, and moral stakes. That confidence belongs to the 1990s specifically.
+
+The episodic-to-serialized arc of the series is also a 1990s structural choice. The first two seasons are largely self-contained episodes with ongoing character context, and the third season commits to full serialization with a cliffhanger ending. This movement was happening across 1990s animation as creators pushed against the reset-button structure, and ReBoot was among the most committed examples. The structural earnestness of that commitment, the choice to break the show open into a cliffhanger with no guaranteed continuation, is exactly the kind of creative bet a 1990s production would make.
+
+## Age Group: Family
+
+ReBoot operates in the Family paradigm. The series is built for general audiences across ages, with visual humor and straightforward action for younger viewers, layered computer-culture references and serialized narrative investment for older ones. The game cube sequences carry genuine peril, the virus characters are credible antagonists with political intelligence and actual power, and the serialized stakes of the third season are real. None of this exceeds Family bounds. The threat is always to the city and its residents rather than to individual persons in psychologically complex ways, and the resolution of conflict is always available through skill, friendship, and resourcefulness: the Family paradigm's characteristic structural commitment. Characters face danger but are not broken by it in ways that require adult emotional frameworks to process.
 
 ## Genre Analysis
 
@@ -22,72 +54,3 @@ ReBoot (1994-2001) is set inside a computer system called Mainframe, following G
 **Why Adventure Applies**: The series is built around exploration of digital environments and discovery of computer system mechanics, with characters regularly venturing into unknown territories and facing varied challenges that require adaptation and growth.
 
 ## Aesthetic Analysis
-
-### Primary Aesthetic: CGI
-
-**Definition**: Narratives presented through computer-generated three-dimensional animation, providing distinctive visual presentation through digital 3D environments, character models, and effects that leverage specific capabilities of computer graphics technology.
-
-**Evidence from ReBoot**:
-
-- **Pioneering 3D Digital Animation**: ReBoot was the first fully CGI-animated television series, creating entirely digital 3D environments and character models
-- **Three-Dimensional Digital Environments**: Mainframe city, game cubes, and viral territories are fully realized 3D spaces with depth, lighting, and spatial relationships viewable from multiple angles
-- **Computer-Generated Character Models**: Bob, Dot, Enzo, and other characters are digital 3D models with rigged movement systems and detailed surface textures
-- **Digital Lighting and Physics**: Episodes showcase sophisticated lighting effects, realistic shadows, and physics-based movement that demonstrate CGI's technical capabilities
-- **Impossible Perspectives and Scale**: Camera movements and perspectives that would be impossible in live-action or traditional animation, seamlessly transitioning between different scales and viewpoints
-
-**Why CGI Applies**: ReBoot pioneered television CGI animation, using computer-generated 3D graphics as its fundamental visual medium to create digital environments and characters that could only exist through computer graphics technology.
-
-### Secondary Aesthetic: Virtual
-
-**Definition**: Narratives presented within digital, simulated, or computer-generated environments where characters exist as digital entities, operating by computer-based rules and digital logic rather than physical reality.
-
-**Evidence from ReBoot**:
-
-- **Digital Environment Logic**: Mainframe operates by computer system rules - programs as citizens, viruses as invaders, games as environmental events, system crashes as natural disasters
-- **System-Based Architecture**: Environments are constructed digital spaces with geometric patterns, circuit-like designs, and impossible architectures that reflect computer construction rather than physical building
-- **Digital Identity Characters**: Bob is a Guardian program, Dot runs database operations, Enzo is a young sprite - all characters exist as digital entities with computer-based functions and identities
-- **Interface and System Elements**: Visual incorporation of computer interface elements - data streams, system diagnostics, viral corruption effects, and digital displays throughout the environment
-- **Technological Metaphor Integration**: Abstract computer concepts visualized through tangible representation - viruses as monsters, firewalls as barriers, data processing as physical transportation
-
-**Why Virtual Applies**: The entire series takes place within computer systems where characters exist as digital entities, operating according to computer logic and navigating virtual environments that follow digital rather than physical rules.
-
-## Age Group Analysis
-
-### Family (Ages 6-12)
-
-**Definition**: Growing complexity while maintaining optimistic worldview. Content introduces bittersweet feelings and personal responsibility while ensuring fundamental safety and positive resolution.
-
-**Evidence from ReBoot**:
-
-- **Educational Value**: Episodes teach computer concepts in accessible ways, helping children understand technology without being overly technical
-- **Clear Moral Framework**: Bob and friends are clearly good protectors, viruses are clearly evil threats, creating understandable moral boundaries for children
-- **Optimistic Problem-Solving**: Despite dangers, characters consistently find solutions through teamwork, creativity, and persistence, maintaining hope
-- **Age-Appropriate Humor**: Computer puns, visual gags, and character comedy appeal to children while being clever enough for family viewing
-- **Limited Graphic Content**: While there are action sequences and dangers, violence is stylized and bloodless, with deleted characters simply disappearing
-
-**Why Family Applies**: The series maintains educational value and optimistic tone appropriate for children while introducing more complex themes about responsibility and technology that engage the whole family without overwhelming younger viewers.
-
-## Era Analysis
-
-### 1990s (Era of Production)
-
-**Definition**: Era characterized by optimistic individualism, systematic complexity emerging from 1980s mythology, competitive frameworks, and earnest approaches to heroic narratives without postmodern irony.
-
-**Evidence from ReBoot**:
-
-- **Technology Optimism**: Reflects 1990s excitement about personal computers and emerging internet culture, presenting digital worlds as places of possibility and adventure
-- **Educational Technology Focus**: Embodies 1990s belief that technology could be educational and empowering for children, using entertainment to teach computer literacy
-- **Systematic Approach**: Episodes follow logical computer science principles, reflecting 1990s systematic thinking about technology and problem-solving
-- **Earnest Presentation**: Takes its computer world mythology seriously without ironic detachment, presenting digital citizenship and Guardian duties with sincere conviction
-- **Emerging Digital Culture**: Captures 1990s transition into digital age, when personal computers were becoming central to daily life but still seemed magical and new
-
-**Why 1990s Applies**: ReBoot embodies the 1990s optimistic approach to technology education and digital culture, presenting computer concepts with the systematic yet earnest enthusiasm characteristic of the decade's relationship with emerging personal computer technology.
-
-## Final ReBoot Taxonomic Profile
-
-**Genres**: Adventure (primary)  
-**Aesthetics**: CGI (primary), Virtual (secondary)  
-**Age Group**: Family  
-**Era**: 1990s
-
-**Justification**: ReBoot is an adventure series focused on exploration and discovery within digital environments, presented through pioneering CGI animation technology within virtual computer system worlds. The series uses computer-generated 3D graphics as its fundamental visual medium while operating entirely within digital environments that follow virtual logic rather than physical reality. The educational approach and optimistic tone make it appropriate for Family viewing, while embodying 1990s enthusiasm for technology education and digital culture exploration through groundbreaking computer animation techniques.

@@ -18,7 +18,7 @@ export async function createTag(tag) {
             "Specialty",
             "Holiday",
             "AgeGroup",
-            "MusicGenre",
+            "MusicalGenre",
         ];
         if (!validTypes.includes(tag.type)) {
             return { message: `Invalid tag type: ${tag.type}`, status: 400 };
@@ -62,7 +62,7 @@ export function getTagsByType(type) {
         "Specialty",
         "Holiday",
         "AgeGroup",
-        "MusicGenre",
+        "MusicalGenre",
     ];
     if (!validTypes.includes(type)) {
         throw new Error(`Invalid tag type: ${type}`);

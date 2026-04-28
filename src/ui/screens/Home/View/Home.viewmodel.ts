@@ -1,15 +1,18 @@
-import { useState } from 'react';
 import useRootStack from "../../../navigation/useRootStack";
 
 interface HomeData {}
-interface HomeActions {}
+interface HomeActions {
+  openPlayer: () => void;
+}
 
 export interface HomeViewModel extends HomeData, HomeActions {}
 
 const useHomeViewModel = (
   navigate: ReturnType<typeof useRootStack>,
 ): HomeViewModel => {
-  return {};
+  return {
+    openPlayer: () => navigate("/player"),
+  };
 };
 
 export default useHomeViewModel;

@@ -333,3 +333,99 @@ describe("isBufferMediaPoolValid", () => {
     });
   });
 });
+
+describe("isBufferMediaPoolValid – additional edge cases", () => {
+  it("filters out sub-minimum commercials and sub-minimum shorts/music", () => {
+    // 4 second commercial (below 5s threshold) should not count
+    // 119 second short (below 120s threshold) should not count
+    const tinyCommercial: Commercial = {
+      mediaItemId: "c-tiny",
+      duration: 4,
+    } as Commercial;
+    const tinyShort: Short = { mediaItemId: "s-tiny", duration: 119 } as Short;
+    const bigCommercials = Array(120)
+      .fill(null)
+      .map(
+        (_, i) => ({ mediaItemId: `c-big-${i}`, duration: 60 }) as Commercial,
+      );
+
+    // tinyCommercial and tinyShort excluded → only bigCommercials count (7200s)
+    const result = isBufferMediaPoolValid(
+      [tinyCommercial, ...bigCommercials],
+      [tinyShort],
+      [],
+      1800,
+    );
+    expect(result).toBe(true);
+  });
+
+  it("caps usability score at 1.0 when shorts/music pool is very large", () => {
+    // 500 shorts of 300s each = 150000s → far more than needed, score is capped at 1.0
+    // After cap, usableDuration = 150000 → commercialsNeeded = 7200 - 150000 < 0 → true
+    const lotsOfShorts = Array(500)
+      .fill(null)
+      .map((_, i) => ({ mediaItemId: `s-${i}`, duration: 300 }) as Short);
+
+    const result = isBufferMediaPoolValid([], lotsOfShorts, [], 1800);
+    expect(result).toBe(true);
+  });
+
+  it("returns true for a larger buffer duration with proportionally fewer buffers needed", () => {
+    // halfBufferDuration = 3600 → duration = 7200 → estimatedBuffers = ceil(14400/7200) = 2
+    const commercials = Array(120)
+      .fill(null)
+      .map((_, i) => ({ mediaItemId: `c-${i}`, duration: 60 }) as Commercial);
+
+    const result = isBufferMediaPoolValid([], [], [], 3600);
+    expect(result).toBe(false); // no media at all → false
+
+    const withCommercials = isBufferMediaPoolValid(commercials, [], [], 3600);
+    expect(withCommercials).toBe(true); // 7200s of commercials satisfies even larger buffer
+  });
+
+  it("treats items with no duration property as zero duration (excluded by minimum thresholds)", () => {
+    // commercials without duration → (undefined || 0) = 0, below MIN_COMMERCIAL_DURATION (5s) → filtered out
+    // shorts without duration → (undefined || 0) = 0, below MIN_SHORT_OR_MUSIC_DURATION (120s) → filtered out
+    const noMinutes: Commercial = { mediaItemId: "c-nodur" } as Commercial;
+    const noShort: Short = { mediaItemId: "s-nodur" } as Short;
+    const noMusic: Music = { mediaItemId: "m-nodur" } as Music;
+
+    const result = isBufferMediaPoolValid(
+      [noMinutes],
+      [noShort],
+      [noMusic],
+      1800,
+    );
+    // All filtered out → same as no media
+    expect(result).toBe(false);
+  });
+
+  it("duration fallback in reduce: item with undefined duration contributes 0", () => {
+    // Valid shorts (>= 120s) mixed with one item that has no duration
+    // The reduce sums (item.duration || 0) so undefined counts as 0
+    const validShort: Short = { mediaItemId: "s-ok", duration: 300 } as Short;
+    const missingDur: Short = { mediaItemId: "s-miss" } as Short;
+    const bigCommercials = Array(120)
+      .fill(null)
+      .map((_, i) => ({ mediaItemId: `c-${i}`, duration: 60 }) as Commercial);
+
+    // missingDur filtered out (< 120s threshold), validShort counts with duration 300
+    const result = isBufferMediaPoolValid(
+      bigCommercials,
+      [validShort, missingDur],
+      [],
+      1800,
+    );
+    expect(result).toBe(true);
+  });
+
+  it("treats zero buffer duration as an invalid pool even when shorts/music exist", () => {
+    const shorts = [
+      { mediaItemId: "s-zero-1", duration: 300 } as Short,
+      { mediaItemId: "s-zero-2", duration: 300 } as Short,
+    ];
+
+    const result = isBufferMediaPoolValid([], shorts, [], 0);
+    expect(result).toBe(false);
+  });
+});

@@ -3,6 +3,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const electron = require("electron");
 electron.contextBridge.exposeInMainWorld("electron", {
     openFileDialogHandler: async () => await ipcInvoke("openFileDialog"),
+    probeMediaMetadataHandler: async (filePath) => await ipcInvoke("probeMediaMetadata", filePath),
+    getPlayerStateHandler: async () => await ipcInvoke("getPlayerState"),
+    replacePlayerQueueHandler: async (filePaths) => await ipcInvoke("replacePlayerQueue", filePaths),
+    playerSelectQueueItemHandler: async (index) => await ipcInvoke("playerSelectQueueItem", index),
+    playerPlayPreviousHandler: async () => await ipcInvoke("playerPlayPrevious"),
+    playerPlayNextHandler: async () => await ipcInvoke("playerPlayNext"),
     getCollectionsHandler: async () => await ipcInvoke("getCollections"),
     createCollectionHandler: async (collection) => await ipcInvoke("createCollection", collection),
     deleteCollectionHandler: async (collection) => await ipcInvoke("deleteCollection", collection),
@@ -58,6 +64,15 @@ electron.contextBridge.exposeInMainWorld("electron", {
     getMusicGenresHandler: async () => await ipcInvoke("getMusicGenres"),
     createMusicGenreHandler: async (tag) => await ipcInvoke("createMusicGenre", tag),
     deleteMusicGenreHandler: async (tag) => await ipcInvoke("deleteMusicGenre", tag),
+    getFacetsHandler: async () => await ipcInvoke("getFacets"),
+    createFacetHandler: async (genre, aesthetic) => await ipcInvoke("createFacet", genre, aesthetic),
+    deleteFacetHandler: async (facetId) => await ipcInvoke("deleteFacet", facetId),
+    addFacetRelationshipHandler: async (request) => await ipcInvoke("addFacetRelationship", request),
+    deleteFacetRelationshipHandler: async (request) => await ipcInvoke("deleteFacetRelationship", request),
+    getMosaicsHandler: async () => await ipcInvoke("getMosaics"),
+    createMosaicHandler: async (mosaic) => await ipcInvoke("createMosaic", mosaic),
+    updateMosaicHandler: async (mosaic) => await ipcInvoke("updateMosaic", mosaic),
+    deleteMosaicHandler: async (mosaicId) => await ipcInvoke("deleteMosaic", mosaicId),
 });
 function ipcInvoke(key, ...args) {
     return electron.ipcRenderer.invoke(key, ...args);

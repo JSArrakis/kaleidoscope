@@ -1,5 +1,5 @@
 import { createShort } from "../../../factories/short.factory";
-import { ageGroupTags, eraTags, genreTags } from "../tags";
+import { aestheticTags, ageGroupTags, eraTags, genreTags } from "../tags";
 
 export const code8 = createShort(
   "Code 8",
@@ -12,7 +12,7 @@ export const code8 = createShort(
     genreTags.scifi,
     ageGroupTags.youngAdult,
     eraTags.twothousands,
-  ]
+  ],
 );
 export const lightsout = createShort(
   "Lights Out",
@@ -20,7 +20,7 @@ export const lightsout = createShort(
   180,
   "/path/lightsout.mp4",
   MediaType.Short,
-  [genreTags.horror, ageGroupTags.mature, eraTags.twothousands]
+  [genreTags.horror, ageGroupTags.mature, eraTags.twothousands],
 );
 export const rakka = createShort(
   "Rakka",
@@ -28,7 +28,7 @@ export const rakka = createShort(
   480,
   "/path/rakka.mp4",
   MediaType.Short,
-  [genreTags.scifi, ageGroupTags.mature, eraTags.twothousands]
+  [genreTags.scifi, ageGroupTags.mature, eraTags.twothousands],
 );
 export const theblackhole = createShort(
   "The Black Hole",
@@ -41,7 +41,7 @@ export const theblackhole = createShort(
     genreTags.horror,
     ageGroupTags.youngAdult,
     eraTags.twothousands,
-  ]
+  ],
 );
 export const cargo = createShort(
   "Cargo",
@@ -49,7 +49,7 @@ export const cargo = createShort(
   420,
   "/path/cargo.mp4",
   MediaType.Short,
-  [genreTags.horror, ageGroupTags.mature, eraTags.twothousands]
+  [genreTags.horror, ageGroupTags.mature, eraTags.twothousands],
 );
 export const dust = createShort(
   "Dust",
@@ -62,7 +62,7 @@ export const dust = createShort(
     genreTags.action,
     ageGroupTags.youngAdult,
     eraTags.twothousands,
-  ]
+  ],
 );
 export const portal = createShort(
   "Portal",
@@ -75,7 +75,7 @@ export const portal = createShort(
     genreTags.action,
     ageGroupTags.youngAdult,
     eraTags.twothousands,
-  ]
+  ],
 );
 export const thegate = createShort(
   "The Gate",
@@ -88,7 +88,7 @@ export const thegate = createShort(
     genreTags.action,
     ageGroupTags.mature,
     eraTags.twothousands,
-  ]
+  ],
 );
 export const alienharvest = createShort(
   "Alien: Harvest",
@@ -96,7 +96,12 @@ export const alienharvest = createShort(
   540,
   "/path/alienharvest.mp4",
   MediaType.Short,
-  [genreTags.scifi, genreTags.horror, ageGroupTags.mature, eraTags.twothousands]
+  [
+    genreTags.scifi,
+    genreTags.horror,
+    ageGroupTags.mature,
+    eraTags.twothousands,
+  ],
 );
 export const adam = createShort(
   "Adam",
@@ -104,7 +109,7 @@ export const adam = createShort(
   540,
   "/path/adam.mp4",
   MediaType.Short,
-  [genreTags.scifi, ageGroupTags.youngAdult, eraTags.twothousands]
+  [genreTags.scifi, ageGroupTags.youngAdult, eraTags.twothousands],
 );
 
 export const gopherBroke = createShort(
@@ -113,7 +118,7 @@ export const gopherBroke = createShort(
   300,
   "/path/gopherbroke.mp4",
   MediaType.Short,
-  [genreTags.adventure, ageGroupTags.family, eraTags.twothousands]
+  [genreTags.adventure, ageGroupTags.family, eraTags.twothousands],
 );
 
 export const forTheBirds = createShort(
@@ -122,7 +127,7 @@ export const forTheBirds = createShort(
   240,
   "/path/forthebirds.mp4",
   MediaType.Short,
-  [genreTags.adventure, ageGroupTags.family, eraTags.nineties]
+  [genreTags.adventure, ageGroupTags.family, eraTags.nineties],
 );
 
 export const boundin = createShort(
@@ -131,7 +136,7 @@ export const boundin = createShort(
   300,
   "/path/boundin.mp4",
   MediaType.Short,
-  [genreTags.adventure, ageGroupTags.family, eraTags.twothousands]
+  [genreTags.adventure, ageGroupTags.family, eraTags.twothousands],
 );
 
 export const tinToy = createShort(
@@ -140,7 +145,7 @@ export const tinToy = createShort(
   300,
   "/path/tintoy.mp4",
   MediaType.Short,
-  [genreTags.adventure, genreTags.scifi, ageGroupTags.kids, eraTags.nineties]
+  [genreTags.adventure, genreTags.scifi, ageGroupTags.kids, eraTags.nineties],
 );
 
 export const theAdventuresOfAndreAndWallyB = createShort(
@@ -149,7 +154,7 @@ export const theAdventuresOfAndreAndWallyB = createShort(
   120,
   "/path/andreandwallyb.mp4",
   MediaType.Short,
-  [genreTags.adventure, genreTags.scifi, ageGroupTags.kids, eraTags.nineties]
+  [genreTags.adventure, genreTags.scifi, ageGroupTags.kids, eraTags.nineties],
 );
 
 export const luxoJunior = createShort(
@@ -158,7 +163,7 @@ export const luxoJunior = createShort(
   120,
   "/path/luxojunior.mp4",
   MediaType.Short,
-  [genreTags.adventure, ageGroupTags.kids, eraTags.nineties]
+  [genreTags.adventure, ageGroupTags.kids, eraTags.nineties],
 );
 
 export const oneManBand = createShort(
@@ -167,7 +172,7 @@ export const oneManBand = createShort(
   300,
   "/path/onemanband.mp4",
   MediaType.Short,
-  [genreTags.adventure, ageGroupTags.family, eraTags.twothousands]
+  [genreTags.adventure, ageGroupTags.family, eraTags.twothousands],
 );
 
 export const lifted = createShort(
@@ -176,7 +181,7 @@ export const lifted = createShort(
   300,
   "/path/lifted.mp4",
   MediaType.Short,
-  [genreTags.scifi, ageGroupTags.kids, eraTags.twothousands]
+  [genreTags.scifi, ageGroupTags.kids, eraTags.twothousands],
 );
 
 export const knickknack = createShort(
@@ -185,7 +190,7 @@ export const knickknack = createShort(
   240,
   "/path/knickknack.mp4",
   MediaType.Short,
-  [genreTags.adventure, ageGroupTags.kids, eraTags.nineties]
+  [genreTags.adventure, ageGroupTags.kids, eraTags.nineties],
 );
 
 export const partlyCloudy = createShort(
@@ -194,7 +199,7 @@ export const partlyCloudy = createShort(
   300,
   "/path/partlycloudy.mp4",
   MediaType.Short,
-  [genreTags.adventure, ageGroupTags.family, eraTags.twothousands]
+  [genreTags.adventure, ageGroupTags.family, eraTags.twothousands],
 );
 
 export const presto = createShort(
@@ -203,7 +208,7 @@ export const presto = createShort(
   300,
   "/path/presto.mp4",
   MediaType.Short,
-  [genreTags.adventure, ageGroupTags.kids, eraTags.twothousands]
+  [genreTags.adventure, ageGroupTags.kids, eraTags.twothousands],
 );
 
 export const gerisGame = createShort(
@@ -212,7 +217,7 @@ export const gerisGame = createShort(
   240,
   "/path/gerisgame.mp4",
   MediaType.Short,
-  [genreTags.adventure, ageGroupTags.family, eraTags.nineties]
+  [genreTags.adventure, ageGroupTags.family, eraTags.nineties],
 );
 
 export const shorts = [
@@ -238,4 +243,214 @@ export const shorts = [
   partlyCloudy,
   presto,
   gerisGame,
+];
+
+export const bao2018 = createShort(
+  "Bao",
+  "bao2018",
+  480,
+  "/path/shorts/bao-2018.mp4",
+  MediaType.Short,
+  [
+    genreTags.drama,
+    genreTags.comedy,
+    aestheticTags.animation,
+    ageGroupTags.family,
+    eraTags.twentytens,
+  ],
+);
+
+export const paperman2012 = createShort(
+  "Paperman",
+  "paperman2012",
+  420,
+  "/path/shorts/paperman-2012.mp4",
+  MediaType.Short,
+  [
+    genreTags.romance,
+    genreTags.comedy,
+    aestheticTags.animation,
+    ageGroupTags.family,
+    eraTags.twentytens,
+  ],
+);
+
+export const cgiuGo2005 = createShort(
+  "R'Ha",
+  "rha2013",
+  360,
+  "/path/shorts/rha-2013.mp4",
+  MediaType.Short,
+  [
+    genreTags.scifi,
+    genreTags.action,
+    aestheticTags.cgi,
+    ageGroupTags.youngAdult,
+    eraTags.twentytens,
+  ],
+);
+
+export const lightsOut2013 = createShort(
+  "Lights Out",
+  "lights-out-2013",
+  180,
+  "/path/shorts/lights-out-2013.mp4",
+  MediaType.Short,
+  [
+    genreTags.horror,
+    aestheticTags.gothic,
+    ageGroupTags.mature,
+    eraTags.twentytens,
+  ],
+);
+
+export const preload2007 = createShort(
+  "Presto",
+  "presto2008",
+  300,
+  "/path/shorts/presto-2008.mp4",
+  MediaType.Short,
+  [
+    genreTags.comedy,
+    genreTags.action,
+    aestheticTags.animation,
+    ageGroupTags.family,
+    eraTags.twothousands,
+  ],
+);
+
+export const lava2014 = createShort(
+  "Lava",
+  "lava2014",
+  420,
+  "/path/shorts/lava-2014.mp4",
+  MediaType.Short,
+  [
+    genreTags.romance,
+    genreTags.drama,
+    aestheticTags.animation,
+    ageGroupTags.family,
+    eraTags.twentytens,
+  ],
+);
+
+export const dayAndNight2010 = createShort(
+  "Day & Night",
+  "day-and-night-2010",
+  360,
+  "/path/shorts/day-and-night-2010.mp4",
+  MediaType.Short,
+  [
+    genreTags.comedy,
+    genreTags.drama,
+    aestheticTags.animation,
+    ageGroupTags.family,
+    eraTags.twentytens,
+  ],
+);
+
+export const logorama2009 = createShort(
+  "Logorama",
+  "logorama2009",
+  960,
+  "/path/shorts/logorama-2009.mp4",
+  MediaType.Short,
+  [
+    genreTags.action,
+    genreTags.comedy,
+    aestheticTags.cgi,
+    ageGroupTags.mature,
+    eraTags.twothousands,
+  ],
+);
+
+export const worldOfTomorrow2015 = createShort(
+  "World of Tomorrow",
+  "world-of-tomorrow-2015",
+  1020,
+  "/path/shorts/world-of-tomorrow-2015.mp4",
+  MediaType.Short,
+  [
+    genreTags.scifi,
+    genreTags.drama,
+    aestheticTags.animation,
+    ageGroupTags.youngAdult,
+    eraTags.twentytens,
+  ],
+);
+
+export const sixShooter2004 = createShort(
+  "Six Shooter",
+  "six-shooter-2004",
+  1620,
+  "/path/shorts/six-shooter-2004.mp4",
+  MediaType.Short,
+  [
+    genreTags.comedy,
+    genreTags.drama,
+    aestheticTags.contemporary,
+    ageGroupTags.mature,
+    eraTags.twothousands,
+  ],
+);
+
+export const borrowedTime2015 = createShort(
+  "Borrowed Time",
+  "borrowed-time-2015",
+  390,
+  "/path/shorts/borrowed-time-2015.mp4",
+  MediaType.Short,
+  [
+    genreTags.drama,
+    genreTags.thriller,
+    aestheticTags.western,
+    ageGroupTags.youngAdult,
+    eraTags.twentytens,
+  ],
+);
+
+export const zygote2017 = createShort(
+  "Zygote",
+  "zygote-2017",
+  1380,
+  "/path/shorts/zygote-2017.mp4",
+  MediaType.Short,
+  [
+    genreTags.horror,
+    genreTags.scifi,
+    aestheticTags.nearFuture,
+    ageGroupTags.mature,
+    eraTags.twentytens,
+  ],
+);
+
+export const cloudsOverSidra2015 = createShort(
+  "Clouds Over Sidra",
+  "clouds-over-sidra-2015",
+  510,
+  "/path/shorts/clouds-over-sidra-2015.mp4",
+  MediaType.Short,
+  [
+    genreTags.educational,
+    genreTags.drama,
+    aestheticTags.contemporary,
+    ageGroupTags.family,
+    eraTags.twentytens,
+  ],
+);
+
+export const realisticShorts = [
+  bao2018,
+  paperman2012,
+  cgiuGo2005,
+  lightsOut2013,
+  preload2007,
+  lava2014,
+  dayAndNight2010,
+  logorama2009,
+  worldOfTomorrow2015,
+  sixShooter2004,
+  borrowedTime2015,
+  zygote2017,
+  cloudsOverSidra2015,
 ];

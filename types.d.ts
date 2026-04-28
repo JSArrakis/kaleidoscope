@@ -4,7 +4,6 @@
 
 enum StreamType {
   Cont = "Cont", // Continuous 24/7 stream
-  Block = "Block", // Scheduled programming blocks
   Adhoc = "Adhoc", // One-off user-configured streams
 }
 
@@ -50,6 +49,7 @@ type SegmentedTags = {
   eraTags: Tag[];
   specialtyTags: Tag[];
   ageGroupTags: Tag[];
+  musicalGenreTags: Tag[];
 };
 
 type Subgenre = {
@@ -83,8 +83,15 @@ type Movie = {
   isHolidayExclusive: boolean;
   type: MediaType;
   tags: Tag[];
+  collections: MovieCollectionEntry[];
   createdAt?: string;
   updatedAt?: string;
+};
+
+type MovieCollectionEntry = {
+  collectionId: string;
+  name: string;
+  sequence: number;
 };
 
 type Episode = {
@@ -189,11 +196,79 @@ type BufferMedia = {
 // SCHEDULED BLOCK TYPES
 // ============================================================================
 
+type ProgrammingBlockType = "ShowOrder" | "TagThemed" | "CuratedMovieMarathon";
+
+type ProgrammingBlockRecurrence =
+  | "OneTime"
+  | "Daily"
+  | "Weekly"
+  | "Monthly"
+  | "Yearly";
+
+type ProgrammingBlockSchedule = {
+  recurrence: ProgrammingBlockRecurrence;
+  // Required for OneTime schedules.
+  year?: number;
+  // Required for OneTime and Yearly schedules.
+  month?: number; // 1-12
+  // Required for OneTime, Yearly, and Monthly schedules.
+  dayOfMonth?: number; // 1-31
+  // Required for Weekly schedules.
+  daysOfWeek?: number[]; // 0-6 (Sun-Sat)
+  // 24-hour wall clock time in HH:mm format, constrained to :00 or :30.
+  timeOfDay: string;
+};
+
+type ProgrammingBlockDefinition = {
+  programmingBlockId: string;
+  name: string;
+  type: ProgrammingBlockType;
+  durationMinutes: number; // 30-minute multiples; generally 30 to 1440
+  schedule: ProgrammingBlockSchedule;
+  active: boolean;
+  specialtyTagId?: string;
+};
+
+type ProgrammingBlockMovieMode = "Movie" | "Show" | "MovieAndShow";
+
+type ProgrammingBlockBufferPriorityRule = {
+  specialtyFirst: boolean;
+  holidayCanOverrideOnlyWhenSpecialtyAlsoMatches: boolean;
+};
+
+type ProgrammingBlockBumperConfig = {
+  blockStartBumperIds: string[];
+  blockEndBumperIds: string[];
+};
+
+type ShowOrderBlockConfig = {
+  showItemIdsInOrder: string[];
+  // ShowOrder blocks require cadenced streams and use block-scoped episode progression.
+  cadencedOnly: true;
+};
+
+type TagThemedBlockConfig = {
+  mode: ProgrammingBlockMovieMode;
+  tagIds: string[];
+  // Movie cooldown policy is derived from recurrence cadence and selected weekdays.
+  // Daily: 3 days, Weekly (1-2 days): 3 weeks, Weekly (3+ days): 1 week.
+  movieCooldownPolicy: "AutoBySchedule";
+  // Collection-aware ordering checks prior 2 days and attempts sequence continuity.
+  collectionLookbackDays: 2;
+};
+
+type CuratedMovieMarathonBlockConfig = {
+  orderedMovieIds: string[];
+};
+
 type ScheduledBlock = {
   scheduledBlockId: string;
+  programmingBlockId?: string;
   title: string;
+  type?: ProgrammingBlockType;
   scheduledStartTime: number;
   scheduledEndTime: number;
+  cadenceCompatibility?: "CadencedOnly" | "MatchStreamMode";
 };
 
 // ============================================================================
@@ -243,6 +318,17 @@ type FacetRelationshipItem = {
   distance: number;
 };
 
+type FacetRelationshipRequest = {
+  sourceFacetId: string;
+  targetFacetId: string;
+  distance: number;
+};
+
+type FacetRelationshipDeleteRequest = {
+  sourceFacetId: string;
+  targetFacetId: string;
+};
+
 // ============================================================================
 // RECENTLY USED MEDIA TYPES
 // ============================================================================
@@ -260,7 +346,7 @@ type RecentlyUsedMedia = {
 type Mosaic = {
   mosaicId: string;
   facetId: string;
-  musicalGenres: string[];
+  musicalGenres: string[]; // tagIds of MusicalGenre tags
   name?: string;
   description?: string;
   createdAt?: string;
@@ -283,6 +369,17 @@ type EpisodeProgression = {
   updatedAt?: string;
 };
 
+type CollectionMovieProgression = {
+  id?: number;
+  scopeKey: string;
+  scopeType: "Stream" | "ProgrammingBlock";
+  collectionId: string;
+  lastMovieItemId: string;
+  lastPlayedTimestamp: number;
+  createdAt?: string;
+  updatedAt?: string;
+};
+
 // Interface for mosaic selection options
 interface MosaicSelectionOptions {
   maxCandidates?: number; // Maximum number of mosaics to consider
@@ -299,23 +396,38 @@ interface MosaicSelectionResult {
   candidateCount: number; // How many mosaics were considered
 }
 
-type PrismCurationObj = {
-  mediaItemId: string;
-  title: string;
-  description: string;
-  items: PrismCurationItem[];
+type MediaProbeResult = {
+  filePath: string;
+  isPlayable: boolean;
+  container?: string;
+  durationSeconds?: number;
+  bitrate?: number;
+  videoCodec?: string;
+  audioCodec?: string;
+  width?: number;
+  height?: number;
+  errorMessage?: string;
 };
 
-type PrismCurationItem = {
-  sequence?: number;
-  mediaItemTitle: string;
-  mediaItemId: string;
+type PlayerQueueItem = {
+  queueItemId: string;
+  mediaItemId?: string;
+  title: string;
+  filePath: string;
+  mediaType?: MediaType;
+  startTime: number;
+  blockStartTime: number;
+  positionInBlock: number;
+  isBuffer: boolean;
+  sourceContext?: MediaBlockSourceContext;
 };
 
-type PrismCurationReference = {
-  curationRefId: string;
-  title: string;
-  sequence: number;
+type ElectronPlayerState = {
+  playerType: "vlc" | "electron" | "web" | "ffmpeg-plex";
+  isInitialized: boolean;
+  currentIndex: number;
+  queue: PlayerQueueItem[];
+  updatedAt: number;
 };
 
 // ============================================================================
@@ -326,12 +438,19 @@ interface MediaBlockData {
   buffer: any[]; // Array of buffer/filler media
   anchorMedia?: Movie | Episode; // Primary media content
   startTime: number; // Unix timestamp when block starts
+  sourceContext?: MediaBlockSourceContext;
 }
+
+type MediaBlockSourceContext = {
+  streamType: StreamType;
+  programmingBlockId?: string;
+};
 
 type MediaBlock = {
   buffer: (Promo | Music | Short | Commercial | Bumper)[];
   anchorMedia?: Movie | Episode;
   startTime: number;
+  sourceContext?: MediaBlockSourceContext;
 };
 
 interface IStreamRequest {
@@ -343,12 +462,14 @@ interface IStreamRequest {
   Movies?: string[];
   EndTime?: number;
   StartTime?: number;
+  AdhocStartFromBeginning?: boolean;
 }
 
 interface StreamConstructionOptions {
   Cadence: boolean;
   Themed: boolean;
   StreamType: StreamType;
+  AdhocStartFromBeginning?: boolean;
 }
 
 interface StreamInitializationData {
@@ -359,6 +480,8 @@ interface StreamInitializationData {
   endOfTimeWindow: number;
   selectedFirstMedia: Episode | Movie | null;
   nextScheduledBlock: ScheduledBlock | null;
+  activeScheduledBlock?: ScheduledBlock | null;
+  activeScheduledDefinition?: ProgrammingBlockDefinition | null;
 }
 
 // ============================================================================
@@ -367,7 +490,13 @@ interface StreamInitializationData {
 
 type EventPayloadMapping = {
   openFileDialog: Promise<string[]>;
-  getCollections: Promise<PrismCurationObj[]>;
+  probeMediaMetadata: Promise<MediaProbeResult>;
+  getPlayerState: Promise<ElectronPlayerState>;
+  replacePlayerQueue: Promise<ElectronPlayerState>;
+  playerSelectQueueItem: Promise<ElectronPlayerState>;
+  playerPlayPrevious: Promise<ElectronPlayerState>;
+  playerPlayNext: Promise<ElectronPlayerState>;
+  getCollections: Promise<Collection[]>;
   createCollection: Promise<{ message: string; status: number }>;
   deleteCollection: Promise<{ message: string; status: number }>;
   updateCollection: Promise<{ message: string; status: number }>;
@@ -422,20 +551,39 @@ type EventPayloadMapping = {
   getMusicGenres: Promise<Tag[]>;
   createMusicGenre: Promise<{ message: string; status: number }>;
   deleteMusicGenre: Promise<{ message: string; status: number }>;
+  getFacets: Promise<Facet[]>;
+  createFacet: Promise<{ message: string; status: number }>;
+  deleteFacet: Promise<{ message: string; status: number }>;
+  addFacetRelationship: Promise<{ message: string; status: number }>;
+  deleteFacetRelationship: Promise<{ message: string; status: number }>;
+  getMosaics: Promise<Mosaic[]>;
+  createMosaic: Promise<{ message: string; status: number }>;
+  updateMosaic: Promise<{ message: string; status: number }>;
+  deleteMosaic: Promise<{ message: string; status: number }>;
 };
 
 interface Window {
   electron: {
     openFileDialogHandler: () => Promise<string[]>;
-    getCollectionsHandler: () => Promise<PrismCurationObj[]>;
+    probeMediaMetadataHandler: (filePath: string) => Promise<MediaProbeResult>;
+    getPlayerStateHandler: () => Promise<ElectronPlayerState>;
+    replacePlayerQueueHandler: (
+      filePaths: string[],
+    ) => Promise<ElectronPlayerState>;
+    playerSelectQueueItemHandler: (
+      index: number,
+    ) => Promise<ElectronPlayerState>;
+    playerPlayPreviousHandler: () => Promise<ElectronPlayerState>;
+    playerPlayNextHandler: () => Promise<ElectronPlayerState>;
+    getCollectionsHandler: () => Promise<Collection[]>;
     createCollectionHandler: (
-      collection: PrismCurationObj,
+      collection: Collection,
     ) => Promise<{ message: string; status: number }>;
     deleteCollectionHandler: (
-      collection: PrismCurationObj,
+      collection: Collection,
     ) => Promise<{ message: string; status: number }>;
     updateCollectionHandler: (
-      collection: PrismCurationObj,
+      collection: Collection,
     ) => Promise<{ message: string; status: number }>;
     getMoviesHandler: () => Promise<Movie[]>;
     createMovieHandler: (
@@ -561,6 +709,30 @@ interface Window {
     ) => Promise<{ message: string; status: number }>;
     deleteMusicGenreHandler: (
       tag: Tag,
+    ) => Promise<{ message: string; status: number }>;
+    getFacetsHandler: () => Promise<Facet[]>;
+    createFacetHandler: (
+      genre: Tag | null,
+      aesthetic: Tag | null,
+    ) => Promise<{ message: string; status: number }>;
+    deleteFacetHandler: (
+      facetId: string,
+    ) => Promise<{ message: string; status: number }>;
+    addFacetRelationshipHandler: (
+      request: FacetRelationshipRequest,
+    ) => Promise<{ message: string; status: number }>;
+    deleteFacetRelationshipHandler: (
+      request: FacetRelationshipDeleteRequest,
+    ) => Promise<{ message: string; status: number }>;
+    getMosaicsHandler: () => Promise<Mosaic[]>;
+    createMosaicHandler: (
+      mosaic: Omit<Mosaic, "mosaicId" | "createdAt" | "updatedAt">,
+    ) => Promise<{ message: string; status: number }>;
+    updateMosaicHandler: (
+      mosaic: Mosaic,
+    ) => Promise<{ message: string; status: number }>;
+    deleteMosaicHandler: (
+      mosaicId: string,
     ) => Promise<{ message: string; status: number }>;
   };
 }

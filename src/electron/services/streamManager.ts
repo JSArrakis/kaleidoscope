@@ -3,6 +3,16 @@ import { StreamType } from "../types/StreamType.js";
 import { IStreamRequest } from "../types/StreamRequest.js";
 import { getDB } from "../db/sqlite.js";
 import { episodeProgressionRepository } from "../repositories/episodeProgressionRepository.js";
+import { collectionMovieProgressionRepository } from "../repositories/collectionMovieProgressionRepository.js";
+import { MediaType } from "../models.js";
+
+export type CollectionProgressionScopeType =
+  CollectionMovieProgression["scopeType"];
+
+type CollectionProgressionState = {
+  lastMovieItemId: string;
+  lastPlayedTimestamp: number;
+};
 
 /**
  * StreamManager Singleton
@@ -13,16 +23,21 @@ class StreamManager {
   private upcoming: MediaBlock[] = [];
   private onDeck: MediaBlock[] = [];
   private continuousStream = false;
+  private adhocStream = false;
+  private adhocEndTimepoint = 0;
   private args: IStreamRequest | null = null;
   private streamVarianceInSeconds = 0;
   private nextIterationTimepoint = 0;
   private nextIterationFirstMedia: Episode | Movie | null = null;
   private progressionMap: Map<string, number | undefined> = new Map();
+  private collectionProgressionMap: Map<string, CollectionProgressionState> =
+    new Map();
   private recentlyUsedMovies: Map<string, number> = new Map();
   private recentlyUsedCommercials: Map<string, number> = new Map();
   private recentlyUsedShorts: Map<string, number> = new Map();
   private recentlyUsedMusic: Map<string, number> = new Map();
   private remainderTimeInSeconds = 0;
+  private randomEpisodeStart = false;
 
   constructor() {
     console.log("[StreamManager] Singleton instance created");
@@ -51,6 +66,26 @@ class StreamManager {
 
   setContinuous(value: boolean): void {
     this.continuousStream = value;
+  }
+
+  isAdhoc(): boolean {
+    return this.adhocStream;
+  }
+
+  setAdhoc(value: boolean): void {
+    this.adhocStream = value;
+  }
+
+  getAdhocEndTimepoint(): number {
+    return this.adhocEndTimepoint;
+  }
+
+  setAdhocEndTimepoint(value: number): void {
+    this.adhocEndTimepoint = value;
+  }
+
+  isActive(): boolean {
+    return this.continuousStream || this.adhocStream;
   }
 
   getArgs(): IStreamRequest | null {
@@ -94,6 +129,61 @@ class StreamManager {
 
   updateProgression(mediaItemId: string, episodeNumber: number): void {
     this.progressionMap.set(mediaItemId, episodeNumber);
+  }
+
+  getCollectionProgressionMap(): Map<string, CollectionProgressionState> {
+    return this.collectionProgressionMap;
+  }
+
+  setCollectionProgressionMap(
+    value: Map<string, CollectionProgressionState>,
+  ): void {
+    this.collectionProgressionMap = value;
+  }
+
+  getCollectionProgression(
+    scopeKey: string,
+    collectionId: string,
+  ): CollectionProgressionState | undefined {
+    return this.collectionProgressionMap.get(`${scopeKey}::${collectionId}`);
+  }
+
+  setCollectionProgression(
+    scopeKey: string,
+    collectionId: string,
+    value: CollectionProgressionState,
+  ): void {
+    this.collectionProgressionMap.set(`${scopeKey}::${collectionId}`, value);
+  }
+
+  getCollectionProgressionForScope(
+    scopeKey: string,
+  ): Map<string, CollectionProgressionState> {
+    const scoped = new Map<string, CollectionProgressionState>();
+    const prefix = `${scopeKey}::`;
+    for (const [key, value] of this.collectionProgressionMap.entries()) {
+      if (key.startsWith(prefix)) {
+        const collectionId = key.slice(prefix.length);
+        scoped.set(collectionId, value);
+      }
+    }
+    return scoped;
+  }
+
+  setCollectionProgressionForScope(
+    scopeKey: string,
+    value: Map<string, CollectionProgressionState>,
+  ): void {
+    const prefix = `${scopeKey}::`;
+    for (const key of Array.from(this.collectionProgressionMap.keys())) {
+      if (key.startsWith(prefix)) {
+        this.collectionProgressionMap.delete(key);
+      }
+    }
+
+    for (const [collectionId, state] of value.entries()) {
+      this.collectionProgressionMap.set(`${scopeKey}::${collectionId}`, state);
+    }
   }
 
   getRecentlyUsedMovies(): Map<string, number> {
@@ -188,6 +278,14 @@ class StreamManager {
     this.remainderTimeInSeconds = value;
   }
 
+  isRandomEpisodeStart(): boolean {
+    return this.randomEpisodeStart;
+  }
+
+  setRandomEpisodeStart(value: boolean): void {
+    this.randomEpisodeStart = value;
+  }
+
   /**
    * Reset all state when stopping the stream
    */
@@ -195,16 +293,20 @@ class StreamManager {
     this.upcoming = [];
     this.onDeck = [];
     this.continuousStream = false;
+    this.adhocStream = false;
+    this.adhocEndTimepoint = 0;
     this.args = null;
     this.streamVarianceInSeconds = 0;
     this.nextIterationTimepoint = 0;
     this.nextIterationFirstMedia = null;
     this.progressionMap.clear();
+    this.collectionProgressionMap.clear();
     this.recentlyUsedMovies.clear();
     this.recentlyUsedCommercials.clear();
     this.recentlyUsedShorts.clear();
     this.recentlyUsedMusic.clear();
     this.remainderTimeInSeconds = 0;
+    this.randomEpisodeStart = false;
   }
 }
 
@@ -329,6 +431,11 @@ export function loadRecentlyUsedMovies(timepoint: number): void {
  * @param mediaBlock The block that just finished playing
  */
 export function recordPlayedEpisodeProgression(mediaBlock: MediaBlock): void {
+  // Adhoc progressions are ephemeral — no DB persistence.
+  if (streamManagerInstance.isAdhoc()) {
+    return;
+  }
+
   if (
     mediaBlock.anchorMedia &&
     mediaBlock.anchorMedia.type === MediaType.Episode
@@ -345,6 +452,130 @@ export function recordPlayedEpisodeProgression(mediaBlock: MediaBlock): void {
       `[StreamManager] Recorded episode progression: "${episode.title}" (ep ${episode.episodeNumber}) for show ${episode.showItemId}`,
     );
   }
+}
+
+function getPrimaryCollectionId(movie: Movie): string | null {
+  if (!movie.collections || movie.collections.length === 0) {
+    return null;
+  }
+
+  const sortedCollections = [...movie.collections].sort(
+    (a, b) => a.sequence - b.sequence,
+  );
+  return sortedCollections[0]?.collectionId ?? null;
+}
+
+function getCollectionProgressionScopeFromMediaBlock(mediaBlock: MediaBlock): {
+  scopeKey: string;
+  scopeType: CollectionProgressionScopeType;
+  shouldPersist: boolean;
+} {
+  const programmingBlockId = mediaBlock.sourceContext?.programmingBlockId;
+  if (programmingBlockId) {
+    return {
+      scopeKey: `programmingBlock:${programmingBlockId}`,
+      scopeType: "ProgrammingBlock",
+      shouldPersist: true,
+    };
+  }
+
+  if (streamManagerInstance.isAdhoc()) {
+    return {
+      scopeKey: `stream:${StreamType.Adhoc}`,
+      scopeType: "Stream",
+      shouldPersist: false,
+    };
+  }
+
+  return {
+    scopeKey: `stream:${StreamType.Cont}`,
+    scopeType: "Stream",
+    shouldPersist: true,
+  };
+}
+
+/**
+ * Records collection progression to memory and optionally DB after a movie has finished playing.
+ * Adhoc progression remains in-memory only.
+ */
+export function recordPlayedCollectionProgression(
+  mediaBlock: MediaBlock,
+): void {
+  if (
+    !mediaBlock.anchorMedia ||
+    mediaBlock.anchorMedia.type !== MediaType.Movie
+  ) {
+    return;
+  }
+
+  const movie = mediaBlock.anchorMedia as Movie;
+  const collectionId = getPrimaryCollectionId(movie);
+  if (!collectionId) {
+    return;
+  }
+
+  const { scopeKey, scopeType, shouldPersist } =
+    getCollectionProgressionScopeFromMediaBlock(mediaBlock);
+  const now = Math.floor(Date.now() / 1000);
+
+  streamManagerInstance.setCollectionProgression(scopeKey, collectionId, {
+    lastMovieItemId: movie.mediaItemId,
+    lastPlayedTimestamp: now,
+  });
+
+  if (shouldPersist) {
+    collectionMovieProgressionRepository.upsert(
+      scopeKey,
+      scopeType,
+      collectionId,
+      movie.mediaItemId,
+      now,
+    );
+  }
+
+  console.log(
+    `[StreamManager] Recorded collection progression: "${movie.title}" in ${scopeKey}`,
+  );
+}
+
+export function loadCollectionProgressionForScope(scopeKey: string): void {
+  const rows = collectionMovieProgressionRepository.findByScopeKey(scopeKey);
+  const map = new Map<string, CollectionProgressionState>();
+
+  for (const row of rows) {
+    map.set(row.collectionId, {
+      lastMovieItemId: row.lastMovieItemId,
+      lastPlayedTimestamp: row.lastPlayedTimestamp,
+    });
+  }
+
+  streamManagerInstance.setCollectionProgressionForScope(scopeKey, map);
+}
+
+export function clearCollectionProgressionForScope(scopeKey: string): void {
+  streamManagerInstance.setCollectionProgressionForScope(
+    scopeKey,
+    new Map<string, CollectionProgressionState>(),
+  );
+}
+
+export function getCollectionProgression(
+  scopeKey: string,
+  collectionId: string,
+): CollectionProgressionState | undefined {
+  return streamManagerInstance.getCollectionProgression(scopeKey, collectionId);
+}
+
+export function setCollectionProgression(
+  scopeKey: string,
+  collectionId: string,
+  lastMovieItemId: string,
+  lastPlayedTimestamp: number,
+): void {
+  streamManagerInstance.setCollectionProgression(scopeKey, collectionId, {
+    lastMovieItemId,
+    lastPlayedTimestamp,
+  });
 }
 
 export function removeFirstItemFromUpcoming(): MediaBlock | undefined {
@@ -373,6 +604,34 @@ export function isContinuousStream(): boolean {
 
 export function setContinuousStream(value: boolean): void {
   streamManagerInstance.setContinuous(value);
+}
+
+export function isAdhocStream(): boolean {
+  return streamManagerInstance.isAdhoc();
+}
+
+export function setAdhocStream(value: boolean): void {
+  streamManagerInstance.setAdhoc(value);
+}
+
+export function getAdhocStreamEndTimepoint(): number {
+  return streamManagerInstance.getAdhocEndTimepoint();
+}
+
+export function setAdhocStreamEndTimepoint(value: number): void {
+  streamManagerInstance.setAdhocEndTimepoint(value);
+}
+
+export function isRandomEpisodeStart(): boolean {
+  return streamManagerInstance.isRandomEpisodeStart();
+}
+
+export function setRandomEpisodeStart(value: boolean): void {
+  streamManagerInstance.setRandomEpisodeStart(value);
+}
+
+export function isActiveStream(): boolean {
+  return streamManagerInstance.isActive();
 }
 
 export function getContinuousStreamArgs(): IStreamRequest | null {

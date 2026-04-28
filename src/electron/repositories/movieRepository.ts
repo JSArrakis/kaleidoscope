@@ -1,4 +1,5 @@
 import { getDB } from "../db/sqlite.js";
+import { MediaType } from "../models.js";
 
 export class MovieRepository {
   private get db() {
@@ -408,6 +409,17 @@ export class MovieRepository {
       };
     });
 
+    const collectionsStmt = this.db.prepare(`
+      SELECT c.collectionId, c.title AS name, ci.sequence
+      FROM collection_items ci
+      JOIN collections c ON c.collectionId = ci.collectionId
+      WHERE ci.mediaItemId = ?
+      ORDER BY c.title
+    `);
+    const collections = collectionsStmt.all(
+      row.mediaItemId,
+    ) as MovieCollectionEntry[];
+
     return {
       mediaItemId: row.mediaItemId,
       title: row.title,
@@ -419,6 +431,7 @@ export class MovieRepository {
       isHolidayExclusive: !!row.isHolidayExclusive,
       type: MediaType.Movie,
       tags,
+      collections,
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
     };

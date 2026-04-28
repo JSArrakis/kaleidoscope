@@ -6,6 +6,7 @@ import {
   setMinutes,
   addHours,
 } from "date-fns";
+import { TagType } from "../models.js";
 
 /**
  * Finds the next cadence time (on the hour or half-hour)
@@ -48,11 +49,15 @@ export function segmentTags(tags: Tag[]): SegmentedTags {
   const eraTags = tags.filter((tag) => tag.type === TagType.Era);
   const specialtyTags = tags.filter((tag) => tag.type === TagType.Specialty);
   const ageGroupTags = tags.filter((tag) => tag.type === TagType.AgeGroup);
+  const musicalGenreTags = tags.filter(
+    (tag) => tag.type === TagType.MusicalGenre,
+  );
   return {
     genreTags,
     aestheticTags,
     eraTags,
     specialtyTags,
     ageGroupTags,
+    musicalGenreTags,
   };
 }

@@ -1,9 +1,10 @@
+import { TagType } from "../models.js";
 import * as tagController from "../controllers/tagController.js";
 export async function getMusicGenresHandler() {
-    return tagController.getTagsByType("MusicGenre");
+    return tagController.getTagsByType(TagType.MusicalGenre);
 }
 export async function createMusicGenreHandler(musicGenre) {
-    return tagController.createTag({ ...musicGenre, type: "MusicGenre" });
+    return tagController.createTag({ ...musicGenre, type: TagType.MusicalGenre });
 }
 export async function deleteMusicGenreHandler(musicGenre) {
     return tagController.deleteTag(musicGenre.tagId);
