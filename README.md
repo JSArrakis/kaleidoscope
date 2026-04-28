@@ -34,13 +34,17 @@ By handling selection and scheduling procedurally, Kaleidoscope removes the burd
 
 Kaleidoscope builds its streams around a few core ideas.
 
-**Anchor media and buffers.** The stream is assembled from media blocks, each containing a main piece of content (a movie or episode) and a buffer of shorter material that fills the time between it and the next anchor. The buffer is divided into two halves: one half thematically matched to the anchor that just played, and one half matched to the one coming up next. A short promo bridges them in the middle. The buffer is optional; if "cadenced" mode is turned off, the block contains just the anchor itself and the next one follows immediately. If you have no buffer media available to add to your stream, Kaleidoscope ships with generic liminal buffer media. Episodes for a show will always follow in sequence when they are procedurally selected and restart a series when it has completed and selected once again.
+**Anchor media and buffers:** 
+The stream is assembled from media blocks, each containing a main piece of anchor content (a movie or show episode) and a buffer of shorter material that fills the time between it and the next anchor. The buffer is divided into two halves: one half thematically matched to the anchor that just played, and one half matched to the anchor coming up next. A short promo bridges them in the middle. The buffer is optional; if "cadenced" mode is turned off, the block contains just the anchor itself and the next one follows immediately. If you have no buffer media available to add to your stream, Kaleidoscope ships with generic liminal buffer media (coming soon). Episodes for a show will always follow in sequence when they are procedurally selected and restart a series when it has completed and selected once again.
 
-**Cadenced timing.** Feature-length content always starts at the top or bottom of the hour, just like on a real channel. If a movie ends at 9:47, the system calculates the gap to 10:00, selects exactly enough buffer content to fill it, and starts the next anchor at the hour. This is optional. Without it, anchors play in sequence with each one following the previous directly, without waiting for a clock boundary and no buffer is created.
+**Cadenced timing:** 
+Feature-length content always starts at the top or bottom of the hour, just like on a real channel. If a movie ends at 9:47, the system calculates the gap to 10:00, selects exactly enough buffer content to fill it, and starts the next anchor at the hour. This is optional. Without it, anchors play in sequence with each one following the previous directly, without waiting for a clock boundary and no buffer is created.
 
-**Thematic walking.** Rather than picking the next movie at random, Kaleidoscope tries to walk through your library in a way that keeps adjacent content from feeling jarring. A kids cartoon block doesn't slam into adult horror. A cyberpunk thriller doesn't immediately give way to a folk comedy. The transitions are guided by a taxonomy system that describes media across several overlapping dimensions.
+**Thematic walking:** 
+Rather than picking the next movie at random, Kaleidoscope tries to walk through your library in a way that keeps adjacent content from feeling jarring. A kids cartoon block doesn't slam into adult horror. A cyberpunk thriller doesn't immediately give way to a folk comedy. The transitions are guided by a taxonomy system that describes media across several overlapping dimensions.
 
-**Programming blocks.** You can designate stretches of the day as programming blocks with their own rules: specific shows that always run in sequence, reserved slots for movies matching certain tags, themed interludes. Blocks can repeat daily, weekly, monthly, yearly, or run as one-offs. Episodes for shows that are selected for the block keep their seqeunce continuity strictly to the programming block, there is no cross contamination between the episode progression of the main stream and programming blocks.
+**Programming blocks:** 
+You can designate stretches of the day as programming blocks with their own rules: specific shows that always run in sequence, reserved slots for movies matching certain tags, themed interludes. Blocks can repeat daily, weekly, monthly, yearly, or run as one-offs. Episodes for shows that are selected for the block keep their seqeunce continuity strictly to the programming block, there is no cross contamination between the episode progression of the main stream and programming blocks.
 
 **Continuous and ad hoc streams.** A continuous stream runs indefinitely, rolling over at midnight with a fresh schedule. An ad hoc stream has a defined endpoint and ignores the daily schedule entirely, useful for a themed evening or a single long session.
 
@@ -50,13 +54,13 @@ Kaleidoscope builds its streams around a few core ideas.
 
 The taxonomy system is the part of this project I've spent the most time thinking about, and where a majority of my work for this project has been centered.
 
-Standard genre labels are too blurry to be useful for thematic curation. "Science Fiction" covers everything from Arrival to Guardians of the Galaxy to Short Circuit, and those films have almost nothing in common as viewing experiences.
+Standard genre labels are too blurry to be useful for thematic curation. "Science Fiction" under common definitions covers everything from Arrival to Alien to Short Circuit, and those films have almost nothing in common as viewing experiences.
 
 Kaleidoscope classifies media across six dimensions instead of relying on a single genre bucket:
 
 - **Genres** cover the narrative backbone of the story, what kind of plot it tells at its core, stripped of surface presentation.
 - **Aesthetics** cover how the story is dressed and styled, the visual and cultural identity of the work.
-- **Age Groups** define the intended audience maturity level, which also carries a huge amount of tonal information, not just adult situations but how concepts are processed through the media.
+- **Age Groups** define the intended audience maturity level, which also carries a huge amount of tonal information, not just content-based situations but how concepts are processed through the media both psychologically and emotionally.
 - **Eras** describe the production period, which shapes storytelling conventions and tropes in ways that cut across genre and aesthetic.
 - **Specialties** are user-defined groupings for franchises, creators, or any other thematic connection that matters to you.
 - **Holidays** allow seasonal media to integrate naturally into a stream based on the calendar.
@@ -65,7 +69,7 @@ Musical genres for music and music videos get their own separate dimension becau
 
 The [full taxonomy documentation](docs/taxonomies/index.md) goes into much more depth on each of these, including why the definitions are drawn the way they are. I would recommend reading through this as there are things that might surprise you, one example as why I believe Star Wars is not Science Fiction, even though there are spaceships. The documentation proves why.
 
-The inclusion of my specific definitions of different taxonomies in the documentation however are unimportant to the operation of the application. None of the taxonomies listed in my documentation are codified in any way into Kaleidoscope and should be considered a detailed guide on how to best utilize the system under conventional means. A user may create any taxonomy they wish based on their own idiom, whims and definitions. The taxonomies serve as examples and as optional default tags which are described below in the Proofs section.
+The inclusion of my specific definitions of different taxonomies in the documentation however are unimportant to the operation of the application. None of the taxonomies listed in my documentation are codified in any way into Kaleidoscope and should be considered a detailed guide on how to best utilize the system under conventional means. A user may create any taxonomy they wish based on their own idiom, whims and definitions. The taxonomy documentation serves as a set of examples and as optional default tags which are described below in the Proofs section.
 
 ---
 
