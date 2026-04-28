@@ -16,22 +16,7 @@ Kaleidoscope is a personal television network simulator built on procedural sele
 
 None of this has to be running at full capacity. Anchors can play back-to-back without any buffer content between them, content can run in free sequence without being locked to the top or bottom of the hour, and the taxonomy-guided selection can be set aside entirely if you'd rather the stream just pull from your library without that kind of steering.
 
-The short version is that it tries to recreate what it felt like to turn on the TV in the 90s and early 2000s and just watch whatever was on, except everything on the channel belongs to you. And it does it without manual curation.
-
----
-
-## Current Feature Set
-
-As of the current codebase, Kaleidoscope includes:
-
-- **Library management for core media types** — movies, shows, shorts, music, commercials, promos, bumpers, and collections all have dedicated management flows in the app.
-- **Taxonomy management** — genres, aesthetics, eras, specialties, holidays, age groups, and musical genres can be created and maintained in-app.
-- **Prism tooling** — Facets and Mosaic management screens are implemented, including facet relationship editing and facet-to-musical-genre mapping.
-- **Continuous and ad hoc streams** — both stream types support cadenced and uncadenced playback, as well as themed and random selection.
-- **Procedural theme walking** — streams can transition using taxonomies, facet relationships, holiday logic, and age-group-aware filtering instead of pure random shuffle.
-- **Collection-aware movie sequencing** — movie selections can continue through collections with scope-aware progression for continuous streams and programming blocks.
-- **Scheduled programming block insertion** — the stream builder can now inject scheduled Curated Movie Marathon, Tag Themed, and Show Order block segments directly into the generated stream timeline.
-- **SQLite-backed persistence** — core media, tags, collections, prisms, stream progressions, and collection progression state are persisted locally.
+The short version is that it tries to recreate what it felt like to turn on the TV in the 90s and early 2000s and just watch whatever was on, except everything on the channel belongs to you, and it does it without manual curation.
 
 ---
 
