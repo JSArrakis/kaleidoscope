@@ -1,4 +1,4 @@
-import { FC } from "react";
+import { FC, useEffect, useRef } from "react";
 import { Button } from "../../../components";
 import { PlayerViewModel } from "./Player.viewmodel";
 import styles from "./Player.module.css";
@@ -25,11 +25,15 @@ function formatDuration(seconds?: number): string {
 }
 
 const PlayerView: FC<PlayerViewProps> = ({ viewModel }) => {
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
   const {
     queue,
     currentFilePath,
     currentFileName,
     mediaSource,
+    isResolvingPlaybackSource,
     mediaKind,
     mediaProbe,
     isProbing,
@@ -45,6 +49,61 @@ const PlayerView: FC<PlayerViewProps> = ({ viewModel }) => {
   } = viewModel;
 
   const isAudioOnly = mediaKind === "audio";
+
+  const logMediaEvent = (
+    eventName: string,
+    element: HTMLMediaElement | null,
+  ) => {
+    if (!element) {
+      console.log(`[PlayerView] ${eventName} (no media element)`);
+      return;
+    }
+
+    const error = element.error
+      ? ` code=${element.error.code} message=${element.error.message}`
+      : "";
+    console.log(
+      `[PlayerView] ${eventName} src=${element.currentSrc || element.src} currentTime=${element.currentTime.toFixed(2)} paused=${element.paused} readyState=${element.readyState} networkState=${element.networkState}${error}`,
+    );
+  };
+
+  useEffect(() => {
+    if (!mediaSource) {
+      return;
+    }
+
+    const element = isAudioOnly ? audioRef.current : videoRef.current;
+    if (!element) {
+      return;
+    }
+
+    const startPlayback = async () => {
+      logMediaEvent("startPlayback:attempt", element);
+      try {
+        await element.play();
+        logMediaEvent("startPlayback:success", element);
+      } catch {
+        logMediaEvent("startPlayback:failed-first-attempt", element);
+        const previouslyMuted = element.muted;
+        element.muted = true;
+        try {
+          await element.play();
+          logMediaEvent("startPlayback:success-muted", element);
+          if (!previouslyMuted) {
+            window.setTimeout(() => {
+              element.muted = false;
+              logMediaEvent("startPlayback:unmuted", element);
+            }, 250);
+          }
+        } catch {
+          logMediaEvent("startPlayback:failed-muted", element);
+          // Keep player paused if autoplay is still blocked or source fails.
+        }
+      }
+    };
+
+    void startPlayback();
+  }, [isAudioOnly, mediaSource]);
 
   return (
     <div className={styles.screen}>
@@ -77,6 +136,11 @@ const PlayerView: FC<PlayerViewProps> = ({ viewModel }) => {
               {isProbing && (
                 <p className={styles.probeStatus}>
                   Analyzing media stream metadata...
+                </p>
+              )}
+              {isResolvingPlaybackSource && (
+                <p className={styles.probeStatus}>
+                  Preparing playback source with FFmpeg for in-app playback...
                 </p>
               )}
               {!isProbing && mediaProbe && (
@@ -142,10 +206,39 @@ const PlayerView: FC<PlayerViewProps> = ({ viewModel }) => {
               {mediaSource && !isAudioOnly && (
                 <video
                   key={mediaSource}
+                  ref={videoRef}
                   className={styles.mediaElement}
                   controls
                   autoPlay
                   preload="metadata"
+                  onLoadStart={(event) =>
+                    logMediaEvent("video:loadstart", event.currentTarget)
+                  }
+                  onLoadedMetadata={(event) =>
+                    logMediaEvent("video:loadedmetadata", event.currentTarget)
+                  }
+                  onCanPlay={(event) =>
+                    logMediaEvent("video:canplay", event.currentTarget)
+                  }
+                  onPlay={(event) =>
+                    logMediaEvent("video:play", event.currentTarget)
+                  }
+                  onPlaying={(event) =>
+                    logMediaEvent("video:playing", event.currentTarget)
+                  }
+                  onPause={(event) =>
+                    logMediaEvent("video:pause", event.currentTarget)
+                  }
+                  onWaiting={(event) =>
+                    logMediaEvent("video:waiting", event.currentTarget)
+                  }
+                  onStalled={(event) =>
+                    logMediaEvent("video:stalled", event.currentTarget)
+                  }
+                  onError={(event) =>
+                    logMediaEvent("video:error", event.currentTarget)
+                  }
+                  onEnded={playNext}
                   src={mediaSource}
                 />
               )}
@@ -162,10 +255,39 @@ const PlayerView: FC<PlayerViewProps> = ({ viewModel }) => {
                   </p>
                   <audio
                     key={mediaSource}
+                    ref={audioRef}
                     className={styles.audioElement}
                     controls
                     autoPlay
                     preload="metadata"
+                    onLoadStart={(event) =>
+                      logMediaEvent("audio:loadstart", event.currentTarget)
+                    }
+                    onLoadedMetadata={(event) =>
+                      logMediaEvent("audio:loadedmetadata", event.currentTarget)
+                    }
+                    onCanPlay={(event) =>
+                      logMediaEvent("audio:canplay", event.currentTarget)
+                    }
+                    onPlay={(event) =>
+                      logMediaEvent("audio:play", event.currentTarget)
+                    }
+                    onPlaying={(event) =>
+                      logMediaEvent("audio:playing", event.currentTarget)
+                    }
+                    onPause={(event) =>
+                      logMediaEvent("audio:pause", event.currentTarget)
+                    }
+                    onWaiting={(event) =>
+                      logMediaEvent("audio:waiting", event.currentTarget)
+                    }
+                    onStalled={(event) =>
+                      logMediaEvent("audio:stalled", event.currentTarget)
+                    }
+                    onError={(event) =>
+                      logMediaEvent("audio:error", event.currentTarget)
+                    }
+                    onEnded={playNext}
                     src={mediaSource}
                   />
                 </div>

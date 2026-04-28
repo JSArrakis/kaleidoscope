@@ -8,6 +8,8 @@ interface HomeViewProps {
 }
 
 const HomeView: FC<HomeViewProps> = ({ viewModel }) => {
+  const { isStartingTest, testStatus } = viewModel;
+
   return (
     <div className={styles.screen}>
       <div className={styles.screenTitle}>Home</div>
@@ -28,6 +30,30 @@ const HomeView: FC<HomeViewProps> = ({ viewModel }) => {
               >
                 Go To Player Screen
               </Button>
+              <div className={styles.testActions}>
+                <Button
+                  onClick={viewModel.runAdhocCadencedTest}
+                  className={styles.testButton}
+                >
+                  Run Adhoc Test (Cadenced)
+                </Button>
+                <Button
+                  onClick={viewModel.runAdhocUncadencedTest}
+                  className={styles.testButton}
+                >
+                  Run Adhoc Test (Uncadenced)
+                </Button>
+              </div>
+              <p className={styles.testHint}>
+                Requires KALEIDOSCOPE_USE_FILESYSTEM_ADHOC_TEST=1 in your dev
+                terminal.
+              </p>
+              {isStartingTest && (
+                <p className={styles.testStatus}>Starting test stream...</p>
+              )}
+              {!isStartingTest && testStatus && (
+                <p className={styles.testStatus}>{testStatus}</p>
+              )}
             </div>
           </div>
         </div>

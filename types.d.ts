@@ -430,6 +430,12 @@ type ElectronPlayerState = {
   updatedAt: number;
 };
 
+type AdhocPlayerTestResult = {
+  status: number;
+  blockCount: number;
+  message: string;
+};
+
 // ============================================================================
 // MEDIA BLOCK AND STREAM TYPES
 // ============================================================================
@@ -491,11 +497,13 @@ interface StreamInitializationData {
 type EventPayloadMapping = {
   openFileDialog: Promise<string[]>;
   probeMediaMetadata: Promise<MediaProbeResult>;
+  resolveElectronPlayablePath: Promise<string>;
   getPlayerState: Promise<ElectronPlayerState>;
   replacePlayerQueue: Promise<ElectronPlayerState>;
   playerSelectQueueItem: Promise<ElectronPlayerState>;
   playerPlayPrevious: Promise<ElectronPlayerState>;
   playerPlayNext: Promise<ElectronPlayerState>;
+  runAdhocPlayerTest: Promise<AdhocPlayerTestResult>;
   getCollections: Promise<Collection[]>;
   createCollection: Promise<{ message: string; status: number }>;
   deleteCollection: Promise<{ message: string; status: number }>;
@@ -566,6 +574,7 @@ interface Window {
   electron: {
     openFileDialogHandler: () => Promise<string[]>;
     probeMediaMetadataHandler: (filePath: string) => Promise<MediaProbeResult>;
+    resolveElectronPlayablePathHandler: (filePath: string) => Promise<string>;
     getPlayerStateHandler: () => Promise<ElectronPlayerState>;
     replacePlayerQueueHandler: (
       filePaths: string[],
@@ -575,6 +584,9 @@ interface Window {
     ) => Promise<ElectronPlayerState>;
     playerPlayPreviousHandler: () => Promise<ElectronPlayerState>;
     playerPlayNextHandler: () => Promise<ElectronPlayerState>;
+    runAdhocPlayerTestHandler: (
+      cadence: boolean,
+    ) => Promise<AdhocPlayerTestResult>;
     getCollectionsHandler: () => Promise<Collection[]>;
     createCollectionHandler: (
       collection: Collection,
@@ -735,4 +747,14 @@ interface Window {
       mosaicId: string,
     ) => Promise<{ message: string; status: number }>;
   };
+}
+
+declare module "ffprobe-static" {
+  const ffprobeStatic:
+    | string
+    | {
+        path: string;
+      };
+
+  export default ffprobeStatic;
 }

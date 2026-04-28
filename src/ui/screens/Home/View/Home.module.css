@@ -91,3 +91,28 @@
   color: #091219;
   font-weight: 700;
 }
+
+.testActions {
+  margin-top: 12px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.testButton {
+  background: linear-gradient(135deg, #4fd1ff, #66ffc8);
+  color: #0a1820;
+  font-weight: 700;
+}
+
+.testHint {
+  margin: 12px 0 0;
+  color: #93a6b8;
+  font-size: 12px;
+}
+
+.testStatus {
+  margin: 10px 0 0;
+  color: #d6e4f0;
+  font-size: 13px;
+}

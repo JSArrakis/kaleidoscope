@@ -1,6 +1,7 @@
 import { buildContinuousStream } from "./streamConstruction/continuousStreamBuilder.js";
 import { buildAdhocStream } from "./streamConstruction/adhocStreamBuilder.js";
 import { MediaBlock } from "../types/MediaBlock.js";
+import { StreamType } from "../models.js";
 
 /**
  * Main stream service entry point

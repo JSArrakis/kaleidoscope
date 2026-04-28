@@ -111,6 +111,13 @@ import {
   replacePlayerQueueFromFilePaths,
   selectPlayerQueueItem,
 } from "./services/playerManager.js";
+import { ensureElectronPlayablePath } from "./services/ffmpegPlaybackProxy.js";
+
+// Allow media autoplay in the in-app player without requiring an extra click.
+app.commandLine.appendSwitch("autoplay-policy", "no-user-gesture-required");
+import { createStream } from "./services/streamService.js";
+import { StreamType } from "./models.js";
+import { stopContinuousStream } from "./services/streamManager.js";
 
 app.on("ready", async () => {
   // Initialize database first
@@ -148,6 +155,20 @@ app.on("ready", async () => {
   ipcMainHandle("probeMediaMetadata", async (_event: any, filePath: string) => {
     return await probeMediaMetadataHandler(filePath);
   });
+  ipcMainHandle(
+    "resolveElectronPlayablePath",
+    async (_event: any, filePath: string) => {
+      const started = Date.now();
+      console.log(
+        `[Main][IPC] resolveElectronPlayablePath request: ${filePath}`,
+      );
+      const resolved = await ensureElectronPlayablePath(filePath);
+      console.log(
+        `[Main][IPC] resolveElectronPlayablePath complete (${Date.now() - started}ms): ${filePath} -> ${resolved}`,
+      );
+      return resolved;
+    },
+  );
   ipcMainHandle("getPlayerState", async () => {
     return getPlayerStateSnapshot();
   });
@@ -165,6 +186,44 @@ app.on("ready", async () => {
   });
   ipcMainHandle("playerPlayNext", async () => {
     return playNextInPlayerQueue();
+  });
+  ipcMainHandle("runAdhocPlayerTest", async (_event: any, cadence: boolean) => {
+    const started = Date.now();
+    console.log(`[Main][IPC] runAdhocPlayerTest start cadence=${cadence}`);
+    stopContinuousStream();
+
+    const endTimepoint = Math.floor(Date.now() / 1000) + 2 * 60 * 60;
+    const [mediaBlocks, errorMessage] = await createStream(
+      StreamType.Adhoc,
+      {
+        Cadence: !!cadence,
+        Themed: false,
+        StreamType: StreamType.Adhoc,
+        AdhocStartFromBeginning: true,
+      },
+      endTimepoint,
+    );
+
+    if (errorMessage) {
+      console.error(
+        `[Main][IPC] runAdhocPlayerTest failed (${Date.now() - started}ms): ${errorMessage}`,
+      );
+      return {
+        status: 500,
+        blockCount: 0,
+        message: errorMessage,
+      };
+    }
+
+    console.log(
+      `[Main][IPC] runAdhocPlayerTest complete (${Date.now() - started}ms) blocks=${mediaBlocks.length}`,
+    );
+
+    return {
+      status: 200,
+      blockCount: mediaBlocks.length,
+      message: `Started ${cadence ? "cadenced" : "uncadenced"} adhoc player test`,
+    };
   });
   ipcMainHandle("getCollections", async () => {
     return await getCollectionsHandler();

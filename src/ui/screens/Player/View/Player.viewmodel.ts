@@ -33,6 +33,7 @@ interface PlayerData {
   currentFilePath: string | null;
   currentFileName: string;
   mediaSource: string | null;
+  isResolvingPlaybackSource: boolean;
   mediaKind: PlayerMediaKind;
   mediaProbe: MediaProbeResult | null;
   isProbing: boolean;
@@ -131,9 +132,17 @@ const usePlayerViewModel = (
   });
   const [mediaProbe, setMediaProbe] = useState<MediaProbeResult | null>(null);
   const [isProbing, setIsProbing] = useState(false);
+  const [resolvedPlayablePath, setResolvedPlayablePath] = useState<
+    string | null
+  >(null);
+  const [isResolvingPlaybackSource, setIsResolvingPlaybackSource] =
+    useState(false);
 
   const refreshPlayerState = async (): Promise<void> => {
     const nextState = await window.electron.getPlayerStateHandler();
+    console.log(
+      `[PlayerVM] refreshPlayerState queueLength=${nextState.queue.length} currentIndex=${nextState.currentIndex} updatedAt=${nextState.updatedAt}`,
+    );
     setPlayerState(nextState);
   };
 
@@ -149,6 +158,23 @@ const usePlayerViewModel = (
     };
   }, []);
 
+  useEffect(() => {
+    if (playerState.queue.length === 0 || playerState.currentIndex >= 0) {
+      return;
+    }
+
+    console.log(
+      `[PlayerVM] No active selection with queueLength=${playerState.queue.length}, selecting index 0`,
+    );
+
+    void window.electron.playerSelectQueueItemHandler(0).then((nextState) => {
+      console.log(
+        `[PlayerVM] Auto-select index 0 complete -> currentIndex=${nextState.currentIndex}`,
+      );
+      setPlayerState(nextState);
+    });
+  }, [playerState.currentIndex, playerState.queue.length]);
+
   const queue = useMemo(
     () => playerState.queue.map((item) => item.filePath),
     [playerState.queue],
@@ -159,8 +185,8 @@ const usePlayerViewModel = (
   const currentFilePath = currentQueueItem?.filePath ?? null;
   const mediaKind = getMediaKind(currentFilePath);
   const mediaSource = useMemo(
-    () => toFileUrl(currentFilePath),
-    [currentFilePath],
+    () => toFileUrl(resolvedPlayablePath ?? currentFilePath),
+    [currentFilePath, resolvedPlayablePath],
   );
   const currentFileName = useMemo(
     () => currentQueueItem?.title ?? getFileName(currentFilePath),
@@ -169,6 +195,55 @@ const usePlayerViewModel = (
 
   useEffect(() => {
     if (!currentFilePath) {
+      console.log(
+        "[PlayerVM] No current file path; clearing resolved playback source",
+      );
+      setResolvedPlayablePath(null);
+      setIsResolvingPlaybackSource(false);
+      return;
+    }
+
+    let isCancelled = false;
+    setIsResolvingPlaybackSource(true);
+    console.log(`[PlayerVM] Resolving playable path for: ${currentFilePath}`);
+
+    window.electron
+      .resolveElectronPlayablePathHandler(currentFilePath)
+      .then((resolvedPath) => {
+        if (!isCancelled) {
+          console.log(
+            `[PlayerVM] Resolved playable path: ${currentFilePath} -> ${resolvedPath}`,
+          );
+          setResolvedPlayablePath(resolvedPath || currentFilePath);
+        }
+      })
+      .catch((error: unknown) => {
+        if (!isCancelled) {
+          const message =
+            error instanceof Error ? error.message : String(error);
+          console.error(
+            `[PlayerVM] Failed resolving playable path for ${currentFilePath}: ${message}`,
+          );
+          setResolvedPlayablePath(currentFilePath);
+        }
+      })
+      .finally(() => {
+        if (!isCancelled) {
+          console.log(
+            `[PlayerVM] Resolve phase complete for: ${currentFilePath}`,
+          );
+          setIsResolvingPlaybackSource(false);
+        }
+      });
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [currentFilePath]);
+
+  useEffect(() => {
+    if (!currentFilePath) {
+      console.log("[PlayerVM] No current file path; clearing probe state");
       setMediaProbe(null);
       setIsProbing(false);
       return;
@@ -176,26 +251,35 @@ const usePlayerViewModel = (
 
     let isCancelled = false;
     setIsProbing(true);
+    console.log(`[PlayerVM] Probing source metadata: ${currentFilePath}`);
 
     window.electron
       .probeMediaMetadataHandler(currentFilePath)
       .then((result) => {
         if (!isCancelled) {
+          console.log(
+            `[PlayerVM] Probe complete: container=${result.container} video=${result.videoCodec} audio=${result.audioCodec} playable=${result.isPlayable}`,
+          );
           setMediaProbe(result);
         }
       })
       .catch((error: unknown) => {
         if (!isCancelled) {
+          const message =
+            error instanceof Error ? error.message : "Unknown probe error.";
+          console.error(`[PlayerVM] Probe failed: ${message}`);
           setMediaProbe({
             filePath: currentFilePath,
             isPlayable: false,
-            errorMessage:
-              error instanceof Error ? error.message : "Unknown probe error.",
+            errorMessage: message,
           });
         }
       })
       .finally(() => {
         if (!isCancelled) {
+          console.log(
+            `[PlayerVM] Probe phase complete for: ${currentFilePath}`,
+          );
           setIsProbing(false);
         }
       });
@@ -229,21 +313,35 @@ const usePlayerViewModel = (
   };
 
   const selectQueueItem = (index: number) => {
+    console.log(`[PlayerVM] User selected queue index=${index}`);
     void window.electron
       .playerSelectQueueItemHandler(index)
-      .then((nextState) => setPlayerState(nextState));
+      .then((nextState) => {
+        console.log(
+          `[PlayerVM] Queue selection applied currentIndex=${nextState.currentIndex}`,
+        );
+        setPlayerState(nextState);
+      });
   };
 
   const playPrevious = () => {
-    void window.electron
-      .playerPlayPreviousHandler()
-      .then((nextState) => setPlayerState(nextState));
+    console.log("[PlayerVM] playPrevious invoked");
+    void window.electron.playerPlayPreviousHandler().then((nextState) => {
+      console.log(
+        `[PlayerVM] playPrevious applied currentIndex=${nextState.currentIndex}`,
+      );
+      setPlayerState(nextState);
+    });
   };
 
   const playNext = () => {
-    void window.electron
-      .playerPlayNextHandler()
-      .then((nextState) => setPlayerState(nextState));
+    console.log("[PlayerVM] playNext invoked");
+    void window.electron.playerPlayNextHandler().then((nextState) => {
+      console.log(
+        `[PlayerVM] playNext applied currentIndex=${nextState.currentIndex}`,
+      );
+      setPlayerState(nextState);
+    });
   };
 
   const goHome = () => {
@@ -256,6 +354,7 @@ const usePlayerViewModel = (
     currentFilePath,
     currentFileName,
     mediaSource,
+    isResolvingPlaybackSource,
     mediaKind,
     mediaProbe,
     isProbing,

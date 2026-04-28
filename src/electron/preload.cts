@@ -4,6 +4,8 @@ electron.contextBridge.exposeInMainWorld("electron", {
   openFileDialogHandler: async () => await ipcInvoke("openFileDialog"),
   probeMediaMetadataHandler: async (filePath: string) =>
     await ipcInvoke("probeMediaMetadata", filePath),
+  resolveElectronPlayablePathHandler: async (filePath: string) =>
+    await ipcInvoke("resolveElectronPlayablePath", filePath),
   getPlayerStateHandler: async () => await ipcInvoke("getPlayerState"),
   replacePlayerQueueHandler: async (filePaths: string[]) =>
     await ipcInvoke("replacePlayerQueue", filePaths),
@@ -11,6 +13,8 @@ electron.contextBridge.exposeInMainWorld("electron", {
     await ipcInvoke("playerSelectQueueItem", index),
   playerPlayPreviousHandler: async () => await ipcInvoke("playerPlayPrevious"),
   playerPlayNextHandler: async () => await ipcInvoke("playerPlayNext"),
+  runAdhocPlayerTestHandler: async (cadence: boolean) =>
+    await ipcInvoke("runAdhocPlayerTest", cadence),
   getCollectionsHandler: async () => await ipcInvoke("getCollections"),
   createCollectionHandler: async (collection: Collection) =>
     await ipcInvoke("createCollection", collection),

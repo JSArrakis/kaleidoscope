@@ -13,6 +13,12 @@ import {
 } from "./selectionHelpers.js";
 import { selectRandomShowOrMovie } from "./mediaSelector.js";
 import { buildStreamIteration } from "./continuousStreamBuilder.js";
+import { buildFilesystemAdhocPlayerTestStream } from "./adhocFilesystemPlayerTestBuilder.js";
+
+// Temporary test toggle for filesystem-based adhoc stream construction.
+// Enable by setting KALEIDOSCOPE_USE_FILESYSTEM_ADHOC_TEST=1 in the environment.
+const USE_FILESYSTEM_PLAYER_TEST_ADHOC =
+  process.env.KALEIDOSCOPE_USE_FILESYSTEM_ADHOC_TEST === "1";
 
 /**
  * Builds an adhoc stream
@@ -34,6 +40,13 @@ export async function buildAdhocStream(
   streamConstructionOptions: StreamConstructionOptions,
   endTimepoint: number,
 ): Promise<[MediaBlock[], string]> {
+  if (USE_FILESYSTEM_PLAYER_TEST_ADHOC) {
+    return buildFilesystemAdhocPlayerTestStream(
+      streamConstructionOptions,
+      endTimepoint,
+    );
+  }
+
   const streamBlocks: MediaBlock[] = [];
 
   try {

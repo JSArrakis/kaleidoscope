@@ -42,7 +42,7 @@ function createQueueItem(
     return null;
   }
 
-  return {
+  const queueItem = {
     queueItemId: `player-item-${nextQueueItemSequence++}`,
     mediaItemId: mediaItem.mediaItemId,
     title: mediaItem.title || getFallbackTitle(mediaItem.path),
@@ -54,16 +54,30 @@ function createQueueItem(
     isBuffer,
     sourceContext: mediaBlock.sourceContext,
   };
+
+  console.log(
+    `[PlayerManager] createQueueItem id=${queueItem.queueItemId} type=${queueItem.mediaType} buffer=${isBuffer} path=${queueItem.filePath}`,
+  );
+
+  return queueItem;
 }
 
 function flattenMediaBlockToQueueItems(
   mediaBlock: MediaBlock,
 ): PlayerQueueItem[] {
-  const queueItems = mediaBlock.buffer
-    .map((mediaItem, index) =>
-      createQueueItem(mediaItem, mediaBlock, index, true),
-    )
-    .filter((item): item is PlayerQueueItem => item !== null);
+  const queueItems: PlayerQueueItem[] = [];
+
+  for (let index = 0; index < mediaBlock.buffer.length; index += 1) {
+    const queueItem = createQueueItem(
+      mediaBlock.buffer[index],
+      mediaBlock,
+      index,
+      true,
+    );
+    if (queueItem) {
+      queueItems.push(queueItem);
+    }
+  }
 
   if (mediaBlock.anchorMedia) {
     const anchorQueueItem = createQueueItem(
@@ -105,9 +119,15 @@ function enqueueElectronMediaBlock(mediaBlock: MediaBlock): void {
   electronPlayerQueue.push(...queueItems);
   ensureElectronPlayerReadyState();
   touchElectronPlayerState();
+  console.log(
+    `[PlayerManager] Enqueued ${queueItems.length} items from block start=${mediaBlock.startTime}. queueLength=${electronPlayerQueue.length} currentIndex=${electronPlayerCurrentIndex}`,
+  );
 }
 
 export function getPlayerStateSnapshot(): ElectronPlayerState {
+  console.log(
+    `[PlayerManager] Snapshot queueLength=${electronPlayerQueue.length} currentIndex=${electronPlayerCurrentIndex} initialized=${isPlayerInitialized}`,
+  );
   return {
     playerType: currentPlayerType,
     isInitialized: isPlayerInitialized,
@@ -136,22 +156,40 @@ export function replacePlayerQueueFromFilePaths(
 }
 
 export function selectPlayerQueueItem(index: number): ElectronPlayerState {
+  console.log(
+    `[PlayerManager] selectQueueItem requested=${index} previous=${electronPlayerCurrentIndex}`,
+  );
   electronPlayerCurrentIndex = clampElectronPlayerIndex(index);
+  console.log(
+    `[PlayerManager] selectQueueItem resolved=${electronPlayerCurrentIndex}`,
+  );
   touchElectronPlayerState();
   return getPlayerStateSnapshot();
 }
 
 export function playNextInPlayerQueue(): ElectronPlayerState {
+  console.log(
+    `[PlayerManager] playNext from index=${electronPlayerCurrentIndex}`,
+  );
   electronPlayerCurrentIndex = clampElectronPlayerIndex(
     electronPlayerCurrentIndex + 1,
+  );
+  console.log(
+    `[PlayerManager] playNext resolved index=${electronPlayerCurrentIndex}`,
   );
   touchElectronPlayerState();
   return getPlayerStateSnapshot();
 }
 
 export function playPreviousInPlayerQueue(): ElectronPlayerState {
+  console.log(
+    `[PlayerManager] playPrevious from index=${electronPlayerCurrentIndex}`,
+  );
   electronPlayerCurrentIndex = clampElectronPlayerIndex(
     electronPlayerCurrentIndex - 1,
+  );
+  console.log(
+    `[PlayerManager] playPrevious resolved index=${electronPlayerCurrentIndex}`,
   );
   touchElectronPlayerState();
   return getPlayerStateSnapshot();
