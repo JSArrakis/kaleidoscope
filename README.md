@@ -12,11 +12,11 @@
 
 ## What Is This?
 
-Kaleidoscope is a personal television network simulator. You point it at your media library, and it builds a continuous broadcast channel from what you already own. Shows start on the hour or half-hour. "Commercials" (or any short form media lasting between 10 seconds and 2 minutes), shorts, and music videos fill the gaps between them. Promos and bumpers give the channel its own identity. It runs all day, every day, and rolls over at midnight into the next day's schedule without any intervention.
+Kaleidoscope is a personal television network simulator built on procedural selection algorithms. You point it at your media library, and it builds a continuous broadcast channel from what you already own. Shows start on the hour or half-hour. "Commercials" (or any short form media lasting between 10 seconds and 2 minutes), shorts, and music videos fill the gaps between them. Promos and bumpers give the channel its own identity. It runs all day, every day, and rolls over at midnight into the next day's schedule without any intervention.
 
 None of this has to be running at full capacity. Anchors can play back-to-back without any buffer content between them, content can run in free sequence without being locked to the top or bottom of the hour, and the taxonomy-guided selection can be set aside entirely if you'd rather the stream just pull from your library without that kind of steering.
 
-The short version is that it tries to recreate what it felt like to turn on the TV in the 90s and early 2000s and just watch whatever was on, except everything on the channel belongs to you.
+The short version is that it tries to recreate what it felt like to turn on the TV in the 90s and early 2000s and just watch whatever was on, except everything on the channel belongs to you. And it does it without manual curation.
 
 ---
 
