@@ -227,6 +227,31 @@ When the user presses "Go" with the new system:
 6. While the first file is playing, normalization of subsequent files continues in the
    background.
 
+### Startup admission control for large first anchors (new rule)
+
+For cadenced streams, first-anchor selection must be readiness-aware.
+
+Before committing the first anchor, evaluate whether it can be normalized inside the
+available warm-up window created by opening buffer media.
+
+Definitions:
+
+- `requiredStart`: absolute Unix time when the first anchor must begin (cadence boundary)
+- `now`: current Unix time at stream start
+- `warmupWindowSec = requiredStart - now`
+- `estimatedNormalizeSec`: estimated time to normalize this anchor
+
+Admission rule:
+
+- If `estimatedNormalizeSec <= warmupWindowSec`, keep candidate as first anchor.
+- If `estimatedNormalizeSec > warmupWindowSec`, skip as first anchor and choose the next
+  candidate that passes.
+
+This prevents a 3-4 hour UHD movie from being selected first when only a small opening
+window is available (for example a 3:55 start with a short cadence fill to 4:00).
+
+For uncadenced streams, this rule is optional because there is no hard wall-clock boundary.
+
 ### Why the initial buffer is the key
 
 In a cadenced stream, the very first items in the queue are **buffer media**: commercials,
@@ -258,6 +283,23 @@ needed to reach the boundary.
 
 This is actually more reliable than the current wall-clock approach, because it is not
 affected by system clock drift, sleep/wake cycles, or the Electron app being backgrounded.
+
+### Cadence drift realignment during playout
+
+Cadence can still drift from small duration mismatches, variable frame rates, or source
+metadata inaccuracies. Add a realignment monitor that checks drift at anchor boundaries:
+
+- `driftSec = actualBoundaryTime - targetBoundaryTime`
+
+Realignment policy:
+
+- If `abs(driftSec) <= 3`, do nothing (within tolerance).
+- If `driftSec > 3` (running late), reduce upcoming low-priority filler duration by removing
+  or replacing filler items (commercials first, then promos, then music).
+- If `driftSec < -3` (running early), insert filler from a duration-indexed filler bank.
+
+Selection is solved as a bounded duration-fit problem targeting a residual within
+`+- 3` seconds. This keeps cadence aligned organically without abrupt jumps.
 
 ---
 
@@ -740,6 +782,54 @@ or IPTV source. Plex requires an M3U playlist file; Jellyfin accepts direct M3U8
 - HLS segments stored in `%APPDATA%/prism/hls-output/` (new, parallel to cache folder)
 - Concurrency limit of 2 normalization workers (configurable)
 - 4-second HLS segments (standard for video-on-demand)
+- Cache eviction is schedule-aware (not plain LRU)
+- Cadenced startup uses first-anchor readiness admission control
+- Two-tier normalization is optional and only for large, high-risk first anchors
+
+### Cache eviction strategy (detailed)
+
+The normalization cache is persistent on disk and should be managed by policy tiers.
+
+Tier definitions:
+
+- `PinnedNow`: currently playing and near-term startup candidates. Never evict.
+- `PinnedSoon`: assets referenced in the next schedule horizon (for example 24 hours).
+  Evict only under emergency disk pressure.
+- `Warm`: recently played or frequently selected assets.
+- `Cold`: old and rarely reused assets.
+
+Eviction order:
+
+1. Cold
+2. Warm
+3. PinnedSoon (emergency only)
+4. Never evict PinnedNow
+
+Within Warm/Cold, rank by weighted score:
+
+`evictScore = ageWeight * age + sizeWeight * sizeGb - reuseWeight * reuseRate - costWeight * transcodeCost`
+
+Higher score means more evictable.
+
+This prioritizes reclaiming large, stale files while protecting expensive-to-recreate media
+likely to be needed soon.
+
+### Two-tier normalization policy for huge anchors
+
+Two-tier means storing two cached derivatives for the same source file:
+
+1. Fast-start mezzanine copy: quick to produce, playout-safe profile (for example capped
+   1080p H.264/AAC).
+2. Higher-quality copy: slower to generate, produced in background.
+
+Policy:
+
+- Default to one normalized copy for normal content.
+- Use two-tier only when media crosses a high-risk threshold (long runtime + high
+  resolution + expensive codec) and may appear as an early cadenced anchor.
+- If disk pressure is high, keep mezzanine and evict the higher-quality derivative first.
+
+This preserves startup reliability while containing disk growth.
 
 **Open questions**:
 
