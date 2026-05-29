@@ -1,7 +1,8 @@
 import { musicRepository } from "../repositories/musicRepository.js";
+import { enqueueIngestNormalization } from "../services/normalization/ingestNormalizationService.js";
 
 export async function createMusic(
-  music: Music
+  music: Music,
 ): Promise<{ message: string; status: number }> {
   try {
     if (!music.mediaItemId) {
@@ -17,6 +18,7 @@ export async function createMusic(
     }
 
     musicRepository.create(music);
+    enqueueIngestNormalization(music);
     return { message: `Music ${music.title} Created`, status: 200 };
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
@@ -43,7 +45,7 @@ export function getMusic(mediaItemId: string): Music | null {
 
 export function updateMusic(
   mediaItemId: string,
-  updates: Partial<Music>
+  updates: Partial<Music>,
 ): { message: string; status: number } {
   try {
     if (!mediaItemId) {

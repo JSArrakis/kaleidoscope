@@ -3,6 +3,7 @@ import { rolloverToNextDay } from "./streamConstruction/continuousStreamBuilder.
 import { rolloverAdhocToNextDay } from "./streamConstruction/adhocStreamBuilder.js";
 import { StreamType } from "../types/StreamType.js";
 import { existsSync } from "fs";
+import { realignCadencedUpcomingBoundaries } from "./cadenceRealignmentService.js";
 let cycleCheckTimeout = null;
 const intervalInSeconds = 300; // 5 minutes
 let endOfDayMarker = 0;
@@ -76,6 +77,16 @@ async function cycleCheck() {
     console.log(`[Cycle Check] Current Unix Timestamp: ${currentUnixTimestamp}`);
     // Validate upcoming media files
     validateUpcomingMediaFiles(currentUnixTimestamp);
+    const realignmentSummary = realignCadencedUpcomingBoundaries(currentUnixTimestamp);
+    if (realignmentSummary && realignmentSummary.correctedBoundaries > 0) {
+        console.log(`[Cycle Check] Cadence realignment corrected=${realignmentSummary.correctedBoundaries}/${realignmentSummary.checkedBoundaries}`);
+        for (const result of realignmentSummary.results) {
+            if (result.action === "none") {
+                continue;
+            }
+            console.log(`[Cycle Check] Boundary=${result.boundaryIndex} action=${result.action} drift=${result.driftSec}s postDrift=${result.postDriftSec}s`);
+        }
+    }
     // --- On Deck state ---
     const onDeck = streamManager.getOnDeckStream();
     if (onDeck.length >= 2) {

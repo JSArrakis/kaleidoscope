@@ -26,6 +26,9 @@ class StreamManager {
     recentlyUsedMusic = new Map();
     remainderTimeInSeconds = 0;
     randomEpisodeStart = false;
+    anchorContentReadinessStatus = null;
+    facetWalkabilityReadinessStatus = null;
+    cadenceBufferReadinessStatus = null;
     constructor() {
         console.log("[StreamManager] Singleton instance created");
     }
@@ -207,6 +210,58 @@ class StreamManager {
     setRandomEpisodeStart(value) {
         this.randomEpisodeStart = value;
     }
+    getAnchorContentReadinessStatus() {
+        return this.anchorContentReadinessStatus;
+    }
+    setAnchorContentReadinessStatus(value) {
+        this.anchorContentReadinessStatus = value;
+    }
+    getFacetWalkabilityReadinessStatus() {
+        return this.facetWalkabilityReadinessStatus;
+    }
+    setFacetWalkabilityReadinessStatus(value) {
+        this.facetWalkabilityReadinessStatus = value;
+    }
+    getCadenceBufferReadinessStatus() {
+        return this.cadenceBufferReadinessStatus;
+    }
+    setCadenceBufferReadinessStatus(value) {
+        this.cadenceBufferReadinessStatus = value;
+    }
+    getStartupReadinessStatus() {
+        const anchorContent = this.anchorContentReadinessStatus;
+        const facetWalkability = this.facetWalkabilityReadinessStatus;
+        const cadenceBuffer = this.cadenceBufferReadinessStatus;
+        if (!anchorContent && !facetWalkability && !cadenceBuffer) {
+            return null;
+        }
+        return {
+            completedAt: Date.now(),
+            anchorContent: anchorContent ?? {
+                passed: false,
+                detail: "Warning: Startup readiness has not been run yet.",
+            },
+            facetWalkability: facetWalkability ?? {
+                passed: false,
+                detail: "Warning: Startup readiness has not been run yet.",
+            },
+            cadenceBuffer: cadenceBuffer ?? {
+                passed: false,
+                detail: "Warning: Startup readiness has not been run yet.",
+            },
+            warnings: [
+                ...(anchorContent && !anchorContent.passed
+                    ? [anchorContent.detail]
+                    : []),
+                ...(facetWalkability && !facetWalkability.passed
+                    ? [facetWalkability.detail]
+                    : []),
+                ...(cadenceBuffer && !cadenceBuffer.passed
+                    ? [cadenceBuffer.detail]
+                    : []),
+            ],
+        };
+    }
     /**
      * Reset all state when stopping the stream
      */
@@ -228,6 +283,9 @@ class StreamManager {
         this.recentlyUsedMusic.clear();
         this.remainderTimeInSeconds = 0;
         this.randomEpisodeStart = false;
+        this.anchorContentReadinessStatus = null;
+        this.facetWalkabilityReadinessStatus = null;
+        this.cadenceBufferReadinessStatus = null;
     }
 }
 // Singleton instance - created once and persists for the app lifetime
@@ -435,6 +493,27 @@ export function setAdhocStreamEndTimepoint(value) {
 }
 export function isRandomEpisodeStart() {
     return streamManagerInstance.isRandomEpisodeStart();
+}
+export function getStartupReadinessStatus() {
+    return streamManagerInstance.getStartupReadinessStatus();
+}
+export function getAnchorContentReadinessStatus() {
+    return streamManagerInstance.getAnchorContentReadinessStatus();
+}
+export function setAnchorContentReadinessStatus(value) {
+    streamManagerInstance.setAnchorContentReadinessStatus(value);
+}
+export function getFacetWalkabilityReadinessStatus() {
+    return streamManagerInstance.getFacetWalkabilityReadinessStatus();
+}
+export function setFacetWalkabilityReadinessStatus(value) {
+    streamManagerInstance.setFacetWalkabilityReadinessStatus(value);
+}
+export function getCadenceBufferReadinessStatus() {
+    return streamManagerInstance.getCadenceBufferReadinessStatus();
+}
+export function setCadenceBufferReadinessStatus(value) {
+    streamManagerInstance.setCadenceBufferReadinessStatus(value);
 }
 export function setRandomEpisodeStart(value) {
     streamManagerInstance.setRandomEpisodeStart(value);

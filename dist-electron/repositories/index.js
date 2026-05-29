@@ -15,3 +15,4 @@ export { CollectionRepository, collectionRepository, } from "./collectionReposit
 export { EpisodeProgressionRepository, episodeProgressionRepository, } from "./episodeProgressionRepository.js";
 export { CollectionMovieProgressionRepository, collectionMovieProgressionRepository, } from "./collectionMovieProgressionRepository.js";
 export { ProgrammingBlockRepository, programmingBlockRepository, } from "./programmingBlockRepository.js";
+export { PlayoutRepository, playoutRepository } from "./playoutRepository.js";

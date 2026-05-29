@@ -14,6 +14,10 @@ import {
 import { selectRandomShowOrMovie } from "./mediaSelector.js";
 import { buildStreamIteration } from "./continuousStreamBuilder.js";
 import { buildFilesystemAdhocPlayerTestStream } from "./adhocFilesystemPlayerTestBuilder.js";
+import { createNormalizationJobsFromBlocks } from "../normalization/normalizationJobFactory.js";
+import { normalizationQueue } from "../normalization/normalizationQueue.js";
+import { selectFirstAnchorForCadencedStartup } from "./firstAnchorAdmissionService.js";
+import { selectFirstAnchorForCachedUncadencedStartup } from "./firstAnchorAdmissionService.js";
 
 // Temporary test toggle for filesystem-based adhoc stream construction.
 // Enable by setting KALEIDOSCOPE_USE_FILESYSTEM_ADHOC_TEST=1 in the environment.
@@ -50,7 +54,7 @@ export async function buildAdhocStream(
   const streamBlocks: MediaBlock[] = [];
 
   try {
-    const initData = initializeAdhocStream(
+    const initData = await initializeAdhocStream(
       streamConstructionOptions,
       endTimepoint,
     );
@@ -122,10 +126,10 @@ export async function buildAdhocStream(
  * Caps endOfTimeWindow at the earlier of end-of-day or endTimepoint.
  * If the stream runs past today the background service extends it via rollover.
  */
-function initializeAdhocStream(
+async function initializeAdhocStream(
   streamConstructionOptions: StreamConstructionOptions,
   endTimepoint: number,
-): StreamInitializationData {
+): Promise<StreamInitializationData> {
   const startingTimepoint = Math.floor(Date.now() / 1000);
   const fullDateString = new Date(startingTimepoint * 1000)
     .toISOString()
@@ -162,11 +166,53 @@ function initializeAdhocStream(
     !(streamConstructionOptions.AdhocStartFromBeginning ?? true),
   );
 
-  const selectedFirstMedia = selectRandomShowOrMovie(
+  const fallbackFirstMedia = selectRandomShowOrMovie(
     startingTimepoint,
     iterationDuration,
     [],
   );
+
+  let selectedFirstMedia = fallbackFirstMedia;
+  let firstAnchorRequiresPreparation = false;
+  let firstAnchorEstimatedNormalizeSeconds: number | null = null;
+  let firstAnchorAdmissionReason: string | undefined;
+
+  if (streamConstructionOptions.Cadence && selectedFirstMedia) {
+    const nextCadenceTime = findNextCadenceTime(startingTimepoint);
+    const admission = await selectFirstAnchorForCadencedStartup({
+      timepoint: startingTimepoint,
+      iterationDuration,
+      ageGroupTags: [],
+      warmupWindowSeconds: Math.max(0, nextCadenceTime - startingTimepoint),
+      preferredCandidate: selectedFirstMedia,
+    });
+
+    selectedFirstMedia = admission.selectedFirstMedia;
+    firstAnchorRequiresPreparation = admission.requiresPreparation;
+    firstAnchorEstimatedNormalizeSeconds = admission.estimatedNormalizeSeconds;
+    firstAnchorAdmissionReason = admission.admissionReason;
+
+    console.log(
+      `[AdhocStreamBuilder] First-anchor admission evaluated=${admission.evaluatedCandidates} warmup=${admission.warmupWindowSeconds}s estimate=${admission.estimatedNormalizeSeconds ?? -1}s requiresPreparation=${admission.requiresPreparation} reason=${admission.admissionReason}`,
+    );
+  } else if (selectedFirstMedia) {
+    const admission = await selectFirstAnchorForCachedUncadencedStartup({
+      timepoint: startingTimepoint,
+      iterationDuration,
+      ageGroupTags: [],
+      warmupWindowSeconds: 0,
+      preferredCandidate: selectedFirstMedia,
+    });
+
+    selectedFirstMedia = admission.selectedFirstMedia;
+    firstAnchorRequiresPreparation = admission.requiresPreparation;
+    firstAnchorEstimatedNormalizeSeconds = admission.estimatedNormalizeSeconds;
+    firstAnchorAdmissionReason = admission.admissionReason;
+
+    console.log(
+      `[AdhocStreamBuilder] First-anchor uncadenced admission evaluated=${admission.evaluatedCandidates} estimate=${admission.estimatedNormalizeSeconds ?? -1}s requiresPreparation=${admission.requiresPreparation} reason=${admission.admissionReason}`,
+    );
+  }
 
   return {
     activeHolidayTags,
@@ -175,6 +221,9 @@ function initializeAdhocStream(
     iterationDuration,
     endOfTimeWindow,
     selectedFirstMedia,
+    firstAnchorRequiresPreparation,
+    firstAnchorEstimatedNormalizeSeconds,
+    firstAnchorAdmissionReason,
     nextScheduledBlock: null,
   };
 }
@@ -407,6 +456,16 @@ export function rolloverAdhocToNextDay(
 
   if (iterationBlocks.length > 0) {
     streamManager.addToUpcomingStream(iterationBlocks);
+  }
+
+  const prewarmBlocks = [lastUpcomingBlock, ...iterationBlocks];
+  const jobs = createNormalizationJobsFromBlocks(prewarmBlocks);
+  const queued = normalizationQueue.enqueue(jobs);
+
+  if (queued > 0) {
+    console.log(
+      `[AdhocStreamBuilder] Enqueued rollover normalization jobs: ${queued}/${jobs.length}`,
+    );
   }
 
   console.log(

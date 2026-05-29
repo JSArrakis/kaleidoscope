@@ -32,3 +32,4 @@ export {
   ProgrammingBlockRepository,
   programmingBlockRepository,
 } from "./programmingBlockRepository.js";
+export { PlayoutRepository, playoutRepository } from "./playoutRepository.js";

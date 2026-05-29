@@ -1,94 +1,111 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from "react";
 import useRootStack from "../../../navigation/useRootStack";
 
 interface SplashData {
-  allMediaLoaded: boolean;
-  allCollectionsLoaded: boolean;
-  allPrismsLoaded: boolean;
-  allTagsLoaded: boolean;
+  anchorContentLoaded: boolean;
+  facetWalkabilityLoaded: boolean;
+  cadenceBufferLoaded: boolean;
 }
 interface SplashActions {}
 
 export interface SplashViewModel extends SplashData, SplashActions {}
 
+const ICON_UPDATE_DELAY_MS = 500;
+
+async function delay(ms: number): Promise<void> {
+  await new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 const useSplashViewModel = (
   navigate: ReturnType<typeof useRootStack>,
 ): SplashViewModel => {
-  const [allMediaLoaded, setAllMediaLoaded] = useState(false);
-  const [allCollectionsLoaded, setAllCollectionsLoaded] = useState(false);
-  const [allPrismsLoaded, setAllPrismsLoaded] = useState(false);
-  const [allTagsLoaded, setAllTagsLoaded] = useState(false);
+  const [anchorContentLoaded, setAnchorContentLoaded] = useState(false);
+  const [facetWalkabilityLoaded, setFacetWalkabilityLoaded] = useState(false);
+  const [cadenceBufferLoaded, setCadenceBufferLoaded] = useState(false);
 
   useEffect(() => {
-    // TODO: Fetch all media instead of timeout
-    const timer = setTimeout(
-      () => {
-        setAllMediaLoaded(true);
-      },
-      Math.floor(Math.random() * (15000 - 5000 + 1)) + 5000,
-    );
-    return () => clearTimeout(timer);
+    let isMounted = true;
+
+    const loadStartupChecks = async () => {
+      try {
+        await window.electron.runStartupReadinessChecksHandler();
+        const [
+          anchorContentStatus,
+          facetWalkabilityStatus,
+          cadenceBufferStatus,
+        ] = await Promise.all([
+          window.electron.getAnchorContentReadinessStatusHandler(),
+          window.electron.getFacetWalkabilityReadinessStatusHandler(),
+          window.electron.getCadenceBufferReadinessStatusHandler(),
+        ]);
+
+        if (!isMounted) {
+          return;
+        }
+
+        setAnchorContentLoaded(!!anchorContentStatus);
+        await delay(ICON_UPDATE_DELAY_MS);
+        if (!isMounted) {
+          return;
+        }
+
+        setFacetWalkabilityLoaded(!!facetWalkabilityStatus);
+        await delay(ICON_UPDATE_DELAY_MS);
+        if (!isMounted) {
+          return;
+        }
+
+        setCadenceBufferLoaded(!!cadenceBufferStatus);
+      } catch (error) {
+        console.error("[Splash] Startup readiness checks failed", error);
+        if (!isMounted) {
+          return;
+        }
+
+        // If the IPC request failed, still let the splash complete so the app
+        // can surface the warning state later in the UI.
+        setAnchorContentLoaded(true);
+        await delay(ICON_UPDATE_DELAY_MS);
+        if (!isMounted) {
+          return;
+        }
+
+        setFacetWalkabilityLoaded(true);
+        await delay(ICON_UPDATE_DELAY_MS);
+        if (!isMounted) {
+          return;
+        }
+
+        setCadenceBufferLoaded(true);
+      }
+    };
+
+    void loadStartupChecks();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   useEffect(() => {
-    // TODO: Fetch all collections instead of timeout
-    const timer = setTimeout(
-      () => {
-        setAllCollectionsLoaded(true);
-      },
-      Math.floor(Math.random() * (15000 - 5000 + 1)) + 5000,
-    );
-    return () => clearTimeout(timer);
-  }, []);
-
-  useEffect(() => {
-    // TODO: Fetch all prisms instead of timeout
-    const timer = setTimeout(
-      () => {
-        setAllPrismsLoaded(true);
-      },
-      Math.floor(Math.random() * (15000 - 5000 + 1)) + 5000,
-    );
-    return () => clearTimeout(timer);
-  }, []);
-
-  useEffect(() => {
-    // TODO: Fetch all tags instead of timeout
-    const timer = setTimeout(
-      () => {
-        setAllTagsLoaded(true);
-      },
-      Math.floor(Math.random() * (15000 - 5000 + 1)) + 5000,
-    );
-    return () => clearTimeout(timer);
-  }, []);
-
-  useEffect(() => {
-    if (
-      allMediaLoaded &&
-      allCollectionsLoaded &&
-      allPrismsLoaded &&
-      allTagsLoaded
-    ) {
+    if (anchorContentLoaded && facetWalkabilityLoaded && cadenceBufferLoaded) {
       const timer = setTimeout(() => {
-        navigate('/home');
+        navigate("/home");
       }, 1500); // Delay navigation by 1.5 seconds
 
       return () => clearTimeout(timer);
     }
   }, [
     navigate,
-    allMediaLoaded,
-    allCollectionsLoaded,
-    allPrismsLoaded,
-    allTagsLoaded,
+    anchorContentLoaded,
+    facetWalkabilityLoaded,
+    cadenceBufferLoaded,
   ]);
 
   return {
-    allMediaLoaded,
-    allCollectionsLoaded,
-    allPrismsLoaded,
-    allTagsLoaded,
+    anchorContentLoaded,
+    facetWalkabilityLoaded,
+    cadenceBufferLoaded,
   };
 };
 

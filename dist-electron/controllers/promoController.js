@@ -1,4 +1,5 @@
 import { promoRepository } from "../repositories/promoRepository.js";
+import { enqueueIngestNormalization } from "../services/normalization/ingestNormalizationService.js";
 export async function createPromo(promo) {
     try {
         if (!promo.mediaItemId) {
@@ -12,6 +13,7 @@ export async function createPromo(promo) {
             };
         }
         promoRepository.create(promo);
+        enqueueIngestNormalization(promo);
         return { message: `Promo ${promo.title} Created`, status: 200 };
     }
     catch (error) {

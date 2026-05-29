@@ -2,6 +2,8 @@ import { buildContinuousStream } from "./streamConstruction/continuousStreamBuil
 import { buildAdhocStream } from "./streamConstruction/adhocStreamBuilder.js";
 import { MediaBlock } from "../types/MediaBlock.js";
 import { StreamType } from "../models.js";
+import { createNormalizationJobsFromBlocks } from "./normalization/normalizationJobFactory.js";
+import { normalizationQueue } from "./normalization/normalizationQueue.js";
 
 /**
  * Main stream service entry point
@@ -22,17 +24,33 @@ export async function createStream(
   streamConstructionOptions: StreamConstructionOptions,
   endTimepoint?: number,
 ): Promise<[MediaBlock[], string]> {
+  let result: [MediaBlock[], string];
+
   switch (streamType) {
     case StreamType.Cont:
-      return buildContinuousStream(streamConstructionOptions);
+      result = await buildContinuousStream(streamConstructionOptions);
+      break;
 
     case StreamType.Adhoc:
       if (!endTimepoint) {
         return [[], "Adhoc streams require an endTimepoint parameter"];
       }
-      return buildAdhocStream(streamConstructionOptions, endTimepoint);
+      result = await buildAdhocStream(streamConstructionOptions, endTimepoint);
+      break;
 
     default:
       return [[], `Unsupported stream type: ${streamType}`];
   }
+
+  const [blocks, errorMessage] = result;
+
+  if (!errorMessage && blocks.length > 0) {
+    const jobs = createNormalizationJobsFromBlocks(blocks);
+    const queued = normalizationQueue.enqueue(jobs);
+    console.log(
+      `[StreamService] Enqueued normalization jobs: ${queued}/${jobs.length}`,
+    );
+  }
+
+  return result;
 }

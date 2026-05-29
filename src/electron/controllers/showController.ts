@@ -1,7 +1,8 @@
 import { showRepository } from "../repositories/showRepository.js";
+import { enqueueIngestNormalizationForShow } from "../services/normalization/ingestNormalizationService.js";
 
 export async function createShow(
-  show: Show
+  show: Show,
 ): Promise<{ message: string; status: number }> {
   try {
     if (!show.mediaItemId) {
@@ -17,6 +18,7 @@ export async function createShow(
     }
 
     showRepository.create(show);
+    enqueueIngestNormalizationForShow(show);
     return { message: `Show ${show.title} Created`, status: 200 };
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
@@ -43,7 +45,7 @@ export function getShow(mediaItemId: string): Show | null {
 
 export function updateShow(
   mediaItemId: string,
-  updates: Partial<Show>
+  updates: Partial<Show>,
 ): { message: string; status: number } {
   try {
     if (!mediaItemId) {

@@ -236,3 +236,40 @@ export async function ensureElectronPlayablePath(
     inFlightConversions.delete(key);
   }
 }
+
+export async function getCachedElectronPlayablePathIfReady(
+  sourcePath: string,
+): Promise<string | null> {
+  if (!sourcePath || !fs.existsSync(sourcePath)) {
+    return null;
+  }
+
+  const key = createCacheKey(sourcePath);
+  const memoryCached = playablePathCache.get(key);
+
+  if (memoryCached && fs.existsSync(memoryCached)) {
+    return memoryCached;
+  }
+
+  const probe = await probeMediaMetadataHandler(sourcePath);
+  if (probe.isPlayable && isAlreadyChromiumPlayable(probe)) {
+    playablePathCache.set(key, sourcePath);
+    return sourcePath;
+  }
+
+  const hasVideo = !!probe.videoCodec;
+  const outputExtension = hasVideo ? ".mp4" : ".m4a";
+  const outputPath = path.join(getCacheRoot(), `${key}${outputExtension}`);
+
+  if (!fs.existsSync(outputPath)) {
+    return null;
+  }
+
+  const outputValid = await isValidCachedOutput(outputPath);
+  if (!outputValid) {
+    return null;
+  }
+
+  playablePathCache.set(key, outputPath);
+  return outputPath;
+}

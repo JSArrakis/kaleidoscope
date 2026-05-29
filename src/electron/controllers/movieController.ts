@@ -1,16 +1,17 @@
 import { movieRepository } from "../repositories/movieRepository.js";
+import { enqueueIngestNormalization } from "../services/normalization/ingestNormalizationService.js";
 
 /**
  * Create a new movie
  */
 export async function createMovie(
-  movie: Movie
+  movie: Movie,
 ): Promise<{ message: string; status: number }> {
   try {
     console.log(
       "[movieController] Creating movie:",
       movie.mediaItemId,
-      movie.title
+      movie.title,
     );
     if (!movie.mediaItemId) {
       return { message: "Media Item ID is required", status: 400 };
@@ -26,9 +27,10 @@ export async function createMovie(
     }
 
     movieRepository.create(movie);
+    enqueueIngestNormalization(movie);
     console.log(
       "[movieController] Movie created successfully:",
-      movie.mediaItemId
+      movie.mediaItemId,
     );
     return {
       message: `Movie ${movie.title} Created`,
@@ -72,7 +74,7 @@ export function getMovie(mediaItemId: string): Movie | null {
  */
 export function updateMovie(
   mediaItemId: string,
-  updates: Partial<Movie>
+  updates: Partial<Movie>,
 ): { message: string; status: number } {
   try {
     if (!mediaItemId) {

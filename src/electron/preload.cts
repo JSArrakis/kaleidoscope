@@ -7,6 +7,18 @@ electron.contextBridge.exposeInMainWorld("electron", {
   resolveElectronPlayablePathHandler: async (filePath: string) =>
     await ipcInvoke("resolveElectronPlayablePath", filePath),
   getPlayerStateHandler: async () => await ipcInvoke("getPlayerState"),
+  getNormalizationStatusHandler: async () =>
+    await ipcInvoke("getNormalizationStatus"),
+  runStartupReadinessChecksHandler: async () =>
+    await ipcInvoke("runStartupReadinessChecks"),
+  getAnchorContentReadinessStatusHandler: async () =>
+    await ipcInvoke("getAnchorContentReadinessStatus"),
+  getFacetWalkabilityReadinessStatusHandler: async () =>
+    await ipcInvoke("getFacetWalkabilityReadinessStatus"),
+  getCadenceBufferReadinessStatusHandler: async () =>
+    await ipcInvoke("getCadenceBufferReadinessStatus"),
+  getStartupReadinessStatusHandler: async () =>
+    await ipcInvoke("getStartupReadinessStatus"),
   replacePlayerQueueHandler: async (filePaths: string[]) =>
     await ipcInvoke("replacePlayerQueue", filePaths),
   playerSelectQueueItemHandler: async (index: number) =>

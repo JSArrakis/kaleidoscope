@@ -1,4 +1,5 @@
 import { commercialRepository } from "../repositories/commercialRepository.js";
+import { enqueueIngestNormalization } from "../services/normalization/ingestNormalizationService.js";
 export async function createCommercial(commercial) {
     try {
         if (!commercial.mediaItemId) {
@@ -12,6 +13,7 @@ export async function createCommercial(commercial) {
             };
         }
         commercialRepository.create(commercial);
+        enqueueIngestNormalization(commercial);
         return { message: `Commercial ${commercial.title} Created`, status: 200 };
     }
     catch (error) {

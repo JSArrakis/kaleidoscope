@@ -38,6 +38,8 @@ interface PlayerData {
   mediaProbe: MediaProbeResult | null;
   isProbing: boolean;
   supportMessage: string;
+  normalizationStatus: NormalizationStatusSnapshot | null;
+  normalizationStatusLabel: string;
   canGoPrevious: boolean;
   canGoNext: boolean;
 }
@@ -137,20 +139,33 @@ const usePlayerViewModel = (
   >(null);
   const [isResolvingPlaybackSource, setIsResolvingPlaybackSource] =
     useState(false);
+  const [normalizationStatus, setNormalizationStatus] =
+    useState<NormalizationStatusSnapshot | null>(null);
 
   const refreshPlayerState = async (): Promise<void> => {
     const nextState = await window.electron.getPlayerStateHandler();
-    console.log(
-      `[PlayerVM] refreshPlayerState queueLength=${nextState.queue.length} currentIndex=${nextState.currentIndex} updatedAt=${nextState.updatedAt}`,
-    );
     setPlayerState(nextState);
   };
 
   useEffect(() => {
     void refreshPlayerState();
 
+    void window.electron
+      .getNormalizationStatusHandler()
+      .then(setNormalizationStatus)
+      .catch(() => {
+        // Keep UI responsive even if status endpoint is temporarily unavailable.
+      });
+
     const intervalId = window.setInterval(() => {
       void refreshPlayerState();
+
+      void window.electron
+        .getNormalizationStatusHandler()
+        .then(setNormalizationStatus)
+        .catch(() => {
+          // Ignore transient polling errors to avoid console spam in dev.
+        });
     }, 1000);
 
     return () => {
@@ -300,6 +315,30 @@ const usePlayerViewModel = (
     [currentFilePath, currentQueueItem, mediaKind, mediaProbe],
   );
 
+  const normalizationStatusLabel = useMemo(() => {
+    if (!normalizationStatus) {
+      return "Normalization status unavailable";
+    }
+
+    const { queue, cache } = normalizationStatus;
+    const pressure =
+      cache.usageRatio >= 0.9
+        ? "high"
+        : cache.usageRatio >= 0.8
+          ? "elevated"
+          : "normal";
+
+    if (queue.activeCount > 0 || queue.queuedCount > 0) {
+      return `Warming media: active ${queue.activeCount}, queued ${queue.queuedCount}, cache pressure ${pressure}`;
+    }
+
+    if (queue.failedCount > 0) {
+      return `Degraded: ${queue.failedCount} normalization failure(s), cache pressure ${pressure}`;
+    }
+
+    return `Ready: normalized ${queue.normalizedCount} source(s), cache pressure ${pressure}`;
+  }, [normalizationStatus]);
+
   const openFiles = async () => {
     const selectedFiles = await window.electron.openFileDialogHandler();
 
@@ -359,6 +398,8 @@ const usePlayerViewModel = (
     mediaProbe,
     isProbing,
     supportMessage,
+    normalizationStatus,
+    normalizationStatusLabel,
     canGoPrevious: selectedIndex > 0,
     canGoNext: selectedIndex >= 0 && selectedIndex < queue.length - 1,
     goHome,

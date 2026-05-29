@@ -1,4 +1,5 @@
 import { musicRepository } from "../repositories/musicRepository.js";
+import { enqueueIngestNormalization } from "../services/normalization/ingestNormalizationService.js";
 export async function createMusic(music) {
     try {
         if (!music.mediaItemId) {
@@ -12,6 +13,7 @@ export async function createMusic(music) {
             };
         }
         musicRepository.create(music);
+        enqueueIngestNormalization(music);
         return { message: `Music ${music.title} Created`, status: 200 };
     }
     catch (error) {

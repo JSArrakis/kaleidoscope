@@ -831,6 +831,156 @@ Policy:
 
 This preserves startup reliability while containing disk growth.
 
+### Hardcoded default thresholds (v1)
+
+The following defaults are intentionally hardcoded for the first production pass.
+They should live in one constants module and be logged at startup.
+
+#### A. Cadenced startup admission control
+
+- `FIRST_ANCHOR_SAFETY_MARGIN_SEC = 120`
+- `MIN_OPENING_BUFFER_SEC = 300` (5 minutes)
+- `TARGET_OPENING_BUFFER_SEC = 900` (15 minutes when content is available)
+- `MAX_OPENING_BUFFER_SEC = 1500` (25 minutes hard cap)
+- `ANCHOR_SELECTION_LOOKAHEAD_COUNT = 12` candidates
+
+Decision rule:
+
+- `warmupWindowSec = requiredStart - now`
+- Candidate passes if: `estimatedNormalizeSec <= warmupWindowSec - FIRST_ANCHOR_SAFETY_MARGIN_SEC`
+
+Fallback order:
+
+1. Try next anchor candidate (up to lookahead count).
+2. Expand opening buffer up to `MAX_OPENING_BUFFER_SEC` and re-check first candidate.
+3. If still failing, force fast-start mezzanine generation for selected anchor.
+4. If stream is still not ready, show explicit "Preparing first anchor" state and delay start.
+
+#### B. Normalization throughput assumptions for estimation
+
+Use conservative defaults until runtime telemetry is collected.
+
+- `REMUX_ESTIMATE_SEC = 5`
+- `TRANSCODE_SPEED_SD_X = 6.0` (source seconds processed per wall-clock second)
+- `TRANSCODE_SPEED_HD_X = 2.5`
+- `TRANSCODE_SPEED_UHD_X = 0.8`
+- `TRANSCODE_ESTIMATE_OVERHEAD_SEC = 20`
+
+Estimate formula:
+
+- `estimatedNormalizeSec = (durationSec / speedMultiplier) + TRANSCODE_ESTIMATE_OVERHEAD_SEC`
+
+Where multiplier is selected by source height:
+
+- `<= 576`: SD
+- `577-1080`: HD
+- `> 1080`: UHD
+
+#### C. Cache size and eviction watermarks
+
+- `CACHE_MAX_SIZE_GB = 300`
+- `CACHE_SOFT_WATERMARK = 0.80` (start background cleanup)
+- `CACHE_HARD_WATERMARK = 0.90` (aggressive cleanup)
+- `CACHE_CRITICAL_WATERMARK = 0.95` (emergency cleanup)
+- `CACHE_TARGET_AFTER_EVICT = 0.75`
+- `MIN_FREE_DISK_GB = 20` (global drive protection)
+- `EVICTION_BATCH_GB = 10` per pass
+
+Drive protection rule:
+
+- If free disk is below `MIN_FREE_DISK_GB`, skip non-essential writes and evict immediately
+  down to `CACHE_TARGET_AFTER_EVICT`.
+
+#### D. Tier windows and ranking defaults
+
+- `PINNED_NOW_WINDOW_HOURS = 4`
+- `PINNED_SOON_WINDOW_HOURS = 24`
+- `WARM_RECENCY_DAYS = 14`
+- `COLD_RECENCY_DAYS = 45`
+- `REUSE_WINDOW_DAYS = 30`
+
+Weighted rank defaults:
+
+- `ageWeight = 1.0`
+- `sizeWeight = 2.0`
+- `reuseWeight = 3.0`
+- `costWeight = 1.5`
+
+Interpretation:
+
+- Larger files are evicted sooner unless they are reused often or expensive to recreate.
+
+#### E. Cadence drift realignment defaults
+
+- `DRIFT_TOLERANCE_SEC = 3`
+- `DRIFT_SOFT_CORRECTION_SEC = 12`
+- `DRIFT_HARD_CORRECTION_SEC = 45`
+- `MAX_FILLER_ADJUST_PER_BOUNDARY_SEC = 120`
+- `REALIGNMENT_LOOKAHEAD_BLOCKS = 3`
+
+Behavior:
+
+- `abs(drift) <= 3`: no action
+- `3 < abs(drift) <= 12`: micro-adjust with filler substitution
+- `12 < abs(drift) <= 45`: active add/remove fillers over next 1-3 blocks
+- `abs(drift) > 45`: force hard realignment at next safe boundary
+
+Hard realignment action:
+
+- Recompute upcoming fillers for next anchor boundary and rebuild those buffer slots only.
+
+#### F. Two-tier trigger defaults (only for high-risk anchors)
+
+Two-tier is enabled when all conditions below are true:
+
+1. Cadenced stream
+2. Anchor can appear in first 2 blocks
+3. At least one "heavy" media condition:
+   - `durationSec >= 7200` (2 hours), or
+   - `videoHeight >= 2160`, or
+   - source codec in `{hevc, vc1, mpeg2video, prores}`
+
+Fast-start mezzanine profile defaults:
+
+- Container: MP4
+- Video codec: H.264
+- Audio codec: AAC
+- Resolution cap: 1920x1080
+- Video preset: veryfast
+- Video CRF: 22
+- Audio bitrate: 160k
+
+High-quality derivative defaults:
+
+- Container: MP4
+- Video codec: H.264
+- Audio codec: AAC
+- Preserve source resolution up to 2160p cap
+- Video preset: medium
+- Video CRF: 18
+- Audio bitrate: 192k
+
+Eviction preference under pressure:
+
+- Evict high-quality derivative before mezzanine for the same source.
+
+#### G. Non-cadenced stream defaults
+
+- No first-anchor cadence gating.
+- Still use cache tiers and watermarks.
+- If first anchor is unnormalized, start normalization immediately and show progress UI.
+
+#### H. Operational defaults
+
+- `NORMALIZATION_WORKERS = 2`
+- `MAX_IN_FLIGHT_PER_SOURCE = 1` (dedupe)
+- `STATUS_LOG_INTERVAL_SEC = 30`
+- `EVICTION_CHECK_INTERVAL_MIN = 10`
+- `ADMISSION_RECHECK_INTERVAL_SEC = 15` while preparing startup
+
+These values favor startup reliability and conservative disk safety over absolute quality.
+Tune only after collecting real throughput and cache hit telemetry.
+
 **Open questions**:
 
 - Should old HLS segments be deleted after they are consumed? Keeping them all allows
@@ -845,3 +995,1130 @@ This preserves startup reliability while containing disk growth.
   FFmpeg process started. The `stop()` method on `FFmpegStreamService` handles this.
 - What resolution should transcoded output target? For now, preserve the source resolution.
   Do not upscale or downscale. Add a quality settings page later.
+
+---
+
+## Part 9: Next Implementation Sequence (Three Workstreams)
+
+This section defines the exact order and execution plan for the next three workstreams.
+We will implement them one at a time in the order listed below.
+
+### Workstream 1 (First): Cadenced First-Anchor Readiness Admission Control
+
+Objective:
+
+- Prevent cadenced startup from selecting a first anchor that cannot be normalized before
+  its required boundary.
+
+Scope:
+
+- Cadenced stream startup only.
+- Initial first-anchor selection path only.
+- No changes to uncadenced selection behavior.
+
+Primary files:
+
+- `src/electron/services/streamConstruction/continuousStreamBuilder.ts`
+- `src/electron/services/streamConstruction/mediaSelector.ts`
+- `src/electron/services/normalization/normalizationWorker.ts`
+- `src/electron/services/normalization/normalizationDefaults.ts`
+
+Implementation steps:
+
+1. Add an admission helper that evaluates candidate anchors using:
+
+- warmup window from now until required cadence start
+- estimated normalization time from probe metadata and defaults
+
+2. Extend first-anchor selection to evaluate up to
+   `ANCHOR_SELECTION_LOOKAHEAD_COUNT` candidates.
+3. Accept first candidate that satisfies:
+   `estimatedNormalizeSec <= warmupWindowSec - FIRST_ANCHOR_SAFETY_MARGIN_SEC`.
+4. If no candidate passes:
+
+- expand opening buffer (up to `MAX_OPENING_BUFFER_SEC`) and retry once
+- if still failing, flag startup as preparation-required and continue with explicit
+  prepare-first-anchor state
+
+5. Add startup logs with chosen candidate, estimate, warmup window, and fallback path.
+
+Acceptance criteria:
+
+- A 2-4 hour heavy movie is rejected as first cadenced anchor when warmup is too short.
+- A shorter or already-normalized candidate is selected when available.
+- If no candidate passes, stream enters clear preparation mode rather than silent stall.
+- Uncadenced startup behavior remains unchanged.
+
+Validation:
+
+- Unit tests for admission pass/fail decisions.
+- Manual scenario tests at near-boundary starts (for example 3:55 to 4:00 cadence).
+
+### Workstream 2 (Second): Cadence Drift Realignment Monitor and Corrector
+
+Objective:
+
+- Keep cadence parity near boundaries by adjusting upcoming filler organically when drift
+  exceeds tolerance.
+
+Scope:
+
+- Continuous and adhoc cadenced streams.
+- Correction applied only to upcoming filler windows (never mutate currently playing media).
+
+Primary files:
+
+- `src/electron/services/backgroundService.ts`
+- `src/electron/services/streamManager.ts`
+- `src/electron/services/bufferConstructor.ts`
+- `src/electron/services/streamConstruction/continuousStreamBuilder.ts`
+
+Implementation steps:
+
+1. Add drift computation at boundary checkpoints:
+   `driftSec = actualBoundaryTime - targetBoundaryTime`.
+2. Add tolerance and correction levels:
+
+- no-op inside `DRIFT_TOLERANCE_SEC`
+- soft correction inside `DRIFT_SOFT_CORRECTION_SEC`
+- hard correction beyond `DRIFT_HARD_CORRECTION_SEC`
+
+3. Implement soft correction by swapping upcoming fillers with duration-near alternatives.
+4. Implement hard correction by rebuilding next filler window up to
+   `MAX_FILLER_ADJUST_PER_BOUNDARY_SEC`.
+5. Restrict correction horizon to `REALIGNMENT_LOOKAHEAD_BLOCKS`.
+6. Emit logs that include pre-drift, action type, and post-correction residual.
+
+Acceptance criteria:
+
+- Drift remains inside tolerance in normal operation after correction pass.
+- Correction never removes the currently playing item.
+- Correction never changes anchor order; only filler is adjusted.
+- No destabilizing oscillation across successive checkpoints.
+
+Validation:
+
+- Simulation tests with injected duration errors.
+- Multi-cycle manual run validating stable correction over several hours.
+
+### Workstream 3 (Third): Normalization and Cache Status Exposure via IPC
+
+Objective:
+
+- Surface real-time normalization and cache state to renderer so startup status and
+  operational visibility are explicit.
+
+Scope:
+
+- Main-process status provider and renderer consumer.
+- Read-only status reporting in this phase (no control commands yet).
+
+Primary files:
+
+- `src/electron/main.ts`
+- `src/electron/preload.cts`
+- `types.d.ts`
+- `src/electron/services/normalization/normalizationQueue.ts`
+- `src/ui/screens/Player/View/Player.viewmodel.ts`
+- `src/ui/screens/Home/View/Home.view.tsx`
+
+Implementation steps:
+
+1. Add queue status DTO from normalization service:
+
+- queuedCount, activeCount, normalizedCount, failedCount
+- recent failures summary
+
+2. Add cache status DTO:
+
+- totalBytes, maxBytes, usageRatio, freeDiskBytes
+- last eviction result (count/bytes)
+
+3. Add new IPC handler to fetch combined status snapshot.
+4. Expose the handler through preload and type declarations.
+5. Render status in Player and Home:
+
+- preparing, warming, ready, degraded states
+- optional inline warning for high cache pressure
+
+Acceptance criteria:
+
+- Renderer can request and display normalization/cache status without polling errors.
+- Startup state clearly indicates whether stream is preparing first anchor.
+- Cache pressure state is visible before failures occur.
+
+Validation:
+
+- Type-safe IPC compile checks.
+- Manual UI verification under normal load and forced failure scenarios.
+
+### Delivery order and stop points
+
+Execution order:
+
+1. Workstream 1
+2. Workstream 2
+3. Workstream 3
+
+After each workstream:
+
+- Run `npm run transpile:electron`
+- Run `npm run build`
+- Capture a short verification note before moving to the next workstream
+
+---
+
+## Part 10: Manual Regression Checklist
+
+Use this checklist after major stream, normalization, or playout changes.
+
+### A. Startup Admission Checks
+
+1. Start a cadenced stream near a boundary (for example, 3:55 local time).
+2. Verify first-anchor admission log appears with warmup and estimate values.
+3. Verify a heavy first candidate is skipped when estimate exceeds warmup budget.
+4. Verify selected first anchor starts without blocking UI thread.
+5. Verify uncadenced startup still begins immediately with no cadence gating behavior.
+
+Expected result:
+
+- Cadenced startup chooses a first anchor that fits warmup budget, or marks preparation-required explicitly.
+
+### B. Normalization Queue and Cache Checks
+
+1. Import one item each of movie, show, commercial, short, music, promo, and bumper.
+2. Confirm ingest-time normalization jobs are enqueued.
+3. Start a stream and confirm stream-time enqueue also runs for relevant blocks.
+4. Confirm queue snapshot reflects active, queued, and normalized counts.
+5. Confirm cache usage ratio updates and eviction runs near watermark.
+
+Expected result:
+
+- Queue counts and cache metrics evolve predictably; no duplicate transcoding for the same source in one session.
+
+### C. Cadence Realignment Checks
+
+1. Run a cadenced stream long enough to cross multiple boundaries.
+2. Confirm realignment logs appear only when drift exceeds tolerance.
+3. Verify corrections affect Upcoming filler only (never currently playing anchor).
+4. Verify anchor order remains unchanged after correction.
+5. Verify post-correction drift trends toward tolerance range.
+
+Expected result:
+
+- Soft/hard correction keeps cadence stable without destabilizing the queue.
+
+### D. UI Status Checks (Home and Player)
+
+1. Open Home and verify normalization status label renders.
+2. Open Player and verify normalization status label updates while queue activity changes.
+3. Simulate normalization failures (invalid media path) and verify degraded status appears.
+4. Simulate cache pressure and verify elevated/high pressure language appears.
+5. Verify UI remains functional if status endpoint is temporarily unavailable.
+
+Expected result:
+
+- Home and Player both present clear preparing/warming/ready/degraded states.
+
+### E. Stop/Restart and Persistence Checks
+
+1. Start stream, then stop stream, then start again.
+2. Verify queue/cache status snapshots remain valid after restart.
+3. Restart app and start stream again.
+4. Verify previously normalized files are reused from disk cache.
+5. Verify no crash or dead queue state after restart.
+
+Expected result:
+
+- Disk cache reuse works across app restarts and startup remains predictable.
+
+---
+
+## Part 11: Planned Startup Cache Rotation (Design Only, Not Implemented)
+
+Goal:
+
+- Keep at least one cache-ready anchor candidate available for every supported
+  facet genre/aesthetic combination so stream startup can respond quickly,
+  including future taxonomy-filtered launches.
+
+Scope for future implementation:
+
+1. Build and maintain a "startup readiness roster" keyed by facet pair:
+   `genreTagId + aestheticTagId`.
+2. For each facet pair, ensure at least one normalized/playable candidate is
+   present in disk cache and metadata index.
+3. If multiple candidates exist for a facet pair, rotate them with a fair policy
+   (round-robin with cooldown) so startup does not always pick the same item.
+4. Add optional readiness dimensions for future taxonomy filters:
+   allow-list/deny-list presets should map to at least one ready startup anchor
+   where feasible.
+5. Expose readiness diagnostics in normalization status:
+   covered pairs, missing pairs, and stale pairs (missing playable cache file).
+
+Selection behavior target:
+
+- On stream start, when filter context is known, first-anchor selection checks
+  readiness roster first and chooses a ready candidate from the matching facet
+  set; if several are valid, pick next in rotation.
+- If no ready candidate exists for that scope, fall back to normal media
+  selection and mark startup as preparation-required.
+
+Operational policy target:
+
+- Run a low-priority background maintainer loop that refreshes missing/stale
+  facet coverage opportunistically without interfering with near-term playback
+  prewarm jobs.
+
+Non-goal for this phase:
+
+- No schema, queue policy, or selection logic changes are implemented in this
+  document section. This is a roadmap item only.
+
+---
+
+## Part 12: Universal Receiver Bootstrap Coverage Prewarm (Design)
+
+Goal:
+
+- Guarantee fast first-anchor startup for non-embedded targets (Plex, Jellyfin,
+  and native in-app player) by maintaining a small pre-transcoded bootstrap pool
+  that covers startup contexts across genre/aesthetic tags.
+
+### 12.1 Why this is needed
+
+Current first-anchor admission improves startup by preferring cached-ready
+candidates, but it is still opportunistic. A universal receiver model needs a
+deterministic readiness layer where startup candidates are deliberately selected,
+prepared, and rotated.
+
+Target outcome:
+
+- Startup chooses randomly from a pool that is already playable for the active
+  output target profile.
+- Pool coverage ensures each represented startup tag-space can be entered
+  without a cold transcode.
+
+### 12.2 Coverage model (tag-driven)
+
+Coverage dimensions in scope now:
+
+- Genre tags
+- Aesthetic tags
+
+A candidate anchor (movie or episode) may satisfy multiple tags at once.
+If one item contains several genre/aesthetic tags, all of those tags are marked
+as covered by that single item.
+
+Coverage set definition:
+
+- Only include tags that are attached to at least one anchor candidate
+  (movie or episode).
+- Do not require coverage for orphan tags that are not attached to anchor media.
+
+### 12.3 Bootstrap pool construction algorithm
+
+High-level algorithm:
+
+1. Build `uncoveredTags` = all represented genre/aesthetic tags attached to at
+   least one movie or episode.
+2. While `uncoveredTags` is not empty:
+   - Pick the first unrepresented tag.
+   - Randomly select one eligible movie/episode that contains that tag.
+   - Add selected media to bootstrap pool.
+   - Remove all tags on that media from `uncoveredTags`.
+3. Stop when all represented tags are covered.
+
+Properties:
+
+- Randomized selection produces variety across recomputes.
+- Multi-tag items naturally reduce pool size and transcode load.
+- Pool can be rebuilt with a deterministic seed later if reproducibility is needed.
+
+### 12.4 Represented-tag tracking in data layer
+
+Requirement:
+
+- System must know whether a tag is associated with any movie or episode.
+
+Two implementation options:
+
+Option A (recommended initially): derived query at recompute time
+
+- Compute represented tags from junction tables (`movie_tags`, `episode_tags`)
+  when bootstrap planner runs.
+- Advantages: no write-time coupling, no counter drift risk.
+
+Option B (future optimization): denormalized counters/flags on tags
+
+- Add fields such as `anchorAssociationCount` or `hasAnchorAssociation`.
+- Update on media create/update/delete tag operations.
+- Requires strict update discipline and repair tooling.
+
+Recommendation:
+
+- Start with Option A to keep correctness simple.
+- Move to Option B only if planner query cost is proven problematic.
+
+### 12.5 Playback target scope (fixed at 3)
+
+Active target profiles:
+
+1. Native in-app player
+2. Plex
+3. Jellyfin
+
+Planner/queue implications:
+
+- For each bootstrap anchor, prewarm up to 3 output variants (one per profile)
+  as required by profile compatibility.
+- Shared variants should be reused if two profiles are equivalent.
+
+### 12.6 Recompute and invalidation strategy
+
+Recompute triggers:
+
+- Tag association changes on movies/episodes (create/update/delete)
+- Movie/episode create/delete
+- Playback profile changes
+- Manual "Rebuild Bootstrap Pool" action
+
+Recompute behavior:
+
+- Build a new candidate pool in memory first.
+- Diff old vs new pool.
+- Queue only missing/stale variants for prewarm.
+- Retain still-valid prepared variants to minimize re-transcode work.
+
+Expected effect:
+
+- Multi-tag anchors reduce churn because one item can continue covering many tags
+  after content changes.
+
+### 12.7 Rotation policy
+
+Requirement:
+
+- Rotate bootstrap pool usage after stream start so startup does not repeatedly
+  pick the same first anchor.
+
+Policy:
+
+- Maintain `lastUsedAt` per bootstrap candidate.
+- Enforce cooldown window `X` after stream start (configurable).
+- Startup selection picks randomly among candidates not in cooldown.
+- If all are in cooldown, select least recently used candidate.
+
+Suggested initial defaults:
+
+- `X = 6 hours` for daily household usage patterns.
+- Profile-specific rotation state (same media can be recent for Plex but not
+  necessarily for native, if needed later).
+
+### 12.8 Startup selection contract
+
+At stream start:
+
+1. Determine requested playback target profile.
+2. Query bootstrap pool candidates that are:
+   - coverage-valid,
+   - prewarmed for that profile,
+   - not in cooldown (or best fallback if all in cooldown).
+3. Randomly select from eligible set.
+4. If no eligible candidate exists, fall back to existing first-anchor admission
+   and mark startup as preparation-required.
+
+### 12.9 New status surfaces to expose
+
+Expose separate diagnostics to support startup warnings and operations:
+
+- Represented tags count (genre/aesthetic)
+- Covered tags count (genre/aesthetic)
+- Missing tags list
+- Bootstrap pool size
+- Ready variants per profile (native/plex/jellyfin)
+- Rotation cooldown pressure (eligible vs cooled-down)
+- Last recompute timestamp and duration
+
+### 12.10 Phase implementation roadmap
+
+Phase A: Planner + coverage metadata
+
+- Build represented-tag query and coverage planner.
+- Persist bootstrap pool records and tag coverage mapping.
+
+Phase B: Multi-profile prewarm queue integration
+
+- Add profile-aware prewarm jobs.
+- Reuse existing normalization pipeline where possible.
+
+Phase C: Startup selector + rotation
+
+- Integrate bootstrap-first selector in first-anchor admission.
+- Add cooldown/rotation state updates on stream start.
+
+Phase D: Recompute/invalidation + diagnostics
+
+- Hook media/tag mutation paths to schedule pool recompute.
+- Add status endpoints/UI indicators.
+
+Open design items (deferred):
+
+- Exact query/performance thresholds for Option A vs Option B tag tracking
+- Final default cooldown `X`
+- Whether per-profile rotation state is necessary in v1
+
+---
+
+## Part 13: Bootstrap Prewarm Implementation Spec (Schema + Contracts)
+
+This section turns Part 12 into concrete implementation contracts so coding can
+start immediately.
+
+### 13.1 Data model (SQLite schema)
+
+#### 13.1.1 Playback profile enum
+
+Use text values in SQLite:
+
+- `native`
+- `plex`
+- `jellyfin`
+
+#### 13.1.2 Tables
+
+Table: `bootstrap_pool_items`
+
+Purpose:
+
+- Stores each selected bootstrap anchor candidate (movie or episode) and
+  rotation metadata.
+
+Columns:
+
+- `id INTEGER PRIMARY KEY AUTOINCREMENT`
+- `poolItemId TEXT UNIQUE NOT NULL` (UUID)
+- `mediaItemId TEXT NOT NULL`
+- `mediaType TEXT NOT NULL` (`Movie` or `Episode`)
+- `selectionSeed INTEGER NULL` (optional deterministic rebuild seed)
+- `lastUsedAt INTEGER NULL` (unix seconds)
+- `createdAt DATETIME DEFAULT CURRENT_TIMESTAMP`
+- `updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP`
+
+Indexes:
+
+- `UNIQUE(mediaItemId, mediaType)`
+- `INDEX idx_bootstrap_pool_last_used(lastUsedAt)`
+
+Table: `bootstrap_pool_item_tags`
+
+Purpose:
+
+- Many-to-many mapping from pool item to the tags it covers.
+
+Columns:
+
+- `id INTEGER PRIMARY KEY AUTOINCREMENT`
+- `poolItemId TEXT NOT NULL`
+- `tagId TEXT NOT NULL`
+- `tagType TEXT NOT NULL` (`Genre` or `Aesthetic`)
+- `createdAt DATETIME DEFAULT CURRENT_TIMESTAMP`
+
+Indexes/constraints:
+
+- `UNIQUE(poolItemId, tagId)`
+- `INDEX idx_bootstrap_item_tags_tag(tagId, tagType)`
+
+FKs:
+
+- `poolItemId -> bootstrap_pool_items(poolItemId) ON DELETE CASCADE`
+- `tagId -> tags(tagId) ON DELETE CASCADE`
+
+Table: `bootstrap_profile_variants`
+
+Purpose:
+
+- Stores target-profile prewarmed path for each pool item.
+
+Columns:
+
+- `id INTEGER PRIMARY KEY AUTOINCREMENT`
+- `variantId TEXT UNIQUE NOT NULL` (UUID)
+- `poolItemId TEXT NOT NULL`
+- `profile TEXT NOT NULL` (`native|plex|jellyfin`)
+- `playablePath TEXT NOT NULL`
+- `cacheKey TEXT NULL`
+- `isReady INTEGER NOT NULL DEFAULT 0`
+- `isStale INTEGER NOT NULL DEFAULT 0`
+- `lastPreparedAt INTEGER NULL` (unix seconds)
+- `lastValidationAt INTEGER NULL` (unix seconds)
+- `lastError TEXT NULL`
+- `createdAt DATETIME DEFAULT CURRENT_TIMESTAMP`
+- `updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP`
+
+Indexes/constraints:
+
+- `UNIQUE(poolItemId, profile)`
+- `INDEX idx_bootstrap_variants_profile_ready(profile, isReady, isStale)`
+
+FKs:
+
+- `poolItemId -> bootstrap_pool_items(poolItemId) ON DELETE CASCADE`
+
+Table: `bootstrap_coverage_runs`
+
+Purpose:
+
+- Tracks each planner/recompute run for diagnostics and UI status.
+
+Columns:
+
+- `id INTEGER PRIMARY KEY AUTOINCREMENT`
+- `runId TEXT UNIQUE NOT NULL` (UUID)
+- `startedAt INTEGER NOT NULL` (unix seconds)
+- `completedAt INTEGER NULL` (unix seconds)
+- `durationMs INTEGER NULL`
+- `representedTagCount INTEGER NOT NULL DEFAULT 0`
+- `coveredTagCount INTEGER NOT NULL DEFAULT 0`
+- `missingTagCount INTEGER NOT NULL DEFAULT 0`
+- `selectedItemCount INTEGER NOT NULL DEFAULT 0`
+- `queuedVariantJobs INTEGER NOT NULL DEFAULT 0`
+- `status TEXT NOT NULL` (`running|completed|failed`)
+- `errorMessage TEXT NULL`
+
+Index:
+
+- `INDEX idx_bootstrap_runs_started(startedAt DESC)`
+
+Table: `bootstrap_missing_tags`
+
+Purpose:
+
+- Snapshot of missing tags produced by the latest completed run.
+
+Columns:
+
+- `id INTEGER PRIMARY KEY AUTOINCREMENT`
+- `runId TEXT NOT NULL`
+- `tagId TEXT NOT NULL`
+- `tagType TEXT NOT NULL`
+- `reason TEXT NOT NULL` (`no_anchor_association|no_ready_variant|excluded`)
+- `createdAt DATETIME DEFAULT CURRENT_TIMESTAMP`
+
+Indexes/constraints:
+
+- `UNIQUE(runId, tagId)`
+- `INDEX idx_bootstrap_missing_tag(tagId, tagType)`
+
+FKs:
+
+- `runId -> bootstrap_coverage_runs(runId) ON DELETE CASCADE`
+
+### 13.2 Query contracts (derived represented tags)
+
+Keep represented-tag detection as derived query in v1.
+
+Represented tags query:
+
+```sql
+SELECT DISTINCT t.tagId, t.type
+FROM tags t
+WHERE t.type IN ('Genre', 'Aesthetic')
+  AND (
+    EXISTS (
+      SELECT 1 FROM movie_tags mt
+      JOIN movies m ON m.mediaItemId = mt.mediaItemId
+      WHERE mt.tagId = t.tagId
+    )
+    OR EXISTS (
+      SELECT 1 FROM episode_tags et
+      JOIN episodes e ON e.mediaItemId = et.mediaItemId
+      WHERE et.tagId = t.tagId
+    )
+  )
+ORDER BY t.type, t.tagId;
+```
+
+Eligible anchors by tag query contract:
+
+- Input: `tagId`, optional `excludedMediaIds[]`
+- Output rows: `mediaItemId`, `mediaType`, `duration`, `durationLimit`, `path`
+
+Supported via `UNION ALL` of movies + episodes and randomized ordering.
+
+### 13.3 Repository contracts
+
+New file target:
+
+- `src/electron/repositories/bootstrapPoolRepository.ts`
+
+Interface:
+
+```ts
+export interface BootstrapPoolRepository {
+  beginCoverageRun(): { runId: string; startedAt: number };
+  completeCoverageRun(input: {
+    runId: string;
+    completedAt: number;
+    durationMs: number;
+    representedTagCount: number;
+    coveredTagCount: number;
+    missingTagCount: number;
+    selectedItemCount: number;
+    queuedVariantJobs: number;
+  }): void;
+  failCoverageRun(runId: string, errorMessage: string): void;
+
+  clearPool(): void;
+  upsertPoolItem(input: {
+    poolItemId: string;
+    mediaItemId: string;
+    mediaType: "Movie" | "Episode";
+  }): void;
+  replacePoolItemTags(
+    poolItemId: string,
+    tags: Array<{ tagId: string; tagType: "Genre" | "Aesthetic" }>,
+  ): void;
+
+  upsertProfileVariant(input: {
+    poolItemId: string;
+    profile: "native" | "plex" | "jellyfin";
+    playablePath: string;
+    cacheKey?: string | null;
+    isReady: boolean;
+    isStale: boolean;
+    lastPreparedAt?: number | null;
+    lastValidationAt?: number | null;
+    lastError?: string | null;
+  }): void;
+
+  setLastUsedAt(poolItemId: string, unixSeconds: number): void;
+
+  replaceMissingTags(
+    runId: string,
+    missing: Array<{
+      tagId: string;
+      tagType: "Genre" | "Aesthetic";
+      reason: "no_anchor_association" | "no_ready_variant" | "excluded";
+    }>,
+  ): void;
+
+  findRepresentedTags(): Array<{
+    tagId: string;
+    tagType: "Genre" | "Aesthetic";
+  }>;
+  findRandomEligibleAnchorByTag(input: {
+    tagId: string;
+    excludedMediaItemIds: string[];
+  }): {
+    mediaItemId: string;
+    mediaType: "Movie" | "Episode";
+    tags: Tag[];
+    path: string;
+    duration: number;
+    durationLimit: number;
+  } | null;
+
+  findStartupCandidates(input: {
+    profile: "native" | "plex" | "jellyfin";
+    cooldownSeconds: number;
+    now: number;
+  }): Array<{
+    poolItemId: string;
+    mediaItemId: string;
+    mediaType: "Movie" | "Episode";
+    playablePath: string;
+    lastUsedAt: number | null;
+  }>;
+
+  getLatestCoverageSnapshot(): {
+    runId: string;
+    representedTagCount: number;
+    coveredTagCount: number;
+    missingTagCount: number;
+    selectedItemCount: number;
+    queuedVariantJobs: number;
+    status: "running" | "completed" | "failed";
+    startedAt: number;
+    completedAt: number | null;
+  } | null;
+}
+```
+
+### 13.4 Service contracts
+
+New service 1:
+
+- `src/electron/services/bootstrap/bootstrapCoveragePlannerService.ts`
+
+Responsibilities:
+
+- Build represented tag set.
+- Construct pool with the uncovered-tag algorithm.
+- Persist pool and coverage-run metrics.
+- Produce profile prewarm job list.
+
+Contract:
+
+```ts
+export type BootstrapCoveragePlanResult = {
+  runId: string;
+  representedTags: number;
+  coveredTags: number;
+  missingTags: Array<{
+    tagId: string;
+    tagType: "Genre" | "Aesthetic";
+    reason: string;
+  }>;
+  selectedPoolItems: number;
+  queuedVariantJobs: number;
+  durationMs: number;
+};
+
+export async function rebuildBootstrapCoveragePool(input?: {
+  profiles?: Array<"native" | "plex" | "jellyfin">;
+  seed?: number;
+}): Promise<BootstrapCoveragePlanResult>;
+```
+
+New service 2:
+
+- `src/electron/services/bootstrap/bootstrapVariantPrewarmService.ts`
+
+Responsibilities:
+
+- Convert planner output into normalization/prewarm jobs per profile.
+- Reuse existing normalized outputs when compatible.
+
+Contract:
+
+```ts
+export async function prewarmBootstrapVariants(input: {
+  runId: string;
+  profiles: Array<"native" | "plex" | "jellyfin">;
+}): Promise<{ queued: number; reused: number; failed: number }>;
+```
+
+New service 3:
+
+- `src/electron/services/bootstrap/bootstrapFirstAnchorSelector.ts`
+
+Responsibilities:
+
+- Return random candidate from ready pool for requested profile.
+- Enforce cooldown and update `lastUsedAt` on selection.
+
+Contract:
+
+```ts
+export async function selectBootstrapFirstAnchor(input: {
+  profile: "native" | "plex" | "jellyfin";
+  now: number;
+  cooldownSeconds: number;
+}): Promise<{
+  media: Movie | Episode;
+  playablePath: string;
+  poolItemId: string;
+} | null>;
+```
+
+### 13.5 Integration points with existing startup flow
+
+Integration order in first-anchor admission:
+
+1. Try bootstrap selector for target profile.
+2. If bootstrap candidate found, return immediately.
+3. Else run existing admission path:
+   - uncadenced cached-first logic
+   - cadenced warmup-budget logic
+
+Files to integrate:
+
+- `src/electron/services/streamConstruction/firstAnchorAdmissionService.ts`
+- `src/electron/services/streamService.ts` (optional lazy-trigger recompute)
+
+### 13.6 IPC/API contracts (Electron)
+
+Add IPC handlers:
+
+- `rebuildBootstrapCoveragePool`
+- `getBootstrapCoverageStatus`
+- `getBootstrapMissingTags`
+- `getBootstrapProfileReadiness`
+- `setBootstrapRotationCooldown`
+
+Type contracts in renderer:
+
+```ts
+type BootstrapCoverageStatus = {
+  runId: string | null;
+  status: "idle" | "running" | "completed" | "failed";
+  representedTags: number;
+  coveredTags: number;
+  missingTags: number;
+  selectedPoolItems: number;
+  readyByProfile: {
+    native: number;
+    plex: number;
+    jellyfin: number;
+  };
+  lastStartedAt: number | null;
+  lastCompletedAt: number | null;
+  lastError: string | null;
+};
+```
+
+### 13.7 Config defaults
+
+New defaults in normalization/bootstrap settings:
+
+- `BOOTSTRAP_PROFILES = ["native", "plex", "jellyfin"]`
+- `BOOTSTRAP_ROTATION_COOLDOWN_SECONDS = 21600` (6h)
+- `BOOTSTRAP_REBUILD_DEBOUNCE_MS = 2000`
+- `BOOTSTRAP_MAX_REBUILD_CONCURRENCY = 1`
+
+### 13.8 Migration and rollout order
+
+1. Add schema migrations and repository with no runtime wiring.
+2. Implement planner service + manual IPC trigger.
+3. Implement prewarm service and store profile readiness.
+4. Add first-anchor bootstrap selector behind feature flag.
+5. Enable by default after readiness metrics stabilize.
+
+Feature flags:
+
+- `ENABLE_BOOTSTRAP_COVERAGE_POOL` (default false during rollout)
+- `ENABLE_BOOTSTRAP_SELECTOR` (default false until prewarm stable)
+
+### 13.9 Acceptance criteria (implementation-ready)
+
+1. Rebuild run computes represented tags from anchor associations only.
+2. Pool covers all represented tags unless no eligible anchors exist.
+3. Each selected pool item stores covered tag mapping.
+4. Ready variants are tracked independently for native/plex/jellyfin.
+5. Startup uses bootstrap selector first and records `lastUsedAt`.
+6. Cooldown rotation prevents immediate repetitive first-anchor picks.
+7. Diagnostics expose represented vs covered vs missing counts.
+8. Fallback startup path remains functional if bootstrap is empty or stale.
+
+---
+
+## Part 14: Local Native Player Plan (VLC-like Local Playback)
+
+Goal:
+
+- Make local playback "just work" for nearly all files by using a native decoder
+  backend (mpv or libVLC) instead of Chromium `<video>` for local mode.
+- Keep profile/prewarm/transcode strategy for remote streaming targets.
+
+### 14.1 Product behavior target
+
+Local mode:
+
+- Plays original media files directly whenever possible.
+- Avoids startup transcode waits for local in-house playback.
+- Uses existing stream construction (`MediaBlock[]`) unchanged.
+
+Remote mode (Plex/Jellyfin/etc):
+
+- Continues to use profile-aware prewarm and stream output pipeline.
+
+### 14.2 Player abstraction layer
+
+Create a unified backend interface so stream logic is player-agnostic.
+
+New interface file:
+
+- `src/electron/services/player/backends/IPlaybackBackend.ts`
+
+```ts
+export interface PlaybackBackend {
+  readonly id: "electron" | "mpv" | "vlc" | "stream-output";
+
+  initialize(): Promise<void>;
+  shutdown(): Promise<void>;
+
+  enqueueBlock(block: MediaBlock): Promise<void>;
+  replaceQueue(blocks: MediaBlock[]): Promise<void>;
+
+  play(): Promise<void>;
+  pause(): Promise<void>;
+  stop(): Promise<void>;
+  next(): Promise<void>;
+  previous(): Promise<void>;
+  selectIndex(index: number): Promise<void>;
+
+  getStateSnapshot(): Promise<ElectronPlayerState>;
+}
+```
+
+Existing `playerManager.ts` becomes an orchestrator/facade:
+
+- Chooses active backend based on configured playback mode.
+- Keeps current IPC API stable for UI.
+
+### 14.3 Backend adapters
+
+#### A. Electron backend (existing)
+
+- Wrap current queue implementation in interface adapter.
+- Keeps backward compatibility and test harness behavior.
+
+#### B. mpv backend (new, recommended first)
+
+New files:
+
+- `src/electron/services/player/backends/mpvBackend.ts`
+- `src/electron/services/player/mpv/mpvProcess.ts`
+- `src/electron/services/player/mpv/mpvIpc.ts`
+
+Design:
+
+- Spawn bundled `mpv.exe` as subprocess.
+- Control through JSON IPC socket (`--input-ipc-server=...`).
+- Use commands: `loadfile`, `playlist-next`, `playlist-prev`, `set_property`,
+  `get_property`.
+
+Initial mpv startup args (draft):
+
+- `--idle=yes`
+- `--force-window=yes`
+- `--keep-open=yes`
+- `--input-ipc-server=<pipe-or-socket-path>`
+- `--hwdec=auto`
+
+Queue behavior:
+
+- First item via `loadfile <path> replace`.
+- Next items via `loadfile <path> append-play`.
+- For block-level context, flatten block to ordered files exactly as current
+  queue logic does.
+
+#### C. libVLC backend (optional later)
+
+- Keep as v2 option if mpv packaging/control becomes problematic.
+- Same `PlaybackBackend` contract allows swapping implementation.
+
+### 14.4 Backend selection and config
+
+New config keys:
+
+- `LOCAL_PLAYBACK_BACKEND = "mpv" | "electron"` (default `mpv` once stable)
+- `REMOTE_PLAYBACK_BACKEND = "stream-output"`
+- `MPV_BINARY_PATH` optional override (dev/debug)
+
+Selection policy:
+
+- If stream target is local display: use `LOCAL_PLAYBACK_BACKEND`.
+- If stream target is remote receiver: use stream-output backend.
+
+### 14.5 Lifecycle and teardown design
+
+Requirements:
+
+- Backend must be fully stoppable on window close and app quit.
+- No orphan child processes.
+
+Lifecycle sequence:
+
+1. App start: initialize selected backend.
+2. Stream start: pass first block(s), call `play()`.
+3. Stream stop: call backend `stop()`, clear queue state.
+4. App shutdown: call backend `shutdown()`; kill child process if graceful
+   stop timeout exceeded.
+
+Timeout policy (draft):
+
+- Graceful stop timeout: 2000ms
+- Force kill timeout: +1000ms
+
+### 14.6 Failure handling and fallback
+
+Failure classes:
+
+- Backend init failure (binary missing, socket failure)
+- Runtime command failure (queue op fails)
+- Process crash during playback
+
+Fallback policy:
+
+1. Attempt backend restart once.
+2. If restart fails, fallback to Electron backend (existing).
+3. Surface degraded-mode warning in UI and logs.
+
+Do not block stream construction on backend failure; only playback surface
+degrades.
+
+### 14.7 UI and state contracts
+
+State additions:
+
+- Active backend id
+- Backend health (`healthy|degraded|failed`)
+- Last backend error message/time
+
+IPC additions:
+
+- `getPlaybackBackendStatus`
+- `setPlaybackBackendPreference`
+- `restartPlaybackBackend`
+
+No breaking changes to existing player controls expected.
+
+### 14.8 Packaging and distribution
+
+Windows initial scope:
+
+- Bundle `mpv.exe` and required DLLs under app resources.
+- Resolve path via `process.resourcesPath` in production.
+
+Dev mode:
+
+- Allow external `mpv` from env/path for rapid iteration.
+
+Future:
+
+- Add macOS/Linux bundled binaries if/when cross-platform local native playback
+  is required.
+
+### 14.9 Security and stability notes
+
+- Never pass unsanitized user input into process args.
+- Use strict argument arrays (no shell interpolation).
+- Validate file existence before enqueue.
+- Watchdog child process exit events and clear stale IPC handles.
+
+### 14.10 Implementation phases
+
+Phase 1: Abstraction scaffold
+
+- Add `PlaybackBackend` interface.
+- Wrap existing Electron backend.
+- Keep behavior unchanged.
+
+Phase 2: mpv backend MVP
+
+- Spawn mpv, append queue items, play/next/prev/stop support.
+- Basic state snapshot bridge.
+
+Phase 3: Lifecycle hardening
+
+- Graceful shutdown and force-kill fallback.
+- Crash restart + backend fallback policy.
+
+Phase 4: UI/backend status
+
+- Add backend status indicators and manual restart action.
+
+Phase 5: Default switch
+
+- Set local default backend to mpv after soak testing.
+
+### 14.11 Acceptance criteria
+
+1. Local playback starts without transcoding for legacy AVI/MKV test files.
+2. Queue transitions are gapless or near-gapless across buffer + anchor files.
+3. Closing app leaves no orphan mpv process.
+4. Backend crash recovers or falls back automatically.
+5. Remote streaming mode remains unchanged and functional.
+6. Existing player UI controls continue to work through backend abstraction.

@@ -1,7 +1,8 @@
 import { commercialRepository } from "../repositories/commercialRepository.js";
+import { enqueueIngestNormalization } from "../services/normalization/ingestNormalizationService.js";
 
 export async function createCommercial(
-  commercial: Commercial
+  commercial: Commercial,
 ): Promise<{ message: string; status: number }> {
   try {
     if (!commercial.mediaItemId) {
@@ -9,7 +10,7 @@ export async function createCommercial(
     }
 
     const existing = commercialRepository.findByMediaItemId(
-      commercial.mediaItemId
+      commercial.mediaItemId,
     );
     if (existing) {
       return {
@@ -19,6 +20,7 @@ export async function createCommercial(
     }
 
     commercialRepository.create(commercial);
+    enqueueIngestNormalization(commercial);
     return { message: `Commercial ${commercial.title} Created`, status: 200 };
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
@@ -45,7 +47,7 @@ export function getCommercial(mediaItemId: string): Commercial | null {
 
 export function updateCommercial(
   mediaItemId: string,
-  updates: Partial<Commercial>
+  updates: Partial<Commercial>,
 ): { message: string; status: number } {
   try {
     if (!mediaItemId) {

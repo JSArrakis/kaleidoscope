@@ -1,7 +1,8 @@
 import { bumperRepository } from "../repositories/bumperRepository.js";
+import { enqueueIngestNormalization } from "../services/normalization/ingestNormalizationService.js";
 
 export async function createBumper(
-  bumper: Bumper
+  bumper: Bumper,
 ): Promise<{ message: string; status: number }> {
   try {
     if (!bumper.mediaItemId) {
@@ -17,6 +18,7 @@ export async function createBumper(
     }
 
     bumperRepository.create(bumper);
+    enqueueIngestNormalization(bumper);
     return { message: `Bumper ${bumper.title} Created`, status: 200 };
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
@@ -43,7 +45,7 @@ export function getBumper(mediaItemId: string): Bumper | null {
 
 export function updateBumper(
   mediaItemId: string,
-  updates: Partial<Bumper>
+  updates: Partial<Bumper>,
 ): { message: string; status: number } {
   try {
     if (!mediaItemId) {

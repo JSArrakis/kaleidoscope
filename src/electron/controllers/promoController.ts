@@ -1,7 +1,8 @@
 import { promoRepository } from "../repositories/promoRepository.js";
+import { enqueueIngestNormalization } from "../services/normalization/ingestNormalizationService.js";
 
 export async function createPromo(
-  promo: Promo
+  promo: Promo,
 ): Promise<{ message: string; status: number }> {
   try {
     if (!promo.mediaItemId) {
@@ -17,6 +18,7 @@ export async function createPromo(
     }
 
     promoRepository.create(promo);
+    enqueueIngestNormalization(promo);
     return { message: `Promo ${promo.title} Created`, status: 200 };
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
@@ -43,7 +45,7 @@ export function getPromo(mediaItemId: string): Promo | null {
 
 export function updatePromo(
   mediaItemId: string,
-  updates: Partial<Promo>
+  updates: Partial<Promo>,
 ): { message: string; status: number } {
   try {
     if (!mediaItemId) {

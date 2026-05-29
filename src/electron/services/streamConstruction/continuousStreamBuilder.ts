@@ -29,6 +29,10 @@ import { programmingBlockRepository } from "../../repositories/programmingBlockR
 import { selectThemedMedia } from "./mediaSelector.js";
 import { selectRandomShowOrMovie } from "./mediaSelector.js";
 import { resolveCollectionAwareAnchorSelection } from "./collectionProgressionSelector.js";
+import { createNormalizationJobsFromBlocks } from "../normalization/normalizationJobFactory.js";
+import { normalizationQueue } from "../normalization/normalizationQueue.js";
+import { selectFirstAnchorForCadencedStartup } from "./firstAnchorAdmissionService.js";
+import { selectFirstAnchorForCachedUncadencedStartup } from "./firstAnchorAdmissionService.js";
 
 /**
  * Builds a continuous stream
@@ -54,7 +58,9 @@ export async function buildContinuousStream(
 
   try {
     // Initialize stream data
-    const initData = initializeContinuousStream(streamConstructionOptions); // VERIFIED
+    const initData = await initializeContinuousStream(
+      streamConstructionOptions,
+    ); // VERIFIED
 
     if (!initData.selectedFirstMedia) {
       return [[], "No movies or shows found in database"];
@@ -120,9 +126,9 @@ export async function buildContinuousStream(
  * Initializes stream with necessary data
  * Calculates end-of-day timestamp, loads active holidays, gets progression map, selects first media
  */
-function initializeContinuousStream(
+async function initializeContinuousStream(
   streamConstructionOptions: StreamConstructionOptions,
-): StreamInitializationData {
+): Promise<StreamInitializationData> {
   const startingTimepoint = Math.floor(Date.now() / 1000);
   const fullDateString = new Date(startingTimepoint * 1000)
     .toISOString()
@@ -177,11 +183,53 @@ function initializeContinuousStream(
   }
 
   // Select first random media as fallback
-  const selectedFirstMedia = selectRandomShowOrMovie(
+  const fallbackFirstMedia = selectRandomShowOrMovie(
     startingTimepoint,
     iterationDuration,
     [],
   ); // VERIFIED
+
+  let selectedFirstMedia = fallbackFirstMedia;
+  let firstAnchorRequiresPreparation = false;
+  let firstAnchorEstimatedNormalizeSeconds: number | null = null;
+  let firstAnchorAdmissionReason: string | undefined;
+
+  if (streamConstructionOptions.Cadence && selectedFirstMedia) {
+    const nextCadenceTime = findNextCadenceTime(startingTimepoint);
+    const admission = await selectFirstAnchorForCadencedStartup({
+      timepoint: startingTimepoint,
+      iterationDuration,
+      ageGroupTags: [],
+      warmupWindowSeconds: Math.max(0, nextCadenceTime - startingTimepoint),
+      preferredCandidate: selectedFirstMedia,
+    });
+
+    selectedFirstMedia = admission.selectedFirstMedia;
+    firstAnchorRequiresPreparation = admission.requiresPreparation;
+    firstAnchorEstimatedNormalizeSeconds = admission.estimatedNormalizeSeconds;
+    firstAnchorAdmissionReason = admission.admissionReason;
+
+    console.log(
+      `[ContinuousStreamBuilder] First-anchor admission evaluated=${admission.evaluatedCandidates} warmup=${admission.warmupWindowSeconds}s estimate=${admission.estimatedNormalizeSeconds ?? -1}s requiresPreparation=${admission.requiresPreparation} reason=${admission.admissionReason}`,
+    );
+  } else if (selectedFirstMedia) {
+    const admission = await selectFirstAnchorForCachedUncadencedStartup({
+      timepoint: startingTimepoint,
+      iterationDuration,
+      ageGroupTags: [],
+      warmupWindowSeconds: 0,
+      preferredCandidate: selectedFirstMedia,
+    });
+
+    selectedFirstMedia = admission.selectedFirstMedia;
+    firstAnchorRequiresPreparation = admission.requiresPreparation;
+    firstAnchorEstimatedNormalizeSeconds = admission.estimatedNormalizeSeconds;
+    firstAnchorAdmissionReason = admission.admissionReason;
+
+    console.log(
+      `[ContinuousStreamBuilder] First-anchor uncadenced admission evaluated=${admission.evaluatedCandidates} estimate=${admission.estimatedNormalizeSeconds ?? -1}s requiresPreparation=${admission.requiresPreparation} reason=${admission.admissionReason}`,
+    );
+  }
 
   return {
     activeHolidayTags,
@@ -190,6 +238,9 @@ function initializeContinuousStream(
     iterationDuration,
     endOfTimeWindow,
     selectedFirstMedia,
+    firstAnchorRequiresPreparation,
+    firstAnchorEstimatedNormalizeSeconds,
+    firstAnchorAdmissionReason,
     nextScheduledBlock,
     activeScheduledBlock,
     activeScheduledDefinition,
@@ -1293,6 +1344,16 @@ export function rolloverToNextDay(
   // Append the new day's anchor blocks to Upcoming
   if (iterationBlocks.length > 0) {
     streamManager.addToUpcomingStream(iterationBlocks);
+  }
+
+  const prewarmBlocks = [lastUpcomingBlock, ...iterationBlocks];
+  const jobs = createNormalizationJobsFromBlocks(prewarmBlocks);
+  const queued = normalizationQueue.enqueue(jobs);
+
+  if (queued > 0) {
+    console.log(
+      `[ContinuousStreamBuilder] Enqueued rollover normalization jobs: ${queued}/${jobs.length}`,
+    );
   }
 
   console.log(

@@ -38,6 +38,8 @@ const PlayerView: FC<PlayerViewProps> = ({ viewModel }) => {
     mediaProbe,
     isProbing,
     supportMessage,
+    normalizationStatus,
+    normalizationStatusLabel,
     canGoPrevious,
     canGoNext,
     goHome,
@@ -141,6 +143,13 @@ const PlayerView: FC<PlayerViewProps> = ({ viewModel }) => {
               {isResolvingPlaybackSource && (
                 <p className={styles.probeStatus}>
                   Preparing playback source with FFmpeg for in-app playback...
+                </p>
+              )}
+              <p className={styles.probeStatus}>{normalizationStatusLabel}</p>
+              {normalizationStatus?.recentFailures?.[0] && (
+                <p className={styles.supportMessage}>
+                  Last normalization failure:{" "}
+                  {normalizationStatus.recentFailures[0].message}
                 </p>
               )}
               {!isProbing && mediaProbe && (

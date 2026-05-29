@@ -485,10 +485,63 @@ interface StreamInitializationData {
   iterationDuration: number;
   endOfTimeWindow: number;
   selectedFirstMedia: Episode | Movie | null;
+  firstAnchorRequiresPreparation?: boolean;
+  firstAnchorEstimatedNormalizeSeconds?: number | null;
+  firstAnchorAdmissionReason?: string;
   nextScheduledBlock: ScheduledBlock | null;
   activeScheduledBlock?: ScheduledBlock | null;
   activeScheduledDefinition?: ProgrammingBlockDefinition | null;
 }
+
+type NormalizationQueueStatus = {
+  queuedCount: number;
+  activeCount: number;
+  normalizedCount: number;
+  failedCount: number;
+};
+
+type NormalizationCacheStatus = {
+  cacheRoot: string;
+  totalBytes: number;
+  maxBytes: number;
+  usageRatio: number;
+  freeDiskBytes: number | null;
+};
+
+type NormalizationFailureStatus = {
+  sourcePath: string;
+  message: string;
+  timestamp: number;
+};
+
+type NormalizationEvictionStatus = {
+  deletedCount: number;
+  deletedBytes: number;
+  usageRatioBefore: number;
+  usageRatioAfter: number;
+  aggressive: boolean;
+  timestamp: number;
+};
+
+type NormalizationStatusSnapshot = {
+  queue: NormalizationQueueStatus;
+  cache: NormalizationCacheStatus;
+  recentFailures: NormalizationFailureStatus[];
+  lastEviction: NormalizationEvictionStatus | null;
+};
+
+type StartupReadinessCheckStatus = {
+  passed: boolean;
+  detail: string;
+};
+
+type StartupReadinessSnapshot = {
+  completedAt: number;
+  anchorContent: StartupReadinessCheckStatus;
+  facetWalkability: StartupReadinessCheckStatus;
+  cadenceBuffer: StartupReadinessCheckStatus;
+  warnings: string[];
+};
 
 // ============================================================================
 // IPC EVENT PAYLOAD MAPPINGS
@@ -499,6 +552,12 @@ type EventPayloadMapping = {
   probeMediaMetadata: Promise<MediaProbeResult>;
   resolveElectronPlayablePath: Promise<string>;
   getPlayerState: Promise<ElectronPlayerState>;
+  getNormalizationStatus: Promise<NormalizationStatusSnapshot>;
+  runStartupReadinessChecks: Promise<StartupReadinessSnapshot>;
+  getAnchorContentReadinessStatus: Promise<StartupReadinessCheckStatus | null>;
+  getFacetWalkabilityReadinessStatus: Promise<StartupReadinessCheckStatus | null>;
+  getCadenceBufferReadinessStatus: Promise<StartupReadinessCheckStatus | null>;
+  getStartupReadinessStatus: Promise<StartupReadinessSnapshot | null>;
   replacePlayerQueue: Promise<ElectronPlayerState>;
   playerSelectQueueItem: Promise<ElectronPlayerState>;
   playerPlayPrevious: Promise<ElectronPlayerState>;
@@ -576,6 +635,12 @@ interface Window {
     probeMediaMetadataHandler: (filePath: string) => Promise<MediaProbeResult>;
     resolveElectronPlayablePathHandler: (filePath: string) => Promise<string>;
     getPlayerStateHandler: () => Promise<ElectronPlayerState>;
+    getNormalizationStatusHandler: () => Promise<NormalizationStatusSnapshot>;
+    runStartupReadinessChecksHandler: () => Promise<StartupReadinessSnapshot>;
+    getAnchorContentReadinessStatusHandler: () => Promise<StartupReadinessCheckStatus | null>;
+    getFacetWalkabilityReadinessStatusHandler: () => Promise<StartupReadinessCheckStatus | null>;
+    getCadenceBufferReadinessStatusHandler: () => Promise<StartupReadinessCheckStatus | null>;
+    getStartupReadinessStatusHandler: () => Promise<StartupReadinessSnapshot | null>;
     replacePlayerQueueHandler: (
       filePaths: string[],
     ) => Promise<ElectronPlayerState>;

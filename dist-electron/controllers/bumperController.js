@@ -1,4 +1,5 @@
 import { bumperRepository } from "../repositories/bumperRepository.js";
+import { enqueueIngestNormalization } from "../services/normalization/ingestNormalizationService.js";
 export async function createBumper(bumper) {
     try {
         if (!bumper.mediaItemId) {
@@ -12,6 +13,7 @@ export async function createBumper(bumper) {
             };
         }
         bumperRepository.create(bumper);
+        enqueueIngestNormalization(bumper);
         return { message: `Bumper ${bumper.title} Created`, status: 200 };
     }
     catch (error) {

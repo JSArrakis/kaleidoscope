@@ -1,4 +1,5 @@
 import { showRepository } from "../repositories/showRepository.js";
+import { enqueueIngestNormalizationForShow } from "../services/normalization/ingestNormalizationService.js";
 export async function createShow(show) {
     try {
         if (!show.mediaItemId) {
@@ -12,6 +13,7 @@ export async function createShow(show) {
             };
         }
         showRepository.create(show);
+        enqueueIngestNormalizationForShow(show);
         return { message: `Show ${show.title} Created`, status: 200 };
     }
     catch (error) {

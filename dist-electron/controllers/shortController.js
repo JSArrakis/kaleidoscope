@@ -1,4 +1,5 @@
 import { shortRepository } from "../repositories/shortRepository.js";
+import { enqueueIngestNormalization } from "../services/normalization/ingestNormalizationService.js";
 export async function createShort(short) {
     try {
         if (!short.mediaItemId) {
@@ -12,6 +13,7 @@ export async function createShort(short) {
             };
         }
         shortRepository.create(short);
+        enqueueIngestNormalization(short);
         return { message: `Short ${short.title} Created`, status: 200 };
     }
     catch (error) {

@@ -8,7 +8,7 @@ interface HomeViewProps {
 }
 
 const HomeView: FC<HomeViewProps> = ({ viewModel }) => {
-  const { isStartingTest, testStatus } = viewModel;
+  const { isStartingTest, testStatus, normalizationStatusLabel } = viewModel;
 
   return (
     <div className={styles.screen}>
@@ -48,6 +48,7 @@ const HomeView: FC<HomeViewProps> = ({ viewModel }) => {
                 Requires KALEIDOSCOPE_USE_FILESYSTEM_ADHOC_TEST=1 in your dev
                 terminal.
               </p>
+              <p className={styles.testStatus}>{normalizationStatusLabel}</p>
               {isStartingTest && (
                 <p className={styles.testStatus}>Starting test stream...</p>
               )}

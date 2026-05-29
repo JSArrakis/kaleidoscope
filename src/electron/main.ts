@@ -1,8 +1,11 @@
 import { app, BrowserWindow } from "electron";
 import { ipcMainHandle, isDev } from "./util.js";
 import { getPreloadPath, getUIPath } from "./pathResolver.js";
-import { connectToDB } from "./db/db.js";
-import { startBackgroundService } from "./services/backgroundService.js";
+import { closeDB, connectToDB } from "./db/db.js";
+import {
+  startBackgroundService,
+  stopBackgroundService,
+} from "./services/backgroundService.js";
 import { openFileDialogHandler } from "./handlers/commonHanlders.js";
 import {
   getCollectionsHandler,
@@ -110,14 +113,49 @@ import {
   playPreviousInPlayerQueue,
   replacePlayerQueueFromFilePaths,
   selectPlayerQueueItem,
+  stopPlayer,
 } from "./services/playerManager.js";
 import { ensureElectronPlayablePath } from "./services/ffmpegPlaybackProxy.js";
+import { normalizationQueue } from "./services/normalization/normalizationQueue.js";
+import {
+  getStartupReadinessSnapshot,
+  runStartupReadinessChecks,
+  getAnchorContentReadinessSnapshot,
+  getFacetWalkabilityReadinessSnapshot,
+  getCadenceBufferReadinessSnapshot,
+} from "./services/startupReadinessService.js";
 
 // Allow media autoplay in the in-app player without requiring an extra click.
 app.commandLine.appendSwitch("autoplay-policy", "no-user-gesture-required");
 import { createStream } from "./services/streamService.js";
 import { StreamType } from "./models.js";
 import { stopContinuousStream } from "./services/streamManager.js";
+
+let isShuttingDown = false;
+
+async function shutdownApplicationServices(): Promise<void> {
+  if (isShuttingDown) {
+    return;
+  }
+
+  isShuttingDown = true;
+  console.log("[Main] Shutting down application services...");
+
+  try {
+    // Stop periodic background timers first so no new work is scheduled.
+    stopBackgroundService();
+    stopContinuousStream();
+    await stopPlayer();
+  } catch (error) {
+    console.error("[Main] Error while stopping runtime services:", error);
+  }
+
+  try {
+    closeDB();
+  } catch (error) {
+    console.error("[Main] Error while closing database:", error);
+  }
+}
 
 app.on("ready", async () => {
   // Initialize database first
@@ -145,6 +183,10 @@ app.on("ready", async () => {
     mainWindow.loadFile(getUIPath());
   }
 
+  mainWindow.on("close", () => {
+    void shutdownApplicationServices();
+  });
+
   // Start background service
   startBackgroundService();
 
@@ -171,6 +213,24 @@ app.on("ready", async () => {
   );
   ipcMainHandle("getPlayerState", async () => {
     return getPlayerStateSnapshot();
+  });
+  ipcMainHandle("getNormalizationStatus", async () => {
+    return normalizationQueue.getStatusSnapshot();
+  });
+  ipcMainHandle("runStartupReadinessChecks", async () => {
+    return runStartupReadinessChecks();
+  });
+  ipcMainHandle("getAnchorContentReadinessStatus", async () => {
+    return getAnchorContentReadinessSnapshot();
+  });
+  ipcMainHandle("getFacetWalkabilityReadinessStatus", async () => {
+    return getFacetWalkabilityReadinessSnapshot();
+  });
+  ipcMainHandle("getCadenceBufferReadinessStatus", async () => {
+    return getCadenceBufferReadinessSnapshot();
+  });
+  ipcMainHandle("getStartupReadinessStatus", async () => {
+    return getStartupReadinessSnapshot();
   });
   ipcMainHandle(
     "replacePlayerQueue",
@@ -450,4 +510,17 @@ app.on("ready", async () => {
   ipcMainHandle("deleteMosaic", async (_event: any, mosaicId: string) => {
     return deleteMosaicHandler(mosaicId);
   });
+});
+
+app.on("before-quit", () => {
+  void shutdownApplicationServices();
+});
+
+app.on("window-all-closed", () => {
+  if (process.platform !== "darwin") {
+    app.quit();
+  } else {
+    // On macOS, app stays active after windows close by default.
+    void shutdownApplicationServices();
+  }
 });

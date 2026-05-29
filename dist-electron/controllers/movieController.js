@@ -1,4 +1,5 @@
 import { movieRepository } from "../repositories/movieRepository.js";
+import { enqueueIngestNormalization } from "../services/normalization/ingestNormalizationService.js";
 /**
  * Create a new movie
  */
@@ -17,6 +18,7 @@ export async function createMovie(movie) {
             };
         }
         movieRepository.create(movie);
+        enqueueIngestNormalization(movie);
         console.log("[movieController] Movie created successfully:", movie.mediaItemId);
         return {
             message: `Movie ${movie.title} Created`,
