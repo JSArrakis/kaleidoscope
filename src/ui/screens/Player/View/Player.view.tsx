@@ -71,15 +71,61 @@ const PlayerView: FC<PlayerViewProps> = ({ viewModel }) => {
 
   useEffect(() => {
     if (!mediaSource) {
+      console.log("[PlayerView] No mediaSource, skipping auto-play");
       return;
     }
 
     const element = isAudioOnly ? audioRef.current : videoRef.current;
     if (!element) {
+      console.log(
+        `[PlayerView] No ${isAudioOnly ? "audio" : "video"} element ref, deferring auto-play`,
+      );
       return;
     }
 
+    console.log(
+      `[PlayerView] Auto-play effect triggered for mediaSource: ${mediaSource}`,
+    );
+
     const startPlayback = async () => {
+      // Wait for element to have loaded metadata (readyState >= 1) before attempting play
+      const waitForReady = () =>
+        new Promise<void>((resolve) => {
+          if (element.readyState >= 1) {
+            console.log(
+              `[PlayerView] Element already ready (readyState=${element.readyState}), proceeding to play`,
+            );
+            resolve();
+            return;
+          }
+
+          console.log(
+            `[PlayerView] Element not ready (readyState=${element.readyState}), waiting for loadedmetadata event`,
+          );
+          const onReady = () => {
+            console.log(
+              `[PlayerView] Element ready (readyState=${element.readyState}), proceeding to play`,
+            );
+            element.removeEventListener("loadedmetadata", onReady);
+            element.removeEventListener("canplay", onReady);
+            resolve();
+          };
+          element.addEventListener("loadedmetadata", onReady);
+          element.addEventListener("canplay", onReady);
+
+          // Timeout after 5 seconds to avoid hanging
+          setTimeout(() => {
+            element.removeEventListener("loadedmetadata", onReady);
+            element.removeEventListener("canplay", onReady);
+            console.log(
+              `[PlayerView] Timeout waiting for element ready, attempting play anyway`,
+            );
+            resolve();
+          }, 5000);
+        });
+
+      await waitForReady();
+
       logMediaEvent("startPlayback:attempt", element);
       try {
         await element.play();

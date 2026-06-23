@@ -59,7 +59,7 @@ const useBumpersViewModel = (
         mediaItemId: normalizeItem(bumperPath),
         title: "",
         path: bumperPath,
-        duration: 0,
+        duration: 0, // Backend will probe and populate
         type: MediaType.Bumper,
         tags: [] as Tag[],
       }));

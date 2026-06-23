@@ -116,3 +116,136 @@
   color: #d6e4f0;
   font-size: 13px;
 }
+
+/* ── Stream Launcher ──────────────────────────────────────── */
+
+.optionRow {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.optionLabel {
+  display: contents;
+}
+
+.toggleChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.05);
+  color: #93a6b8;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: default;
+  transition:
+    background 0.2s,
+    color 0.2s,
+    border-color 0.2s;
+}
+
+.toggleChip:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.toggleChipOn {
+  background: rgba(79, 209, 255, 0.15);
+  border-color: #4fd1ff;
+  color: #4fd1ff;
+}
+
+.chipIcon {
+  font-size: 16px;
+}
+
+.durationRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.durationLabel {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #93a6b8;
+  min-width: 56px;
+}
+
+.durationPicker {
+  display: flex;
+  gap: 6px;
+}
+
+.durationChip {
+  padding: 6px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.05);
+  color: #93a6b8;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: default;
+  transition:
+    background 0.2s,
+    color 0.2s,
+    border-color 0.2s;
+}
+
+.durationChip:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.durationChipActive {
+  background: rgba(248, 123, 77, 0.2);
+  border-color: #f87b4d;
+  color: #f87b4d;
+}
+
+.launchRow {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+
+.launchButton {
+  background: linear-gradient(135deg, #f87b4d, #ffbe6b);
+  color: #091219;
+  font-weight: 700;
+}
+
+.ghostButton {
+  background: rgba(255, 255, 255, 0.06);
+  color: #bac3cf;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  font-weight: 600;
+}
+
+.ghostButton:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.statusLine {
+  margin: 6px 0 0;
+  color: #93a6b8;
+  font-size: 12px;
+}
+
+.eligibilityStatus {
+  margin: 10px 0 4px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: rgba(255, 183, 77, 0.12);
+  border: 1px solid rgba(255, 183, 77, 0.3);
+  color: #ffbe6b;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.5;
+}

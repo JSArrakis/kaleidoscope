@@ -16,3 +16,4 @@ export { EpisodeProgressionRepository, episodeProgressionRepository, } from "./e
 export { CollectionMovieProgressionRepository, collectionMovieProgressionRepository, } from "./collectionMovieProgressionRepository.js";
 export { ProgrammingBlockRepository, programmingBlockRepository, } from "./programmingBlockRepository.js";
 export { PlayoutRepository, playoutRepository } from "./playoutRepository.js";
+export { BootstrapPoolRepository, bootstrapPoolRepository, } from "./bootstrapPoolRepository.js";

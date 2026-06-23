@@ -13,7 +13,7 @@ export class MovieRepository {
         INSERT INTO movies (title, mediaItemId, alias, imdb, path, duration, durationLimit)
         VALUES (?, ?, ?, ?, ?, ?, ?)
       `);
-            movieStmt.run(movie.title, movie.mediaItemId, movie.alias || null, movie.imdb || null, movie.path, movie.duration || null, movie.durationLimit || null);
+            movieStmt.run(movie.title, movie.mediaItemId, movie.alias || null, movie.imdb || null, movie.path, movie.duration, movie.durationLimit || null);
             // Insert tags
             this.insertMovieTags(movie.mediaItemId, movie.tags);
         });
@@ -261,7 +261,7 @@ export class MovieRepository {
         SET title = ?, alias = ?, imdb = ?, path = ?, duration = ?, durationLimit = ?, updatedAt = CURRENT_TIMESTAMP
         WHERE mediaItemId = ?
       `);
-            const result = stmt.run(movie.title, movie.alias || null, movie.imdb || null, movie.path, movie.duration || null, movie.durationLimit || null, mediaItemId);
+            const result = stmt.run(movie.title, movie.alias || null, movie.imdb || null, movie.path, movie.duration, movie.durationLimit || null, mediaItemId);
             if (result.changes === 0)
                 return null;
             // Delete and re-insert tags
@@ -300,6 +300,9 @@ export class MovieRepository {
       VALUES (?, ?, ?)
     `);
         for (const tag of tags) {
+            // Skip fake/empty tagId from UI placeholders
+            if (!tag.tagId || tag.tagId.trim() === "")
+                continue;
             stmt.run(mediaItemId, tag.tagId, tag.type);
         }
     }

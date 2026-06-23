@@ -2,14 +2,22 @@ import { useEffect, useMemo, useState } from "react";
 import useRootStack from "../../../navigation/useRootStack";
 
 interface HomeData {
-  isStartingTest: boolean;
-  testStatus: string;
+  cadence: boolean;
+  themed: boolean;
+  durationMinutes: number;
+  isStartingStream: boolean;
+  streamStatus: string;
   normalizationStatusLabel: string;
+  canStartStream: boolean;
+  streamEligibilityMessage: string;
 }
 interface HomeActions {
   openPlayer: () => void;
-  runAdhocCadencedTest: () => Promise<void>;
-  runAdhocUncadencedTest: () => Promise<void>;
+  openBootstrapLog: () => Promise<void>;
+  setCadence: (v: boolean) => void;
+  setThemed: (v: boolean) => void;
+  setDurationMinutes: (v: number) => void;
+  startAdhocStream: () => Promise<void>;
 }
 
 export interface HomeViewModel extends HomeData, HomeActions {}
@@ -17,10 +25,15 @@ export interface HomeViewModel extends HomeData, HomeActions {}
 const useHomeViewModel = (
   navigate: ReturnType<typeof useRootStack>,
 ): HomeViewModel => {
-  const [isStartingTest, setIsStartingTest] = useState(false);
-  const [testStatus, setTestStatus] = useState("");
+  const [cadence, setCadence] = useState(false);
+  const [themed, setThemed] = useState(false);
+  const [durationMinutes, setDurationMinutes] = useState(120);
+  const [isStartingStream, setIsStartingStream] = useState(false);
+  const [streamStatus, setStreamStatus] = useState("");
   const [normalizationStatus, setNormalizationStatus] =
     useState<NormalizationStatusSnapshot | null>(null);
+  const [streamEligibility, setStreamEligibility] =
+    useState<StreamStartEligibility | null>(null);
 
   useEffect(() => {
     let isCancelled = false;
@@ -41,6 +54,34 @@ const useHomeViewModel = (
 
     const intervalId = window.setInterval(() => {
       void refreshStatus();
+    }, 2000);
+
+    return () => {
+      isCancelled = true;
+      window.clearInterval(intervalId);
+    };
+  }, []);
+
+  // Poll bootstrap eligibility for stream start button state
+  useEffect(() => {
+    let isCancelled = false;
+
+    const checkEligibility = async () => {
+      try {
+        const eligibility =
+          await window.electron.checkStreamStartEligibilityHandler();
+        if (!isCancelled) {
+          setStreamEligibility(eligibility);
+        }
+      } catch {
+        // Ignore transient polling failures; next interval refresh will retry.
+      }
+    };
+
+    void checkEligibility();
+
+    const intervalId = window.setInterval(() => {
+      void checkEligibility();
     }, 2000);
 
     return () => {
@@ -73,33 +114,74 @@ const useHomeViewModel = (
     return `Normalization ready: ${queue.normalizedCount} source(s) warmed, cache pressure ${pressure}`;
   }, [normalizationStatus]);
 
-  const runAdhocTest = async (cadence: boolean) => {
+  const runAdhocTest = async (cadenceOverride: boolean) => {
     try {
-      setIsStartingTest(true);
-      setTestStatus(
-        `Starting ${cadence ? "cadenced" : "uncadenced"} adhoc test...`,
+      setIsStartingStream(true);
+      setStreamStatus(
+        `Starting ${cadenceOverride ? "cadenced" : "uncadenced"} adhoc test...`,
       );
 
-      const result = await window.electron.runAdhocPlayerTestHandler(cadence);
-      setTestStatus(`${result.message} (${result.blockCount} blocks)`);
+      const result =
+        await window.electron.runAdhocPlayerTestHandler(cadenceOverride);
+      setStreamStatus(`${result.message} (${result.blockCount} blocks)`);
 
       navigate("/player");
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "Failed to start adhoc test.";
-      setTestStatus(message);
+      setStreamStatus(message);
     } finally {
-      setIsStartingTest(false);
+      setIsStartingStream(false);
+    }
+  };
+
+  const startAdhocStream = async () => {
+    try {
+      setIsStartingStream(true);
+      setStreamStatus("Building stream…");
+
+      const result = await window.electron.startAdhocStreamHandler({
+        cadence,
+        themed,
+        durationMinutes,
+      });
+
+      setStreamStatus(`${result.message} (${result.blockCount} blocks)`);
+
+      if (result.status === 200) {
+        navigate("/player");
+      }
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Failed to start stream.";
+      setStreamStatus(message);
+    } finally {
+      setIsStartingStream(false);
     }
   };
 
   return {
-    isStartingTest,
-    testStatus,
+    cadence,
+    themed,
+    durationMinutes,
+    isStartingStream,
+    streamStatus,
     normalizationStatusLabel,
+    canStartStream: streamEligibility?.canStart ?? false,
+    streamEligibilityMessage: streamEligibility?.statusMessage ?? "Checking...",
     openPlayer: () => navigate("/player"),
-    runAdhocCadencedTest: async () => runAdhocTest(true),
-    runAdhocUncadencedTest: async () => runAdhocTest(false),
+    openBootstrapLog: async () => {
+      try {
+        const result = await window.electron.openBootstrapLogHandler();
+        console.log(`Bootstrap log opened: ${result.path}`);
+      } catch (error) {
+        console.error("Failed to open bootstrap log:", error);
+      }
+    },
+    setCadence,
+    setThemed,
+    setDurationMinutes,
+    startAdhocStream,
   };
 };
 

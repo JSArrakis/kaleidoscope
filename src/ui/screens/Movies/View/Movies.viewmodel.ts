@@ -73,7 +73,7 @@ const useMoviesViewModel = (
         mediaItemId: normalizeItem(moviePath),
         title: "",
         path: moviePath,
-        duration: 0,
+        duration: 0, // Backend will probe and populate
         durationLimit: 0,
         isHolidayExclusive: false,
         type: MediaType.Movie,

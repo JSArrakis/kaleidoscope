@@ -63,7 +63,7 @@ const useMusicVideosViewModel = (
           title: "",
           artist: "",
           path: musicVideoPath,
-          duration: 0,
+          duration: 0, // Backend will probe and populate
           isHolidayExclusive: false,
           type: MediaType.Music,
           tags: [] as Tag[],

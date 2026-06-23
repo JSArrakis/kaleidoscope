@@ -36,3 +36,13 @@
 .greenButton:hover {
   background-color: darkgreen;
 }
+
+.button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  filter: grayscale(0.4);
+}
+
+.button:disabled:hover {
+  background-color: inherit;
+}

@@ -61,7 +61,7 @@ const useCommercialsViewModel = (
           mediaItemId: normalizeItem(commercialPath),
           title: "",
           path: commercialPath,
-          duration: 0,
+          duration: 0, // Backend will probe and populate
           isHolidayExclusive: false,
           type: MediaType.Commercial,
           tags: [] as Tag[],

@@ -1,5 +1,6 @@
 import { commercialRepository } from "../repositories/commercialRepository.js";
 import { enqueueIngestNormalization } from "../services/normalization/ingestNormalizationService.js";
+import { probeMediaMetadataHandler } from "../handlers/mediaProbeHandlers.js";
 
 export async function createCommercial(
   commercial: Commercial,
@@ -7,6 +8,10 @@ export async function createCommercial(
   try {
     if (!commercial.mediaItemId) {
       return { message: "Media Item ID is required", status: 400 };
+    }
+
+    if (!commercial.path) {
+      return { message: "File path is required", status: 400 };
     }
 
     const existing = commercialRepository.findByMediaItemId(
@@ -19,8 +24,30 @@ export async function createCommercial(
       };
     }
 
-    commercialRepository.create(commercial);
-    enqueueIngestNormalization(commercial);
+    // Probe the file to get duration
+    const probe = await probeMediaMetadataHandler(commercial.path);
+
+    if (!probe.isPlayable) {
+      return {
+        message: `File is not playable: ${probe.errorMessage || "Unknown error"}`,
+        status: 400,
+      };
+    }
+
+    if (!probe.durationSeconds || probe.durationSeconds <= 0) {
+      return {
+        message: "Could not determine file duration",
+        status: 400,
+      };
+    }
+
+    const commercialWithDuration: Commercial = {
+      ...commercial,
+      duration: Math.round(probe.durationSeconds),
+    };
+
+    commercialRepository.create(commercialWithDuration);
+    enqueueIngestNormalization(commercialWithDuration);
     return { message: `Commercial ${commercial.title} Created`, status: 200 };
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);

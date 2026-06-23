@@ -59,7 +59,7 @@ const usePromosViewModel = (
         mediaItemId: normalizeItem(promoPath),
         title: "",
         path: promoPath,
-        duration: 0,
+        duration: 0, // Backend will probe and populate
         type: MediaType.Promo,
         tags: [] as Tag[],
       }));

@@ -6,6 +6,7 @@ import * as playerManager from "../playerManager.js";
 import * as streamManager from "../streamManager.js";
 import { createMediaBlock } from "../../factories/mediaBlock.factory.js";
 import { MediaBlock } from "../../types/MediaBlock.js";
+import { StreamType } from "../../types/StreamType.js";
 import {
   getDateString,
   isHolidayDate,
@@ -14,8 +15,6 @@ import {
 import { selectRandomShowOrMovie } from "./mediaSelector.js";
 import { buildStreamIteration } from "./continuousStreamBuilder.js";
 import { buildFilesystemAdhocPlayerTestStream } from "./adhocFilesystemPlayerTestBuilder.js";
-import { createNormalizationJobsFromBlocks } from "../normalization/normalizationJobFactory.js";
-import { normalizationQueue } from "../normalization/normalizationQueue.js";
 import { selectFirstAnchorForCadencedStartup } from "./firstAnchorAdmissionService.js";
 import { selectFirstAnchorForCachedUncadencedStartup } from "./firstAnchorAdmissionService.js";
 
@@ -456,16 +455,6 @@ export function rolloverAdhocToNextDay(
 
   if (iterationBlocks.length > 0) {
     streamManager.addToUpcomingStream(iterationBlocks);
-  }
-
-  const prewarmBlocks = [lastUpcomingBlock, ...iterationBlocks];
-  const jobs = createNormalizationJobsFromBlocks(prewarmBlocks);
-  const queued = normalizationQueue.enqueue(jobs);
-
-  if (queued > 0) {
-    console.log(
-      `[AdhocStreamBuilder] Enqueued rollover normalization jobs: ${queued}/${jobs.length}`,
-    );
   }
 
   console.log(

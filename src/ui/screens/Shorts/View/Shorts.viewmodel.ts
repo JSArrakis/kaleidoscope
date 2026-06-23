@@ -58,7 +58,7 @@ const useShortsViewModel = (
         mediaItemId: normalizeItem(shortPath),
         title: "",
         path: shortPath,
-        duration: 0,
+        duration: 0, // Backend will probe and populate
         isHolidayExclusive: false,
         type: MediaType.Short,
         tags: [] as Tag[],

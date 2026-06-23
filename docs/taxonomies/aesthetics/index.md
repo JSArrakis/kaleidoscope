@@ -78,27 +78,19 @@ Most aesthetic combinations simply stack their visual and tonal elements:
 
 ### True Aesthetic Marriage:
 
-Occasionally, aesthetics truly merge to create something new:
+Occasionally, aesthetics truly merge to create something entirely new — a presentation framework that cannot be adequately described by listing its component aesthetics, because the fusion has produced a category of its own. When this happens, the merged result becomes a top-level aesthetic rather than a combination.
 
-**Spelljammer** (Space Opera + Fantasy):
+**Magitech** is the primary example of true aesthetic marriage in this taxonomy. Magitech emerges when Fantasy and other aesthetics (Space Opera, Near Future, Historical) merge to the point where magic and technology are no longer two separate systems sharing a world. They become one system. The civilization does not contain both magic and technology; it runs on a single integrated power paradigm that is simultaneously both. This is not layering. Layering produces Star Wars, where laser guns and the Force coexist without explanation. True marriage produces settings like the world of Arcane, where hextech is neither magic nor technology but a third thing that only exists because the two have fully fused.
 
-- Takes Space Opera framework (space travel, multi-world empires, diverse alien species)
-- Replaces all technological elements with magical equivalents (magic-powered ships, spell-based systems)
-- Creates a unified aesthetic where magic **is** the technology
-
-**Aetherpunk** (Near-Future + Fantasy):
-
-- Takes modern/near-future society structure
-- Replaces technological infrastructure with magical systems
-- Results in contemporary civilization powered by magic instead of technology
+Magitech contains recognizable subtypes that represent this marriage applied to specific structural or visual registers. Aetherpunk applies Magitech to a Victorian industrial visual language: airships, ether-powered machinery, and retrofuturistic design derived from the age of sail. Spelljammer applies Magitech to a cosmic seafaring structure: interplanetary travel, with magic replacing propulsion, navigation, and nautical technology at astronomical scale. Both are Magitech. Neither is a combination of two pre-existing aesthetics; both are expressions of the same underlying fusion.
 
 ### The Key Distinction:
 
-- **Simple layering**: Star Wars (Space Opera Fantasy) has both technology (laser guns, mechanical repairs) AND magic (Force, lightsabers) existing separately
-- **True marriage**: Krull (Spelljammer) replaces technology entirely with magic - spaceships are living creatures, navigation uses divination, weapons are enchanted or shoot magical beams.
+- **Simple layering**: Star Wars (Space Opera + Fantasy) has both technology (laser guns, mechanical repairs) AND magic (the Force, lightsabers) existing as separate systems in the same world
+- **True marriage**: Arcane (Magitech) has hextech, which is neither magic nor technology but a single integrated system where the distinction has ceased to exist
 
-This distinction helps identify when aesthetic combinations create genuinely new presentation frameworks versus simply stacking visual elements.
+This distinction helps identify when aesthetic combinations create genuinely new presentation frameworks that warrant their own top-level category versus when they are simply stacking visual elements from two aesthetics onto the same story.
 
 ## Kaleidoscope's Default Aesthetics
 
-**[Animation](animation.md)** | **[Anime](anime.md)** | **[CGI](cgi.md)** | **[Contemporary](contemporary.md)** | **[Crime](crime.md)** | **[Cyberpunk](cyberpunk.md)** | **[Documentary](documentary.md)** | **[Dystopian](dystopian.md)** | **[Fantasy](fantasy.md)** | **[Found Footage](found-footage.md)** | **[Historical](historical.md)** | **[Jidaigeki](jidaigeki.md)** | **[Martial Arts](martial-arts.md)** | **[Military](military.md)** | **[Musical](musical.md)** | **[Near Future](near-future.md)** | **[Noir](noir.md)** | **[Political](political.md)** | **[Post-Apocalyptic](post-apocalyptic.md)** | **[Pulp](pulp.md)** | **[Space Opera](space-opera.md)** | **[Sports](sports.md)** | **[Superhero](superhero.md)** | **[Western](western.md)** | **[Wuxia](wuxia.md)**
+**[Animation](animation.md)** | **[Anime](anime.md)** | **[CGI](cgi.md)** | **[Contemporary](contemporary.md)** | **[Crime](crime.md)** | **[Cyberpunk](cyberpunk.md)** | **[Documentary](documentary.md)** | **[Dystopian](dystopian.md)** | **[Fantasy](fantasy.md)** | **[Found Footage](found-footage.md)** | **[Historical](historical.md)** | **[Jidaigeki](jidaigeki.md)** | **[Magitech](magitech.md)** | **[Martial Arts](martial-arts.md)** | **[Military](military.md)** | **[Musical](musical.md)** | **[Near Future](near-future.md)** | **[Noir](noir.md)** | **[Political](political.md)** | **[Post-Apocalyptic](post-apocalyptic.md)** | **[Pulp](pulp.md)** | **[Space Opera](space-opera.md)** | **[Sports](sports.md)** | **[Superhero](superhero.md)** | **[Western](western.md)** | **[Wuxia](wuxia.md)**

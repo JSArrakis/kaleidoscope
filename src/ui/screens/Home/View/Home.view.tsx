@@ -8,7 +8,22 @@ interface HomeViewProps {
 }
 
 const HomeView: FC<HomeViewProps> = ({ viewModel }) => {
-  const { isStartingTest, testStatus, normalizationStatusLabel } = viewModel;
+  const {
+    cadence,
+    themed,
+    durationMinutes,
+    isStartingStream,
+    streamStatus,
+    normalizationStatusLabel,
+    canStartStream,
+    streamEligibilityMessage,
+    openPlayer,
+    openBootstrapLog,
+    setCadence,
+    setThemed,
+    setDurationMinutes,
+    startAdhocStream,
+  } = viewModel;
 
   return (
     <div className={styles.screen}>
@@ -17,44 +32,86 @@ const HomeView: FC<HomeViewProps> = ({ viewModel }) => {
         <div className={styles.screenFormBorder}>
           <div className={styles.screenFormBodyContainer}>
             <div className={styles.heroCard}>
-              <p className={styles.eyebrow}>Temporary Workflow</p>
-              <h2 className={styles.heroTitle}>Open the new in-app player</h2>
-              <p className={styles.heroBody}>
-                This first pass adds a VLC-style player screen inside Prism so
-                you can load local audio or video files and start validating the
-                interaction model.
-              </p>
-              <Button
-                onClick={viewModel.openPlayer}
-                className={styles.playerButton}
-              >
-                Go To Player Screen
-              </Button>
-              <div className={styles.testActions}>
+              <p className={styles.eyebrow}>Adhoc Stream</p>
+              <h2 className={styles.heroTitle}>Launch a stream</h2>
+
+              <div className={styles.optionRow}>
+                <label className={styles.optionLabel}>
+                  <button
+                    type="button"
+                    className={`${styles.toggleChip} ${cadence ? styles.toggleChipOn : ""}`}
+                    onClick={() => setCadence(!cadence)}
+                  >
+                    <span
+                      className={`material-symbols-rounded ${styles.chipIcon}`}
+                    >
+                      {cadence ? "check_circle" : "radio_button_unchecked"}
+                    </span>
+                    Cadenced
+                  </button>
+                </label>
+                <label className={styles.optionLabel}>
+                  <button
+                    type="button"
+                    className={`${styles.toggleChip} ${themed ? styles.toggleChipOn : ""}`}
+                    onClick={() => setThemed(!themed)}
+                  >
+                    <span
+                      className={`material-symbols-rounded ${styles.chipIcon}`}
+                    >
+                      {themed ? "check_circle" : "radio_button_unchecked"}
+                    </span>
+                    Themed
+                  </button>
+                </label>
+              </div>
+
+              <div className={styles.durationRow}>
+                <span className={styles.durationLabel}>Duration</span>
+                <div className={styles.durationPicker}>
+                  {[30, 60, 120, 180, 240].map((min) => (
+                    <button
+                      key={min}
+                      type="button"
+                      className={`${styles.durationChip} ${durationMinutes === min ? styles.durationChipActive : ""}`}
+                      onClick={() => setDurationMinutes(min)}
+                    >
+                      {min < 60 ? `${min}m` : `${min / 60}h`}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className={styles.launchRow}>
                 <Button
-                  onClick={viewModel.runAdhocCadencedTest}
-                  className={styles.testButton}
+                  onClick={() => void startAdhocStream()}
+                  className={styles.launchButton}
+                  disabled={!canStartStream || isStartingStream}
+                  title={streamEligibilityMessage}
                 >
-                  Run Adhoc Test (Cadenced)
+                  {isStartingStream ? "Building…" : "Launch"}
+                </Button>
+                <Button onClick={openPlayer} className={styles.ghostButton}>
+                  Open Player
                 </Button>
                 <Button
-                  onClick={viewModel.runAdhocUncadencedTest}
-                  className={styles.testButton}
+                  onClick={() => void openBootstrapLog()}
+                  className={styles.ghostButton}
+                  title="Open bootstrap activity log for testing"
                 >
-                  Run Adhoc Test (Uncadenced)
+                  📋 Log
                 </Button>
               </div>
-              <p className={styles.testHint}>
-                Requires KALEIDOSCOPE_USE_FILESYSTEM_ADHOC_TEST=1 in your dev
-                terminal.
-              </p>
-              <p className={styles.testStatus}>{normalizationStatusLabel}</p>
-              {isStartingTest && (
-                <p className={styles.testStatus}>Starting test stream...</p>
+
+              {!canStartStream && (
+                <p className={styles.eligibilityStatus}>
+                  {streamEligibilityMessage}
+                </p>
               )}
-              {!isStartingTest && testStatus && (
-                <p className={styles.testStatus}>{testStatus}</p>
-              )}
+              <p className={styles.statusLine}>{normalizationStatusLabel}</p>
+              {streamStatus ? (
+                <p className={styles.statusLine}>{streamStatus}</p>
+              ) : null}
             </div>
           </div>
         </div>

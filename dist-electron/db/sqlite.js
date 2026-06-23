@@ -231,8 +231,8 @@ class SQLiteService {
         title TEXT,
         mediaItemId TEXT UNIQUE NOT NULL,
         showItemId TEXT,
-        duration INTEGER,
-        durationLimit INTEGER,
+        duration INTEGER NOT NULL,
+        durationLimit INTEGER NOT NULL,
         overDuration BOOLEAN DEFAULT FALSE,
         type INTEGER DEFAULT 7,
         createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -580,6 +580,84 @@ class SQLiteService {
         UNIQUE(scope_key, collection_id)
       )
     `);
+        // ── Bootstrap Coverage Pool ────────────────────────────────────────────
+        // Selected anchor candidates for bootstrap prewarm coverage
+        this.db.exec(`
+      CREATE TABLE IF NOT EXISTS bootstrap_pool_items (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        poolItemId TEXT UNIQUE NOT NULL,
+        mediaItemId TEXT NOT NULL,
+        mediaType TEXT NOT NULL,
+        selectionSeed INTEGER NULL,
+        lastUsedAt INTEGER NULL,
+        createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(mediaItemId, mediaType)
+      )
+    `);
+        // Tags covered by each pool item
+        this.db.exec(`
+      CREATE TABLE IF NOT EXISTS bootstrap_pool_item_tags (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        poolItemId TEXT NOT NULL,
+        tagId TEXT NOT NULL,
+        tagType TEXT NOT NULL,
+        createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(poolItemId, tagId),
+        FOREIGN KEY (poolItemId) REFERENCES bootstrap_pool_items(poolItemId) ON DELETE CASCADE,
+        FOREIGN KEY (tagId) REFERENCES tags(tagId) ON DELETE CASCADE
+      )
+    `);
+        // Per-profile playable path variants for each pool item
+        this.db.exec(`
+      CREATE TABLE IF NOT EXISTS bootstrap_profile_variants (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        variantId TEXT UNIQUE NOT NULL,
+        poolItemId TEXT NOT NULL,
+        profile TEXT NOT NULL,
+        playablePath TEXT NOT NULL,
+        cacheKey TEXT NULL,
+        isReady INTEGER NOT NULL DEFAULT 0,
+        isStale INTEGER NOT NULL DEFAULT 0,
+        lastPreparedAt INTEGER NULL,
+        lastValidationAt INTEGER NULL,
+        lastError TEXT NULL,
+        createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(poolItemId, profile),
+        FOREIGN KEY (poolItemId) REFERENCES bootstrap_pool_items(poolItemId) ON DELETE CASCADE
+      )
+    `);
+        // Coverage planner/recompute run audit log
+        this.db.exec(`
+      CREATE TABLE IF NOT EXISTS bootstrap_coverage_runs (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        runId TEXT UNIQUE NOT NULL,
+        startedAt INTEGER NOT NULL,
+        completedAt INTEGER NULL,
+        durationMs INTEGER NULL,
+        representedTagCount INTEGER NOT NULL DEFAULT 0,
+        coveredTagCount INTEGER NOT NULL DEFAULT 0,
+        missingTagCount INTEGER NOT NULL DEFAULT 0,
+        selectedItemCount INTEGER NOT NULL DEFAULT 0,
+        queuedVariantJobs INTEGER NOT NULL DEFAULT 0,
+        status TEXT NOT NULL,
+        errorMessage TEXT NULL
+      )
+    `);
+        // Missing-tag snapshot for the latest completed coverage run
+        this.db.exec(`
+      CREATE TABLE IF NOT EXISTS bootstrap_missing_tags (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        runId TEXT NOT NULL,
+        tagId TEXT NOT NULL,
+        tagType TEXT NOT NULL,
+        reason TEXT NOT NULL,
+        createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(runId, tagId),
+        FOREIGN KEY (runId) REFERENCES bootstrap_coverage_runs(runId) ON DELETE CASCADE
+      )
+    `);
         // Create indexes
         this.createIndexes();
     }
@@ -657,6 +735,13 @@ class SQLiteService {
             "CREATE INDEX IF NOT EXISTS idx_collection_movie_progression_scope_key ON collection_movie_progression(scope_key)",
             "CREATE INDEX IF NOT EXISTS idx_collection_movie_progression_collection_id ON collection_movie_progression(collection_id)",
             "CREATE INDEX IF NOT EXISTS idx_collection_movie_progression_last_played_timestamp ON collection_movie_progression(last_played_timestamp)",
+            // Bootstrap pool indexes
+            "CREATE INDEX IF NOT EXISTS idx_bootstrap_pool_items_mediaItemId ON bootstrap_pool_items(mediaItemId)",
+            "CREATE INDEX IF NOT EXISTS idx_bootstrap_pool_items_lastUsedAt ON bootstrap_pool_items(lastUsedAt)",
+            "CREATE INDEX IF NOT EXISTS idx_bootstrap_pool_item_tags_tagId ON bootstrap_pool_item_tags(tagId, tagType)",
+            "CREATE INDEX IF NOT EXISTS idx_bootstrap_profile_variants_profile_ready ON bootstrap_profile_variants(profile, isReady, isStale)",
+            "CREATE INDEX IF NOT EXISTS idx_bootstrap_coverage_runs_startedAt ON bootstrap_coverage_runs(startedAt DESC)",
+            "CREATE INDEX IF NOT EXISTS idx_bootstrap_missing_tags_tagId ON bootstrap_missing_tags(tagId, tagType)",
         ];
         for (const indexStatement of indexes) {
             try {

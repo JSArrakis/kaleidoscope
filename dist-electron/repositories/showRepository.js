@@ -24,7 +24,7 @@ export class ShowRepository {
           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `);
                 for (const episode of show.episodes) {
-                    episodeStmt.run(showId, episode.season, episode.episode, episode.episodeNumber, episode.path, episode.title, episode.mediaItemId, episode.showItemId, episode.duration || null, episode.durationLimit || null, episode.overDuration ? 1 : 0, 7);
+                    episodeStmt.run(showId, episode.season, episode.episode, episode.episodeNumber, episode.path, episode.title, episode.mediaItemId, episode.showItemId, episode.duration, episode.durationLimit || null, episode.overDuration ? 1 : 0, 7);
                     this.insertEpisodeTags(episode.mediaItemId, episode.tags);
                 }
             }
@@ -347,6 +347,9 @@ export class ShowRepository {
       VALUES (?, ?, ?)
     `);
         for (const tag of tags) {
+            // Skip fake/empty tagId from UI placeholders
+            if (!tag.tagId || tag.tagId.trim() === "")
+                continue;
             stmt.run(mediaItemId, tag.tagId, tag.type);
         }
     }
@@ -410,6 +413,9 @@ export class ShowRepository {
       VALUES (?, ?)
     `);
         for (const tag of tags) {
+            // Skip fake/empty tagId from UI placeholders
+            if (!tag.tagId || tag.tagId.trim() === "")
+                continue;
             stmt.run(episodeMediaItemId, tag.tagId);
         }
     }

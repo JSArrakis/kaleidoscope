@@ -48,7 +48,7 @@ export class ShowRepository {
             episode.title,
             episode.mediaItemId,
             episode.showItemId,
-            episode.duration || null,
+            episode.duration,
             episode.durationLimit || null,
             episode.overDuration ? 1 : 0,
             7, // MediaType.Episode
@@ -451,6 +451,8 @@ export class ShowRepository {
     `);
 
     for (const tag of tags) {
+      // Skip fake/empty tagId from UI placeholders
+      if (!tag.tagId || tag.tagId.trim() === "") continue;
       stmt.run(mediaItemId, tag.tagId, tag.type);
     }
   }
@@ -525,6 +527,8 @@ export class ShowRepository {
     `);
 
     for (const tag of tags) {
+      // Skip fake/empty tagId from UI placeholders
+      if (!tag.tagId || tag.tagId.trim() === "") continue;
       stmt.run(episodeMediaItemId, tag.tagId);
     }
   }

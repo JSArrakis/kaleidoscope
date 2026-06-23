@@ -33,3 +33,7 @@ export {
   programmingBlockRepository,
 } from "./programmingBlockRepository.js";
 export { PlayoutRepository, playoutRepository } from "./playoutRepository.js";
+export {
+  BootstrapPoolRepository,
+  bootstrapPoolRepository,
+} from "./bootstrapPoolRepository.js";

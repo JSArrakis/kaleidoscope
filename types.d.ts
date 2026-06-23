@@ -547,12 +547,55 @@ type StartupReadinessSnapshot = {
 // IPC EVENT PAYLOAD MAPPINGS
 // ============================================================================
 
+type AdhocStreamRequest = {
+  cadence: boolean;
+  themed: boolean;
+  durationMinutes: number;
+};
+
+type AdhocStreamResult = {
+  status: number;
+  blockCount: number;
+  message: string;
+};
+
+type BootstrapCoverageStatus = {
+  runId: string | null;
+  status: "idle" | "running" | "completed" | "failed";
+  representedTags: number;
+  coveredTags: number;
+  missingTags: number;
+  selectedPoolItems: number;
+  readyByProfile: {
+    native: number;
+    plex: number;
+    jellyfin: number;
+  };
+  lastStartedAt: number | null;
+  lastCompletedAt: number | null;
+  lastError: string | null;
+};
+
+type BootstrapMissingTag = {
+  tagId: string;
+  tagType: "Genre" | "Aesthetic";
+  reason: string;
+};
+
+type StreamStartEligibility = {
+  canStart: boolean;
+  statusMessage: string;
+  readyCount: number;
+  poolSize: number;
+};
+
 type EventPayloadMapping = {
   openFileDialog: Promise<string[]>;
   probeMediaMetadata: Promise<MediaProbeResult>;
   resolveElectronPlayablePath: Promise<string>;
   getPlayerState: Promise<ElectronPlayerState>;
   getNormalizationStatus: Promise<NormalizationStatusSnapshot>;
+  startAdhocStream: Promise<AdhocStreamResult>;
   runStartupReadinessChecks: Promise<StartupReadinessSnapshot>;
   getAnchorContentReadinessStatus: Promise<StartupReadinessCheckStatus | null>;
   getFacetWalkabilityReadinessStatus: Promise<StartupReadinessCheckStatus | null>;
@@ -563,6 +606,22 @@ type EventPayloadMapping = {
   playerPlayPrevious: Promise<ElectronPlayerState>;
   playerPlayNext: Promise<ElectronPlayerState>;
   runAdhocPlayerTest: Promise<AdhocPlayerTestResult>;
+  rebuildBootstrapCoveragePool: Promise<BootstrapCoverageStatus>;
+  getBootstrapCoverageStatus: Promise<BootstrapCoverageStatus>;
+  getBootstrapMissingTags: Promise<BootstrapMissingTag[]>;
+  getBootstrapProfileReadiness: Promise<{
+    native: number;
+    plex: number;
+    jellyfin: number;
+  }>;
+  checkStreamStartEligibility: Promise<StreamStartEligibility>;
+  getBootstrapLogPath: Promise<string>;
+  openBootstrapLog: Promise<{ success: boolean; path: string }>;
+  clearAllPreTranscodedCache: Promise<{
+    success: boolean;
+    filesDeleted: number;
+    message: string;
+  }>;
   getCollections: Promise<Collection[]>;
   createCollection: Promise<{ message: string; status: number }>;
   deleteCollection: Promise<{ message: string; status: number }>;
@@ -636,6 +695,9 @@ interface Window {
     resolveElectronPlayablePathHandler: (filePath: string) => Promise<string>;
     getPlayerStateHandler: () => Promise<ElectronPlayerState>;
     getNormalizationStatusHandler: () => Promise<NormalizationStatusSnapshot>;
+    startAdhocStreamHandler: (
+      options: AdhocStreamRequest,
+    ) => Promise<AdhocStreamResult>;
     runStartupReadinessChecksHandler: () => Promise<StartupReadinessSnapshot>;
     getAnchorContentReadinessStatusHandler: () => Promise<StartupReadinessCheckStatus | null>;
     getFacetWalkabilityReadinessStatusHandler: () => Promise<StartupReadinessCheckStatus | null>;
@@ -652,6 +714,22 @@ interface Window {
     runAdhocPlayerTestHandler: (
       cadence: boolean,
     ) => Promise<AdhocPlayerTestResult>;
+    rebuildBootstrapCoveragePoolHandler: () => Promise<BootstrapCoverageStatus>;
+    getBootstrapCoverageStatusHandler: () => Promise<BootstrapCoverageStatus>;
+    getBootstrapMissingTagsHandler: () => Promise<BootstrapMissingTag[]>;
+    getBootstrapProfileReadinessHandler: () => Promise<{
+      native: number;
+      plex: number;
+      jellyfin: number;
+    }>;
+    checkStreamStartEligibilityHandler: () => Promise<StreamStartEligibility>;
+    getBootstrapLogPathHandler: () => Promise<string>;
+    openBootstrapLogHandler: () => Promise<{ success: boolean; path: string }>;
+    clearAllPreTranscodedCacheHandler: () => Promise<{
+      success: boolean;
+      filesDeleted: number;
+      message: string;
+    }>;
     getCollectionsHandler: () => Promise<Collection[]>;
     createCollectionHandler: (
       collection: Collection,

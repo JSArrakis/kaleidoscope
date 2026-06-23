@@ -2,8 +2,10 @@ import { buildContinuousStream } from "./streamConstruction/continuousStreamBuil
 import { buildAdhocStream } from "./streamConstruction/adhocStreamBuilder.js";
 import { MediaBlock } from "../types/MediaBlock.js";
 import { StreamType } from "../models.js";
-import { createNormalizationJobsFromBlocks } from "./normalization/normalizationJobFactory.js";
-import { normalizationQueue } from "./normalization/normalizationQueue.js";
+import { bootstrapPoolRepository } from "../repositories/bootstrapPoolRepository.js";
+import { bootstrapLogger } from "./bootstrap/bootstrapLogger.js";
+
+const ENABLE_BOOTSTRAP_SELECTOR = process.env.ENABLE_BOOTSTRAP_SELECTOR === "1";
 
 /**
  * Main stream service entry point
@@ -24,6 +26,35 @@ export async function createStream(
   streamConstructionOptions: StreamConstructionOptions,
   endTimepoint?: number,
 ): Promise<[MediaBlock[], string]> {
+  // Validate bootstrap pool has at least one ready anchor
+  if (ENABLE_BOOTSTRAP_SELECTOR) {
+    const readyCounts = bootstrapPoolRepository.getReadyVariantCountByProfile();
+    const totalReady =
+      readyCounts.native + readyCounts.plex + readyCounts.jellyfin;
+
+    bootstrapLogger.logSeparator("STREAM START VALIDATION");
+    bootstrapLogger.logStreamStartValidation({
+      hasBootstrapEnabled: true,
+      readyCounts,
+      totalReady,
+      canStart: totalReady > 0,
+    });
+
+    if (totalReady === 0) {
+      console.error(
+        "[StreamService] Cannot start stream - no pre-transcoded anchors available in bootstrap pool",
+      );
+      return [
+        [],
+        "Cannot start stream: No pre-transcoded media available. Please add movies or TV shows and wait for transcoding to complete, or trigger a bootstrap pool rebuild.",
+      ];
+    }
+
+    console.log(
+      `[StreamService] Bootstrap validation passed: ${totalReady} ready anchors (native=${readyCounts.native}, plex=${readyCounts.plex}, jellyfin=${readyCounts.jellyfin})`,
+    );
+  }
+
   let result: [MediaBlock[], string];
 
   switch (streamType) {
@@ -40,16 +71,6 @@ export async function createStream(
 
     default:
       return [[], `Unsupported stream type: ${streamType}`];
-  }
-
-  const [blocks, errorMessage] = result;
-
-  if (!errorMessage && blocks.length > 0) {
-    const jobs = createNormalizationJobsFromBlocks(blocks);
-    const queued = normalizationQueue.enqueue(jobs);
-    console.log(
-      `[StreamService] Enqueued normalization jobs: ${queued}/${jobs.length}`,
-    );
   }
 
   return result;

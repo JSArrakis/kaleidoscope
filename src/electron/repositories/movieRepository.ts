@@ -22,7 +22,7 @@ export class MovieRepository {
         movie.alias || null,
         movie.imdb || null,
         movie.path,
-        movie.duration || null,
+        movie.duration,
         movie.durationLimit || null,
       );
 
@@ -326,7 +326,7 @@ export class MovieRepository {
         movie.alias || null,
         movie.imdb || null,
         movie.path,
-        movie.duration || null,
+        movie.duration,
         movie.durationLimit || null,
         mediaItemId,
       );
@@ -374,6 +374,8 @@ export class MovieRepository {
     `);
 
     for (const tag of tags) {
+      // Skip fake/empty tagId from UI placeholders
+      if (!tag.tagId || tag.tagId.trim() === "") continue;
       stmt.run(mediaItemId, tag.tagId, tag.type);
     }
   }

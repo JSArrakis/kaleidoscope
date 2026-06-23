@@ -1,4 +1,4 @@
-import { app, BrowserWindow } from "electron";
+import { app, BrowserWindow, shell } from "electron";
 import { ipcMainHandle, isDev } from "./util.js";
 import { getPreloadPath, getUIPath } from "./pathResolver.js";
 import { closeDB, connectToDB } from "./db/db.js";
@@ -115,7 +115,11 @@ import {
   selectPlayerQueueItem,
   stopPlayer,
 } from "./services/playerManager.js";
-import { ensureElectronPlayablePath } from "./services/ffmpegPlaybackProxy.js";
+import {
+  ensureElectronPlayablePath,
+  ensureStreamPlayablePath,
+  clearAllPreTranscodedFiles,
+} from "./services/ffmpegPlaybackProxy.js";
 import { normalizationQueue } from "./services/normalization/normalizationQueue.js";
 import {
   getStartupReadinessSnapshot,
@@ -130,6 +134,13 @@ app.commandLine.appendSwitch("autoplay-policy", "no-user-gesture-required");
 import { createStream } from "./services/streamService.js";
 import { StreamType } from "./models.js";
 import { stopContinuousStream } from "./services/streamManager.js";
+import {
+  rebuildBootstrapCoveragePool,
+  isBootstrapRebuildInProgress,
+} from "./services/bootstrap/bootstrapCoveragePlannerService.js";
+import { prewarmBootstrapVariants } from "./services/bootstrap/bootstrapVariantPrewarmService.js";
+import { bootstrapPoolRepository } from "./repositories/bootstrapPoolRepository.js";
+import { bootstrapLogger } from "./services/bootstrap/bootstrapLogger.js";
 
 let isShuttingDown = false;
 
@@ -175,6 +186,9 @@ app.on("ready", async () => {
     height: 728,
     webPreferences: {
       preload: getPreloadPath(),
+      // Allow file:// URLs to load from the http://localhost dev server.
+      // In production the renderer is served from file:// so this is not needed.
+      webSecurity: !isDev(),
     },
   });
   if (isDev()) {
@@ -204,7 +218,7 @@ app.on("ready", async () => {
       console.log(
         `[Main][IPC] resolveElectronPlayablePath request: ${filePath}`,
       );
-      const resolved = await ensureElectronPlayablePath(filePath);
+      const resolved = await ensureStreamPlayablePath(filePath);
       console.log(
         `[Main][IPC] resolveElectronPlayablePath complete (${Date.now() - started}ms): ${filePath} -> ${resolved}`,
       );
@@ -247,6 +261,49 @@ app.on("ready", async () => {
   ipcMainHandle("playerPlayNext", async () => {
     return playNextInPlayerQueue();
   });
+  ipcMainHandle(
+    "startAdhocStream",
+    async (_event: any, options: AdhocStreamRequest) => {
+      const started = Date.now();
+      console.log(
+        `[Main][IPC] startAdhocStream cadence=${options.cadence} themed=${options.themed} durationMinutes=${options.durationMinutes}`,
+      );
+      stopContinuousStream();
+
+      const durationSec = (options.durationMinutes ?? 120) * 60;
+      const endTimepoint = Math.floor(Date.now() / 1000) + durationSec;
+
+      const [mediaBlocks, errorMessage] = await createStream(
+        StreamType.Adhoc,
+        {
+          Cadence: !!options.cadence,
+          Themed: !!options.themed,
+          StreamType: StreamType.Adhoc,
+          AdhocStartFromBeginning: true,
+        },
+        endTimepoint,
+      );
+
+      if (errorMessage) {
+        console.error(
+          `[Main][IPC] startAdhocStream failed (${Date.now() - started}ms): ${errorMessage}`,
+        );
+        return { status: 500, blockCount: 0, message: errorMessage };
+      }
+
+      console.log(
+        `[Main][IPC] startAdhocStream complete (${Date.now() - started}ms) blocks=${mediaBlocks.length}`,
+      );
+
+      return {
+        status: 200,
+        blockCount: mediaBlocks.length,
+        message: `Started ${options.cadence ? "cadenced" : "uncadenced"} ${
+          options.themed ? "themed" : "random"
+        } adhoc stream (${options.durationMinutes ?? 120} min)`,
+      };
+    },
+  );
   ipcMainHandle("runAdhocPlayerTest", async (_event: any, cadence: boolean) => {
     const started = Date.now();
     console.log(`[Main][IPC] runAdhocPlayerTest start cadence=${cadence}`);
@@ -283,6 +340,150 @@ app.on("ready", async () => {
       status: 200,
       blockCount: mediaBlocks.length,
       message: `Started ${cadence ? "cadenced" : "uncadenced"} adhoc player test`,
+    };
+  });
+  ipcMainHandle("rebuildBootstrapCoveragePool", async () => {
+    const started = Date.now();
+    console.log(`[Main][IPC] rebuildBootstrapCoveragePool start`);
+    const profiles: Array<"native" | "plex" | "jellyfin"> = [
+      "native",
+      "plex",
+      "jellyfin",
+    ];
+    const planResult = await rebuildBootstrapCoveragePool({ profiles });
+    const prewarmResult = await prewarmBootstrapVariants({
+      runId: planResult.runId,
+      profiles,
+    });
+    const readyByProfile =
+      bootstrapPoolRepository.getReadyVariantCountByProfile();
+    const snapshot = bootstrapPoolRepository.getLatestCoverageSnapshot();
+    console.log(
+      `[Main][IPC] rebuildBootstrapCoveragePool complete (${Date.now() - started}ms) poolItems=${planResult.selectedPoolItems} prewarmQueued=${prewarmResult.queued}`,
+    );
+    return {
+      runId: planResult.runId,
+      status: snapshot?.status ?? "completed",
+      representedTags: planResult.representedTags,
+      coveredTags: planResult.coveredTags,
+      missingTags: planResult.missingTags.length,
+      selectedPoolItems: planResult.selectedPoolItems,
+      readyByProfile,
+      lastStartedAt: snapshot?.startedAt ?? null,
+      lastCompletedAt: snapshot?.completedAt ?? null,
+      lastError: null,
+    } satisfies BootstrapCoverageStatus;
+  });
+  ipcMainHandle("getBootstrapCoverageStatus", async () => {
+    const snapshot = bootstrapPoolRepository.getLatestCoverageSnapshot();
+    const readyByProfile =
+      bootstrapPoolRepository.getReadyVariantCountByProfile();
+    if (!snapshot) {
+      return {
+        runId: null,
+        status: "idle",
+        representedTags: 0,
+        coveredTags: 0,
+        missingTags: 0,
+        selectedPoolItems: 0,
+        readyByProfile,
+        lastStartedAt: null,
+        lastCompletedAt: null,
+        lastError: null,
+      } satisfies BootstrapCoverageStatus;
+    }
+    const status = isBootstrapRebuildInProgress() ? "running" : snapshot.status;
+    return {
+      runId: snapshot.runId,
+      status,
+      representedTags: snapshot.representedTagCount,
+      coveredTags: snapshot.coveredTagCount,
+      missingTags: snapshot.missingTagCount,
+      selectedPoolItems: snapshot.selectedItemCount,
+      readyByProfile,
+      lastStartedAt: snapshot.startedAt,
+      lastCompletedAt: snapshot.completedAt,
+      lastError: null,
+    } satisfies BootstrapCoverageStatus;
+  });
+  ipcMainHandle("getBootstrapMissingTags", async () => {
+    const snapshot = bootstrapPoolRepository.getLatestCoverageSnapshot();
+    if (!snapshot) return [];
+    // Missing tags are stored in bootstrap_missing_tags; query via repo
+    // For now return empty array — detailed missing tag list is a diagnostics
+    // feature. The count is already available in getBootstrapCoverageStatus.
+    return [];
+  });
+  ipcMainHandle("getBootstrapProfileReadiness", async () => {
+    return bootstrapPoolRepository.getReadyVariantCountByProfile();
+  });
+  ipcMainHandle("checkStreamStartEligibility", async () => {
+    const ENABLE_BOOTSTRAP_SELECTOR =
+      process.env.ENABLE_BOOTSTRAP_SELECTOR === "1";
+
+    // If feature flag is off, always allow stream start
+    if (!ENABLE_BOOTSTRAP_SELECTOR) {
+      return {
+        canStart: true,
+        statusMessage: "Ready to start stream",
+        readyCount: 0,
+        poolSize: 0,
+      } satisfies StreamStartEligibility;
+    }
+
+    const readyCounts = bootstrapPoolRepository.getReadyVariantCountByProfile();
+    const totalReady =
+      readyCounts.native + readyCounts.plex + readyCounts.jellyfin;
+    const poolSize = bootstrapPoolRepository.getPoolSize();
+
+    if (totalReady === 0 && poolSize === 0) {
+      return {
+        canStart: false,
+        statusMessage:
+          "No media available. Please add movies or TV shows to begin.",
+        readyCount: 0,
+        poolSize: 0,
+      } satisfies StreamStartEligibility;
+    }
+
+    if (totalReady === 0 && poolSize > 0) {
+      return {
+        canStart: false,
+        statusMessage: `Transcoding ${poolSize} item${poolSize > 1 ? "s" : ""}. Please wait for at least one to complete.`,
+        readyCount: 0,
+        poolSize,
+      } satisfies StreamStartEligibility;
+    }
+
+    return {
+      canStart: true,
+      statusMessage: `Ready to start stream (${totalReady} pre-transcoded item${totalReady > 1 ? "s" : ""} available)`,
+      readyCount: totalReady,
+      poolSize,
+    } satisfies StreamStartEligibility;
+  });
+  ipcMainHandle("getBootstrapLogPath", async () => {
+    return bootstrapLogger.getLogFilePath();
+  });
+  ipcMainHandle("openBootstrapLog", async () => {
+    const logPath = bootstrapLogger.getLogFilePath();
+    bootstrapLogger.forceFlush(); // Ensure all logs are written before opening
+    await shell.openPath(logPath);
+    return { success: true, path: logPath };
+  });
+  ipcMainHandle("clearAllPreTranscodedCache", async () => {
+    // Clear filesystem cache and in-memory cache
+    const filesDeleted = clearAllPreTranscodedFiles();
+
+    // Clear database records
+    bootstrapPoolRepository.clearAllVariants();
+
+    bootstrapLogger.logSeparator("CACHE CLEARED");
+
+    return {
+      success: true,
+      filesDeleted,
+      message: `Cleared ${filesDeleted} pre-transcoded file(s) and all database variant records`,
     };
   });
   ipcMainHandle("getCollections", async () => {

@@ -1,5 +1,8 @@
 import { movieRepository } from "../repositories/movieRepository.js";
 import { enqueueIngestNormalization } from "../services/normalization/ingestNormalizationService.js";
+import { checkBootstrapCoverageTrigger } from "../services/bootstrap/bootstrapIncrementalTriggers.js";
+import { bootstrapLogger } from "../services/bootstrap/bootstrapLogger.js";
+import { probeMediaMetadataHandler } from "../handlers/mediaProbeHandlers.js";
 /**
  * Create a new movie
  */
@@ -9,6 +12,9 @@ export async function createMovie(movie) {
         if (!movie.mediaItemId) {
             return { message: "Media Item ID is required", status: 400 };
         }
+        if (!movie.path) {
+            return { message: "File path is required", status: 400 };
+        }
         const existing = movieRepository.findByMediaItemId(movie.mediaItemId);
         if (existing) {
             console.log("[movieController] Movie already exists:", movie.mediaItemId);
@@ -17,8 +23,45 @@ export async function createMovie(movie) {
                 status: 400,
             };
         }
-        movieRepository.create(movie);
-        enqueueIngestNormalization(movie);
+        // Probe the file to get duration and metadata
+        console.log("[movieController] Probing file:", movie.path);
+        const probe = await probeMediaMetadataHandler(movie.path);
+        if (!probe.isPlayable) {
+            return {
+                message: `File is not playable: ${probe.errorMessage || "Unknown error"}`,
+                status: 400,
+            };
+        }
+        if (!probe.durationSeconds || probe.durationSeconds <= 0) {
+            return {
+                message: "Could not determine file duration",
+                status: 400,
+            };
+        }
+        // Populate duration from probe
+        const duration = Math.round(probe.durationSeconds);
+        const durationLimit = Math.ceil(duration / 1800) * 1800;
+        const movieWithDuration = {
+            ...movie,
+            duration,
+            durationLimit,
+        };
+        console.log("[movieController] File probed successfully, duration:", movieWithDuration.duration, "seconds, durationLimit:", movieWithDuration.durationLimit, "seconds");
+        movieRepository.create(movieWithDuration);
+        enqueueIngestNormalization(movieWithDuration);
+        // Log media ingest for bootstrap tracking
+        bootstrapLogger.logSeparator("NEW MOVIE INGESTED");
+        bootstrapLogger.logMediaIngested({
+            mediaItemId: movie.mediaItemId,
+            mediaType: "Movie",
+            title: movie.title,
+            tags: movie.tags.map((t) => `${t.type}:${t.name}`),
+        });
+        checkBootstrapCoverageTrigger({
+            mediaItemId: movie.mediaItemId,
+            mediaType: "Movie",
+            tags: movie.tags,
+        });
         console.log("[movieController] Movie created successfully:", movie.mediaItemId);
         return {
             message: `Movie ${movie.title} Created`,
@@ -71,6 +114,12 @@ export function updateMovie(mediaItemId, updates) {
             mediaItemId, // Ensure ID doesn't change
         };
         movieRepository.update(mediaItemId, updated);
+        // Check if bootstrap pool needs this movie for coverage after tag updates
+        checkBootstrapCoverageTrigger({
+            mediaItemId: updated.mediaItemId,
+            mediaType: "Movie",
+            tags: updated.tags,
+        });
         return { message: "Movie Updated", status: 200 };
     }
     catch (error) {

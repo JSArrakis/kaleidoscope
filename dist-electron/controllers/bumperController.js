@@ -1,9 +1,13 @@
 import { bumperRepository } from "../repositories/bumperRepository.js";
 import { enqueueIngestNormalization } from "../services/normalization/ingestNormalizationService.js";
+import { probeMediaMetadataHandler } from "../handlers/mediaProbeHandlers.js";
 export async function createBumper(bumper) {
     try {
         if (!bumper.mediaItemId) {
             return { message: "Media Item ID is required", status: 400 };
+        }
+        if (!bumper.path) {
+            return { message: "File path is required", status: 400 };
         }
         const existing = bumperRepository.findByMediaItemId(bumper.mediaItemId);
         if (existing) {
@@ -12,8 +16,26 @@ export async function createBumper(bumper) {
                 status: 400,
             };
         }
-        bumperRepository.create(bumper);
-        enqueueIngestNormalization(bumper);
+        // Probe the file to get duration
+        const probe = await probeMediaMetadataHandler(bumper.path);
+        if (!probe.isPlayable) {
+            return {
+                message: `File is not playable: ${probe.errorMessage || "Unknown error"}`,
+                status: 400,
+            };
+        }
+        if (!probe.durationSeconds || probe.durationSeconds <= 0) {
+            return {
+                message: "Could not determine file duration",
+                status: 400,
+            };
+        }
+        const bumperWithDuration = {
+            ...bumper,
+            duration: Math.round(probe.durationSeconds),
+        };
+        bumperRepository.create(bumperWithDuration);
+        enqueueIngestNormalization(bumperWithDuration);
         return { message: `Bumper ${bumper.title} Created`, status: 200 };
     }
     catch (error) {

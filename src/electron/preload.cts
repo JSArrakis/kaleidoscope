@@ -9,6 +9,8 @@ electron.contextBridge.exposeInMainWorld("electron", {
   getPlayerStateHandler: async () => await ipcInvoke("getPlayerState"),
   getNormalizationStatusHandler: async () =>
     await ipcInvoke("getNormalizationStatus"),
+  startAdhocStreamHandler: async (options: AdhocStreamRequest) =>
+    await ipcInvoke("startAdhocStream", options),
   runStartupReadinessChecksHandler: async () =>
     await ipcInvoke("runStartupReadinessChecks"),
   getAnchorContentReadinessStatusHandler: async () =>
@@ -27,6 +29,21 @@ electron.contextBridge.exposeInMainWorld("electron", {
   playerPlayNextHandler: async () => await ipcInvoke("playerPlayNext"),
   runAdhocPlayerTestHandler: async (cadence: boolean) =>
     await ipcInvoke("runAdhocPlayerTest", cadence),
+  rebuildBootstrapCoveragePoolHandler: async () =>
+    await ipcInvoke("rebuildBootstrapCoveragePool"),
+  getBootstrapCoverageStatusHandler: async () =>
+    await ipcInvoke("getBootstrapCoverageStatus"),
+  getBootstrapMissingTagsHandler: async () =>
+    await ipcInvoke("getBootstrapMissingTags"),
+  getBootstrapProfileReadinessHandler: async () =>
+    await ipcInvoke("getBootstrapProfileReadiness"),
+  checkStreamStartEligibilityHandler: async () =>
+    await ipcInvoke("checkStreamStartEligibility"),
+  getBootstrapLogPathHandler: async () =>
+    await ipcInvoke("getBootstrapLogPath"),
+  openBootstrapLogHandler: async () => await ipcInvoke("openBootstrapLog"),
+  clearAllPreTranscodedCacheHandler: async () =>
+    await ipcInvoke("clearAllPreTranscodedCache"),
   getCollectionsHandler: async () => await ipcInvoke("getCollections"),
   createCollectionHandler: async (collection: Collection) =>
     await ipcInvoke("createCollection", collection),

@@ -29,8 +29,6 @@ import { programmingBlockRepository } from "../../repositories/programmingBlockR
 import { selectThemedMedia } from "./mediaSelector.js";
 import { selectRandomShowOrMovie } from "./mediaSelector.js";
 import { resolveCollectionAwareAnchorSelection } from "./collectionProgressionSelector.js";
-import { createNormalizationJobsFromBlocks } from "../normalization/normalizationJobFactory.js";
-import { normalizationQueue } from "../normalization/normalizationQueue.js";
 import { selectFirstAnchorForCadencedStartup } from "./firstAnchorAdmissionService.js";
 import { selectFirstAnchorForCachedUncadencedStartup } from "./firstAnchorAdmissionService.js";
 
@@ -1344,16 +1342,6 @@ export function rolloverToNextDay(
   // Append the new day's anchor blocks to Upcoming
   if (iterationBlocks.length > 0) {
     streamManager.addToUpcomingStream(iterationBlocks);
-  }
-
-  const prewarmBlocks = [lastUpcomingBlock, ...iterationBlocks];
-  const jobs = createNormalizationJobsFromBlocks(prewarmBlocks);
-  const queued = normalizationQueue.enqueue(jobs);
-
-  if (queued > 0) {
-    console.log(
-      `[ContinuousStreamBuilder] Enqueued rollover normalization jobs: ${queued}/${jobs.length}`,
-    );
   }
 
   console.log(

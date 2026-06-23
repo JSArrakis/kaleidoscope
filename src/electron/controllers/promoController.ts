@@ -1,5 +1,6 @@
 import { promoRepository } from "../repositories/promoRepository.js";
 import { enqueueIngestNormalization } from "../services/normalization/ingestNormalizationService.js";
+import { probeMediaMetadataHandler } from "../handlers/mediaProbeHandlers.js";
 
 export async function createPromo(
   promo: Promo,
@@ -7,6 +8,10 @@ export async function createPromo(
   try {
     if (!promo.mediaItemId) {
       return { message: "Media Item ID is required", status: 400 };
+    }
+
+    if (!promo.path) {
+      return { message: "File path is required", status: 400 };
     }
 
     const existing = promoRepository.findByMediaItemId(promo.mediaItemId);
@@ -17,8 +22,30 @@ export async function createPromo(
       };
     }
 
-    promoRepository.create(promo);
-    enqueueIngestNormalization(promo);
+    // Probe the file to get duration
+    const probe = await probeMediaMetadataHandler(promo.path);
+
+    if (!probe.isPlayable) {
+      return {
+        message: `File is not playable: ${probe.errorMessage || "Unknown error"}`,
+        status: 400,
+      };
+    }
+
+    if (!probe.durationSeconds || probe.durationSeconds <= 0) {
+      return {
+        message: "Could not determine file duration",
+        status: 400,
+      };
+    }
+
+    const promoWithDuration: Promo = {
+      ...promo,
+      duration: Math.round(probe.durationSeconds),
+    };
+
+    promoRepository.create(promoWithDuration);
+    enqueueIngestNormalization(promoWithDuration);
     return { message: `Promo ${promo.title} Created`, status: 200 };
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);

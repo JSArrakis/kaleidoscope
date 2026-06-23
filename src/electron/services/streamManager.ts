@@ -5,6 +5,7 @@ import { getDB } from "../db/sqlite.js";
 import { episodeProgressionRepository } from "../repositories/episodeProgressionRepository.js";
 import { collectionMovieProgressionRepository } from "../repositories/collectionMovieProgressionRepository.js";
 import { MediaType } from "../models.js";
+import { ensureStreamPlayablePath } from "./ffmpegPlaybackProxy.js";
 
 export type CollectionProgressionScopeType =
   CollectionMovieProgression["scopeType"];
@@ -455,6 +456,30 @@ export function initializeOnDeckStream(): void {
 
 export function addItemToOnDeck(mediaBlocks: MediaBlock[]): void {
   streamManagerInstance.getOnDeck().push(...mediaBlocks);
+
+  // Fire-and-forget stream normalization for each anchor entering On Deck.
+  // This starts transcoding early so the file is ready by the time the player needs it.
+  // ensureStreamPlayablePath checks the bootstrap cache first, so pre-warmed anchors
+  // (like the first bootstrap anchor) are returned immediately without re-transcoding.
+  for (const block of mediaBlocks) {
+    const anchorPath = (block.anchorMedia as { path?: string } | undefined)
+      ?.path;
+    if (anchorPath) {
+      void ensureStreamPlayablePath(anchorPath)
+        .then((resolvedPath) => {
+          console.log(
+            `[StreamManager] On-deck normalization ready: ${anchorPath} -> ${resolvedPath}`,
+          );
+        })
+        .catch((error: unknown) => {
+          const message =
+            error instanceof Error ? error.message : String(error);
+          console.error(
+            `[StreamManager] On-deck normalization failed for ${anchorPath}: ${message}`,
+          );
+        });
+    }
+  }
 }
 
 export function removeFirstItemFromOnDeck(): MediaBlock | undefined {

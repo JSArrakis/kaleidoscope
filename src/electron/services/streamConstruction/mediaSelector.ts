@@ -49,8 +49,32 @@ export function selectRandomShowOrMovie(
       return getEpisodeFromShowCandidates(shows, duration); // VERIFIED
     }
   } else {
+    // Try shows first
     const shows = showRepository.findAllShowsUnderDuration(duration); // VERIFIED
-    return getEpisodeFromShowCandidates(shows, duration); // VERIFIED
+    const episode = getEpisodeFromShowCandidates(shows, duration); // VERIFIED
+
+    if (episode) {
+      return episode;
+    } else {
+      // Fallback to movie if no shows found
+      const recentlyUsedMovieIds =
+        streamManager.getActiveRecentlyUsedMovieIds(timepoint);
+      let movie: Movie | null =
+        movieRepository.findRandomMovieUnderDurationExcluding(
+          duration,
+          ageGroupTags,
+          recentlyUsedMovieIds,
+        );
+
+      if (!movie) {
+        movie = movieRepository.findRandomMovieUnderDuration(
+          duration,
+          ageGroupTags,
+        );
+      }
+
+      return movie;
+    }
   }
 }
 

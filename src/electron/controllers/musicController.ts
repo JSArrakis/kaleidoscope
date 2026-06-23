@@ -1,5 +1,6 @@
 import { musicRepository } from "../repositories/musicRepository.js";
 import { enqueueIngestNormalization } from "../services/normalization/ingestNormalizationService.js";
+import { probeMediaMetadataHandler } from "../handlers/mediaProbeHandlers.js";
 
 export async function createMusic(
   music: Music,
@@ -7,6 +8,10 @@ export async function createMusic(
   try {
     if (!music.mediaItemId) {
       return { message: "Media Item ID is required", status: 400 };
+    }
+
+    if (!music.path) {
+      return { message: "File path is required", status: 400 };
     }
 
     const existing = musicRepository.findByMediaItemId(music.mediaItemId);
@@ -17,8 +22,30 @@ export async function createMusic(
       };
     }
 
-    musicRepository.create(music);
-    enqueueIngestNormalization(music);
+    // Probe the file to get duration
+    const probe = await probeMediaMetadataHandler(music.path);
+
+    if (!probe.isPlayable) {
+      return {
+        message: `File is not playable: ${probe.errorMessage || "Unknown error"}`,
+        status: 400,
+      };
+    }
+
+    if (!probe.durationSeconds || probe.durationSeconds <= 0) {
+      return {
+        message: "Could not determine file duration",
+        status: 400,
+      };
+    }
+
+    const musicWithDuration: Music = {
+      ...music,
+      duration: Math.round(probe.durationSeconds),
+    };
+
+    musicRepository.create(musicWithDuration);
+    enqueueIngestNormalization(musicWithDuration);
     return { message: `Music ${music.title} Created`, status: 200 };
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);

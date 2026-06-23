@@ -361,7 +361,7 @@ const MediaEditForm: FC<MediaEditFormProps> = ({
             season: "",
             episode: "",
             episodeNumber: 0,
-            duration: 0,
+            duration: 0, // Backend will probe and populate
             durationLimit: 0,
             overDuration: false,
             type: MediaType.Episode,

@@ -1,5 +1,6 @@
 import { shortRepository } from "../repositories/shortRepository.js";
 import { enqueueIngestNormalization } from "../services/normalization/ingestNormalizationService.js";
+import { probeMediaMetadataHandler } from "../handlers/mediaProbeHandlers.js";
 
 export async function createShort(
   short: Short,
@@ -7,6 +8,10 @@ export async function createShort(
   try {
     if (!short.mediaItemId) {
       return { message: "Media Item ID is required", status: 400 };
+    }
+
+    if (!short.path) {
+      return { message: "File path is required", status: 400 };
     }
 
     const existing = shortRepository.findByMediaItemId(short.mediaItemId);
@@ -17,8 +22,30 @@ export async function createShort(
       };
     }
 
-    shortRepository.create(short);
-    enqueueIngestNormalization(short);
+    // Probe the file to get duration
+    const probe = await probeMediaMetadataHandler(short.path);
+
+    if (!probe.isPlayable) {
+      return {
+        message: `File is not playable: ${probe.errorMessage || "Unknown error"}`,
+        status: 400,
+      };
+    }
+
+    if (!probe.durationSeconds || probe.durationSeconds <= 0) {
+      return {
+        message: "Could not determine file duration",
+        status: 400,
+      };
+    }
+
+    const shortWithDuration: Short = {
+      ...short,
+      duration: Math.round(probe.durationSeconds),
+    };
+
+    shortRepository.create(shortWithDuration);
+    enqueueIngestNormalization(shortWithDuration);
     return { message: `Short ${short.title} Created`, status: 200 };
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
